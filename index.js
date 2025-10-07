@@ -683,13 +683,19 @@ app.post('/api/analysts', async (req, res) => {
     
     const analystsWithStatus = analysts.map(analyst => ({
       ...analyst,
-      is_subscribed: activeSubscriptions.some(sub => sub.analyst_id === analyst.user_id)
+      id: analyst._id.toString(),
+      is_subscribed: activeSubscriptions.some(sub => sub.analyst_id.toString() === analyst._id.toString())
+    }));
+    
+    const subscriptionsWithIds = activeSubscriptions.map(sub => ({
+      ...sub,
+      analyst_id: sub.analyst_id.toString()
     }));
     
     res.json({ 
       success: true, 
       analysts: analystsWithStatus,
-      active_subscriptions: activeSubscriptions
+      active_subscriptions: subscriptionsWithIds
     });
   } catch (error) {
     console.error('Analysts API Error:', error);
@@ -835,8 +841,9 @@ app.post('/api/subscribe-analyst', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
+    const { ObjectId } = require('mongodb');
     const user = await db.getUser(user_id);
-    const analyst = await db.getAnalyst(analyst_id);
+    const analyst = await db.getAnalyst(new ObjectId(analyst_id));
     
     if (!analyst) {
       return res.json({ success: false, error: 'المحلل غير موجود' });
