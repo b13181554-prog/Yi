@@ -420,30 +420,32 @@ bot.on('message', async (msg) => {
         return bot.sendMessage(chatId, '❌ السعر يجب أن يكون رقم صحيح (1 USDT على الأقل)');
       }
       
-      console.log(`📝 تسجيل محلل جديد - المستخدم: ${userId}, الاسم: ${name}`);
-      
-      await db.createAnalyst(userId, name, description, price);
-      
-      await db.updateUser(userId, { temp_withdrawal_address: null });
-      
-      await bot.sendMessage(chatId, `
+      try {
+        const analyst = await db.createAnalyst(userId, name, description, price);
+        
+        await db.updateUser(userId, { temp_withdrawal_address: null });
+        
+        await bot.sendMessage(chatId, `
 ✅ <b>تم التسجيل كمحلل بنجاح!</b>
 
-الاسم: ${name}
+الاسم: ${analyst.name}
 السعر: ${price} USDT/شهر
 
 يمكن للمستخدمين الآن الاشتراك في خدماتك!
 `, { parse_mode: 'HTML' });
-      
-      await bot.sendMessage(config.OWNER_ID, `
+        
+        await bot.sendMessage(config.OWNER_ID, `
 📝 <b>محلل جديد</b>
 
-الاسم: ${name}
+الاسم: ${analyst.name}
 المستخدم: @${user.username}
 ID: ${userId}
 السعر: ${price} USDT/شهر
-الوصف: ${description}
+الوصف: ${analyst.description}
 `, { parse_mode: 'HTML' });
+      } catch (createError) {
+        return bot.sendMessage(chatId, `❌ ${createError.message}`);
+      }
     }
   } catch (error) {
     console.error('Error in message handler:', error);

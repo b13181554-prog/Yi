@@ -849,9 +849,20 @@ app.post('/api/subscribe-analyst', async (req, res) => {
       return res.json({ success: false, error: 'المحلل غير موجود' });
     }
     
-    const existingSubscription = await db.getUserAnalystSubscription(user_id, analyst_id);
-    if (existingSubscription) {
-      return res.json({ success: false, error: 'أنت مشترك بالفعل مع هذا المحلل' });
+    const activeSubscription = await db.getUserAnalystSubscription(user_id, analyst_id);
+    if (activeSubscription) {
+      return res.json({ success: false, error: 'لديك اشتراك نشط بالفعل مع هذا المحلل' });
+    }
+    
+    const recentSubscription = await db.getRecentAnalystSubscription(user_id, analyst_id);
+    if (recentSubscription) {
+      const daysSinceEnd = Math.ceil((new Date() - new Date(recentSubscription.end_date)) / (1000 * 60 * 60 * 24));
+      if (daysSinceEnd < 7) {
+        return res.json({ 
+          success: false, 
+          error: `اشتراكك السابق انتهى منذ ${daysSinceEnd} يوم. يمكنك الاشتراك مجدداً بعد 7 أيام من انتهاء الاشتراك السابق.` 
+        });
+      }
     }
     
     if (user.balance < analyst.monthly_price) {
@@ -916,15 +927,10 @@ app.post('/api/register-analyst', async (req, res) => {
       return res.json({ success: false, error: 'أنت مسجل كمحلل بالفعل' });
     }
     
-    const duplicateName = await db.getAnalystByName(name);
-    if (duplicateName) {
-      return res.json({ success: false, error: 'هذا الاسم مستخدم بالفعل، يرجى اختيار اسم آخر' });
-    }
-    
-    console.log(`📝 تسجيل محلل جديد - المستخدم: ${user_id}, الاسم: ${name}`);
-    
     const analystMarkets = markets || [];
-    const analyst = await db.createAnalyst(user_id, name, description, price, analystMarkets);
+    
+    try {
+      const analyst = await db.createAnalyst(user_id, name, description, price, analystMarkets);
     
     const user = await db.getUser(user_id);
     
@@ -939,7 +945,10 @@ ID: ${user_id}
 الوصف: ${description}
 `, { parse_mode: 'HTML' }).catch(err => console.error('Error notifying owner:', err));
     
-    res.json({ success: true, analyst });
+      res.json({ success: true, analyst });
+    } catch (createError) {
+      return res.json({ success: false, error: createError.message });
+    }
   } catch (error) {
     console.error('Register Analyst API Error:', error);
     res.json({ success: false, error: error.message });
@@ -984,18 +993,29 @@ app.post('/api/update-analyst', async (req, res) => {
       return res.json({ success: false, error: 'لم يتم العثور على حسابك كمحلل' });
     }
     
-    if (name !== analyst.name) {
-      const duplicateName = await db.getAnalystByName(name);
+    const sanitizedName = db.sanitizeAnalystName(name);
+    const sanitizedDescription = description.trim().slice(0, 500);
+    
+    if (!sanitizedName || sanitizedName.length < 3) {
+      return res.json({ success: false, error: 'الاسم يجب أن يحتوي على 3 أحرف على الأقل بعد إزالة الأحرف الخاصة' });
+    }
+    
+    if (!sanitizedDescription || sanitizedDescription.length < 10) {
+      return res.json({ success: false, error: 'الوصف يجب أن يحتوي على 10 أحرف على الأقل' });
+    }
+    
+    if (sanitizedName !== analyst.name) {
+      const duplicateName = await db.getAnalystByName(sanitizedName);
       if (duplicateName && duplicateName._id.toString() !== analyst._id.toString()) {
         return res.json({ success: false, error: 'هذا الاسم مستخدم بالفعل، يرجى اختيار اسم آخر' });
       }
     }
     
-    console.log(`✏️ تحديث بيانات محلل - المستخدم: ${user_id}, الاسم: ${name}`);
+    console.log(`✏️ تحديث بيانات محلل - المستخدم: ${user_id}, الاسم: ${sanitizedName}`);
     
     const updateData = {
-      name,
-      description,
+      name: sanitizedName,
+      description: sanitizedDescription,
       monthly_price: price
     };
     
@@ -1125,7 +1145,15 @@ app.post('/api/create-room-post', async (req, res) => {
       return res.json({ success: false, error: 'يجب تحديد الرمز والنوع وسعر الدخول على الأقل' });
     }
     
-    const forbiddenWords = ['قناة', 'channel', 'telegram', 'واتساب', 'whatsapp', 'انستقرام', 'instagram', 'تواصل معي', 'contact me', 'خارج', 'outside'];
+    const forbiddenWords = [
+      'قناة', 'channel', 'telegram', 'واتساب', 'whatsapp', 'انستقرام', 'instagram', 
+      'تواصل معي', 'contact me', 'خارج', 'outside', 'تيليجرام', 'انضم', 'join',
+      'واتس', 'whats', 'فيسبوك', 'facebook', 'تويتر', 'twitter', 'يوتيوب', 'youtube',
+      'لينك', 'link', 'رابط', 'url', 'http', 'www', '.com', '.net', '.org',
+      'اشتراك خاص', 'private', 'خاص', 'dm', 'رسالة خاصة', 'inbox', 
+      'سناب', 'snap', 'تيك توك', 'tiktok', 'ديسكورد', 'discord',
+      '@', 't.me', 'wa.me', 'bit.ly', 'اشترك', 'subscribe'
+    ];
     const analysisText = (post_data.analysis || '').toLowerCase();
     
     for (const word of forbiddenWords) {

@@ -382,13 +382,43 @@ function isValidTxId(txId) {
   return /^[a-fA-F0-9]{64}$/.test(txId);
 }
 
+function sanitizeAnalystName(name) {
+  if (typeof name !== 'string') return '';
+  
+  return name
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/[^\u0600-\u06FFa-zA-Z0-9\s_-]/g, '')
+    .slice(0, 50);
+}
+
 async function createAnalyst(userId, name, description, monthlyPrice, markets = []) {
-  console.log(`✅ إنشاء محلل جديد - ID: ${userId}, الاسم: ${name}, السعر: ${monthlyPrice}`);
+  const sanitizedName = sanitizeAnalystName(name);
+  const sanitizedDescription = description.trim().slice(0, 500);
+  
+  if (!sanitizedName || sanitizedName.length < 3) {
+    throw new Error('الاسم يجب أن يحتوي على 3 أحرف على الأقل بعد إزالة الأحرف الخاصة');
+  }
+  
+  if (!sanitizedDescription || sanitizedDescription.length < 10) {
+    throw new Error('الوصف يجب أن يحتوي على 10 أحرف على الأقل');
+  }
+  
+  const duplicateName = await db.collection('analysts').findOne(
+    { name: sanitizedName },
+    { collation: { locale: 'en', strength: 2 } }
+  );
+  
+  if (duplicateName) {
+    throw new Error('هذا الاسم مستخدم بالفعل، يرجى اختيار اسم آخر');
+  }
+  
+  console.log(`✅ إنشاء محلل جديد - ID: ${userId}, الاسم: ${sanitizedName}, السعر: ${monthlyPrice}`);
   
   const analyst = {
     user_id: userId,
-    name: name.trim(),
-    description: description.trim(),
+    name: sanitizedName,
+    description: sanitizedDescription,
     monthly_price: monthlyPrice,
     markets: markets,
     is_active: true,
@@ -457,6 +487,16 @@ async function getUserAnalystSubscription(userId, analystId) {
     analyst_id: new ObjectId(analystId),
     status: 'active',
     end_date: { $gt: new Date() }
+  });
+}
+
+async function getRecentAnalystSubscription(userId, analystId) {
+  return await db.collection('analyst_subscriptions').findOne({
+    user_id: userId,
+    analyst_id: new ObjectId(analystId),
+    end_date: { $lte: new Date() }
+  }, {
+    sort: { end_date: -1 }
   });
 }
 
@@ -932,6 +972,7 @@ module.exports = {
   getAllTransactions,
   getTransactionStats,
   sanitizeInput,
+  sanitizeAnalystName,
   isValidTronAddress,
   isValidTxId,
   createAnalyst,
@@ -943,6 +984,7 @@ module.exports = {
   updateAnalystSubscriberCount,
   subscribeToAnalyst,
   getUserAnalystSubscription,
+  getRecentAnalystSubscription,
   getAllUserAnalystSubscriptions,
   getAnalystSubscribers,
   getSubscriberCount,
