@@ -367,7 +367,7 @@ function updateUI() {
     // تحديث رابط الإحالة
     const refLinkEl = document.getElementById('ref-link');
     if (refLinkEl) {
-        const botUsername = tg.initDataUnsafe.bot_username || 'obentchi_bot';
+        const botUsername = tg.initDataUnsafe.bot_username || 'Uuttyibv76bot';
         const refLink = `https://t.me/${botUsername}?start=ref_${user.id}`;
         refLinkEl.textContent = refLink;
     }
