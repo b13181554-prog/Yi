@@ -923,6 +923,128 @@ ID: ${user_id}
   }
 });
 
+app.post('/api/my-analyst-profile', async (req, res) => {
+  try {
+    const { user_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const analyst = await db.getAnalystByUserId(user_id);
+    res.json({ success: true, analyst });
+  } catch (error) {
+    console.error('My Analyst Profile API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/update-analyst', async (req, res) => {
+  try {
+    const { user_id, name, description, monthly_price, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    if (!name || !description || !monthly_price) {
+      return res.json({ success: false, error: 'جميع الحقول مطلوبة' });
+    }
+    
+    const price = parseFloat(monthly_price);
+    if (isNaN(price) || price < 1) {
+      return res.json({ success: false, error: 'السعر يجب أن يكون 1 USDT على الأقل' });
+    }
+    
+    const analyst = await db.getAnalystByUserId(user_id);
+    if (!analyst) {
+      return res.json({ success: false, error: 'لم يتم العثور على حسابك كمحلل' });
+    }
+    
+    console.log(`✏️ تحديث بيانات محلل - المستخدم: ${user_id}, الاسم: ${name}`);
+    
+    await db.updateAnalyst(analyst._id, {
+      name,
+      description,
+      monthly_price: price
+    });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Update Analyst API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/toggle-analyst-status', async (req, res) => {
+  try {
+    const { user_id, is_active, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const analyst = await db.getAnalystByUserId(user_id);
+    if (!analyst) {
+      return res.json({ success: false, error: 'لم يتم العثور على حسابك كمحلل' });
+    }
+    
+    console.log(`${is_active ? '▶️' : '⏸️'} تغيير حالة محلل - المستخدم: ${user_id}, الحالة: ${is_active ? 'نشط' : 'متوقف'}`);
+    
+    await db.updateAnalyst(analyst._id, { is_active });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Toggle Analyst Status API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/delete-analyst', async (req, res) => {
+  try {
+    const { user_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const analyst = await db.getAnalystByUserId(user_id);
+    if (!analyst) {
+      return res.json({ success: false, error: 'لم يتم العثور على حسابك كمحلل' });
+    }
+    
+    console.log(`🗑️ حذف حساب محلل - المستخدم: ${user_id}`);
+    
+    await db.updateAnalyst(analyst._id, { is_active: false });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete Analyst API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/analysts-by-status', async (req, res) => {
+  try {
+    const { is_active, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const { MongoClient, ObjectId } = require('mongodb');
+    const analysts = await db.getDB().collection('analysts')
+      .find({ is_active })
+      .sort({ total_subscribers: -1, created_at: -1 })
+      .toArray();
+    
+    res.json({ success: true, analysts });
+  } catch (error) {
+    console.error('Analysts By Status API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/analyze-advanced', async (req, res) => {
   try {
     const { user_id, symbol, timeframe, market_type, trading_type, analysis_type, init_data } = req.body;

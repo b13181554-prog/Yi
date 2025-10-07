@@ -218,20 +218,46 @@
 
                 <div class="analysts-tabs">
                     <div class="tab-btn active" onclick="switchAnalystTab('all', event)">كل المحللين</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('active', event)">✅ نشطين</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('inactive', event)">⏸️ متوقفين</div>
                     <div class="tab-btn" onclick="switchAnalystTab('top100', event)">🏆 Top 100</div>
                     <div class="tab-btn" onclick="switchAnalystTab('subscriptions', event)">اشتراكاتي</div>
                 </div>
 
                 <div id="all-analysts-tab" class="analysts-tab-content active">
-                    <div class="info-card" style="margin-bottom: 20px;">
+                    <div id="analyst-register-card" class="info-card" style="margin-bottom: 20px;">
                         <h3>💼 هل تريد أن تصبح محلل؟</h3>
                         <p>يمكنك التسجيل كمحلل والحصول على دخل شهري من المشتركين!</p>
                         <button class="submit-btn" onclick="showAnalystRegistrationForm()">التسجيل كمحلل</button>
                     </div>
 
+                    <div id="my-analyst-profile" class="info-card" style="margin-bottom: 20px; display: none;">
+                        <h3>👨‍💼 ملفك كمحلل</h3>
+                        <div style="margin: 15px 0;">
+                            <div style="margin-bottom: 10px;">
+                                <strong>الاسم:</strong> <span id="my-analyst-name">-</span>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <strong>الوصف:</strong> <span id="my-analyst-desc">-</span>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <strong>السعر الشهري:</strong> <span id="my-analyst-price">-</span> USDT
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <strong>المشتركين:</strong> <span id="my-analyst-subs">0</span>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <strong>الحالة:</strong> <span id="my-analyst-status">نشط</span>
+                            </div>
+                        </div>
+                        <button class="submit-btn" onclick="showEditAnalystForm()" style="margin-right: 10px;">✏️ تعديل</button>
+                        <button id="toggle-analyst-btn" class="submit-btn" onclick="toggleAnalystStatus()" style="margin-right: 10px; background: #ffc107;">⏸️ إيقاف مؤقت</button>
+                        <button class="cancel-btn" onclick="deleteAnalystProfile()">🗑️ حذف</button>
+                    </div>
+
                     <div id="analyst-registration-form" style="display: none;">
                         <div class="info-card">
-                            <h3>📝 نموذج التسجيل كمحلل</h3>
+                            <h3 id="analyst-form-title">📝 نموذج التسجيل كمحلل</h3>
                             <div style="margin: 20px 0;">
                                 <label style="display: block; margin-bottom: 5px; color: #666;">الاسم:</label>
                                 <input type="text" id="analyst-name" placeholder="اسمك كمحلل" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px;">
@@ -242,7 +268,7 @@
                                 <label style="display: block; margin-bottom: 5px; color: #666;">السعر الشهري (USDT):</label>
                                 <input type="number" id="analyst-price" placeholder="السعر (مثال: 20)" min="1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;">
                             </div>
-                            <button class="submit-btn" onclick="submitAnalystRegistration()">تأكيد التسجيل</button>
+                            <button class="submit-btn" id="analyst-submit-btn" onclick="submitAnalystRegistration()">تأكيد التسجيل</button>
                             <button class="cancel-btn" onclick="hideAnalystRegistrationForm()">إلغاء</button>
                         </div>
                     </div>
@@ -250,6 +276,24 @@
                     <div class="analysts-list" id="analysts-list">
                         <h3>المحللين المتاحين</h3>
                         <div id="analysts-container">
+                            <p class="empty-state">جاري التحميل...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="active-analysts-tab" class="analysts-tab-content">
+                    <div class="analysts-list">
+                        <h3>✅ المحللين النشطين</h3>
+                        <div id="active-analysts-container">
+                            <p class="empty-state">جاري التحميل...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inactive-analysts-tab" class="analysts-tab-content">
+                    <div class="analysts-list">
+                        <h3>⏸️ المحللين المتوقفين</h3>
+                        <div id="inactive-analysts-container">
                             <p class="empty-state">جاري التحميل...</p>
                         </div>
                     </div>

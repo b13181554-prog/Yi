@@ -304,6 +304,7 @@ async function init() {
 
         // تحميل بيانات المستخدم أولاً
         await loadUserData();
+        await loadMyAnalystProfile();
 
         // تحميل جميع الأصول بشكل متوازي
         const loadAssetsPromises = [
@@ -810,17 +811,49 @@ async function subscribeToAnalyst(analystId) {
     }
 }
 
+let myAnalystData = null;
+let isEditingAnalyst = false;
+
 function showAnalystRegistrationForm() {
+    isEditingAnalyst = false;
+    document.getElementById('analyst-form-title').textContent = '📝 نموذج التسجيل كمحلل';
+    document.getElementById('analyst-submit-btn').textContent = 'تأكيد التسجيل';
     document.getElementById('analyst-registration-form').style.display = 'block';
     document.getElementById('analysts-list').style.display = 'none';
+    document.getElementById('my-analyst-profile').style.display = 'none';
+    document.getElementById('analyst-register-card').style.display = 'none';
+}
+
+function showEditAnalystForm() {
+    if (!myAnalystData) return;
+    
+    isEditingAnalyst = true;
+    document.getElementById('analyst-form-title').textContent = '✏️ تعديل بيانات المحلل';
+    document.getElementById('analyst-submit-btn').textContent = 'حفظ التعديلات';
+    document.getElementById('analyst-name').value = myAnalystData.name;
+    document.getElementById('analyst-description').value = myAnalystData.description;
+    document.getElementById('analyst-price').value = myAnalystData.monthly_price;
+    document.getElementById('analyst-registration-form').style.display = 'block';
+    document.getElementById('analysts-list').style.display = 'none';
+    document.getElementById('my-analyst-profile').style.display = 'none';
 }
 
 function hideAnalystRegistrationForm() {
     document.getElementById('analyst-registration-form').style.display = 'none';
     document.getElementById('analysts-list').style.display = 'block';
+    
+    if (myAnalystData) {
+        document.getElementById('my-analyst-profile').style.display = 'block';
+        document.getElementById('analyst-register-card').style.display = 'none';
+    } else {
+        document.getElementById('my-analyst-profile').style.display = 'none';
+        document.getElementById('analyst-register-card').style.display = 'block';
+    }
+    
     document.getElementById('analyst-name').value = '';
     document.getElementById('analyst-description').value = '';
     document.getElementById('analyst-price').value = '';
+    isEditingAnalyst = false;
 }
 
 async function submitAnalystRegistration() {
@@ -839,7 +872,8 @@ async function submitAnalystRegistration() {
     }
 
     try {
-        const response = await fetch('/api/register-analyst', {
+        const endpoint = isEditingAnalyst ? '/api/update-analyst' : '/api/register-analyst';
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -854,16 +888,134 @@ async function submitAnalystRegistration() {
         const data = await response.json();
 
         if (data.success) {
-            tg.showAlert('✅ تم التسجيل كمحلل بنجاح!');
+            tg.showAlert(isEditingAnalyst ? '✅ تم تحديث البيانات بنجاح!' : '✅ تم التسجيل كمحلل بنجاح!');
             hideAnalystRegistrationForm();
+            await loadMyAnalystProfile();
             loadAnalysts();
         } else {
-            tg.showAlert('❌ ' + (data.error || 'فشل التسجيل'));
+            tg.showAlert('❌ ' + (data.error || 'فشل العملية'));
         }
     } catch (error) {
-        console.error('Error registering analyst:', error);
-        tg.showAlert('❌ حدث خطأ في التسجيل');
+        console.error('Error with analyst registration:', error);
+        tg.showAlert('❌ حدث خطأ في العملية');
     }
+}
+
+async function loadMyAnalystProfile() {
+    try {
+        const response = await fetch('/api/my-analyst-profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.analyst) {
+            myAnalystData = data.analyst;
+            document.getElementById('my-analyst-name').textContent = data.analyst.name;
+            document.getElementById('my-analyst-desc').textContent = data.analyst.description;
+            document.getElementById('my-analyst-price').textContent = data.analyst.monthly_price;
+            document.getElementById('my-analyst-subs').textContent = data.analyst.total_subscribers || 0;
+            
+            const statusEl = document.getElementById('my-analyst-status');
+            const toggleBtn = document.getElementById('toggle-analyst-btn');
+            
+            if (data.analyst.is_active) {
+                statusEl.textContent = '✅ نشط';
+                statusEl.style.color = '#28a745';
+                toggleBtn.innerHTML = '⏸️ إيقاف مؤقت';
+                toggleBtn.style.background = '#ffc107';
+            } else {
+                statusEl.textContent = '⏸️ متوقف';
+                statusEl.style.color = '#dc3545';
+                toggleBtn.innerHTML = '▶️ تفعيل';
+                toggleBtn.style.background = '#28a745';
+            }
+            
+            document.getElementById('my-analyst-profile').style.display = 'block';
+            document.getElementById('analyst-register-card').style.display = 'none';
+        } else {
+            myAnalystData = null;
+            document.getElementById('my-analyst-profile').style.display = 'none';
+            document.getElementById('analyst-register-card').style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error loading analyst profile:', error);
+    }
+}
+
+async function toggleAnalystStatus() {
+    if (!myAnalystData) return;
+    
+    const newStatus = !myAnalystData.is_active;
+    const confirmMsg = newStatus ? 'هل تريد تفعيل حسابك كمحلل؟' : 'هل تريد إيقاف حسابك كمحلل مؤقتاً؟';
+    
+    tg.showConfirm(confirmMsg, async (confirmed) => {
+        if (confirmed) {
+            try {
+                const response = await fetch('/api/toggle-analyst-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        is_active: newStatus,
+                        init_data: tg.initData
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    tg.showAlert(newStatus ? '✅ تم تفعيل الحساب!' : '⏸️ تم إيقاف الحساب مؤقتاً!');
+                    await loadMyAnalystProfile();
+                    loadAnalysts();
+                } else {
+                    tg.showAlert('❌ ' + (data.error || 'فشل العملية'));
+                }
+            } catch (error) {
+                console.error('Error toggling analyst status:', error);
+                tg.showAlert('❌ حدث خطأ');
+            }
+        }
+    });
+}
+
+async function deleteAnalystProfile() {
+    if (!myAnalystData) return;
+    
+    tg.showConfirm('⚠️ هل أنت متأكد من حذف حسابك كمحلل؟ لا يمكن التراجع عن هذا الإجراء!', async (confirmed) => {
+        if (confirmed) {
+            try {
+                const response = await fetch('/api/delete-analyst', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        init_data: tg.initData
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    tg.showAlert('🗑️ تم حذف حسابك كمحلل');
+                    myAnalystData = null;
+                    document.getElementById('my-analyst-profile').style.display = 'none';
+                    document.getElementById('analyst-register-card').style.display = 'block';
+                    loadAnalysts();
+                } else {
+                    tg.showAlert('❌ ' + (data.error || 'فشل الحذف'));
+                }
+            } catch (error) {
+                console.error('Error deleting analyst:', error);
+                tg.showAlert('❌ حدث خطأ في الحذف');
+            }
+        }
+    });
 }
 
 function showDeposit() {
@@ -1460,6 +1612,14 @@ function switchAnalystTab(tab, event) {
     if (tab === 'all') {
         const allTab = document.getElementById('all-analysts-tab');
         if (allTab) allTab.classList.add('active');
+    } else if (tab === 'active') {
+        const activeTab = document.getElementById('active-analysts-tab');
+        if (activeTab) activeTab.classList.add('active');
+        loadActiveAnalysts();
+    } else if (tab === 'inactive') {
+        const inactiveTab = document.getElementById('inactive-analysts-tab');
+        if (inactiveTab) inactiveTab.classList.add('active');
+        loadInactiveAnalysts();
     } else if (tab === 'top100') {
         const top100Tab = document.getElementById('top100-analysts-tab');
         if (top100Tab) top100Tab.classList.add('active');
@@ -1467,6 +1627,85 @@ function switchAnalystTab(tab, event) {
     } else if (tab === 'subscriptions') {
         const subsTab = document.getElementById('subscriptions-analysts-tab');
         if (subsTab) subsTab.classList.add('active');
+    }
+}
+
+async function loadActiveAnalysts() {
+    const container = document.getElementById('active-analysts-container');
+    container.innerHTML = '<p class="empty-state">جاري التحميل...</p>';
+
+    try {
+        const response = await fetch('/api/analysts-by-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                is_active: true,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.analysts && data.analysts.length > 0) {
+            container.innerHTML = data.analysts.map(analyst => `
+                <div class="analyst-card">
+                    <div class="analyst-header">
+                        <h4>${analyst.name}</h4>
+                        <span class="analyst-price">${analyst.monthly_price} USDT/شهر</span>
+                    </div>
+                    <p class="analyst-desc">${analyst.description}</p>
+                    <div class="analyst-stats">
+                        <span>👥 ${analyst.total_subscribers || 0} مشترك</span>
+                        <span class="analyst-status active">✅ نشط</span>
+                    </div>
+                    ${userId !== analyst.user_id ? `<button class="subscribe-btn" onclick="subscribeToAnalyst('${analyst._id}')">اشتراك</button>` : ''}
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p class="empty-state">لا يوجد محللين نشطين حالياً</p>';
+        }
+    } catch (error) {
+        console.error('Error loading active analysts:', error);
+        container.innerHTML = '<p class="empty-state">حدث خطأ في التحميل</p>';
+    }
+}
+
+async function loadInactiveAnalysts() {
+    const container = document.getElementById('inactive-analysts-container');
+    container.innerHTML = '<p class="empty-state">جاري التحميل...</p>';
+
+    try {
+        const response = await fetch('/api/analysts-by-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                is_active: false,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.analysts && data.analysts.length > 0) {
+            container.innerHTML = data.analysts.map(analyst => `
+                <div class="analyst-card inactive">
+                    <div class="analyst-header">
+                        <h4>${analyst.name}</h4>
+                        <span class="analyst-price">${analyst.monthly_price} USDT/شهر</span>
+                    </div>
+                    <p class="analyst-desc">${analyst.description}</p>
+                    <div class="analyst-stats">
+                        <span>👥 ${analyst.total_subscribers || 0} مشترك</span>
+                        <span class="analyst-status inactive">⏸️ متوقف</span>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p class="empty-state">لا يوجد محللين متوقفين</p>';
+        }
+    } catch (error) {
+        console.error('Error loading inactive analysts:', error);
+        container.innerHTML = '<p class="empty-state">حدث خطأ في التحميل</p>';
     }
 }
 

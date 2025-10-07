@@ -824,8 +824,13 @@ async function getAnalystReviews(analystId) {
     .toArray();
 }
 
+function getDB() {
+  return db;
+}
+
 module.exports = {
   initDatabase,
+  getDB,
   getUser,
   createUser,
   updateUser,
