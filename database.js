@@ -356,6 +356,8 @@ function isValidTxId(txId) {
 }
 
 async function createAnalyst(userId, name, description, monthlyPrice) {
+  console.log(`✅ إنشاء محلل جديد - ID: ${userId}, الاسم: ${name}, السعر: ${monthlyPrice}`);
+  
   const analyst = {
     user_id: userId,
     name: name,
@@ -368,6 +370,7 @@ async function createAnalyst(userId, name, description, monthlyPrice) {
   };
   
   const result = await db.collection('analysts').insertOne(analyst);
+  console.log(`✅ تم حفظ المحلل بنجاح - _id: ${result.insertedId}`);
   return { ...analyst, _id: result.insertedId };
 }
 

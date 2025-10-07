@@ -420,12 +420,9 @@ bot.on('message', async (msg) => {
         return bot.sendMessage(chatId, '❌ السعر يجب أن يكون رقم صحيح (1 USDT على الأقل)');
       }
       
-      await db.createAnalyst({
-        user_id: userId,
-        name: name,
-        description: description,
-        monthly_price: price
-      });
+      console.log(`📝 تسجيل محلل جديد - المستخدم: ${userId}, الاسم: ${name}`);
+      
+      await db.createAnalyst(userId, name, description, price);
       
       await db.updateUser(userId, { temp_withdrawal_address: null });
       
