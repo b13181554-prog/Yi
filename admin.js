@@ -1,7 +1,6 @@
 
 const db = require('./database');
 const config = require('./config');
-const binance = require('./binance-service');
 
 async function initAdminCommands(bot) {
   

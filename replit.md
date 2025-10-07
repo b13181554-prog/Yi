@@ -4,7 +4,17 @@
 OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comprehensive technical analysis using various market APIs. The project aims to offer advanced trading tools, real-time data, and automated functionalities to users, supporting both cryptocurrency and forex markets. It includes features like a full-fledged Telegram Web App for a rich user experience, automated withdrawal and deposit systems, and multi-language support. The business vision is to provide a robust and accessible trading assistant with global market potential, empowering users with advanced analytical capabilities and a seamless trading workflow.
 
 ## Recent Changes (October 2025)
-- **Data Integrity Enhancement**: Removed all mock/test data from the project
+
+### Latest Update - Data Accuracy Improvements (Oct 7, 2025)
+- **Real Price Data Implementation**: Replaced all estimated/placeholder data with authentic real-time market data
+  - **Cryptocurrency Candles**: Now using OKX API (primary), Bybit (secondary), and Binance (fallback) for accurate OHLC data
+  - **Forex Candles**: Integrated TwelveData API for real forex candle data with proper OHLC values
+  - **Removed Deprecated Services**: Deleted old unused files (`multi-market-data.js`, `unified-market-service.js`, `binance-service.js`)
+  - **Priority System**: OKX is now the primary data source for all cryptocurrency market data
+  - **Fallback Strategy**: Enhanced error handling with proper fallback mechanisms for data reliability
+
+### Data Integrity Enhancement
+- Removed all mock/test data from the project
   - Eliminated `test_mode` bypass in API authentication
   - Removed placeholder user ID (123456789) from frontend
   - Deleted test files: `test-market-data.js`, `test-prices.js`, `public/test-analysis.html`
@@ -80,18 +90,16 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comp
 
 - **Databases**:
     - MongoDB Atlas
-- **Cryptocurrency Market Data APIs**:
-    - CoinGecko
-    - Bybit
-    - OKX
-    - Gate.io
-    - Kraken
-    - Coinbase
-    - CoinPaprika
-    - Huobi
-    - Crypto.com
-    - Bitfinex
-    - Binance (conditional access)
+- **Cryptocurrency Market Data APIs** (Priority Order):
+    - **OKX** (Primary) - Real-time prices and authentic OHLC candle data
+    - **Bybit** (Secondary) - Real candle data with proper High/Low values
+    - **Binance** (Fallback) - Additional data source
+    - CoinGecko - Price verification
+    - Gate.io, Kraken, Coinbase, CoinPaprika, Huobi, Crypto.com, Bitfinex - Alternative sources
+- **Forex Market Data APIs**:
+    - **TwelveData API** (Primary) - Real forex candle data with authentic OHLC
+    - **Frankfurter API** (Fallback) - ECB historical data
+    - ExchangeRate-API, FloatRates, VATComply - Rate verification
 - **Market Data APIs (No API Keys Required)**:
     - **Yahoo Finance API** - للأسهم والسلع والمؤشرات (بدون مفاتيح API)
     - **Frankfurter API (ECB Data)** - للفوركس (بدون مفاتيح API، بيانات البنك المركزي الأوروبي)
