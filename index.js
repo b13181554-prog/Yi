@@ -786,24 +786,40 @@ app.post('/api/rate-analyst', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    // التحقق من اشتراك المستخدم
-    const subscription = await db.getUserAnalystSubscription(user_id, analyst_id);
-    if (!subscription) {
-      return res.json({ success: false, error: 'يجب الاشتراك لتقييم المحلل' });
+    // التحقق من أن المستخدم لم يقيم المحلل من قبل
+    const existingReview = await db.collection('analyst_reviews').findOne({
+      user_id: user_id,
+      analyst_id: new db.ObjectId(analyst_id)
+    });
+    
+    if (existingReview) {
+      // تحديث التقييم الموجود
+      await db.collection('analyst_reviews').updateOne(
+        { user_id: user_id, analyst_id: new db.ObjectId(analyst_id) },
+        { $set: { rating: rating, comment: comment || '', updated_at: new Date() } }
+      );
+    } else {
+      // إضافة تقييم جديد
+      await db.createAnalystReview(user_id, analyst_id, rating, comment);
     }
     
-    await db.createAnalystReview(user_id, analyst_id, rating, comment);
-    
-    // حساب نسبة الإعجاب (👍 / إجمالي التقييمات)
+    // حساب عدد اللايكات والديس لايك بشكل منفصل
     const reviews = await db.getAnalystReviews(analyst_id);
-    const totalReviews = reviews.length;
     const likes = reviews.filter(r => r.rating === 1).length;
-    const likePercentage = totalReviews > 0 ? ((likes / totalReviews) * 100).toFixed(0) : 0;
-    await db.updateAnalyst(analyst_id, { rating: likePercentage });
+    const dislikes = reviews.filter(r => r.rating === 0).length;
+    
+    // تحديث بيانات المحلل مع عدد اللايكات والديس لايك
+    await db.updateAnalyst(analyst_id, { 
+      likes: likes,
+      dislikes: dislikes,
+      rating: likes  // التقييم الإجمالي يعتمد فقط على اللايكات
+    });
     
     res.json({ 
       success: true, 
-      message: 'تم إضافة التقييم بنجاح'
+      message: 'تم إضافة التقييم بنجاح',
+      likes: likes,
+      dislikes: dislikes
     });
   } catch (error) {
     console.error('Rate Analyst API Error:', error);
