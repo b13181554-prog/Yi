@@ -28,3 +28,20 @@ services:
         value: https://obentchi-trading-bot.onrender.com
       - key: PORT
         value: 5000
+services:
+  - type: web
+    name: obentchi-bot
+    env: node
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BOT_TOKEN
+        sync: false
+      - key: MONGODB_PASSWORD
+        sync: false
+      - key: WEBAPP_URL
+        sync: false
+    healthCheckPath: /health
+    autoDeploy: true

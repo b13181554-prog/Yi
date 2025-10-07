@@ -11,11 +11,27 @@ const marketData = require('./market-data');
 const forexService = require('./forex-service');
 const TechnicalAnalysis = require('./analysis');
 const rankingScheduler = require('./ranking-scheduler');
+const { authenticateAPI, apiRateLimit, validateRequestSize } = require('./api-security');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(express.json());
+// Security Headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline';");
+  next();
+});
+
+// الحد الأقصى لحجم الطلب
+app.use(express.json({ limit: '10mb' }));
+app.use(validateRequestSize);
+
+// تطبيق Rate Limiting على جميع API endpoints
+app.use('/api/*', apiRateLimit);
 
 // معالج الملفات الثابتة
 app.use(express.static('public', {
@@ -327,23 +343,12 @@ function verifyTelegramWebAppData(initData) {
   }
 }
 
-app.post('/api/user', async (req, res) => {
+app.post('/api/user', authenticateAPI, async (req, res) => {
   try {
-    const { user_id, init_data } = req.body;
+    const { user_id } = req.body;
     
     if (!user_id) {
       return res.json({ success: false, error: 'معرف المستخدم مطلوب' });
-    }
-    
-    // التحقق من بيانات Telegram إذا كانت موجودة
-    if (init_data && init_data.length > 0) {
-      if (!verifyTelegramWebAppData(init_data)) {
-        console.log('❌ فشل التحقق من بيانات Telegram لـ user:', user_id);
-        return res.json({ success: false, error: 'بيانات Telegram غير صحيحة. يجب فتح التطبيق من خلال البوت.' });
-      }
-    } else {
-      console.log('⚠️ لا توجد بيانات initData لـ user:', user_id);
-      return res.json({ success: false, error: 'لا توجد بيانات من Telegram. تأكد من فتح التطبيق من خلال البوت.' });
     }
     
     let user = await db.getUser(user_id);
