@@ -810,26 +810,6 @@ async function subscribeToAnalyst(analystId) {
     }
 }
 
-function subscribeToAnalyst(analystId, price) {
-    if (userBalance < price) {
-        tg.showAlert(`رصيدك غير كافٍ! تحتاج ${price} USDT`);
-        return;
-    }
-
-    tg.showConfirm(
-        `هل تريد الاشتراك في خدمات هذا المحلل مقابل ${price} USDT شهرياً؟`,
-        async (confirmed) => {
-            if (confirmed) {
-                tg.sendData(JSON.stringify({
-                    action: 'subscribe_analyst',
-                    analyst_id: analystId
-                }));
-                tg.showAlert('تم الاشتراك بنجاح!');
-            }
-        }
-    );
-}
-
 function registerAsAnalyst() {
     tg.showPopup({
         title: 'التسجيل كمحلل',
