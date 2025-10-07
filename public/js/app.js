@@ -833,6 +833,13 @@ function showEditAnalystForm() {
     document.getElementById('analyst-name').value = myAnalystData.name;
     document.getElementById('analyst-description').value = myAnalystData.description;
     document.getElementById('analyst-price').value = myAnalystData.monthly_price;
+    
+    document.getElementById('market-crypto').checked = myAnalystData.markets && myAnalystData.markets.includes('crypto');
+    document.getElementById('market-forex').checked = myAnalystData.markets && myAnalystData.markets.includes('forex');
+    document.getElementById('market-stocks').checked = myAnalystData.markets && myAnalystData.markets.includes('stocks');
+    document.getElementById('market-commodities').checked = myAnalystData.markets && myAnalystData.markets.includes('commodities');
+    document.getElementById('market-indices').checked = myAnalystData.markets && myAnalystData.markets.includes('indices');
+    
     document.getElementById('analyst-registration-form').style.display = 'block';
     document.getElementById('analysts-list').style.display = 'none';
     document.getElementById('my-analyst-profile').style.display = 'none';
@@ -853,6 +860,11 @@ function hideAnalystRegistrationForm() {
     document.getElementById('analyst-name').value = '';
     document.getElementById('analyst-description').value = '';
     document.getElementById('analyst-price').value = '';
+    document.getElementById('market-crypto').checked = false;
+    document.getElementById('market-forex').checked = false;
+    document.getElementById('market-stocks').checked = false;
+    document.getElementById('market-commodities').checked = false;
+    document.getElementById('market-indices').checked = false;
     isEditingAnalyst = false;
 }
 
@@ -860,9 +872,21 @@ async function submitAnalystRegistration() {
     const name = document.getElementById('analyst-name').value.trim();
     const description = document.getElementById('analyst-description').value.trim();
     const price = parseFloat(document.getElementById('analyst-price').value);
+    
+    const markets = [];
+    if (document.getElementById('market-crypto').checked) markets.push('crypto');
+    if (document.getElementById('market-forex').checked) markets.push('forex');
+    if (document.getElementById('market-stocks').checked) markets.push('stocks');
+    if (document.getElementById('market-commodities').checked) markets.push('commodities');
+    if (document.getElementById('market-indices').checked) markets.push('indices');
 
     if (!name || !description || !price) {
         tg.showAlert('❌ يرجى ملء جميع الحقول');
+        return;
+    }
+
+    if (markets.length === 0) {
+        tg.showAlert('❌ يرجى اختيار سوق واحد على الأقل');
         return;
     }
 
@@ -881,6 +905,7 @@ async function submitAnalystRegistration() {
                 name: name,
                 description: description,
                 monthly_price: price,
+                markets: markets,
                 init_data: tg.initData
             })
         });
@@ -1698,14 +1723,22 @@ function switchAnalystTab(tab, event) {
     if (tab === 'all') {
         const allTab = document.getElementById('all-analysts-tab');
         if (allTab) allTab.classList.add('active');
-    } else if (tab === 'active') {
-        const activeTab = document.getElementById('active-analysts-tab');
-        if (activeTab) activeTab.classList.add('active');
-        loadActiveAnalysts();
-    } else if (tab === 'inactive') {
-        const inactiveTab = document.getElementById('inactive-analysts-tab');
-        if (inactiveTab) inactiveTab.classList.add('active');
-        loadInactiveAnalysts();
+    } else if (tab === 'crypto') {
+        const cryptoTab = document.getElementById('crypto-analysts-tab');
+        if (cryptoTab) cryptoTab.classList.add('active');
+        loadAnalystsByMarket('crypto');
+    } else if (tab === 'forex') {
+        const forexTab = document.getElementById('forex-analysts-tab');
+        if (forexTab) forexTab.classList.add('active');
+        loadAnalystsByMarket('forex');
+    } else if (tab === 'stocks') {
+        const stocksTab = document.getElementById('stocks-analysts-tab');
+        if (stocksTab) stocksTab.classList.add('active');
+        loadAnalystsByMarket('stocks');
+    } else if (tab === 'commodities') {
+        const commoditiesTab = document.getElementById('commodities-analysts-tab');
+        if (commoditiesTab) commoditiesTab.classList.add('active');
+        loadAnalystsByMarket('commodities');
     } else if (tab === 'top100') {
         const top100Tab = document.getElementById('top100-analysts-tab');
         if (top100Tab) top100Tab.classList.add('active');
@@ -1713,6 +1746,75 @@ function switchAnalystTab(tab, event) {
     } else if (tab === 'subscriptions') {
         const subsTab = document.getElementById('subscriptions-analysts-tab');
         if (subsTab) subsTab.classList.add('active');
+    }
+}
+
+async function loadAnalystsByMarket(marketType) {
+    const container = document.getElementById(`${marketType}-analysts-container`);
+    if (!container) return;
+    
+    container.innerHTML = '<p class="empty-state">جاري التحميل...</p>';
+    
+    try {
+        const response = await fetch('/api/analysts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.analysts) {
+            const filteredAnalysts = data.analysts.filter(analyst => 
+                analyst.markets && analyst.markets.includes(marketType)
+            );
+            
+            if (filteredAnalysts.length === 0) {
+                container.innerHTML = '<p class="empty-state">لا يوجد محللين في هذا السوق</p>';
+                return;
+            }
+            
+            const marketIcons = {
+                'crypto': '💎',
+                'forex': '💱',
+                'stocks': '📈',
+                'commodities': '🛢️',
+                'indices': '📊'
+            };
+            
+            container.innerHTML = filteredAnalysts.map(analyst => `
+                <div class="analyst-card">
+                    <div class="analyst-header">
+                        <h4>${analyst.name}</h4>
+                        ${analyst.is_subscribed ? '<span class="badge subscribed-badge">✅ مشترك</span>' : ''}
+                    </div>
+                    <p class="analyst-desc">${analyst.description}</p>
+                    <div class="analyst-markets" style="margin: 10px 0; display: flex; gap: 5px; flex-wrap: wrap;">
+                        ${analyst.markets && analyst.markets.map(m => 
+                            `<span style="background: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${marketIcons[m] || ''} ${m}</span>`
+                        ).join('')}
+                    </div>
+                    <div class="analyst-stats">
+                        <span>⭐ ${analyst.rating || 0}/5</span>
+                        <span>👥 ${analyst.total_subscribers || 0}</span>
+                    </div>
+                    <div class="analyst-footer">
+                        <span class="price">${analyst.monthly_price} USDT/شهر</span>
+                        <button class="subscribe-analyst-btn" onclick="subscribeToAnalyst('${analyst.id}')">
+                            ${analyst.is_subscribed ? '🔄 تجديد' : '✅ اشترك'}
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p class="empty-state">فشل تحميل المحللين</p>';
+        }
+    } catch (error) {
+        console.error('Error loading analysts by market:', error);
+        container.innerHTML = '<p class="empty-state">حدث خطأ في التحميل</p>';
     }
 }
 

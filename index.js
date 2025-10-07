@@ -983,6 +983,11 @@ app.post('/api/update-analyst', async (req, res) => {
       return res.json({ success: false, error: 'جميع الحقول مطلوبة' });
     }
     
+    const analystMarkets = markets || [];
+    if (analystMarkets.length === 0) {
+      return res.json({ success: false, error: 'يرجى اختيار سوق واحد على الأقل' });
+    }
+    
     const price = parseFloat(monthly_price);
     if (isNaN(price) || price < 1) {
       return res.json({ success: false, error: 'السعر يجب أن يكون 1 USDT على الأقل' });

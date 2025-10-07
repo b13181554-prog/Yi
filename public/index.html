@@ -218,8 +218,10 @@
 
                 <div class="analysts-tabs">
                     <div class="tab-btn active" onclick="switchAnalystTab('all', event)">كل المحللين</div>
-                    <div class="tab-btn" onclick="switchAnalystTab('active', event)">✅ نشطين</div>
-                    <div class="tab-btn" onclick="switchAnalystTab('inactive', event)">⏸️ متوقفين</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('crypto', event)">💎 عملات رقمية</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('forex', event)">💱 فوركس</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('stocks', event)">📈 أسهم</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('commodities', event)">🛢️ سلع</div>
                     <div class="tab-btn" onclick="switchAnalystTab('top100', event)">🏆 Top 100</div>
                     <div class="tab-btn" onclick="switchAnalystTab('subscriptions', event)">اشتراكاتي</div>
                 </div>
@@ -334,6 +336,30 @@
                                 <label style="display: block; margin-bottom: 5px; color: #666;">الوصف:</label>
                                 <textarea id="analyst-description" placeholder="وصف خبرتك ومهاراتك في التحليل" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; min-height: 80px;"></textarea>
                                 
+                                <label style="display: block; margin-bottom: 10px; color: #666; font-weight: bold;">الأسواق التي تعمل عليها (اختر واحد أو أكثر):</label>
+                                <div style="margin-bottom: 15px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
+                                    <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="market-crypto" value="crypto" style="margin-left: 10px; width: 18px; height: 18px;">
+                                        <span>💎 عملات رقمية</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="market-forex" value="forex" style="margin-left: 10px; width: 18px; height: 18px;">
+                                        <span>💱 فوركس</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="market-stocks" value="stocks" style="margin-left: 10px; width: 18px; height: 18px;">
+                                        <span>📈 أسهم</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
+                                        <input type="checkbox" id="market-commodities" value="commodities" style="margin-left: 10px; width: 18px; height: 18px;">
+                                        <span>🛢️ سلع</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="market-indices" value="indices" style="margin-left: 10px; width: 18px; height: 18px;">
+                                        <span>📊 مؤشرات</span>
+                                    </label>
+                                </div>
+                                
                                 <label style="display: block; margin-bottom: 5px; color: #666;">السعر الشهري (USDT):</label>
                                 <input type="number" id="analyst-price" placeholder="السعر (مثال: 20)" min="1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;">
                             </div>
@@ -350,19 +376,37 @@
                     </div>
                 </div>
 
-                <div id="active-analysts-tab" class="analysts-tab-content">
+                <div id="crypto-analysts-tab" class="analysts-tab-content">
                     <div class="analysts-list">
-                        <h3>✅ المحللين النشطين</h3>
-                        <div id="active-analysts-container">
+                        <h3>💎 محللي العملات الرقمية</h3>
+                        <div id="crypto-analysts-container">
                             <p class="empty-state">جاري التحميل...</p>
                         </div>
                     </div>
                 </div>
 
-                <div id="inactive-analysts-tab" class="analysts-tab-content">
+                <div id="forex-analysts-tab" class="analysts-tab-content">
                     <div class="analysts-list">
-                        <h3>⏸️ المحللين المتوقفين</h3>
-                        <div id="inactive-analysts-container">
+                        <h3>💱 محللي الفوركس</h3>
+                        <div id="forex-analysts-container">
+                            <p class="empty-state">جاري التحميل...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="stocks-analysts-tab" class="analysts-tab-content">
+                    <div class="analysts-list">
+                        <h3>📈 محللي الأسهم</h3>
+                        <div id="stocks-analysts-container">
+                            <p class="empty-state">جاري التحميل...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="commodities-analysts-tab" class="analysts-tab-content">
+                    <div class="analysts-list">
+                        <h3>🛢️ محللي السلع</h3>
+                        <div id="commodities-analysts-container">
                             <p class="empty-state">جاري التحميل...</p>
                         </div>
                     </div>
