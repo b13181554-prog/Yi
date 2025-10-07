@@ -420,60 +420,90 @@ class MarketDataService {
     }
   }
 
-  async getCandlesFromCoinGecko(symbol, interval, limit = 100) {
+  async getCandlesFromBybit(symbol, interval, limit = 100) {
     try {
-      const coinId = this.symbolToCoinId(symbol);
-      
-      let days = 7;
-      switch(interval) {
-        case '1m': case '5m': case '15m': case '30m': days = 1; break;
-        case '1h': days = 7; break;
-        case '4h': days = 30; break;
-        case '1d': days = 90; break;
-        case '1w': days = 365; break;
-        default: days = 7;
-      }
-      
-      const params = {
-        vs_currency: 'usd',
-        days: days
+      const intervalMap = {
+        '1m': '1',
+        '5m': '5',
+        '15m': '15',
+        '30m': '30',
+        '1h': '60',
+        '4h': '240',
+        '1d': 'D',
+        '1w': 'W'
       };
-      
-      if (interval === '1d' && days >= 90) {
-        params.interval = 'daily';
-      }
-      
-      const response = await axios.get(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart`, {
-        params,
-        ...this.axiosConfig
+
+      const response = await axios.get('https://api.bybit.com/v5/market/kline', {
+        params: {
+          category: 'spot',
+          symbol: symbol,
+          interval: intervalMap[interval] || '60',
+          limit: limit
+        },
+        timeout: 15000
       });
 
-      const prices = response.data.prices || [];
-      
-      if (prices.length < 2) {
-        return null;
+      if (response.data && response.data.result && response.data.result.list) {
+        const candles = response.data.result.list.reverse().map(candle => ({
+          openTime: parseInt(candle[0]),
+          open: candle[1],
+          high: candle[2],
+          low: candle[3],
+          close: candle[4],
+          volume: candle[5],
+          closeTime: parseInt(candle[0]) + 60000
+        }));
+
+        console.log(`✅ Bybit: Got ${candles.length} real candles for ${symbol}`);
+        return candles;
       }
-
-      const candles = prices.slice(-limit).map((price, index) => {
-        const timestamp = price[0];
-        const closePrice = price[1];
-        const openPrice = index > 0 ? prices[prices.indexOf(price) - 1][1] : closePrice;
-        
-        return {
-          openTime: timestamp,
-          open: openPrice.toString(),
-          high: Math.max(openPrice, closePrice).toString(),
-          low: Math.min(openPrice, closePrice).toString(),
-          close: closePrice.toString(),
-          volume: '0',
-          closeTime: timestamp + 3600000
-        };
-      });
-
-      console.log(`✅ CoinGecko: Got ${candles.length} real candles for ${symbol}`);
-      return candles;
+      return null;
     } catch (error) {
-      console.error(`❌ CoinGecko candles error for ${symbol}:`, error.message);
+      console.error(`❌ Bybit candles error for ${symbol}:`, error.message);
+      return null;
+    }
+  }
+
+  async getCandlesFromOKX(symbol, interval, limit = 100) {
+    try {
+      const okxSymbol = symbol.replace('USDT', '-USDT');
+      const intervalMap = {
+        '1m': '1m',
+        '5m': '5m',
+        '15m': '15m',
+        '30m': '30m',
+        '1h': '1H',
+        '4h': '4H',
+        '1d': '1D',
+        '1w': '1W'
+      };
+
+      const response = await axios.get('https://www.okx.com/api/v5/market/candles', {
+        params: {
+          instId: okxSymbol,
+          bar: intervalMap[interval] || '1H',
+          limit: limit
+        },
+        timeout: 15000
+      });
+
+      if (response.data && response.data.data) {
+        const candles = response.data.data.reverse().map(candle => ({
+          openTime: parseInt(candle[0]),
+          open: candle[1],
+          high: candle[2],
+          low: candle[3],
+          close: candle[4],
+          volume: candle[5],
+          closeTime: parseInt(candle[0]) + 60000
+        }));
+
+        console.log(`✅ OKX: Got ${candles.length} real candles for ${symbol}`);
+        return candles;
+      }
+      return null;
+    } catch (error) {
+      console.error(`❌ OKX candles error for ${symbol}:`, error.message);
       return null;
     }
   }
@@ -481,7 +511,8 @@ class MarketDataService {
   async getCandles(symbol, interval, limit = 100, marketType = 'spot') {
     console.log(`🕯️ Fetching real candles for ${symbol} (${interval})...`);
 
-    const candles = await this.getCandlesFromCoinGecko(symbol, interval, limit) ||
+    const candles = await this.getCandlesFromOKX(symbol, interval, limit) ||
+                    await this.getCandlesFromBybit(symbol, interval, limit) ||
                     await this.getCandlesFromBinance(symbol, interval, limit);
 
     if (candles && candles.length > 0) {
