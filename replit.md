@@ -51,6 +51,12 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comp
 - **Real Price Data Implementation**: Replaced all estimated/placeholder data with authentic real-time market data
   - **Cryptocurrency Candles**: Now using OKX API (primary), Bybit (secondary), and Binance (fallback) for accurate OHLC data
   - **Forex Candles**: Integrated TwelveData API for real forex candle data with proper OHLC values
+  - **Stocks, Indices & Commodities**: Integrated Yahoo Finance API v8 for authentic market data
+    - Supports stocks (AAPL, MSFT, TSLA, etc.)
+    - Supports indices (US30→^DJI, SPX500→^GSPC, NAS100→^IXIC)
+    - Supports commodities (XAUUSD→GC=F, XAGUSD→SI=F, USOIL→CL=F)
+    - Accurate OHLC data with correct closeTime calculation based on interval
+    - Null value filtering - excludes invalid candles completely
   - **Removed Deprecated Services**: Deleted old unused files (`multi-market-data.js`, `unified-market-service.js`, `binance-service.js`)
   - **Priority System**: OKX is now the primary data source for all cryptocurrency market data
   - **Fallback Strategy**: Enhanced error handling with proper fallback mechanisms for data reliability
@@ -109,10 +115,10 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comp
     - Analysts: View available analysts and subscribe to services.
     - My Account: User info, subscription, referral system, language settings.
 - **Trading Features**:
-    - Technical analysis for crypto and forex.
+    - Technical analysis for crypto, forex, stocks, indices, and commodities.
     - Trading recommendations with entry/exit points.
     - Tracking of trending cryptocurrencies.
-    - Support for 15+ cryptocurrencies and 10+ forex pairs.
+    - Support for 15+ cryptocurrencies, 10+ forex pairs, major stocks, global indices, and commodities.
 - **Financial Features**:
     - Internal wallet for USDT TRC20.
     - Automated withdrawals via Binance API.
