@@ -1,5 +1,6 @@
 
 const express = require('express');
+const { ObjectId } = require('mongodb');
 const db = require('./database');
 const bot = require('./bot');
 const notifications = require('./notifications');
@@ -786,16 +787,18 @@ app.post('/api/rate-analyst', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
+    const database = db.getDB();
+    
     // التحقق من أن المستخدم لم يقيم المحلل من قبل
-    const existingReview = await db.collection('analyst_reviews').findOne({
+    const existingReview = await database.collection('analyst_reviews').findOne({
       user_id: user_id,
-      analyst_id: new db.ObjectId(analyst_id)
+      analyst_id: new ObjectId(analyst_id)
     });
     
     if (existingReview) {
       // تحديث التقييم الموجود
-      await db.collection('analyst_reviews').updateOne(
-        { user_id: user_id, analyst_id: new db.ObjectId(analyst_id) },
+      await database.collection('analyst_reviews').updateOne(
+        { user_id: user_id, analyst_id: new ObjectId(analyst_id) },
         { $set: { rating: rating, comment: comment || '', updated_at: new Date() } }
       );
     } else {
