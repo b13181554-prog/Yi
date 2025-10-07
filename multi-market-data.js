@@ -457,14 +457,36 @@ class MultiMarketDataService {
 
   getYahooRange(limit, interval) {
     const intervalMap = {
-      '1m': Math.min(limit, 7), '5m': Math.min(limit * 5 / 60 / 24, 30),
-      '15m': Math.min(limit * 15 / 60 / 24, 60), '30m': Math.min(limit * 30 / 60 / 24, 60),
-      '1h': Math.min(limit / 24, 730), '4h': Math.min(limit * 4 / 24, 730),
-      '1d': Math.min(limit, 3650), '1w': Math.min(limit * 7, 3650)
+      '1m': Math.min(limit / 390, 7),
+      '5m': Math.min(limit / 78, 30),
+      '15m': Math.min(limit / 26, 60),
+      '30m': Math.min(limit / 13, 60),
+      '1h': Math.min(limit / 6.5, 730),
+      '1d': Math.min(limit, 3650),
+      '1w': Math.min(limit * 7, 3650)
     };
     const days = Math.ceil(intervalMap[interval] || 30);
     
-    if (days <= 7) return `${days}d`;
+    if (interval === '1m') {
+      if (limit <= 390) return '1d';
+      if (limit <= 1950) return '5d';
+      return '7d';
+    }
+    
+    if (interval === '5m') {
+      if (limit <= 78) return '1d';
+      if (limit <= 390) return '5d';
+      return '1mo';
+    }
+    
+    if (interval === '15m' || interval === '30m') {
+      if (days <= 5) return `${Math.max(days, 1)}d`;
+      if (days <= 30) return '1mo';
+      return '2mo';
+    }
+    
+    if (days <= 1) return '1d';
+    if (days <= 5) return '5d';
     if (days <= 30) return '1mo';
     if (days <= 90) return '3mo';
     if (days <= 180) return '6mo';
@@ -691,6 +713,11 @@ class MultiMarketDataService {
 
   async getStockCandles(symbol, interval, limit = 100) {
     try {
+      if (interval === '4h') {
+        const hourlyCandles = await this.getStockCandles(symbol, '1h', limit * 4);
+        return this.convertTo4hCandles(hourlyCandles, limit);
+      }
+
       const yahooInterval = this.convertToYahooInterval(interval);
       const range = this.getYahooRange(limit, interval);
       
@@ -725,6 +752,11 @@ class MultiMarketDataService {
 
   async getCommodityCandles(symbol, interval, limit = 100) {
     try {
+      if (interval === '4h') {
+        const hourlyCandles = await this.getCommodityCandles(symbol, '1h', limit * 4);
+        return this.convertTo4hCandles(hourlyCandles, limit);
+      }
+
       const yahooSymbol = this.convertToYahooCommoditySymbol(symbol);
       const yahooInterval = this.convertToYahooInterval(interval);
       const range = this.getYahooRange(limit, interval);
@@ -760,6 +792,11 @@ class MultiMarketDataService {
 
   async getIndicesCandles(symbol, interval, limit = 100) {
     try {
+      if (interval === '4h') {
+        const hourlyCandles = await this.getIndicesCandles(symbol, '1h', limit * 4);
+        return this.convertTo4hCandles(hourlyCandles, limit);
+      }
+
       const yahooSymbol = this.convertToYahooIndexSymbol(symbol);
       const yahooInterval = this.convertToYahooInterval(interval);
       const range = this.getYahooRange(limit, interval);
@@ -791,6 +828,33 @@ class MultiMarketDataService {
       console.error(`❌ Error fetching index candles for ${symbol}:`, error.message);
       throw new Error(`فشل جلب بيانات المؤشرات لـ ${symbol}`);
     }
+  }
+
+  convertTo4hCandles(hourlyCandles, limit) {
+    const candles4h = [];
+    
+    for (let i = 0; i < hourlyCandles.length; i += 4) {
+      const chunk = hourlyCandles.slice(i, i + 4);
+      if (chunk.length === 4) {
+        const open = chunk[0].open;
+        const high = Math.max(...chunk.map(c => parseFloat(c.high))).toFixed(2);
+        const low = Math.min(...chunk.map(c => parseFloat(c.low))).toFixed(2);
+        const close = chunk[3].close;
+        const volume = chunk.reduce((sum, c) => sum + parseFloat(c.volume || 0), 0).toString();
+        
+        candles4h.push({
+          openTime: chunk[0].openTime,
+          open,
+          high,
+          low,
+          close,
+          volume,
+          closeTime: chunk[3].closeTime
+        });
+      }
+    }
+    
+    return candles4h.slice(-limit);
   }
 }
 
