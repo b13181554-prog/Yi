@@ -744,7 +744,7 @@ async function loadAnalysts() {
                         </div>
                         <p class="analyst-desc">${analyst.description}</p>
                         <div class="analyst-stats">
-                            <span>⭐ ${analyst.rating || 0}/5</span>
+                            <span>👍 ${analyst.rating || 0}%</span>
                             <span>👥 ${analyst.total_subscribers || 0}</span>
                         </div>
                         <div class="analyst-footer">
@@ -1810,7 +1810,7 @@ async function loadAnalystsByMarket(marketType) {
                         ).join('')}
                     </div>
                     <div class="analyst-stats">
-                        <span>⭐ ${analyst.rating || 0}/5</span>
+                        <span>👍 ${analyst.rating || 0}%</span>
                         <span>👥 ${analyst.total_subscribers || 0}</span>
                     </div>
                     <div class="analyst-footer">

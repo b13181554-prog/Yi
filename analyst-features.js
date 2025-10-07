@@ -1,13 +1,13 @@
 
-// نظام تقييم المحللين
-async function rateAnalyst(analystId, rating, comment) {
+// نظام تقييم المحللين (👍 أو 👎)
+async function rateAnalyst(analystId, isLike, comment) {
     try {
         const response = await fetch('/api/rate-analyst', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 analyst_id: analystId,
-                rating: rating,
+                rating: isLike ? 1 : 0,
                 comment: comment,
                 user_id: tg.initDataUnsafe.user.id,
                 init_data: tg.initData
@@ -29,8 +29,8 @@ function showAnalystDetails(analyst) {
             <div class="analyst-header">
                 <h2>${analyst.name}</h2>
                 <div class="analyst-rating">
-                    ${'⭐'.repeat(Math.floor(analyst.rating))}
-                    <span>${analyst.rating}/5.0</span>
+                    <span style="font-size: 24px;">👍</span>
+                    <span>${analyst.rating || 0}%</span>
                 </div>
             </div>
             

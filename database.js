@@ -778,9 +778,9 @@ async function getTop100Analysts() {
       total_trades: { $gte: 5 }
     })
     .sort({ 
-      performance_score: -1,
-      success_rate: -1,
-      total_subscribers: -1
+      rating: -1,
+      total_subscribers: -1,
+      performance_score: -1
     })
     .limit(100)
     .toArray();
@@ -793,9 +793,9 @@ async function getAnalystRank(analystId) {
       total_trades: { $gte: 5 }
     })
     .sort({ 
-      performance_score: -1,
-      success_rate: -1,
-      total_subscribers: -1
+      rating: -1,
+      total_subscribers: -1,
+      performance_score: -1
     })
     .toArray();
   

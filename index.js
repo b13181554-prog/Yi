@@ -794,10 +794,12 @@ app.post('/api/rate-analyst', async (req, res) => {
     
     await db.createAnalystReview(user_id, analyst_id, rating, comment);
     
-    // إعادة حساب متوسط التقييم
+    // حساب نسبة الإعجاب (👍 / إجمالي التقييمات)
     const reviews = await db.getAnalystReviews(analyst_id);
-    const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
-    await db.updateAnalyst(analyst_id, { rating: avgRating.toFixed(2) });
+    const totalReviews = reviews.length;
+    const likes = reviews.filter(r => r.rating === 1).length;
+    const likePercentage = totalReviews > 0 ? ((likes / totalReviews) * 100).toFixed(0) : 0;
+    await db.updateAnalyst(analyst_id, { rating: likePercentage });
     
     res.json({ 
       success: true, 
