@@ -36,6 +36,31 @@ let userData = null;
 let userBalance = 0;
 let userId = null;
 
+function formatPrice(price) {
+    if (price === null || price === undefined || isNaN(price)) return 'N/A';
+    
+    price = parseFloat(price);
+    
+    if (price === 0) return '0';
+    
+    let str = price.toString();
+    
+    if (str.includes('e-')) {
+        try {
+            const parts = str.split('e-');
+            const decimals = parseInt(parts[1], 10);
+            const precision = Math.min(decimals + (parts[0].replace('.', '').length - 1), 20);
+            str = price.toFixed(precision);
+        } catch (e) {
+            return str;
+        }
+    }
+    
+    str = str.replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.0+$/, '');
+    
+    return str;
+}
+
 const CRYPTO_SYMBOLS = [
     { value: 'BTCUSDT', label: '💰 Bitcoin (BTC)' },
     { value: 'ETHUSDT', label: '💎 Ethereum (ETH)' },
@@ -667,7 +692,7 @@ async function loadMovers(type, event) {
             container.innerHTML = data.movers.map(coin => {
                 const price = typeof coin.price === 'number' ? coin.price : parseFloat(coin.price || 0);
                 const change = coin.change || coin.priceChangePercent || 0;
-                const priceDisplay = price < 1 ? price.toFixed(5) : price.toFixed(2);
+                const priceDisplay = formatPrice(price);
 
                 return `
                 <div class="mover-card">
@@ -1290,6 +1315,7 @@ function displayAdvancedAnalysisResult(analysis, symbol, timeframe, analysisType
         <div class="rec-header">
             <h2>${actionEmoji} توصية ${actionText}</h2>
             <div class="confidence">قوة الإشارة: ${analysis.confidence || 'متوسطة'}</div>
+            ${analysis.tradingType === 'spot' && analysis.recommendation === 'بيع' ? '<p style="font-size: 12px; margin-top: 8px; color: #ff9800;">ℹ️ البيع في السبوت يتطلب امتلاك العملة</p>' : ''}
         </div>
         <div class="rec-details">
             <p><strong>💎 العملة:</strong> ${symbol}</p>

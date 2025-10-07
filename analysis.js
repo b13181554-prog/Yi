@@ -14,6 +14,31 @@ class TechnicalAnalysis {
     this.advancedAnalysis = new AdvancedAnalysis(candles);
   }
 
+  formatPrice(price) {
+    if (price === null || price === undefined || isNaN(price)) return 'N/A';
+    
+    price = parseFloat(price);
+    
+    if (price === 0) return '0';
+    
+    let str = price.toString();
+    
+    if (str.includes('e-')) {
+      try {
+        const parts = str.split('e-');
+        const decimals = parseInt(parts[1], 10);
+        const precision = Math.min(decimals + (parts[0].replace('.', '').length - 1), 20);
+        str = price.toFixed(precision);
+      } catch (e) {
+        return str;
+      }
+    }
+    
+    str = str.replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.0+$/, '');
+    
+    return str;
+  }
+
   calculateRSI(period = 14) {
     const rsiInput = {
       values: this.closes,
@@ -590,9 +615,9 @@ class TechnicalAnalysis {
       marketType,
       leverage,
       analysisTime,
-      entryPrice: entryPrice.toFixed(2),
-      stopLoss: stopLoss.toFixed(2),
-      takeProfit: takeProfit.toFixed(2),
+      entryPrice: this.formatPrice(entryPrice),
+      stopLoss: this.formatPrice(stopLoss),
+      takeProfit: this.formatPrice(takeProfit),
       riskRewardRatio: (Math.abs(takeProfitDistance) / stopLossDistance).toFixed(2),
       buySignals: buySignals.toFixed(1),
       sellSignals: sellSignals.toFixed(1),
@@ -717,9 +742,9 @@ class TechnicalAnalysis {
       action: recommendation,
       emoji,
       confidence,
-      entryPrice: entryPrice.toFixed(2),
-      stopLoss: stopLoss.toFixed(2),
-      takeProfit: takeProfit.toFixed(2),
+      entryPrice: this.formatPrice(entryPrice),
+      stopLoss: this.formatPrice(stopLoss),
+      takeProfit: this.formatPrice(takeProfit),
       riskRewardRatio: (takeProfitDistance / stopLossDistance).toFixed(2),
       buySignals: buySignals.toFixed(1),
       sellSignals: sellSignals.toFixed(1),
