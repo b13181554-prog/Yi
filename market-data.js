@@ -64,6 +64,35 @@ class MarketDataService {
     return symbolMap[symbol] || null;
   }
 
+  symbolToYahooFinance(symbol, marketType) {
+    if (marketType === 'indices') {
+      const indicesMap = {
+        'US30': '^DJI',
+        'SPX500': '^GSPC',
+        'NAS100': '^IXIC',
+        'US500': '^GSPC',
+        'DJ30': '^DJI'
+      };
+      return indicesMap[symbol] || symbol;
+    }
+    
+    if (marketType === 'commodities') {
+      const commoditiesMap = {
+        'XAUUSD': 'GC=F',
+        'XAGUSD': 'SI=F',
+        'USOIL': 'CL=F',
+        'UKOIL': 'BZ=F',
+        'GOLD': 'GC=F',
+        'SILVER': 'SI=F',
+        'COPPER': 'HG=F',
+        'NATGAS': 'NG=F'
+      };
+      return commoditiesMap[symbol] || symbol;
+    }
+    
+    return symbol;
+  }
+
   async getPriceFromBinance(symbol) {
     try {
       const response = await axios.get('https://api.binance.com/api/v3/ticker/price', {
@@ -290,6 +319,34 @@ class MarketDataService {
     }
   }
 
+  async getPriceFromYahooFinance(symbol, marketType) {
+    try {
+      const yahooSymbol = this.symbolToYahooFinance(symbol, marketType);
+      const response = await axios.get(`https://query2.finance.yahoo.com/v8/finance/chart/${yahooSymbol}`, {
+        params: {
+          interval: '1d',
+          range: '1d'
+        },
+        headers: {
+          'User-Agent': 'Mozilla/5.0'
+        },
+        timeout: 10000
+      });
+
+      const result = response.data?.chart?.result?.[0];
+      const price = result?.meta?.regularMarketPrice;
+      
+      if (price && price > 0) {
+        console.log(`✅ Yahoo Finance: ${symbol} = $${price}`);
+        return price;
+      }
+      return null;
+    } catch (error) {
+      console.error(`❌ Yahoo Finance error for ${symbol}:`, error.message);
+      return null;
+    }
+  }
+
   async getCurrentPrice(symbol, marketType = 'spot') {
     const cacheKey = `${symbol}_${marketType}`;
     const cached = this.priceCache.get(cacheKey);
@@ -301,17 +358,23 @@ class MarketDataService {
 
     console.log(`🔍 Fetching real-time price for ${symbol} from multiple sources...`);
 
-    const price = await this.getPriceFromOKX(symbol) ||
-                  await this.getPriceFromBybit(symbol) ||
-                  await this.getPriceFromGateIO(symbol) ||
-                  await this.getPriceFromCoinGecko(symbol) ||
-                  await this.getPriceFromKraken(symbol) ||
-                  await this.getPriceFromCoinbase(symbol) ||
-                  await this.getPriceFromCoinPaprika(symbol) ||
-                  await this.getPriceFromHuobi(symbol) ||
-                  await this.getPriceFromCryptoCom(symbol) ||
-                  await this.getPriceFromBitfinex(symbol) ||
-                  await this.getPriceFromBinance(symbol);
+    let price;
+    
+    if (marketType === 'stocks' || marketType === 'indices' || marketType === 'commodities') {
+      price = await this.getPriceFromYahooFinance(symbol, marketType);
+    } else {
+      price = await this.getPriceFromOKX(symbol) ||
+              await this.getPriceFromBybit(symbol) ||
+              await this.getPriceFromGateIO(symbol) ||
+              await this.getPriceFromCoinGecko(symbol) ||
+              await this.getPriceFromKraken(symbol) ||
+              await this.getPriceFromCoinbase(symbol) ||
+              await this.getPriceFromCoinPaprika(symbol) ||
+              await this.getPriceFromHuobi(symbol) ||
+              await this.getPriceFromCryptoCom(symbol) ||
+              await this.getPriceFromBitfinex(symbol) ||
+              await this.getPriceFromBinance(symbol);
+    }
 
     if (price) {
       this.priceCache.set(cacheKey, {
@@ -508,12 +571,123 @@ class MarketDataService {
     }
   }
 
+  async getCandlesFromYahooFinance(symbol, interval, limit = 100, marketType) {
+    try {
+      const yahooSymbol = this.symbolToYahooFinance(symbol, marketType);
+      const intervalMap = {
+        '1m': '1m',
+        '5m': '5m',
+        '15m': '15m',
+        '30m': '30m',
+        '1h': '1h',
+        '4h': '4h',
+        '1d': '1d',
+        '1w': '1wk'
+      };
+
+      const intervalDurationMs = {
+        '1m': 60 * 1000,
+        '5m': 5 * 60 * 1000,
+        '15m': 15 * 60 * 1000,
+        '30m': 30 * 60 * 1000,
+        '1h': 60 * 60 * 1000,
+        '4h': 4 * 60 * 60 * 1000,
+        '1d': 24 * 60 * 60 * 1000,
+        '1w': 7 * 24 * 60 * 60 * 1000
+      };
+
+      const period2 = Math.floor(Date.now() / 1000);
+      let period1;
+      
+      switch(interval) {
+        case '1m': case '5m': case '15m': case '30m':
+          period1 = period2 - (7 * 24 * 60 * 60);
+          break;
+        case '1h':
+          period1 = period2 - (30 * 24 * 60 * 60);
+          break;
+        case '4h':
+          period1 = period2 - (90 * 24 * 60 * 60);
+          break;
+        case '1d':
+          period1 = period2 - (365 * 24 * 60 * 60);
+          break;
+        case '1w':
+          period1 = period2 - (5 * 365 * 24 * 60 * 60);
+          break;
+        default:
+          period1 = period2 - (30 * 24 * 60 * 60);
+      }
+
+      const response = await axios.get(`https://query2.finance.yahoo.com/v8/finance/chart/${yahooSymbol}`, {
+        params: {
+          period1,
+          period2,
+          interval: intervalMap[interval] || '1h'
+        },
+        headers: {
+          'User-Agent': 'Mozilla/5.0'
+        },
+        timeout: 15000
+      });
+
+      const result = response.data?.chart?.result?.[0];
+      const timestamps = result?.timestamp;
+      const quote = result?.indicators?.quote?.[0];
+
+      if (timestamps && quote && timestamps.length > 0) {
+        const startIndex = Math.max(0, timestamps.length - limit);
+        const endIndex = timestamps.length;
+        const duration = intervalDurationMs[interval] || 3600000;
+        
+        const candles = timestamps
+          .slice(startIndex, endIndex)
+          .map((ts, i) => {
+            const dataIndex = startIndex + i;
+            const open = quote.open[dataIndex];
+            const high = quote.high[dataIndex];
+            const low = quote.low[dataIndex];
+            const close = quote.close[dataIndex];
+            const volume = quote.volume[dataIndex];
+            
+            if (open == null || high == null || low == null || close == null) {
+              return null;
+            }
+            
+            return {
+              openTime: ts * 1000,
+              open: open.toString(),
+              high: high.toString(),
+              low: low.toString(),
+              close: close.toString(),
+              volume: (volume || 0).toString(),
+              closeTime: (ts * 1000) + duration
+            };
+          })
+          .filter(candle => candle !== null);
+
+        console.log(`✅ Yahoo Finance: Got ${candles.length} real candles for ${symbol}`);
+        return candles.length > 0 ? candles : null;
+      }
+      return null;
+    } catch (error) {
+      console.error(`❌ Yahoo Finance candles error for ${symbol}:`, error.message);
+      return null;
+    }
+  }
+
   async getCandles(symbol, interval, limit = 100, marketType = 'spot') {
     console.log(`🕯️ Fetching real candles for ${symbol} (${interval})...`);
 
-    const candles = await this.getCandlesFromOKX(symbol, interval, limit) ||
-                    await this.getCandlesFromBybit(symbol, interval, limit) ||
-                    await this.getCandlesFromBinance(symbol, interval, limit);
+    let candles;
+    
+    if (marketType === 'stocks' || marketType === 'indices' || marketType === 'commodities') {
+      candles = await this.getCandlesFromYahooFinance(symbol, interval, limit, marketType);
+    } else {
+      candles = await this.getCandlesFromOKX(symbol, interval, limit) ||
+                await this.getCandlesFromBybit(symbol, interval, limit) ||
+                await this.getCandlesFromBinance(symbol, interval, limit);
+    }
 
     if (candles && candles.length > 0) {
       return candles;
