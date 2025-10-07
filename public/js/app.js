@@ -1128,27 +1128,31 @@ async function loadAllCryptoSymbols() {
     }
 
     try {
-        console.log('🔍 Fetching ALL crypto symbols from Binance...');
-        const response = await fetch('https://api.binance.com/api/v3/exchangeInfo', {
+        console.log('🔍 Fetching ALL crypto symbols from OKX...');
+        const response = await fetch('https://www.okx.com/api/v5/public/instruments?instType=SPOT', {
             timeout: 10000
         });
         const data = await response.json();
         
-        if (data.symbols) {
-            const usdtPairs = data.symbols
-                .filter(s => s.symbol.endsWith('USDT') && s.status === 'TRADING')
-                .map(s => ({
-                    value: s.symbol,
-                    label: `💎 ${s.baseAsset}/${s.quoteAsset}`
-                }));
+        if (data.data) {
+            const usdtPairs = data.data
+                .filter(s => s.instId.endsWith('-USDT') && s.state === 'live')
+                .map(s => {
+                    const symbol = s.instId.replace('-', '');
+                    const baseCcy = s.baseCcy;
+                    return {
+                        value: symbol,
+                        label: `💎 ${baseCcy}/USDT`
+                    };
+                });
             
             CRYPTO_SYMBOLS.length = 0;
             CRYPTO_SYMBOLS.push(...usdtPairs);
-            console.log(`✅ Loaded ${CRYPTO_SYMBOLS.length} crypto symbols (ALL)`);
+            console.log(`✅ Loaded ${CRYPTO_SYMBOLS.length} crypto symbols from OKX (ALL)`);
             return CRYPTO_SYMBOLS;
         }
     } catch (error) {
-        console.error('❌ Error loading crypto symbols:', error);
+        console.error('❌ Error loading crypto symbols from OKX:', error);
     }
     
     return CRYPTO_SYMBOLS;
