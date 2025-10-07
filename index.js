@@ -849,6 +849,11 @@ app.post('/api/subscribe-analyst', async (req, res) => {
       return res.json({ success: false, error: 'المحلل غير موجود' });
     }
     
+    const existingSubscription = await db.getUserAnalystSubscription(user_id, analyst_id);
+    if (existingSubscription) {
+      return res.json({ success: false, error: 'أنت مشترك بالفعل مع هذا المحلل' });
+    }
+    
     if (user.balance < analyst.monthly_price) {
       return res.json({ success: false, error: 'رصيدك غير كافٍ' });
     }
@@ -871,6 +876,17 @@ app.post('/api/subscribe-analyst', async (req, res) => {
     await db.subscribeToAnalyst(user_id, analyst_id, price);
     await db.updateAnalystSubscriberCount(analyst_id, 1);
     
+    bot.sendMessage(analyst.user_id, `
+🎉 <b>مشترك جديد!</b>
+
+لديك مشترك جديد في خدمة التحليل
+👤 المستخدم: @${user.username || user.first_name}
+💵 المبلغ: ${price} USDT
+💰 حصتك: ${analystShare.toFixed(2)} USDT
+
+📊 إجمالي المشتركين: ${analyst.total_subscribers + 1}
+`, { parse_mode: 'HTML' }).catch(err => console.error('Error notifying analyst:', err));
+    
     res.json({ success: true });
   } catch (error) {
     console.error('Subscribe Analyst API Error:', error);
@@ -880,7 +896,7 @@ app.post('/api/subscribe-analyst', async (req, res) => {
 
 app.post('/api/register-analyst', async (req, res) => {
   try {
-    const { user_id, name, description, monthly_price, init_data } = req.body;
+    const { user_id, name, description, monthly_price, markets, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
@@ -900,9 +916,15 @@ app.post('/api/register-analyst', async (req, res) => {
       return res.json({ success: false, error: 'أنت مسجل كمحلل بالفعل' });
     }
     
+    const duplicateName = await db.getAnalystByName(name);
+    if (duplicateName) {
+      return res.json({ success: false, error: 'هذا الاسم مستخدم بالفعل، يرجى اختيار اسم آخر' });
+    }
+    
     console.log(`📝 تسجيل محلل جديد - المستخدم: ${user_id}, الاسم: ${name}`);
     
-    const analyst = await db.createAnalyst(user_id, name, description, price);
+    const analystMarkets = markets || [];
+    const analyst = await db.createAnalyst(user_id, name, description, price, analystMarkets);
     
     const user = await db.getUser(user_id);
     
@@ -913,6 +935,7 @@ app.post('/api/register-analyst', async (req, res) => {
 المستخدم: @${user.username || 'لا يوجد'}
 ID: ${user_id}
 السعر: ${price} USDT/شهر
+الأسواق: ${analystMarkets.length > 0 ? analystMarkets.join(', ') : 'لم يحدد'}
 الوصف: ${description}
 `, { parse_mode: 'HTML' }).catch(err => console.error('Error notifying owner:', err));
     
@@ -941,7 +964,7 @@ app.post('/api/my-analyst-profile', async (req, res) => {
 
 app.post('/api/update-analyst', async (req, res) => {
   try {
-    const { user_id, name, description, monthly_price, init_data } = req.body;
+    const { user_id, name, description, monthly_price, markets, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
@@ -961,13 +984,26 @@ app.post('/api/update-analyst', async (req, res) => {
       return res.json({ success: false, error: 'لم يتم العثور على حسابك كمحلل' });
     }
     
+    if (name !== analyst.name) {
+      const duplicateName = await db.getAnalystByName(name);
+      if (duplicateName && duplicateName._id.toString() !== analyst._id.toString()) {
+        return res.json({ success: false, error: 'هذا الاسم مستخدم بالفعل، يرجى اختيار اسم آخر' });
+      }
+    }
+    
     console.log(`✏️ تحديث بيانات محلل - المستخدم: ${user_id}, الاسم: ${name}`);
     
-    await db.updateAnalyst(analyst._id, {
+    const updateData = {
       name,
       description,
       monthly_price: price
-    });
+    };
+    
+    if (markets) {
+      updateData.markets = markets;
+    }
+    
+    await db.updateAnalyst(analyst._id, updateData);
     
     res.json({ success: true });
   } catch (error) {
@@ -1041,6 +1077,134 @@ app.post('/api/analysts-by-status', async (req, res) => {
     res.json({ success: true, analysts });
   } catch (error) {
     console.error('Analysts By Status API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/analyst-subscribers', async (req, res) => {
+  try {
+    const { user_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const analyst = await db.getAnalystByUserId(user_id);
+    if (!analyst) {
+      return res.json({ success: false, error: 'لم يتم العثور على حسابك كمحلل' });
+    }
+    
+    const subscribers = await db.getAnalystSubscribers(analyst._id);
+    const count = await db.getSubscriberCount(analyst._id);
+    
+    res.json({ 
+      success: true, 
+      subscribers,
+      total_count: count
+    });
+  } catch (error) {
+    console.error('Analyst Subscribers API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/create-room-post', async (req, res) => {
+  try {
+    const { user_id, post_data, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const analyst = await db.getAnalystByUserId(user_id);
+    if (!analyst) {
+      return res.json({ success: false, error: 'يجب أن تكون محللاً لنشر الصفقات' });
+    }
+    
+    if (!post_data.symbol || !post_data.type || !post_data.entry_price) {
+      return res.json({ success: false, error: 'يجب تحديد الرمز والنوع وسعر الدخول على الأقل' });
+    }
+    
+    const forbiddenWords = ['قناة', 'channel', 'telegram', 'واتساب', 'whatsapp', 'انستقرام', 'instagram', 'تواصل معي', 'contact me', 'خارج', 'outside'];
+    const analysisText = (post_data.analysis || '').toLowerCase();
+    
+    for (const word of forbiddenWords) {
+      if (analysisText.includes(word)) {
+        return res.json({ 
+          success: false, 
+          error: 'غير مسموح بالترويج لقنوات أو منتجات خارجية. يرجى التركيز على التحليل فقط' 
+        });
+      }
+    }
+    
+    const post = await db.createAnalystRoomPost(analyst._id, user_id, post_data);
+    
+    const subscribers = await db.getAnalystSubscribers(analyst._id);
+    for (const subscriber of subscribers) {
+      const message = `
+📊 <b>صفقة جديدة من ${analyst.name}</b>
+
+💱 الرمز: ${post_data.symbol}
+📈 النوع: ${post_data.type === 'buy' ? 'شراء' : 'بيع'}
+💵 سعر الدخول: ${post_data.entry_price}
+🎯 الهدف: ${post_data.target_price || 'لم يحدد'}
+🛑 وقف الخسارة: ${post_data.stop_loss || 'لم يحدد'}
+⏰ الإطار الزمني: ${post_data.timeframe || 'لم يحدد'}
+📍 السوق: ${post_data.market_type || 'لم يحدد'}
+
+${post_data.analysis ? '📝 التحليل:\n' + post_data.analysis : ''}
+`;
+      
+      try {
+        await bot.sendMessage(subscriber.user_id, message, { parse_mode: 'HTML' });
+      } catch (error) {
+        console.error(`Failed to notify subscriber ${subscriber.user_id}:`, error.message);
+      }
+    }
+    
+    res.json({ success: true, post });
+  } catch (error) {
+    console.error('Create Room Post API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/analyst-room-posts', async (req, res) => {
+  try {
+    const { analyst_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const { ObjectId } = require('mongodb');
+    const posts = await db.getAnalystRoomPosts(new ObjectId(analyst_id));
+    
+    res.json({ success: true, posts });
+  } catch (error) {
+    console.error('Analyst Room Posts API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/delete-room-post', async (req, res) => {
+  try {
+    const { user_id, post_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const analyst = await db.getAnalystByUserId(user_id);
+    if (!analyst) {
+      return res.json({ success: false, error: 'غير مصرح لك بحذف هذا المنشور' });
+    }
+    
+    await db.deleteAnalystRoomPost(post_id);
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete Room Post API Error:', error);
     res.json({ success: false, error: error.message });
   }
 });

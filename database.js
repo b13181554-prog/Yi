@@ -21,6 +21,33 @@ async function initDatabase() {
     await db.collection('transactions').createIndex({ user_id: 1 });
     await db.collection('transactions').createIndex({ tx_id: 1 });
     await db.collection('analysts').createIndex({ user_id: 1 });
+    
+    await db.collection('analysts').deleteMany({ 
+      $or: [
+        { name: null }, 
+        { name: '' },
+        { name: { $exists: false } }
+      ] 
+    });
+    
+    try {
+      await db.collection('analysts').createIndex(
+        { name: 1 }, 
+        { 
+          unique: true, 
+          sparse: true,
+          collation: { locale: 'en', strength: 2 }
+        }
+      );
+      console.log('✅ Analyst name unique index created successfully');
+    } catch (indexError) {
+      if (indexError.code === 11000 || indexError.code === 85 || indexError.code === 86) {
+        console.log('⚠️ Analyst name index already exists or has conflicts, skipping...');
+      } else {
+        throw indexError;
+      }
+    }
+    
     await db.collection('analyst_subscriptions').createIndex({ user_id: 1, analyst_id: 1 });
     await db.collection('referral_earnings').createIndex({ referrer_id: 1 });
     
@@ -355,14 +382,15 @@ function isValidTxId(txId) {
   return /^[a-fA-F0-9]{64}$/.test(txId);
 }
 
-async function createAnalyst(userId, name, description, monthlyPrice) {
+async function createAnalyst(userId, name, description, monthlyPrice, markets = []) {
   console.log(`✅ إنشاء محلل جديد - ID: ${userId}, الاسم: ${name}, السعر: ${monthlyPrice}`);
   
   const analyst = {
     user_id: userId,
-    name: name,
-    description: description,
+    name: name.trim(),
+    description: description.trim(),
     monthly_price: monthlyPrice,
+    markets: markets,
     is_active: true,
     total_subscribers: 0,
     rating: 0,
@@ -824,6 +852,59 @@ async function getAnalystReviews(analystId) {
     .toArray();
 }
 
+async function getAnalystByName(name) {
+  return await db.collection('analysts').findOne(
+    { name: name.trim() },
+    { collation: { locale: 'en', strength: 2 } }
+  );
+}
+
+async function createAnalystRoomPost(analystId, userId, postData) {
+  const post = {
+    analyst_id: new ObjectId(analystId),
+    user_id: userId,
+    symbol: postData.symbol,
+    type: postData.type,
+    entry_price: postData.entry_price,
+    target_price: postData.target_price,
+    stop_loss: postData.stop_loss,
+    timeframe: postData.timeframe,
+    market_type: postData.market_type,
+    analysis: postData.analysis || '',
+    created_at: new Date(),
+    is_deleted: false
+  };
+  
+  const result = await db.collection('analyst_room_posts').insertOne(post);
+  return { ...post, _id: result.insertedId };
+}
+
+async function getAnalystRoomPosts(analystId, limit = 50) {
+  return await db.collection('analyst_room_posts')
+    .find({ 
+      analyst_id: new ObjectId(analystId),
+      is_deleted: false
+    })
+    .sort({ created_at: -1 })
+    .limit(limit)
+    .toArray();
+}
+
+async function deleteAnalystRoomPost(postId) {
+  await db.collection('analyst_room_posts').updateOne(
+    { _id: new ObjectId(postId) },
+    { $set: { is_deleted: true, deleted_at: new Date() } }
+  );
+}
+
+async function getSubscriberCount(analystId) {
+  return await db.collection('analyst_subscriptions').countDocuments({
+    analyst_id: new ObjectId(analystId),
+    status: 'active',
+    end_date: { $gt: new Date() }
+  });
+}
+
 function getDB() {
   return db;
 }
@@ -856,6 +937,7 @@ module.exports = {
   createAnalyst,
   getAnalyst,
   getAnalystByUserId,
+  getAnalystByName,
   getAllAnalysts,
   updateAnalyst,
   updateAnalystSubscriberCount,
@@ -863,6 +945,7 @@ module.exports = {
   getUserAnalystSubscription,
   getAllUserAnalystSubscriptions,
   getAnalystSubscribers,
+  getSubscriberCount,
   addReferralEarning,
   getReferralEarnings,
   getTotalReferralEarnings,
@@ -884,5 +967,8 @@ module.exports = {
   updateAnalystSignal,
   getActiveSignals,
   createAnalystReview,
-  getAnalystReviews
+  getAnalystReviews,
+  createAnalystRoomPost,
+  getAnalystRoomPosts,
+  deleteAnalystRoomPost
 };
