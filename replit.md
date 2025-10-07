@@ -5,33 +5,47 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comp
 
 ## Recent Changes (October 2025)
 
-### Latest Update - Enhanced Analyst System (Oct 7, 2025)
-- **Subscription Management**: Implemented single-subscription policy per analyst
-  - Prevents users from subscribing multiple times to the same analyst
-  - Clear error messages when attempting duplicate subscriptions
+### Latest Update - Enhanced Analyst System Security & Quality (Oct 7, 2025)
+
+#### Subscription Management Enhancements
+- **Advanced Duplicate Prevention**: Multi-layer subscription protection system
+  - Prevents active duplicate subscriptions to the same analyst
+  - Enforces 7-day cooldown period after subscription expiration
+  - Clear error messages with remaining days until re-subscription allowed
+  - Database-level checks in `getRecentAnalystSubscription` function
   
-- **Analyst Profile Enhancement**: Added market specialization fields
-  - Analysts can now specify which markets they analyze (Crypto, Forex, Stocks, etc.)
-  - Market information displayed in analyst profiles and registration
+#### Analyst Name Quality & Uniqueness
+- **Centralized Name Sanitization**: Robust input validation system
+  - `sanitizeAnalystName()` function removes special characters and normalizes spacing
+  - Supports Arabic, English, numbers, and limited special chars (_-)
+  - Auto-truncates names to 50 characters maximum
+  - Enforces minimum 3-character length post-sanitization
   
-- **Name Uniqueness Enforcement**: Database-level duplicate name prevention
-  - Unique index with case-insensitive collation prevents duplicate analyst names
-  - Automatic data cleanup removes invalid analyst records
-  - Safe name normalization (trimming) before storage
+- **Database-Level Duplicate Prevention**:
+  - Unique index with case-insensitive collation prevents duplicate names
+  - All creation paths (API & Telegram bot) validate through `createAnalyst()`
+  - Duplicate checks use sanitized values to prevent bypass attempts
+  - Description validation enforces 10-character minimum
   
-- **Trading Room Feature**: Dedicated space for analysts to post trade signals
-  - Content moderation system prevents off-topic discussions
-  - Automatic blocking of external channel/product promotions
-  - Forbidden words detection (channel, telegram, whatsapp, instagram, etc.)
-  - Subscribers automatically notified of new trade posts
+#### Trading Room Content Moderation
+- **Comprehensive Banned Words System**: Enhanced spam/promotion prevention
+  - Expanded forbidden words list (30+ terms in Arabic & English)
+  - Blocks: channel references, social media platforms, contact requests, URLs
+  - Detects: telegram, whatsapp, instagram, facebook, twitter, youtube, discord, tiktok
+  - Prevents: @mentions, t.me links, wa.me links, short URLs (bit.ly)
+  - Case-insensitive pattern matching on all trade post content
   
-- **Analyst Notifications**: Real-time alerts for new subscribers
-  - Analysts receive immediate notification when gaining a subscriber
-  - Notification includes subscriber info, payment amount, and analyst's revenue share
+#### Quality Assurance
+- **Centralized Validation**: All analyst creation flows validated in `database.createAnalyst()`
+  - Name sanitization + length check + uniqueness verification
+  - Description length validation (10+ characters)
+  - Proper error propagation to API and bot interfaces
+  - No path allows empty or duplicate analyst names
   
-- **Subscriber Dashboard**: Analysts can view their subscriber list
-  - `/api/analyst-subscribers` endpoint provides subscriber details
-  - Real-time subscriber count tracking
+- **Error Handling**: Clear user-facing error messages in Arabic
+  - API endpoints catch and return validation errors
+  - Telegram bot displays specific error reasons
+  - All validation errors logged for monitoring
 
 ### Data Accuracy Improvements (Oct 7, 2025)
 - **Real Price Data Implementation**: Replaced all estimated/placeholder data with authentic real-time market data
