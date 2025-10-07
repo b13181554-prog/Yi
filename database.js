@@ -905,6 +905,8 @@ async function createAnalystRoomPost(analystId, userId, postData) {
     user_id: userId,
     symbol: postData.symbol,
     type: postData.type,
+    trading_type: postData.trading_type || 'spot',
+    leverage: postData.leverage || null,
     entry_price: postData.entry_price,
     target_price: postData.target_price,
     stop_loss: postData.stop_loss,

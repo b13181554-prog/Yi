@@ -1030,6 +1030,8 @@ function hidePostTradeForm() {
     document.getElementById('my-analyst-profile').style.display = 'block';
     document.getElementById('analysts-list').style.display = 'block';
     
+    document.getElementById('trade-trading-type').value = 'spot';
+    document.getElementById('leverage-field').style.display = 'none';
     document.getElementById('trade-symbol').value = '';
     document.getElementById('trade-entry-price').value = '';
     document.getElementById('trade-target-price').value = '';
@@ -1037,9 +1039,22 @@ function hidePostTradeForm() {
     document.getElementById('trade-analysis').value = '';
 }
 
+function toggleLeverage() {
+    const tradingType = document.getElementById('trade-trading-type').value;
+    const leverageField = document.getElementById('leverage-field');
+    
+    if (tradingType === 'futures') {
+        leverageField.style.display = 'block';
+    } else {
+        leverageField.style.display = 'none';
+    }
+}
+
 async function submitTrade() {
     const symbol = document.getElementById('trade-symbol').value.trim();
     const type = document.getElementById('trade-type').value;
+    const tradingType = document.getElementById('trade-trading-type').value;
+    const leverage = tradingType === 'futures' ? document.getElementById('trade-leverage').value : null;
     const entryPrice = parseFloat(document.getElementById('trade-entry-price').value);
     const targetPrice = parseFloat(document.getElementById('trade-target-price').value);
     const stopLoss = parseFloat(document.getElementById('trade-stop-loss').value);
@@ -1062,6 +1077,8 @@ async function submitTrade() {
                 post_data: {
                     symbol: symbol,
                     type: type,
+                    trading_type: tradingType,
+                    leverage: leverage,
                     entry_price: entryPrice,
                     target_price: targetPrice || null,
                     stop_loss: stopLoss || null,
