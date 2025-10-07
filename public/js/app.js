@@ -744,8 +744,14 @@ async function loadAnalysts() {
                         </div>
                         <p class="analyst-desc">${analyst.description}</p>
                         <div class="analyst-stats">
-                            <span>👍 ${analyst.rating || 0}%</span>
                             <span>👥 ${analyst.total_subscribers || 0}</span>
+                        </div>
+                        <div class="analyst-rating" style="display: flex; align-items: center; justify-content: center; gap: 15px; margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                            <button class="rating-btn like-btn" onclick="rateAnalyst('${analyst.id}', true)" style="background: none; border: none; font-size: 32px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">👍</button>
+                            <span style="font-size: 18px; font-weight: bold; color: #28a745;">${analyst.likes || 0}</span>
+                            <span style="color: #ddd;">|</span>
+                            <button class="rating-btn dislike-btn" onclick="rateAnalyst('${analyst.id}', false)" style="background: none; border: none; font-size: 32px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">👎</button>
+                            <span style="font-size: 18px; font-weight: bold; color: #dc3545;">${analyst.dislikes || 0}</span>
                         </div>
                         <div class="analyst-footer">
                             <span class="price">${analyst.monthly_price} USDT/شهر</span>
@@ -808,6 +814,41 @@ async function subscribeToAnalyst(analystId) {
         }
     } catch (error) {
         tg.showAlert('حدث خطأ في الاشتراك');
+    }
+}
+
+async function rateAnalyst(analystId, isLike) {
+    if (!userId) {
+        if (tg.showAlert) {
+            tg.showAlert('خطأ: لا يمكن تحديد هوية المستخدم');
+        }
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/rate-analyst', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                analyst_id: analystId,
+                rating: isLike ? 1 : 0,
+                user_id: userId,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            tg.showAlert(isLike ? '✅ شكراً على تقييمك الإيجابي!' : '✅ شكراً على تقييمك!');
+            loadAnalysts();
+            loadAnalystsByMarket(currentAnalystMarket);
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'فشل التقييم'));
+        }
+    } catch (error) {
+        console.error('Error rating analyst:', error);
+        tg.showAlert('حدث خطأ في التقييم');
     }
 }
 
@@ -1810,8 +1851,14 @@ async function loadAnalystsByMarket(marketType) {
                         ).join('')}
                     </div>
                     <div class="analyst-stats">
-                        <span>👍 ${analyst.rating || 0}%</span>
                         <span>👥 ${analyst.total_subscribers || 0}</span>
+                    </div>
+                    <div class="analyst-rating" style="display: flex; align-items: center; justify-content: center; gap: 15px; margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <button class="rating-btn like-btn" onclick="rateAnalyst('${analyst.id}', true)" style="background: none; border: none; font-size: 32px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">👍</button>
+                        <span style="font-size: 18px; font-weight: bold; color: #28a745;">${analyst.likes || 0}</span>
+                        <span style="color: #ddd;">|</span>
+                        <button class="rating-btn dislike-btn" onclick="rateAnalyst('${analyst.id}', false)" style="background: none; border: none; font-size: 32px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">👎</button>
+                        <span style="font-size: 18px; font-weight: bold; color: #dc3545;">${analyst.dislikes || 0}</span>
                     </div>
                     <div class="analyst-footer">
                         <span class="price">${analyst.monthly_price} USDT/شهر</span>
