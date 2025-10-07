@@ -365,7 +365,7 @@ async function updateSymbolsList() {
             }
             symbols = FOREX_PAIRS;
         } else if (marketType === 'stocks') {
-            symbols = STOCKS;
+            symbols = await loadAllStocks();
         } else if (marketType === 'commodities') {
             symbols = COMMODITIES;
         } else if (marketType === 'indices') {
@@ -419,7 +419,6 @@ function showSection(sectionId, event) {
     }
 }
 
-// وظيفة البحث في العملات
 function setupSymbolSearch() {
     const searchInput = document.getElementById('symbol-search');
     const select = document.getElementById('symbol-select');
@@ -442,6 +441,9 @@ function setupSymbolSearch() {
                 }
                 allSymbols = FOREX_PAIRS;
             } else if (marketType === 'stocks') {
+                if (STOCKS.length < 50) {
+                    await loadAllStocks();
+                }
                 allSymbols = STOCKS;
             } else if (marketType === 'commodities') {
                 allSymbols = COMMODITIES;
@@ -1119,15 +1121,14 @@ function getCurrentUserId() {
     return userId;
 }
 
-// Placeholder for loadAllCryptoSymbols - implement this function to fetch crypto symbols
 async function loadAllCryptoSymbols() {
-    if (CRYPTO_SYMBOLS.length > 0) {
+    if (CRYPTO_SYMBOLS.length > 100) {
         console.log(`✅ Already loaded ${CRYPTO_SYMBOLS.length} crypto symbols`);
         return CRYPTO_SYMBOLS;
     }
 
     try {
-        console.log('🔍 Fetching all crypto symbols from Binance...');
+        console.log('🔍 Fetching ALL crypto symbols from Binance...');
         const response = await fetch('https://api.binance.com/api/v3/exchangeInfo', {
             timeout: 10000
         });
@@ -1139,12 +1140,11 @@ async function loadAllCryptoSymbols() {
                 .map(s => ({
                     value: s.symbol,
                     label: `💎 ${s.baseAsset}/${s.quoteAsset}`
-                }))
-                .slice(0, 200); // أول 200 عملة
+                }));
             
             CRYPTO_SYMBOLS.length = 0;
             CRYPTO_SYMBOLS.push(...usdtPairs);
-            console.log(`✅ Loaded ${CRYPTO_SYMBOLS.length} crypto symbols`);
+            console.log(`✅ Loaded ${CRYPTO_SYMBOLS.length} crypto symbols (ALL)`);
             return CRYPTO_SYMBOLS;
         }
     } catch (error) {
@@ -1152,6 +1152,71 @@ async function loadAllCryptoSymbols() {
     }
     
     return CRYPTO_SYMBOLS;
+}
+
+async function loadAllStocks() {
+    console.log('📊 Loading comprehensive stock list...');
+    
+    const allStocks = [
+        ...STOCKS,
+        { value: 'DIS', label: '🎬 Disney' },
+        { value: 'PYPL', label: '💳 PayPal' },
+        { value: 'INTC', label: '🔷 Intel' },
+        { value: 'CSCO', label: '🌐 Cisco' },
+        { value: 'CMCSA', label: '📺 Comcast' },
+        { value: 'PFE', label: '💊 Pfizer' },
+        { value: 'ABBV', label: '💊 AbbVie' },
+        { value: 'MRK', label: '💊 Merck' },
+        { value: 'T', label: '📱 AT&T' },
+        { value: 'VZ', label: '📱 Verizon' },
+        { value: 'KO', label: '🥤 Coca-Cola' },
+        { value: 'PEP', label: '🥤 PepsiCo' },
+        { value: 'MCD', label: '🍔 McDonald\'s' },
+        { value: 'NKE', label: '👟 Nike' },
+        { value: 'SBUX', label: '☕ Starbucks' },
+        { value: 'TGT', label: '🎯 Target' },
+        { value: 'COST', label: '🛒 Costco' },
+        { value: 'CVX', label: '⛽ Chevron' },
+        { value: 'XOM', label: '⛽ ExxonMobil' },
+        { value: 'BA', label: '✈️ Boeing' },
+        { value: 'CAT', label: '🚜 Caterpillar' },
+        { value: 'GE', label: '⚡ General Electric' },
+        { value: 'GM', label: '🚗 General Motors' },
+        { value: 'F', label: '🚗 Ford' },
+        { value: 'UBER', label: '🚕 Uber' },
+        { value: 'LYFT', label: '🚕 Lyft' },
+        { value: 'ABNB', label: '🏠 Airbnb' },
+        { value: 'SPOT', label: '🎵 Spotify' },
+        { value: 'TWTR', label: '🐦 Twitter' },
+        { value: 'SNAP', label: '👻 Snapchat' },
+        { value: 'PINS', label: '📌 Pinterest' },
+        { value: 'SQ', label: '💳 Square' },
+        { value: 'SHOP', label: '🛍️ Shopify' },
+        { value: 'ZM', label: '📹 Zoom' },
+        { value: 'DOCU', label: '📄 DocuSign' },
+        { value: 'CRM', label: '☁️ Salesforce' },
+        { value: 'ORCL', label: '🔷 Oracle' },
+        { value: 'IBM', label: '🔷 IBM' },
+        { value: 'NOW', label: '☁️ ServiceNow' },
+        { value: 'ADBE', label: '🎨 Adobe' },
+        { value: 'SONY', label: '🎮 Sony' },
+        { value: 'TM', label: '🚗 Toyota' },
+        { value: 'HMC', label: '🚗 Honda' },
+        { value: 'NIO', label: '🔋 NIO' },
+        { value: 'XPEV', label: '🔋 XPeng' },
+        { value: 'LI', label: '🔋 Li Auto' },
+        { value: 'RIVN', label: '🚙 Rivian' },
+        { value: 'LCID', label: '🚗 Lucid' },
+        { value: 'PLTR', label: '🔍 Palantir' },
+        { value: 'COIN', label: '₿ Coinbase' },
+        { value: 'HOOD', label: '📈 Robinhood' },
+        { value: 'SoFi', label: '💰 SoFi' }
+    ];
+    
+    STOCKS.length = 0;
+    STOCKS.push(...allStocks);
+    console.log(`✅ Loaded ${STOCKS.length} stocks`);
+    return STOCKS;
 }
 
 async function analyzeMarketAdvanced() {
