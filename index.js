@@ -928,7 +928,7 @@ app.post('/api/subscribe-analyst', async (req, res) => {
 
 app.post('/api/register-analyst', async (req, res) => {
   try {
-    const { user_id, name, description, monthly_price, markets, init_data } = req.body;
+    const { user_id, name, description, monthly_price, markets, profile_picture, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
@@ -951,7 +951,7 @@ app.post('/api/register-analyst', async (req, res) => {
     const analystMarkets = markets || [];
     
     try {
-      const analyst = await db.createAnalyst(user_id, name, description, price, analystMarkets);
+      const analyst = await db.createAnalyst(user_id, name, description, price, analystMarkets, profile_picture);
     
     const user = await db.getUser(user_id);
     
@@ -994,7 +994,7 @@ app.post('/api/my-analyst-profile', async (req, res) => {
 
 app.post('/api/update-analyst', async (req, res) => {
   try {
-    const { user_id, name, description, monthly_price, markets, init_data } = req.body;
+    const { user_id, name, description, monthly_price, markets, profile_picture, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
@@ -1047,6 +1047,10 @@ app.post('/api/update-analyst', async (req, res) => {
     
     if (markets) {
       updateData.markets = markets;
+    }
+    
+    if (profile_picture !== undefined) {
+      updateData.profile_picture = profile_picture;
     }
     
     await db.updateAnalyst(analyst._id, updateData);

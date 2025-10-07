@@ -874,6 +874,7 @@ function showEditAnalystForm() {
     document.getElementById('analyst-name').value = myAnalystData.name;
     document.getElementById('analyst-description').value = myAnalystData.description;
     document.getElementById('analyst-price').value = myAnalystData.monthly_price;
+    document.getElementById('analyst-profile-picture').value = myAnalystData.profile_picture || '';
     
     document.getElementById('market-crypto').checked = myAnalystData.markets && myAnalystData.markets.includes('crypto');
     document.getElementById('market-forex').checked = myAnalystData.markets && myAnalystData.markets.includes('forex');
@@ -901,6 +902,7 @@ function hideAnalystRegistrationForm() {
     document.getElementById('analyst-name').value = '';
     document.getElementById('analyst-description').value = '';
     document.getElementById('analyst-price').value = '';
+    document.getElementById('analyst-profile-picture').value = '';
     document.getElementById('market-crypto').checked = false;
     document.getElementById('market-forex').checked = false;
     document.getElementById('market-stocks').checked = false;
@@ -913,6 +915,7 @@ async function submitAnalystRegistration() {
     const name = document.getElementById('analyst-name').value.trim();
     const description = document.getElementById('analyst-description').value.trim();
     const price = parseFloat(document.getElementById('analyst-price').value);
+    const profilePicture = document.getElementById('analyst-profile-picture').value.trim();
     
     const markets = [];
     if (document.getElementById('market-crypto').checked) markets.push('crypto');
@@ -946,6 +949,7 @@ async function submitAnalystRegistration() {
                 name: name,
                 description: description,
                 monthly_price: price,
+                profile_picture: profilePicture,
                 markets: markets,
                 init_data: tg.initData
             })

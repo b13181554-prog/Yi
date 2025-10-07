@@ -392,7 +392,7 @@ function sanitizeAnalystName(name) {
     .slice(0, 50);
 }
 
-async function createAnalyst(userId, name, description, monthlyPrice, markets = []) {
+async function createAnalyst(userId, name, description, monthlyPrice, markets = [], profilePicture = null) {
   const sanitizedName = sanitizeAnalystName(name);
   const sanitizedDescription = description.trim().slice(0, 500);
   
@@ -421,6 +421,7 @@ async function createAnalyst(userId, name, description, monthlyPrice, markets = 
     description: sanitizedDescription,
     monthly_price: monthlyPrice,
     markets: markets,
+    profile_picture: profilePicture || null,
     is_active: true,
     total_subscribers: 0,
     rating: 0,
