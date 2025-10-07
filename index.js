@@ -586,59 +586,74 @@ app.post('/api/top-movers', async (req, res) => {
       movers = movers.slice(0, 10);
       
     } else if (market_type === 'stocks') {
-      const stocks = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX', 'AMD', 'BABA', 'TSM'];
+      const stocks = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX', 'AMD', 'BABA', 'TSM', 'V', 'JPM', 'WMT', 'JNJ'];
       
       for (const stock of stocks) {
-        const price = 100 + Math.random() * 200;
-        const change = (Math.random() - 0.5) * 10;
-        movers.push({ symbol: stock, price: price.toFixed(2), change: change.toFixed(2) });
+        try {
+          const candles = await marketData.getStockCandles(stock, '1d', 2);
+          if (candles && candles.length >= 2) {
+            const current = parseFloat(candles[candles.length - 1].close);
+            const previous = parseFloat(candles[candles.length - 2].close);
+            const change = ((current - previous) / previous) * 100;
+            
+            movers.push({ 
+              symbol: stock, 
+              price: current.toFixed(2), 
+              change: change.toFixed(2) 
+            });
+          }
+        } catch (err) {
+          console.error(`Error fetching stock ${stock}:`, err.message);
+        }
       }
       
       movers.sort((a, b) => type === 'gainers' ? b.change - a.change : a.change - b.change);
       movers = movers.slice(0, 10);
       
     } else if (market_type === 'commodities') {
-      const commodities = [
-        { symbol: 'XAUUSD', name: 'Gold', basePrice: 2000 },
-        { symbol: 'XAGUSD', name: 'Silver', basePrice: 25 },
-        { symbol: 'WTIUSD', name: 'WTI Oil', basePrice: 75 },
-        { symbol: 'BCOUSD', name: 'Brent Oil', basePrice: 80 },
-        { symbol: 'XPTUSD', name: 'Platinum', basePrice: 950 },
-        { symbol: 'COPPER', name: 'Copper', basePrice: 4.2 }
-      ];
+      const commodities = ['XAUUSD', 'XAGUSD', 'WTIUSD', 'BCOUSD', 'XPTUSD', 'COPPER'];
       
       for (const commodity of commodities) {
-        const price = commodity.basePrice * (1 + (Math.random() - 0.5) * 0.05);
-        const change = (Math.random() - 0.5) * 5;
-        movers.push({ 
-          symbol: commodity.symbol, 
-          name: commodity.name,
-          price: price.toFixed(2), 
-          change: change.toFixed(2) 
-        });
+        try {
+          const candles = await marketData.getCommodityCandles(commodity, '1d', 2);
+          if (candles && candles.length >= 2) {
+            const current = parseFloat(candles[candles.length - 1].close);
+            const previous = parseFloat(candles[candles.length - 2].close);
+            const change = ((current - previous) / previous) * 100;
+            
+            movers.push({ 
+              symbol: commodity,
+              price: current.toFixed(2), 
+              change: change.toFixed(2) 
+            });
+          }
+        } catch (err) {
+          console.error(`Error fetching commodity ${commodity}:`, err.message);
+        }
       }
       
       movers.sort((a, b) => type === 'gainers' ? b.change - a.change : a.change - b.change);
       
     } else if (market_type === 'indices') {
-      const indices = [
-        { symbol: 'US30', name: 'Dow Jones', basePrice: 38000 },
-        { symbol: 'SPX500', name: 'S&P 500', basePrice: 4800 },
-        { symbol: 'NAS100', name: 'NASDAQ', basePrice: 16500 },
-        { symbol: 'UK100', name: 'FTSE 100', basePrice: 7600 },
-        { symbol: 'GER40', name: 'DAX', basePrice: 17000 },
-        { symbol: 'JPN225', name: 'Nikkei', basePrice: 33000 }
-      ];
+      const indices = ['US30', 'SPX500', 'NAS100', 'UK100', 'GER40', 'JPN225', 'FRA40', 'HK50'];
       
       for (const index of indices) {
-        const price = index.basePrice * (1 + (Math.random() - 0.5) * 0.03);
-        const change = (Math.random() - 0.5) * 3;
-        movers.push({ 
-          symbol: index.symbol, 
-          name: index.name,
-          price: price.toFixed(2), 
-          change: change.toFixed(2) 
-        });
+        try {
+          const candles = await marketData.getIndicesCandles(index, '1d', 2);
+          if (candles && candles.length >= 2) {
+            const current = parseFloat(candles[candles.length - 1].close);
+            const previous = parseFloat(candles[candles.length - 2].close);
+            const change = ((current - previous) / previous) * 100;
+            
+            movers.push({ 
+              symbol: index,
+              price: current.toFixed(2), 
+              change: change.toFixed(2) 
+            });
+          }
+        } catch (err) {
+          console.error(`Error fetching index ${index}:`, err.message);
+        }
       }
       
       movers.sort((a, b) => type === 'gainers' ? b.change - a.change : a.change - b.change);

@@ -476,16 +476,50 @@ class MultiMarketDataService {
 
   convertToYahooCommoditySymbol(symbol) {
     const map = {
-      'XAUUSD': 'GC=F', 'XAGUSD': 'SI=F', 'WTIUSD': 'CL=F',
-      'BCOUSD': 'BZ=F', 'XPTUSD': 'PL=F', 'COPPER': 'HG=F'
+      'XAUUSD': 'GC=F',
+      'XAGUSD': 'SI=F',
+      'XPTUSD': 'PL=F',
+      'XPDUSD': 'PA=F',
+      'WTIUSD': 'CL=F',
+      'BCOUSD': 'BZ=F',
+      'NGAS': 'NG=F',
+      'COPPER': 'HG=F',
+      'WHEAT': 'ZW=F',
+      'CORN': 'ZC=F',
+      'SOYBEAN': 'ZS=F',
+      'SUGAR': 'SB=F',
+      'COFFEE': 'KC=F',
+      'COCOA': 'CC=F',
+      'COTTON': 'CT=F',
+      'ZINC': 'ZN=F',
+      'NICKEL': 'NI=F',
+      'ALUMINUM': 'AL=F'
     };
     return map[symbol] || 'GC=F';
   }
 
   convertToYahooIndexSymbol(symbol) {
     const map = {
-      'US30': '^DJI', 'SPX500': '^GSPC', 'NAS100': '^IXIC',
-      'UK100': '^FTSE', 'GER40': '^GDAXI', 'JPN225': '^N225'
+      'US30': '^DJI',
+      'SPX500': '^GSPC',
+      'NAS100': '^IXIC',
+      'UK100': '^FTSE',
+      'GER40': '^GDAXI',
+      'FRA40': '^FCHI',
+      'JPN225': '^N225',
+      'HK50': '^HSI',
+      'AUS200': '^AXJO',
+      'ESP35': '^IBEX',
+      'ITA40': 'FTSEMIB.MI',
+      'CHN50': '000001.SS',
+      'IND50': '^NSEI',
+      'KOR200': '^KS11',
+      'SWI20': '^SSMI',
+      'NLD25': '^AEX',
+      'RUS50': 'IMOEX.ME',
+      'BRA60': '^BVSP',
+      'MEX35': '^MXX',
+      'SAF40': 'J203.JO'
     };
     return map[symbol] || '^GSPC';
   }
