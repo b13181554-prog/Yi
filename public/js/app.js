@@ -1739,6 +1739,18 @@ function switchAnalystTab(tab, event) {
         const commoditiesTab = document.getElementById('commodities-analysts-tab');
         if (commoditiesTab) commoditiesTab.classList.add('active');
         loadAnalystsByMarket('commodities');
+    } else if (tab === 'indices') {
+        const indicesTab = document.getElementById('indices-analysts-tab');
+        if (indicesTab) indicesTab.classList.add('active');
+        loadAnalystsByMarket('indices');
+    } else if (tab === 'active') {
+        const activeTab = document.getElementById('active-analysts-tab');
+        if (activeTab) activeTab.classList.add('active');
+        loadActiveAnalysts();
+    } else if (tab === 'inactive') {
+        const inactiveTab = document.getElementById('inactive-analysts-tab');
+        if (inactiveTab) inactiveTab.classList.add('active');
+        loadInactiveAnalysts();
     } else if (tab === 'top100') {
         const top100Tab = document.getElementById('top100-analysts-tab');
         if (top100Tab) top100Tab.classList.add('active');

@@ -222,6 +222,9 @@
                     <div class="tab-btn" onclick="switchAnalystTab('forex', event)">💱 فوركس</div>
                     <div class="tab-btn" onclick="switchAnalystTab('stocks', event)">📈 أسهم</div>
                     <div class="tab-btn" onclick="switchAnalystTab('commodities', event)">🛢️ سلع</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('indices', event)">📊 مؤشرات</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('active', event)">✅ نشطين</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('inactive', event)">⏸️ متوقفين</div>
                     <div class="tab-btn" onclick="switchAnalystTab('top100', event)">🏆 Top 100</div>
                     <div class="tab-btn" onclick="switchAnalystTab('subscriptions', event)">اشتراكاتي</div>
                 </div>
@@ -407,6 +410,33 @@
                     <div class="analysts-list">
                         <h3>🛢️ محللي السلع</h3>
                         <div id="commodities-analysts-container">
+                            <p class="empty-state">جاري التحميل...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="indices-analysts-tab" class="analysts-tab-content">
+                    <div class="analysts-list">
+                        <h3>📊 محللي المؤشرات</h3>
+                        <div id="indices-analysts-container">
+                            <p class="empty-state">جاري التحميل...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="active-analysts-tab" class="analysts-tab-content">
+                    <div class="analysts-list">
+                        <h3>✅ المحللين النشطين</h3>
+                        <div id="active-analysts-container">
+                            <p class="empty-state">جاري التحميل...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inactive-analysts-tab" class="analysts-tab-content">
+                    <div class="analysts-list">
+                        <h3>⏸️ المحللين المتوقفين</h3>
+                        <div id="inactive-analysts-container">
                             <p class="empty-state">جاري التحميل...</p>
                         </div>
                     </div>
