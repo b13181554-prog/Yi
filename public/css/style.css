@@ -60,6 +60,17 @@ body {
     100% { transform: rotate(360deg); }
 }
 
+@keyframes slideLeft {
+    0%, 100% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    50% {
+        transform: translateX(-5px);
+        opacity: 0.6;
+    }
+}
+
 .user-info {
     padding: 20px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
