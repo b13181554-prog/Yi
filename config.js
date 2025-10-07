@@ -39,5 +39,5 @@ module.exports = {
   
   WEBAPP_URL: process.env.WEBAPP_URL 
     || (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null)
-    || 'https://obentchi-bot.replit.app',
+    || 'https://your-repl-name.your-username.replit.dev',
 };
