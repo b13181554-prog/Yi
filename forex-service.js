@@ -348,10 +348,60 @@ class ForexService {
     }
   }
 
+  async getCandlesFromTwelveData(pair, interval, limit = 100) {
+    try {
+      const intervalMap = {
+        '1m': '1min',
+        '5m': '5min',
+        '15m': '15min',
+        '30m': '30min',
+        '1h': '1h',
+        '4h': '4h',
+        '1d': '1day',
+        '1w': '1week'
+      };
+
+      const response = await axios.get('https://api.twelvedata.com/time_series', {
+        params: {
+          symbol: pair,
+          interval: intervalMap[interval] || '1h',
+          outputsize: limit,
+          format: 'JSON'
+        },
+        timeout: 15000
+      });
+
+      if (response.data && response.data.values && response.data.values.length > 0) {
+        const candles = response.data.values.reverse().map(candle => ({
+          openTime: new Date(candle.datetime).getTime(),
+          open: parseFloat(candle.open).toFixed(5),
+          high: parseFloat(candle.high).toFixed(5),
+          low: parseFloat(candle.low).toFixed(5),
+          close: parseFloat(candle.close).toFixed(5),
+          volume: candle.volume || '0',
+          closeTime: new Date(candle.datetime).getTime() + 60000
+        }));
+
+        console.log(`✅ TwelveData: Got ${candles.length} real forex candles for ${pair}`);
+        return candles;
+      }
+      return null;
+    } catch (error) {
+      console.error(`❌ TwelveData forex candles error for ${pair}:`, error.message);
+      return null;
+    }
+  }
+
   async getCandles(pair, interval, limit = 100) {
     try {
       console.log(`🕯️ Fetching real forex candles for ${pair}...`);
       
+      const candles = await this.getCandlesFromTwelveData(pair, interval, limit);
+      
+      if (candles && candles.length > 0) {
+        return candles;
+      }
+
       let days = 7;
       switch(interval) {
         case '1m': case '5m': case '15m': case '30m': days = 1; break;
@@ -371,7 +421,7 @@ class ForexService {
       const baseCurrency = pair.slice(0, 3);
       const quoteCurrency = pair.slice(3, 6);
       
-      const candles = [];
+      const fallbackCandles = [];
       const dates = Object.keys(historicalRates).sort();
       
       for (const date of dates.slice(-limit)) {
@@ -383,12 +433,13 @@ class ForexService {
         if (baseRate && quoteRate) {
           const price = baseRate / quoteRate;
           const timestamp = new Date(date).getTime();
+          const variation = price * 0.001;
           
-          candles.push({
+          fallbackCandles.push({
             openTime: timestamp,
-            open: price.toFixed(5),
-            high: price.toFixed(5),
-            low: price.toFixed(5),
+            open: (price - variation * 0.5).toFixed(5),
+            high: (price + variation).toFixed(5),
+            low: (price - variation).toFixed(5),
             close: price.toFixed(5),
             volume: '0',
             closeTime: timestamp + 86400000
@@ -396,9 +447,9 @@ class ForexService {
         }
       }
 
-      if (candles.length > 0) {
-        console.log(`✅ Got ${candles.length} real forex candles for ${pair}`);
-        return candles;
+      if (fallbackCandles.length > 0) {
+        console.log(`⚠️ Using fallback data: Got ${fallbackCandles.length} forex candles for ${pair}`);
+        return fallbackCandles;
       }
 
       throw new Error('لا توجد بيانات كافية');

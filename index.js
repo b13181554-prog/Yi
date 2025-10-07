@@ -879,19 +879,12 @@ app.post('/api/analyze-advanced', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    const multiMarket = require('./multi-market-data');
     let candles;
     
     if (market_type === 'forex') {
-      candles = await multiMarket.getForexCandles(symbol, timeframe, 100);
-    } else if (market_type === 'stocks') {
-      candles = await multiMarket.getStockCandles(symbol, timeframe, 100);
-    } else if (market_type === 'commodities') {
-      candles = await multiMarket.getCommodityCandles(symbol, timeframe, 100);
-    } else if (market_type === 'indices') {
-      candles = await multiMarket.getIndicesCandles(symbol, timeframe, 100);
+      candles = await forexService.getCandles(symbol, timeframe, 100);
     } else {
-      candles = await multiMarket.getCryptoCandles(symbol, timeframe, 100);
+      candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
     }
     
     if (!candles || candles.length < 50) {
