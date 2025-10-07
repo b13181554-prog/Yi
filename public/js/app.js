@@ -207,14 +207,8 @@ const INDICES = [
 
 async function loadUserData() {
     try {
-        // وضع اختبار مؤقت - استخدم initData من Telegram أو وضع تجريبي
-        let initDataToSend = tg.initData;
-        let testMode = false;
-
         if (!tg.initData || tg.initData.length < 10) {
-            console.warn('⚠️ لا يوجد initData - استخدام وضع الاختبار');
-            initDataToSend = 'test_mode';
-            testMode = true;
+            throw new Error('لا يوجد بيانات من Telegram. يجب فتح التطبيق من خلال البوت.');
         }
 
         const response = await fetch('/api/user', {
@@ -222,7 +216,7 @@ async function loadUserData() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 user_id: userId,
-                init_data: initDataToSend
+                init_data: tg.initData
             })
         });
 
@@ -270,7 +264,11 @@ async function init() {
     }
 
     try {
-        userId = tg.initDataUnsafe?.user?.id || 123456789;
+        if (!tg.initDataUnsafe?.user?.id) {
+            throw new Error('لا يوجد معرف مستخدم من Telegram. يجب فتح التطبيق من خلال البوت.');
+        }
+        
+        userId = tg.initDataUnsafe.user.id;
         console.log('✅ Final User ID:', userId);
 
         tg.ready();
@@ -317,12 +315,12 @@ async function init() {
 }
 
 function updateUI() {
-    // استخدم بيانات تجريبية إذا لم تكن متوفرة
-    const user = tg.initDataUnsafe?.user || {
-        id: userId || 123456789,
-        first_name: 'مستخدم تجريبي',
-        last_name: ''
-    };
+    if (!tg.initDataUnsafe?.user) {
+        console.error('❌ لا توجد بيانات مستخدم من Telegram');
+        return;
+    }
+    
+    const user = tg.initDataUnsafe.user;
 
     // تحديث الرصيد
     const balanceElements = document.querySelectorAll('#balance, #user-balance');
@@ -509,7 +507,7 @@ async function analyzeMarket() {
                 timeframe,
                 indicators,
                 market_type: marketType,
-                init_data: tg.initData || 'test_mode'
+                init_data: tg.initData
             })
         });
 
@@ -654,7 +652,7 @@ async function loadMovers(type, event) {
             body: JSON.stringify({
                 type,
                 market_type: currentMoverMarketType,
-                init_data: tg?.initData || 'test_mode'
+                init_data: tg?.initData
             })
         });
 
@@ -698,7 +696,7 @@ async function loadAnalysts() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 user_id: userId,
-                init_data: tg.initData || 'test_mode'
+                init_data: tg.initData
             })
         });
 
@@ -764,7 +762,7 @@ async function subscribeToAnalyst(analystId) {
             body: JSON.stringify({
                 analyst_id: analystId,
                 user_id: userId,
-                init_data: tg.initData || 'test_mode'
+                init_data: tg.initData
             })
         });
 
@@ -933,7 +931,7 @@ async function loadTransactions() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 user_id: userId,
-                init_data: tg.initData || 'test_mode'
+                init_data: tg.initData
             })
         });
 
@@ -980,7 +978,7 @@ async function loadSubscription() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 user_id: userId,
-                init_data: tg.initData || 'test_mode'
+                init_data: tg.initData
             })
         });
 
@@ -1025,7 +1023,7 @@ async function loadReferralStats() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 user_id: userId,
-                init_data: tg.initData || 'test_mode'
+                init_data: tg.initData
             })
         });
 
@@ -1110,9 +1108,12 @@ function selectAnalysisType(type, event) {
     }
 }
 
-// Helper function to get current user ID, returns a placeholder if not available
+// Helper function to get current user ID
 function getCurrentUserId() {
-    return userId || 123456789; // Fallback to a test ID
+    if (!userId) {
+        throw new Error('User ID is not available. Please open the app from the Telegram bot.');
+    }
+    return userId;
 }
 
 // Placeholder for loadAllCryptoSymbols - implement this function to fetch crypto symbols
@@ -1181,7 +1182,7 @@ async function analyzeMarketAdvanced() {
                 trading_type: tradingType,
                 analysis_type: analysisType,
                 indicators,
-                init_data: tg.initData || 'test_mode'
+                init_data: tg.initData
             })
         });
 
@@ -1362,7 +1363,7 @@ async function loadTop100Analysts() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                init_data: tg.initData || 'test_mode'
+                init_data: tg.initData
             })
         });
 

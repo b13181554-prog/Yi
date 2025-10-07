@@ -331,8 +331,7 @@ app.post('/api/user', async (req, res) => {
   try {
     const { user_id, init_data } = req.body;
     
-    // السماح بوضع الاختبار
-    if (init_data !== 'test_mode' && !verifyTelegramWebAppData(init_data)) {
+    if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
@@ -356,7 +355,7 @@ app.post('/api/price', async (req, res) => {
   try {
     const { symbol, market_type, init_data } = req.body;
     
-    if (init_data !== 'test_mode' && !verifyTelegramWebAppData(init_data)) {
+    if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
@@ -378,7 +377,7 @@ app.post('/api/analyze', async (req, res) => {
   try {
     const { user_id, symbol, timeframe, indicators, market_type, init_data } = req.body;
     
-    if (init_data !== 'test_mode' && !verifyTelegramWebAppData(init_data)) {
+    if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
@@ -418,7 +417,7 @@ app.post('/api/transactions', async (req, res) => {
   try {
     const { user_id, init_data } = req.body;
     
-    if (init_data !== 'test_mode' && !verifyTelegramWebAppData(init_data)) {
+    if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
@@ -434,7 +433,7 @@ app.post('/api/subscription', async (req, res) => {
   try {
     const { user_id, init_data } = req.body;
     
-    if (init_data !== 'test_mode' && !verifyTelegramWebAppData(init_data)) {
+    if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
@@ -477,7 +476,7 @@ app.post('/api/referral-stats', async (req, res) => {
   try {
     const { user_id, init_data } = req.body;
     
-    if (init_data !== 'test_mode' && !verifyTelegramWebAppData(init_data)) {
+    if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
@@ -500,7 +499,7 @@ app.post('/api/analyze-full', async (req, res) => {
   try {
     const { user_id, symbol, timeframe, indicators, market_type, init_data } = req.body;
     
-    if (init_data !== 'test_mode' && !verifyTelegramWebAppData(init_data)) {
+    if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
@@ -549,7 +548,7 @@ app.post('/api/top-movers', async (req, res) => {
   try {
     const { type, market_type, init_data } = req.body;
     
-    if (init_data !== 'test_mode' && !verifyTelegramWebAppData(init_data)) {
+    if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
@@ -648,7 +647,7 @@ app.post('/api/analysts', async (req, res) => {
   try {
     const { user_id, init_data } = req.body;
     
-    if (init_data !== 'test_mode' && !verifyTelegramWebAppData(init_data)) {
+    if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
@@ -849,7 +848,7 @@ app.post('/api/analyze-advanced', async (req, res) => {
   try {
     const { user_id, symbol, timeframe, market_type, trading_type, analysis_type, init_data } = req.body;
     
-    if (init_data !== 'test_mode' && !verifyTelegramWebAppData(init_data)) {
+    if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
