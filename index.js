@@ -873,12 +873,18 @@ app.post('/api/subscribe-analyst', async (req, res) => {
     
     const price = parseFloat(analyst.monthly_price);
     const analystShare = price / 2;
-    const ownerShare = price / 2;
+    const referralCommission = user.referred_by ? price * 0.1 : 0;
+    const ownerShare = (price / 2) - referralCommission;
     
     const newBalance = user.balance - price;
     await db.updateUser(user_id, { balance: newBalance });
     await db.updateUserBalance(analyst.user_id, analystShare);
     await db.updateUserBalance(config.OWNER_ID, ownerShare);
+    
+    if (user.referred_by) {
+      await db.addReferralEarning(user.referred_by, user_id, 'analyst_subscription', price, referralCommission);
+      await db.updateUserBalance(user.referred_by, referralCommission);
+    }
     
     await db.subscribeToAnalyst(user_id, analyst_id, price);
     await db.updateAnalystSubscriberCount(analyst_id, 1);
