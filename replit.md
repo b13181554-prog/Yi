@@ -5,7 +5,35 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comp
 
 ## Recent Changes (October 2025)
 
-### Latest Update - Data Accuracy Improvements (Oct 7, 2025)
+### Latest Update - Enhanced Analyst System (Oct 7, 2025)
+- **Subscription Management**: Implemented single-subscription policy per analyst
+  - Prevents users from subscribing multiple times to the same analyst
+  - Clear error messages when attempting duplicate subscriptions
+  
+- **Analyst Profile Enhancement**: Added market specialization fields
+  - Analysts can now specify which markets they analyze (Crypto, Forex, Stocks, etc.)
+  - Market information displayed in analyst profiles and registration
+  
+- **Name Uniqueness Enforcement**: Database-level duplicate name prevention
+  - Unique index with case-insensitive collation prevents duplicate analyst names
+  - Automatic data cleanup removes invalid analyst records
+  - Safe name normalization (trimming) before storage
+  
+- **Trading Room Feature**: Dedicated space for analysts to post trade signals
+  - Content moderation system prevents off-topic discussions
+  - Automatic blocking of external channel/product promotions
+  - Forbidden words detection (channel, telegram, whatsapp, instagram, etc.)
+  - Subscribers automatically notified of new trade posts
+  
+- **Analyst Notifications**: Real-time alerts for new subscribers
+  - Analysts receive immediate notification when gaining a subscriber
+  - Notification includes subscriber info, payment amount, and analyst's revenue share
+  
+- **Subscriber Dashboard**: Analysts can view their subscriber list
+  - `/api/analyst-subscribers` endpoint provides subscriber details
+  - Real-time subscriber count tracking
+
+### Data Accuracy Improvements (Oct 7, 2025)
 - **Real Price Data Implementation**: Replaced all estimated/placeholder data with authentic real-time market data
   - **Cryptocurrency Candles**: Now using OKX API (primary), Bybit (secondary), and Binance (fallback) for accurate OHLC data
   - **Forex Candles**: Integrated TwelveData API for real forex candle data with proper OHLC values
