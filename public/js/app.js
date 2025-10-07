@@ -1054,7 +1054,8 @@ async function submitTrade() {
     const symbol = document.getElementById('trade-symbol').value.trim();
     const type = document.getElementById('trade-type').value;
     const tradingType = document.getElementById('trade-trading-type').value;
-    const leverage = tradingType === 'futures' ? document.getElementById('trade-leverage').value : null;
+    const leverageValue = document.getElementById('trade-leverage').value;
+    const leverage = (tradingType === 'futures' && leverageValue) ? leverageValue : null;
     const entryPrice = parseFloat(document.getElementById('trade-entry-price').value);
     const targetPrice = parseFloat(document.getElementById('trade-target-price').value);
     const stopLoss = parseFloat(document.getElementById('trade-stop-loss').value);
