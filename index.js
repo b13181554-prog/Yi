@@ -331,12 +331,19 @@ app.post('/api/user', async (req, res) => {
   try {
     const { user_id, init_data } = req.body;
     
-    if (!verifyTelegramWebAppData(init_data)) {
-      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    if (!user_id) {
+      return res.json({ success: false, error: 'معرف المستخدم مطلوب' });
     }
     
-    if (!user_id) {
-      return res.json({ success: false, error: 'User ID required' });
+    // التحقق من بيانات Telegram إذا كانت موجودة
+    if (init_data && init_data.length > 0) {
+      if (!verifyTelegramWebAppData(init_data)) {
+        console.log('❌ فشل التحقق من بيانات Telegram لـ user:', user_id);
+        return res.json({ success: false, error: 'بيانات Telegram غير صحيحة. يجب فتح التطبيق من خلال البوت.' });
+      }
+    } else {
+      console.log('⚠️ لا توجد بيانات initData لـ user:', user_id);
+      return res.json({ success: false, error: 'لا توجد بيانات من Telegram. تأكد من فتح التطبيق من خلال البوت.' });
     }
     
     let user = await db.getUser(user_id);

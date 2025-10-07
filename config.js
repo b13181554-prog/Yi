@@ -38,6 +38,6 @@ module.exports = {
   BINANCE_SECRET_KEY: process.env.BINANCE_SECRET_KEY || null,
   
   WEBAPP_URL: process.env.WEBAPP_URL 
-    || (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null)
-    || 'https://your-repl-name.your-username.replit.dev',
+    || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : null)
+    || 'https://obentchi-bot.replit.app',
 };

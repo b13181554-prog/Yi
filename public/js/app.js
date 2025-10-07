@@ -207,16 +207,12 @@ const INDICES = [
 
 async function loadUserData() {
     try {
-        if (!tg.initData || tg.initData.length < 10) {
-            throw new Error('لا يوجد بيانات من Telegram. يجب فتح التطبيق من خلال البوت.');
-        }
-
         const response = await fetch('/api/user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 user_id: userId,
-                init_data: tg.initData
+                init_data: tg.initData || ''
             })
         });
 
@@ -228,21 +224,28 @@ async function loadUserData() {
             document.getElementById('loading').style.display = 'none';
             updateUI();
         } else {
-            throw new Error(data.error || 'Failed to load user data');
+            throw new Error(data.error || 'فشل تحميل بيانات المستخدم');
         }
     } catch (error) {
         console.error('❌ خطأ في تحميل البيانات:', error);
+        console.log('🔍 تفاصيل التشخيص:');
+        console.log('- tg object:', tg);
+        console.log('- initData:', tg?.initData);
+        console.log('- initDataUnsafe:', tg?.initDataUnsafe);
+        console.log('- userId:', userId);
+        
         document.getElementById('loading').innerHTML = `
             <div style="text-align: center; padding: 40px 20px;">
-                <h2 style="color: #ee0979; margin-bottom: 15px;">❌ خطأ في التحميل</h2>
+                <h2 style="color: #ee0979; margin-bottom: 15px;">❌ خطأ في الاتصال</h2>
                 <p style="color: #666; margin-bottom: 20px;">${error.message}</p>
 
-                <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                    <h3 style="color: #856404; margin-bottom: 10px;">📝 خطوات الحل:</h3>
-                    <ol style="text-align: right; color: #856404; font-size: 14px; line-height: 1.8;">
-                        <li>تأكد من إنشاء Web App من BotFather باستخدام /newapp</li>
-                        <li>ربط رابط Replit الصحيح بالـ Web App</li>
-                        <li>فتح التطبيق من خلال زر "فتح التطبيق" في البوت</li>
+                <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: right;">
+                    <h3 style="color: #856404; margin-bottom: 10px;">📝 الحلول المقترحة:</h3>
+                    <ol style="color: #856404; font-size: 14px; line-height: 2;">
+                        <li><strong>تأكد من فتح التطبيق من Telegram:</strong> يجب الضغط على زر "🚀 Open App" في البوت</li>
+                        <li><strong>تحديث Telegram:</strong> تأكد من أن لديك أحدث نسخة من Telegram</li>
+                        <li><strong>إعادة تشغيل البوت:</strong> أرسل /start للبوت مرة أخرى</li>
+                        <li><strong>مسح الكاش:</strong> حاول مسح كاش التطبيق وإعادة المحاولة</li>
                     </ol>
                 </div>
 
