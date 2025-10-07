@@ -31,7 +31,7 @@ app.use(express.json({ limit: '10mb' }));
 app.use(validateRequestSize);
 
 // تطبيق Rate Limiting على جميع API endpoints
-app.use('/api/*', apiRateLimit);
+app.use('/api', apiRateLimit);
 
 // معالج الملفات الثابتة
 app.use(express.static('public', {
