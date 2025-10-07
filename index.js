@@ -878,6 +878,51 @@ app.post('/api/subscribe-analyst', async (req, res) => {
   }
 });
 
+app.post('/api/register-analyst', async (req, res) => {
+  try {
+    const { user_id, name, description, monthly_price, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    if (!name || !description || !monthly_price) {
+      return res.json({ success: false, error: 'جميع الحقول مطلوبة' });
+    }
+    
+    const price = parseFloat(monthly_price);
+    if (isNaN(price) || price < 1) {
+      return res.json({ success: false, error: 'السعر يجب أن يكون 1 USDT على الأقل' });
+    }
+    
+    const existingAnalyst = await db.getAnalystByUserId(user_id);
+    if (existingAnalyst) {
+      return res.json({ success: false, error: 'أنت مسجل كمحلل بالفعل' });
+    }
+    
+    console.log(`📝 تسجيل محلل جديد - المستخدم: ${user_id}, الاسم: ${name}`);
+    
+    const analyst = await db.createAnalyst(user_id, name, description, price);
+    
+    const user = await db.getUser(user_id);
+    
+    bot.sendMessage(config.OWNER_ID, `
+📝 <b>محلل جديد</b>
+
+الاسم: ${name}
+المستخدم: @${user.username || 'لا يوجد'}
+ID: ${user_id}
+السعر: ${price} USDT/شهر
+الوصف: ${description}
+`, { parse_mode: 'HTML' }).catch(err => console.error('Error notifying owner:', err));
+    
+    res.json({ success: true, analyst });
+  } catch (error) {
+    console.error('Register Analyst API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/analyze-advanced', async (req, res) => {
   try {
     const { user_id, symbol, timeframe, market_type, trading_type, analysis_type, init_data } = req.body;

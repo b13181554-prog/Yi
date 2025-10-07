@@ -810,22 +810,60 @@ async function subscribeToAnalyst(analystId) {
     }
 }
 
-function registerAsAnalyst() {
-    tg.showPopup({
-        title: 'التسجيل كمحلل',
-        message: 'سيتم فتح نموذج التسجيل. هل تريد المتابعة؟',
-        buttons: [
-            { id: 'cancel', type: 'cancel' },
-            { id: 'ok', type: 'default', text: 'نعم' }
-        ]
-    }, (buttonId) => {
-        if (buttonId === 'ok') {
-            tg.sendData(JSON.stringify({
-                action: 'register_analyst'
-            }));
-            tg.close();
+function showAnalystRegistrationForm() {
+    document.getElementById('analyst-registration-form').style.display = 'block';
+    document.getElementById('analysts-list').style.display = 'none';
+}
+
+function hideAnalystRegistrationForm() {
+    document.getElementById('analyst-registration-form').style.display = 'none';
+    document.getElementById('analysts-list').style.display = 'block';
+    document.getElementById('analyst-name').value = '';
+    document.getElementById('analyst-description').value = '';
+    document.getElementById('analyst-price').value = '';
+}
+
+async function submitAnalystRegistration() {
+    const name = document.getElementById('analyst-name').value.trim();
+    const description = document.getElementById('analyst-description').value.trim();
+    const price = parseFloat(document.getElementById('analyst-price').value);
+
+    if (!name || !description || !price) {
+        tg.showAlert('❌ يرجى ملء جميع الحقول');
+        return;
+    }
+
+    if (price < 1) {
+        tg.showAlert('❌ السعر يجب أن يكون 1 USDT على الأقل');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/register-analyst', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                name: name,
+                description: description,
+                monthly_price: price,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            tg.showAlert('✅ تم التسجيل كمحلل بنجاح!');
+            hideAnalystRegistrationForm();
+            loadAnalysts();
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'فشل التسجيل'));
         }
-    });
+    } catch (error) {
+        console.error('Error registering analyst:', error);
+        tg.showAlert('❌ حدث خطأ في التسجيل');
+    }
 }
 
 function showDeposit() {
