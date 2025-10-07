@@ -319,13 +319,17 @@ ID: ${userId}
         status: 'completed'
       });
       
+      const referralCommission = user.referred_by ? config.SUBSCRIPTION_PRICE * 0.1 : 0;
+      const ownerShare = config.SUBSCRIPTION_PRICE - referralCommission;
+      
+      await db.updateUserBalance(config.OWNER_ID, ownerShare);
+      
       if (user.referred_by) {
-        const commission = config.SUBSCRIPTION_PRICE * 0.1;
-        await db.updateUserBalance(user.referred_by, commission);
+        await db.updateUserBalance(user.referred_by, referralCommission);
         await db.createReferralEarning({
           referrer_id: user.referred_by,
           referred_user_id: userId,
-          amount: commission,
+          amount: referralCommission,
           type: 'subscription'
         });
       }
@@ -335,33 +339,6 @@ ID: ${userId}
 
 صالح حتى: ${expiryDate.toLocaleDateString('ar')}
 استمتع بجميع الميزات! 🎉
-`, { parse_mode: 'HTML' });
-    }
-    
-    else if (data.action === 'subscribe_analyst') {
-      const analystId = data.analyst_id;
-      const analyst = await db.getAnalystById(analystId);
-      
-      if (!analyst) {
-        return bot.sendMessage(chatId, '❌ المحلل غير موجود!');
-      }
-      
-      if (user.balance < analyst.monthly_price) {
-        return bot.sendMessage(chatId, '❌ رصيدك غير كافٍ!');
-      }
-      
-      await db.updateUserBalance(userId, -analyst.monthly_price);
-      
-      const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + 30);
-      
-      await db.subscribeToAnalyst(userId, analystId, expiryDate);
-      
-      await bot.sendMessage(chatId, `
-✅ <b>تم الاشتراك بنجاح!</b>
-
-المحلل: ${analyst.name}
-صالح حتى: ${expiryDate.toLocaleDateString('ar')}
 `, { parse_mode: 'HTML' });
     }
     
