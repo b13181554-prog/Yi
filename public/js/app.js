@@ -1018,6 +1018,74 @@ async function deleteAnalystProfile() {
     });
 }
 
+function showPostTradeForm() {
+    document.getElementById('post-trade-form').style.display = 'block';
+    document.getElementById('my-analyst-profile').style.display = 'none';
+    document.getElementById('analyst-registration-form').style.display = 'none';
+    document.getElementById('analysts-list').style.display = 'none';
+}
+
+function hidePostTradeForm() {
+    document.getElementById('post-trade-form').style.display = 'none';
+    document.getElementById('my-analyst-profile').style.display = 'block';
+    document.getElementById('analysts-list').style.display = 'block';
+    
+    document.getElementById('trade-symbol').value = '';
+    document.getElementById('trade-entry-price').value = '';
+    document.getElementById('trade-target-price').value = '';
+    document.getElementById('trade-stop-loss').value = '';
+    document.getElementById('trade-analysis').value = '';
+}
+
+async function submitTrade() {
+    const symbol = document.getElementById('trade-symbol').value.trim();
+    const type = document.getElementById('trade-type').value;
+    const entryPrice = parseFloat(document.getElementById('trade-entry-price').value);
+    const targetPrice = parseFloat(document.getElementById('trade-target-price').value);
+    const stopLoss = parseFloat(document.getElementById('trade-stop-loss').value);
+    const timeframe = document.getElementById('trade-timeframe').value;
+    const marketType = document.getElementById('trade-market-type').value;
+    const analysis = document.getElementById('trade-analysis').value.trim();
+
+    if (!symbol || !entryPrice) {
+        tg.showAlert('❌ يرجى تحديد الرمز وسعر الدخول على الأقل');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/create-room-post', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                init_data: tg.initData,
+                post_data: {
+                    symbol: symbol,
+                    type: type,
+                    entry_price: entryPrice,
+                    target_price: targetPrice || null,
+                    stop_loss: stopLoss || null,
+                    timeframe: timeframe,
+                    market_type: marketType,
+                    analysis: analysis
+                }
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            tg.showAlert('✅ تم نشر الصفقة بنجاح! تم إرسالها لجميع المشتركين');
+            hidePostTradeForm();
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'فشل نشر الصفقة'));
+        }
+    } catch (error) {
+        console.error('Error posting trade:', error);
+        tg.showAlert('❌ حدث خطأ في نشر الصفقة');
+    }
+}
+
 function showDeposit() {
     document.getElementById('deposit-form').style.display = 'block';
     document.getElementById('withdraw-form').style.display = 'none';

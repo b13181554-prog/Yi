@@ -250,9 +250,55 @@
                                 <strong>الحالة:</strong> <span id="my-analyst-status">نشط</span>
                             </div>
                         </div>
+                        <button class="submit-btn" onclick="showPostTradeForm()" style="margin-right: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📊 نشر صفقة</button>
                         <button class="submit-btn" onclick="showEditAnalystForm()" style="margin-right: 10px;">✏️ تعديل</button>
                         <button id="toggle-analyst-btn" class="submit-btn" onclick="toggleAnalystStatus()" style="margin-right: 10px; background: #ffc107;">⏸️ إيقاف مؤقت</button>
                         <button class="cancel-btn" onclick="deleteAnalystProfile()">🗑️ حذف</button>
+                    </div>
+
+                    <div id="post-trade-form" class="info-card" style="margin-bottom: 20px; display: none;">
+                        <h3>📊 نشر صفقة جديدة</h3>
+                        <div style="margin: 20px 0;">
+                            <label style="display: block; margin-bottom: 5px; color: #666;">نوع السوق:</label>
+                            <select id="trade-market-type" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px;">
+                                <option value="crypto">عملات رقمية 💎</option>
+                                <option value="forex">فوركس 💱</option>
+                            </select>
+                            
+                            <label style="display: block; margin-bottom: 5px; color: #666;">الرمز / الزوج:</label>
+                            <input type="text" id="trade-symbol" placeholder="مثال: BTC/USDT" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px;">
+                            
+                            <label style="display: block; margin-bottom: 5px; color: #666;">نوع الصفقة:</label>
+                            <select id="trade-type" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px;">
+                                <option value="buy">شراء 🟢</option>
+                                <option value="sell">بيع 🔴</option>
+                            </select>
+                            
+                            <label style="display: block; margin-bottom: 5px; color: #666;">سعر الدخول:</label>
+                            <input type="number" id="trade-entry-price" placeholder="مثال: 45000" step="0.00001" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px;">
+                            
+                            <label style="display: block; margin-bottom: 5px; color: #666;">الهدف:</label>
+                            <input type="number" id="trade-target-price" placeholder="مثال: 50000" step="0.00001" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px;">
+                            
+                            <label style="display: block; margin-bottom: 5px; color: #666;">وقف الخسارة:</label>
+                            <input type="number" id="trade-stop-loss" placeholder="مثال: 43000" step="0.00001" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px;">
+                            
+                            <label style="display: block; margin-bottom: 5px; color: #666;">الإطار الزمني:</label>
+                            <select id="trade-timeframe" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px;">
+                                <option value="1m">1 دقيقة</option>
+                                <option value="5m">5 دقائق</option>
+                                <option value="15m">15 دقيقة</option>
+                                <option value="30m">30 دقيقة</option>
+                                <option value="1h">1 ساعة</option>
+                                <option value="4h">4 ساعات</option>
+                                <option value="1d">يوم</option>
+                            </select>
+                            
+                            <label style="display: block; margin-bottom: 5px; color: #666;">التحليل (اختياري):</label>
+                            <textarea id="trade-analysis" placeholder="اكتب التحليل الفني للصفقة..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 15px; min-height: 100px;"></textarea>
+                        </div>
+                        <button class="submit-btn" onclick="submitTrade()">نشر الصفقة ✅</button>
+                        <button class="cancel-btn" onclick="hidePostTradeForm()">إلغاء</button>
                     </div>
 
                     <div id="analyst-registration-form" style="display: none;">
