@@ -739,8 +739,11 @@ async function loadAnalysts() {
                 container.innerHTML = data.analysts.map(analyst => `
                     <div class="analyst-card ${analyst.is_subscribed ? 'subscribed' : ''}">
                         <div class="analyst-header">
-                            <h4>${analyst.name}</h4>
-                            ${analyst.is_subscribed ? '<span class="badge subscribed-badge">✅ مشترك</span>' : ''}
+                            ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.name}" class="analyst-avatar" onerror="this.style.display='none'">` : '<div class="analyst-avatar-placeholder">👤</div>'}
+                            <div class="analyst-info">
+                                <h4>${analyst.name}</h4>
+                                ${analyst.is_subscribed ? '<span class="badge subscribed-badge">✅ مشترك</span>' : ''}
+                            </div>
                         </div>
                         <p class="analyst-desc">${analyst.description}</p>
                         <div class="analyst-stats">
@@ -1845,8 +1848,11 @@ async function loadAnalystsByMarket(marketType) {
             container.innerHTML = filteredAnalysts.map(analyst => `
                 <div class="analyst-card">
                     <div class="analyst-header">
-                        <h4>${analyst.name}</h4>
-                        ${analyst.is_subscribed ? '<span class="badge subscribed-badge">✅ مشترك</span>' : ''}
+                        ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.name}" class="analyst-avatar" onerror="this.style.display='none'">` : '<div class="analyst-avatar-placeholder">👤</div>'}
+                        <div class="analyst-info">
+                            <h4>${analyst.name}</h4>
+                            ${analyst.is_subscribed ? '<span class="badge subscribed-badge">✅ مشترك</span>' : ''}
+                        </div>
                     </div>
                     <p class="analyst-desc">${analyst.description}</p>
                     <div class="analyst-markets" style="margin: 10px 0; display: flex; gap: 5px; flex-wrap: wrap;">
@@ -1941,8 +1947,11 @@ async function loadInactiveAnalysts() {
             container.innerHTML = data.analysts.map(analyst => `
                 <div class="analyst-card inactive">
                     <div class="analyst-header">
-                        <h4>${analyst.name}</h4>
-                        <span class="analyst-price">${analyst.monthly_price} USDT/شهر</span>
+                        ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.name}" class="analyst-avatar" onerror="this.style.display='none'">` : '<div class="analyst-avatar-placeholder">👤</div>'}
+                        <div class="analyst-info">
+                            <h4>${analyst.name}</h4>
+                            <span class="analyst-price">${analyst.monthly_price} USDT/شهر</span>
+                        </div>
                     </div>
                     <p class="analyst-desc">${analyst.description}</p>
                     <div class="analyst-stats">
@@ -1976,10 +1985,11 @@ async function loadTop100Analysts() {
         const data = await response.json();
 
         if (data.success && data.analysts && data.analysts.length > 0) {
-            container.innerHTML = data.analysts.map(analyst => `
-                <div class="top-analyst-card" style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            container.innerHTML = data.analysts.map((analyst, index) => `
+                <div class="top-analyst-card ${index >= 3 ? 'scrollable' : 'sticky-top'}" style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); ${index < 3 ? 'position: sticky; top: ' + (index * 5) + 'px; z-index: ' + (100 - index) + ';' : ''}">
                     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
                         <div style="font-size: 24px; font-weight: bold; color: ${analyst.rank <= 3 ? '#FFD700' : '#667eea'}; min-width: 40px;">#${analyst.rank}</div>
+                        ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.analyst_name || analyst.name}" class="analyst-avatar" onerror="this.style.display='none'" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid ${analyst.rank <= 3 ? '#FFD700' : '#667eea'};">` : '<div class="analyst-avatar-placeholder" style="width: 50px; height: 50px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>'}
                         <div style="flex: 1;">
                             <h4 style="margin: 0; color: #333;">${analyst.analyst_name || analyst.name}</h4>
                             <p style="margin: 5px 0; color: #666; font-size: 14px;">نسبة النجاح: ${(analyst.success_rate || 0).toFixed(1)}%</p>

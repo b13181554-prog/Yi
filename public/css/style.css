@@ -566,6 +566,39 @@ body {
     margin-bottom: 10px;
 }
 
+.analyst-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.analyst-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #667eea;
+    flex-shrink: 0;
+}
+
+.analyst-avatar-placeholder {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.analyst-info {
+    flex: 1;
+}
+
 .analyst-card h4 {
     color: #333;
     margin-bottom: 8px;
