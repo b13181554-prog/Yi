@@ -316,7 +316,7 @@ class UltraAnalysis {
       conditions: {
         meetsStrictCriteria: shouldTrade,
         adxStrength: adxValue >= 25 ? '✅ قوي' : '❌ ضعيف',
-        agreementLevel: agreementPercentage >= 75 ? '✅ عالي' : agreementPercentage >= 65 ? '⚠️ متوسط' : '❌ منخفض',
+        agreementLevel: agreementPercentage >= 75 ? '✅ عالي' : agreementPercentage >= 65 ? 'متوسط' : 'منخفض',
         volumeConfirmation: ['عالي', 'ضخم'].includes(volume.signal.replace('حجم ', '')) ? '✅ جيد' : '❌ ضعيف'
       },
       reasons,
