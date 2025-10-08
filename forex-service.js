@@ -592,63 +592,27 @@ class ForexService {
     try {
       console.log(`🕯️ Fetching real forex candles for ${pair}...`);
       
-      const candles = await this.getCandlesFromTwelveData(pair, interval, limit);
+      let candles = await this.getCandlesFromTwelveData(pair, interval, limit);
       
       if (candles && candles.length > 0) {
         return candles;
       }
 
-      let days = 7;
-      switch(interval) {
-        case '1m': case '5m': case '15m': case '30m': days = 1; break;
-        case '1h': days = 7; break;
-        case '4h': days = 30; break;
-        case '1d': days = Math.min(limit, 90); break;
-        case '1w': days = limit * 7; break;
-        default: days = 7;
-      }
-
-      const historicalRates = await this.getHistoricalRatesFromFrankfurter(days);
+      console.log(`⚠️ TwelveData failed, trying Yahoo Finance for ${pair}...`);
+      candles = await this.getCandlesFromYahooFinance(pair, interval, limit);
       
-      if (!historicalRates) {
-        throw new Error('فشل في الحصول على البيانات التاريخية');
+      if (candles && candles.length > 0) {
+        return candles;
       }
 
-      const baseCurrency = pair.slice(0, 3);
-      const quoteCurrency = pair.slice(3, 6);
+      console.log(`⚠️ Yahoo Finance failed, trying Alpha Vantage for ${pair}...`);
+      candles = await this.getCandlesFromAlphaVantage(pair, interval, limit);
       
-      const fallbackCandles = [];
-      const dates = Object.keys(historicalRates).sort();
-      
-      for (const date of dates.slice(-limit)) {
-        const rates = historicalRates[date];
-        
-        let baseRate = baseCurrency === 'USD' ? 1 : (rates[baseCurrency] ? 1 / rates[baseCurrency] : null);
-        let quoteRate = quoteCurrency === 'USD' ? 1 : (rates[quoteCurrency] ? 1 / rates[quoteCurrency] : null);
-        
-        if (baseRate && quoteRate) {
-          const price = baseRate / quoteRate;
-          const timestamp = new Date(date).getTime();
-          const variation = price * 0.001;
-          
-          fallbackCandles.push({
-            openTime: timestamp,
-            open: (price - variation * 0.5).toFixed(5),
-            high: (price + variation).toFixed(5),
-            low: (price - variation).toFixed(5),
-            close: price.toFixed(5),
-            volume: '0',
-            closeTime: timestamp + 86400000
-          });
-        }
+      if (candles && candles.length > 0) {
+        return candles;
       }
 
-      if (fallbackCandles.length > 0) {
-        console.log(`⚠️ Using fallback data: Got ${fallbackCandles.length} forex candles for ${pair}`);
-        return fallbackCandles;
-      }
-
-      throw new Error('لا توجد بيانات كافية');
+      throw new Error(`فشل في الحصول على بيانات الشموع الحقيقية لـ ${pair} من جميع المصادر`);
     } catch (error) {
       console.error(`Error fetching forex candles for ${pair}:`, error.message);
       throw error;

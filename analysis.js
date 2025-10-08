@@ -554,8 +554,13 @@ class TechnicalAnalysis {
     
     const atrValue = parseFloat(atr.value);
     const leverage = tradingType === 'futures' ? 10 : 1;
-    const stopLossDistance = atrValue * 2;
-    const takeProfitDistance = atrValue * (tradingType === 'futures' ? 4 : 3);
+    
+    const atrPercent = (atrValue / currentPrice) * 100;
+    const stopLossPercent = Math.max(atrPercent * 1.5, 0.5);
+    const takeProfitPercent = stopLossPercent * (tradingType === 'futures' ? 3 : 2);
+    
+    const stopLossDistance = (currentPrice * stopLossPercent) / 100;
+    const takeProfitDistance = (currentPrice * takeProfitPercent) / 100;
     
     let recommendation = '';
     let entryPrice = currentPrice;
@@ -685,8 +690,13 @@ class TechnicalAnalysis {
     }
     
     const atrValue = parseFloat(atr.value);
-    const stopLossDistance = atrValue * 2;
-    const takeProfitDistance = atrValue * 3;
+    
+    const atrPercent = (atrValue / currentPrice) * 100;
+    const stopLossPercent = Math.max(atrPercent * 1.5, 0.5);
+    const takeProfitPercent = stopLossPercent * 2;
+    
+    const stopLossDistance = (currentPrice * stopLossPercent) / 100;
+    const takeProfitDistance = (currentPrice * takeProfitPercent) / 100;
     
     let recommendation = '';
     let entryPrice = currentPrice;
