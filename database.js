@@ -62,7 +62,7 @@ async function getUser(userId) {
   return await db.collection('users').findOne({ user_id: userId });
 }
 
-async function createUser(userId, username, firstName, lastName, referredBy = null) {
+async function createUser(userId, username, firstName, lastName, referredBy = null, referredByAnalyst = null) {
   const freeTrialStart = new Date();
   const user = {
     user_id: userId,
@@ -81,6 +81,7 @@ async function createUser(userId, username, firstName, lastName, referredBy = nu
     temp_withdrawal_address: null,
     is_active: true,
     referred_by: referredBy,
+    referred_by_analyst: referredByAnalyst,
     referral_earnings: 0,
     language: 'ar',
     notifications_enabled: true

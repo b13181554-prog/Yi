@@ -274,6 +274,14 @@
                             <div style="margin-bottom: 10px;">
                                 <strong>الحالة:</strong> <span id="my-analyst-status">نشط</span>
                             </div>
+                            <div id="analyst-referral-section" style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; display: none;">
+                                <h4 style="color: #fff; margin: 0 0 10px 0;">🎁 رابط الإحالة الخاص بك - 20% عمولة!</h4>
+                                <p style="color: #fff; margin: 0 0 10px 0; font-size: 14px;">شارك هذا الرابط مع أصدقائك واحصل على 20% من كل مدفوعاتهم!</p>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="text" id="analyst-referral-link" readonly style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #fff; color: #333;" />
+                                    <button onclick="copyAnalystReferralLink()" style="padding: 10px 20px; background: #28a745; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">📋 نسخ</button>
+                                </div>
+                            </div>
                         </div>
                         <button class="submit-btn" onclick="showPostTradeForm()" style="margin-right: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📊 نشر صفقة</button>
                         <button class="submit-btn" onclick="showEditAnalystForm()" style="margin-right: 10px;">✏️ تعديل</button>

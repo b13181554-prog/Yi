@@ -104,16 +104,22 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
     
     let user = await db.getUser(userId);
     let referrerId = null;
+    let analystReferrerId = null;
     
     if (params && params.startsWith('ref_')) {
       referrerId = parseInt(params.replace('ref_', ''));
       if (referrerId === userId) {
         referrerId = null;
       }
+    } else if (params && params.startsWith('analyst_ref_')) {
+      analystReferrerId = parseInt(params.replace('analyst_ref_', ''));
+      if (analystReferrerId === userId) {
+        analystReferrerId = null;
+      }
     }
     
     if (!user) {
-      await db.createUser(userId, username, firstName, lastName, referrerId);
+      await db.createUser(userId, username, firstName, lastName, referrerId, analystReferrerId);
       
       if (referrerId) {
         await bot.sendMessage(referrerId, `
@@ -121,6 +127,15 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
 
 أحد أصدقائك انضم عبر رابط الإحالة الخاص بك!
 ستحصل على 10% من جميع مدفوعاته 💰
+        `, { parse_mode: 'HTML' });
+      }
+      
+      if (analystReferrerId) {
+        await bot.sendMessage(analystReferrerId, `
+🎉 <b>إحالة جديدة من محلل!</b>
+
+أحد أصدقائك انضم عبر رابط الإحالة الخاص بك!
+ستحصل على 20% من جميع مدفوعاته 💰
         `, { parse_mode: 'HTML' });
       }
       
@@ -449,14 +464,27 @@ ID: ${userId}
         status: 'completed'
       });
       
-      const referralCommission = user.referred_by ? config.SUBSCRIPTION_PRICE * 0.1 : 0;
+      let referralCommission = 0;
+      let referrerId = null;
+      let referralType = '';
+      
+      if (user.referred_by_analyst) {
+        referralCommission = config.SUBSCRIPTION_PRICE * 0.2;
+        referrerId = user.referred_by_analyst;
+        referralType = 'analyst_referral';
+      } else if (user.referred_by) {
+        referralCommission = config.SUBSCRIPTION_PRICE * 0.1;
+        referrerId = user.referred_by;
+        referralType = 'subscription';
+      }
+      
       const ownerShare = config.SUBSCRIPTION_PRICE - referralCommission;
       
       await db.updateUserBalance(config.OWNER_ID, ownerShare);
       
-      if (user.referred_by) {
-        await db.updateUserBalance(user.referred_by, referralCommission);
-        await db.addReferralEarning(user.referred_by, userId, 'subscription', config.SUBSCRIPTION_PRICE, referralCommission);
+      if (referrerId) {
+        await db.updateUserBalance(referrerId, referralCommission);
+        await db.addReferralEarning(referrerId, userId, referralType, config.SUBSCRIPTION_PRICE, referralCommission);
       }
       
       await bot.sendMessage(chatId, `

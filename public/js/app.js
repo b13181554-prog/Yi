@@ -1023,6 +1023,8 @@ async function loadMyAnalystProfile() {
                 toggleBtn.style.background = '#28a745';
             }
             
+            await loadAnalystReferralLink();
+            
             document.getElementById('my-analyst-profile').style.display = 'block';
             document.getElementById('analyst-register-card').style.display = 'none';
         } else {
@@ -1033,6 +1035,41 @@ async function loadMyAnalystProfile() {
     } catch (error) {
         console.error('Error loading analyst profile:', error);
     }
+}
+
+async function loadAnalystReferralLink() {
+    try {
+        const response = await fetch('/api/get-analyst-referral-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.referral_link) {
+            document.getElementById('analyst-referral-link').value = data.referral_link;
+            document.getElementById('analyst-referral-section').style.display = 'block';
+        }
+    } catch (error) {
+        console.error('Error loading analyst referral link:', error);
+    }
+}
+
+function copyAnalystReferralLink() {
+    const linkInput = document.getElementById('analyst-referral-link');
+    linkInput.select();
+    linkInput.setSelectionRange(0, 99999);
+    
+    navigator.clipboard.writeText(linkInput.value).then(() => {
+        tg.showAlert('✅ تم نسخ الرابط! شاركه مع أصدقائك واحصل على 20% عمولة 💰');
+    }).catch(() => {
+        document.execCommand('copy');
+        tg.showAlert('✅ تم نسخ الرابط!');
+    });
 }
 
 async function toggleAnalystStatus() {

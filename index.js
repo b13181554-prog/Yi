@@ -895,7 +895,21 @@ app.post('/api/subscribe-analyst', async (req, res) => {
     
     const price = parseFloat(analyst.monthly_price);
     const analystShare = price / 2;
-    const referralCommission = user.referred_by ? price * 0.1 : 0;
+    
+    let referralCommission = 0;
+    let referrerId = null;
+    let referralType = '';
+    
+    if (user.referred_by_analyst) {
+      referralCommission = price * 0.2;
+      referrerId = user.referred_by_analyst;
+      referralType = 'analyst_referral';
+    } else if (user.referred_by) {
+      referralCommission = price * 0.1;
+      referrerId = user.referred_by;
+      referralType = 'analyst_subscription';
+    }
+    
     const ownerShare = (price / 2) - referralCommission;
     
     const newBalance = user.balance - price;
@@ -903,9 +917,9 @@ app.post('/api/subscribe-analyst', async (req, res) => {
     await db.updateUserBalance(analyst.user_id, analystShare);
     await db.updateUserBalance(config.OWNER_ID, ownerShare);
     
-    if (user.referred_by) {
-      await db.addReferralEarning(user.referred_by, user_id, 'analyst_subscription', price, referralCommission);
-      await db.updateUserBalance(user.referred_by, referralCommission);
+    if (referrerId) {
+      await db.addReferralEarning(referrerId, user_id, referralType, price, referralCommission);
+      await db.updateUserBalance(referrerId, referralCommission);
     }
     
     await db.subscribeToAnalyst(user_id, analyst_id, price);
@@ -925,6 +939,34 @@ app.post('/api/subscribe-analyst', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Subscribe Analyst API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/get-analyst-referral-link', async (req, res) => {
+  try {
+    const { user_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const analyst = await db.getAnalystByUserId(user_id);
+    if (!analyst) {
+      return res.json({ success: false, error: 'أنت لست محلل مسجل' });
+    }
+    
+    const botInfo = await bot.bot.getMe();
+    const botUsername = botInfo.username;
+    const referralLink = `https://t.me/${botUsername}?start=analyst_ref_${user_id}`;
+    
+    res.json({ 
+      success: true, 
+      referral_link: referralLink,
+      commission_rate: 20
+    });
+  } catch (error) {
+    console.error('Get Analyst Referral Link API Error:', error);
     res.json({ success: false, error: error.message });
   }
 });
