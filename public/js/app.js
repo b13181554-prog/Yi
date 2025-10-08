@@ -1596,8 +1596,10 @@ async function analyzeMarketAdvanced() {
 
     try {
         const indicators = ['RSI', 'MACD', 'EMA', 'SMA', 'BBANDS', 'ATR', 'STOCH', 'ADX', 'VOLUME'];
+        
+        const apiEndpoint = analysisType === 'ultra' ? '/api/analyze-ultra' : '/api/analyze-advanced';
 
-        const response = await fetch('/api/analyze-advanced', {
+        const response = await fetch(apiEndpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1616,7 +1618,11 @@ async function analyzeMarketAdvanced() {
         loadingMsg.remove();
 
         if (data.success && data.analysis) {
-            displayAdvancedAnalysisResult(data.analysis, symbol, timeframe, analysisType);
+            if (analysisType === 'ultra') {
+                displayUltraAnalysisResult(data.analysis, symbol, timeframe);
+            } else {
+                displayAdvancedAnalysisResult(data.analysis, symbol, timeframe, analysisType);
+            }
         } else {
             alert('❌ خطأ: ' + (data.error || 'فشل التحليل'));
         }
@@ -1756,6 +1762,131 @@ function displayAdvancedAnalysisResult(analysis, symbol, timeframe, analysisType
     }
 
     indDetails.innerHTML = indicatorsHTML;
+    resultDiv.style.display = 'block';
+}
+
+function displayUltraAnalysisResult(analysis, symbol, timeframe) {
+    const resultDiv = document.getElementById('analysis-result');
+    const recCard = document.getElementById('recommendation-card');
+    const indDetails = document.getElementById('indicators-details');
+
+    const actionEmoji = analysis.emoji || (analysis.recommendation === 'شراء' ? '🟢' : 
+                       analysis.recommendation === 'بيع' ? '🔴' : '⚪');
+    const actionText = analysis.recommendation;
+
+    const tradingTypeText = analysis.tradingType === 'futures' ? 'فيوتشر ⚡' : 'سبوت 📊';
+    const marketTypeText = analysis.marketType === 'forex' ? 'فوركس 💱' : 'عملات رقمية 💎';
+
+    recCard.innerHTML = `
+        <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white; margin-bottom: 20px;">
+            <h1 style="font-size: 48px; margin: 0;">${actionEmoji}</h1>
+            <h2 style="margin: 10px 0;">💎 Ultra Analysis</h2>
+            <h3 style="margin: 10px 0; font-size: 24px;">${actionText}</h3>
+            <div style="background: rgba(255,255,255,0.2); padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 16px;">
+                <strong>مستوى الثقة:</strong> ${analysis.confidence}
+            </div>
+        </div>
+
+        ${analysis.shouldTrade ? `
+            <div style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); padding: 15px; border-radius: 12px; margin-bottom: 20px; color: white; text-align: center;">
+                <h3 style="margin: 0 0 10px 0;">✅ يفي بجميع المعايير الصارمة</h3>
+                <p style="margin: 0; font-size: 14px;">هذه إشارة عالية الجودة - يمكن الاعتماد عليها</p>
+            </div>
+        ` : `
+            <div style="background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%); padding: 15px; border-radius: 12px; margin-bottom: 20px; color: white; text-align: center;">
+                <h3 style="margin: 0 0 10px 0;">⚠️ لا يفي بالمعايير الصارمة</h3>
+                <p style="margin: 0; font-size: 14px;">يُفضل الانتظار حتى تتضح الصورة أكثر</p>
+            </div>
+        `}
+
+        <div class="rec-details" style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <p><strong>💎 الرمز:</strong> ${symbol}</p>
+            <p><strong>📊 النوع:</strong> ${tradingTypeText} | ${marketTypeText}</p>
+            <p><strong>⏰ الإطار الزمني:</strong> ${timeframe}</p>
+            <p><strong>💰 السعر الحالي:</strong> $${analysis.entryPrice}</p>
+            <p><strong>⚠️ مستوى المخاطرة:</strong> ${analysis.riskLevel}</p>
+            <p><strong>🕐 وقت التحليل:</strong> ${analysis.analysisTime}</p>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px;">
+            <h3 style="margin: 0 0 15px 0; font-size: 20px;">📊 إعداد الصفقة</h3>
+            <div style="display: grid; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.15); border-radius: 8px;">
+                    <span>🎯 سعر الدخول:</span>
+                    <strong>$${analysis.entryPrice}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px; background: rgba(255,0,0,0.3); border-radius: 8px;">
+                    <span>🛑 وقف الخسارة:</span>
+                    <strong>$${analysis.stopLoss} (${analysis.stopLossPercent})</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px; background: rgba(0,255,0,0.3); border-radius: 8px;">
+                    <span>🎁 الهدف:</span>
+                    <strong>$${analysis.takeProfit} (${analysis.takeProfitPercent})</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.15); border-radius: 8px;">
+                    <span>📈 نسبة المخاطرة/العائد:</span>
+                    <strong>1:${analysis.riskRewardRatio}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <h3 style="color: #667eea; margin-bottom: 15px;">📊 نتائج التحليل</h3>
+            <div style="display: grid; gap: 10px;">
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>📈 نسبة الشراء:</strong> ${analysis.scores.buyPercentage}
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>📉 نسبة البيع:</strong> ${analysis.scores.sellPercentage}
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>🎯 نسبة التوافق:</strong> ${analysis.scores.agreementPercentage}
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>✅ عدد التأكيدات:</strong> ${analysis.scores.confirmations} من ${analysis.scores.totalIndicators}
+                </div>
+            </div>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <h3 style="color: #667eea; margin-bottom: 15px;">✅ الشروط</h3>
+            <div style="display: grid; gap: 10px;">
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>قوة ADX:</strong> ${analysis.conditions.adxStrength}
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>مستوى التوافق:</strong> ${analysis.conditions.agreementLevel}
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>تأكيد الحجم:</strong> ${analysis.conditions.volumeConfirmation}
+                </div>
+            </div>
+        </div>
+
+        ${analysis.reasons && analysis.reasons.length > 0 ? `
+            <div style="background: #e3f2fd; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <h3 style="color: #1976d2; margin-bottom: 15px;">💡 أسباب التوصية</h3>
+                <ul style="margin: 0; padding-right: 20px;">
+                    ${analysis.reasons.map(r => `<li style="margin-bottom: 8px;">${r}</li>`).join('')}
+                </ul>
+            </div>
+        ` : ''}
+
+        ${analysis.warnings && analysis.warnings.length > 0 ? `
+            <div style="background: #fff3e0; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-right: 4px solid #ff9800;">
+                <h3 style="color: #f57c00; margin-bottom: 15px;">⚠️ تحذيرات</h3>
+                <ul style="margin: 0; padding-right: 20px;">
+                    ${analysis.warnings.map(w => `<li style="margin-bottom: 8px; color: #e65100;">${w}</li>`).join('')}
+                </ul>
+            </div>
+        ` : ''}
+
+        <div style="background: #ffebee; padding: 15px; border-radius: 12px; margin-top: 20px; border-right: 4px solid #f44336;">
+            <p style="margin: 0; color: #c62828; font-size: 14px;">${analysis.disclaimer}</p>
+        </div>
+    `;
+
+    indDetails.innerHTML = '';
     resultDiv.style.display = 'block';
 }
 
