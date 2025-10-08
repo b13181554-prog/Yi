@@ -608,10 +608,6 @@ function displayAnalysisResult(analysis, symbol, timeframe) {
                 </div>
             </div>
         </div>
-
-        <div style="margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 8px; font-size: 13px; color: #ccc;">
-            ⚠️ تنبيه: هذا التحليل للأغراض التعليمية فقط. قم بإجراء بحثك الخاص قبل اتخاذ أي قرار استثماري.
-        </div>
     `;
 
     let indicatorsHTML = '<h3 style="margin: 20px 0 15px; color: #fff;">📈 المؤشرات الفنية</h3><div class="indicators-grid">';
@@ -1792,19 +1788,14 @@ function displayUltraAnalysisResult(analysis, symbol, timeframe) {
                 <h3 style="margin: 0 0 10px 0;">✅ يفي بجميع المعايير الصارمة</h3>
                 <p style="margin: 0; font-size: 14px;">هذه إشارة عالية الجودة - يمكن الاعتماد عليها</p>
             </div>
-        ` : `
-            <div style="background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%); padding: 15px; border-radius: 12px; margin-bottom: 20px; color: white; text-align: center;">
-                <h3 style="margin: 0 0 10px 0;">⚠️ لا يفي بالمعايير الصارمة</h3>
-                <p style="margin: 0; font-size: 14px;">يُفضل الانتظار حتى تتضح الصورة أكثر</p>
-            </div>
-        `}
+        ` : ``}
 
         <div class="rec-details" style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
             <p><strong>💎 الرمز:</strong> ${symbol}</p>
             <p><strong>📊 النوع:</strong> ${tradingTypeText} | ${marketTypeText}</p>
             <p><strong>⏰ الإطار الزمني:</strong> ${timeframe}</p>
             <p><strong>💰 السعر الحالي:</strong> $${analysis.entryPrice}</p>
-            <p><strong>⚠️ مستوى المخاطرة:</strong> ${analysis.riskLevel}</p>
+            <p><strong>مستوى المخاطرة:</strong> ${analysis.riskLevel}</p>
             <p><strong>🕐 وقت التحليل:</strong> ${analysis.analysisTime}</p>
         </div>
 
@@ -1872,18 +1863,7 @@ function displayUltraAnalysisResult(analysis, symbol, timeframe) {
             </div>
         ` : ''}
 
-        ${analysis.warnings && analysis.warnings.length > 0 ? `
-            <div style="background: #fff3e0; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-right: 4px solid #ff9800;">
-                <h3 style="color: #f57c00; margin-bottom: 15px;">⚠️ تحذيرات</h3>
-                <ul style="margin: 0; padding-right: 20px;">
-                    ${analysis.warnings.map(w => `<li style="margin-bottom: 8px; color: #e65100;">${w}</li>`).join('')}
-                </ul>
-            </div>
-        ` : ''}
 
-        <div style="background: #ffebee; padding: 15px; border-radius: 12px; margin-top: 20px; border-right: 4px solid #f44336;">
-            <p style="margin: 0; color: #c62828; font-size: 14px;">${analysis.disclaimer}</p>
-        </div>
     `;
 
     indDetails.innerHTML = '';
