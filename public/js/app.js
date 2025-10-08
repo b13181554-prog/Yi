@@ -35,6 +35,7 @@ if (!tg) {
 let userData = null;
 let userBalance = 0;
 let userId = null;
+let botUsername = null;
 
 function formatPrice(price) {
     if (price === null || price === undefined || isNaN(price)) return 'N/A';
@@ -246,6 +247,7 @@ async function loadUserData() {
         if (data.success) {
             userData = data.user;
             userBalance = parseFloat(userData.balance || 0);
+            botUsername = data.botUsername;
             
             // تطبيق لغة المستخدم
             const userLang = userData.language || 'ar';
@@ -384,8 +386,7 @@ function updateUI() {
 
     // تحديث رابط الإحالة
     const refLinkEl = document.getElementById('ref-link');
-    if (refLinkEl) {
-        const botUsername = tg.initDataUnsafe.bot_username;
+    if (refLinkEl && botUsername) {
         const refLink = `https://t.me/${botUsername}?start=ref_${user.id}`;
         refLinkEl.textContent = refLink;
     }
