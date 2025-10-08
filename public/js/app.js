@@ -292,24 +292,12 @@ async function init() {
     }
 
     try {
-        // دعم بيئة التطوير مع بيانات افتراضية
-        let user;
         if (!tg.initDataUnsafe?.user?.id) {
-            console.warn('⚠️ لا يوجد معرف مستخدم من Telegram - استخدام بيانات تجريبية للتطوير');
-            user = {
-                id: 123456789,
-                first_name: 'Test',
-                last_name: 'User'
-            };
-            // إضافة البيانات لـ tg.initDataUnsafe
-            if (!tg.initDataUnsafe) tg.initDataUnsafe = {};
-            tg.initDataUnsafe.user = user;
-        } else {
-            user = tg.initDataUnsafe.user;
+            throw new Error('لا يوجد معرف مستخدم من Telegram. يجب فتح التطبيق من خلال البوت.');
         }
         
-        userId = user.id;
-        console.log('✅ Final User ID:', userId);
+        userId = tg.initDataUnsafe.user.id;
+        console.log('✅ User ID:', userId);
 
         tg.ready();
         tg.expand();
