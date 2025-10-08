@@ -3,183 +3,6 @@
 ## Overview
 OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comprehensive technical analysis using various market APIs. The project aims to offer advanced trading tools, real-time data, and automated functionalities to users, supporting both cryptocurrency and forex markets. It includes features like a full-fledged Telegram Web App for a rich user experience, automated withdrawal and deposit systems, and multi-language support. The business vision is to provide a robust and accessible trading assistant with global market potential, empowering users with advanced analytical capabilities and a seamless trading workflow.
 
-## Recent Changes (October 2025)
-
-### Latest Update - Critical Analysis & Data Source Fixes (Oct 8, 2025)
-
-#### 🔧 مصادر البيانات - إصلاحات حاسمة
-
-**1. إصلاح بيانات الفوركس الاحتياطية:**
-- ❌ **المشكلة السابقة**: كان النظام يستخدم بيانات تقريبية من Frankfurter API عند فشل TwelveData
-  - البيانات التقريبية تستخدم variation عشوائية (±0.1%)
-  - OHLC غير حقيقية (محسوبة من سعر واحد فقط)
-  - بيانات يومية فقط حتى للأطر الزمنية الأقل (1h, 4h)
-- ✅ **الحل**: إضافة Yahoo Finance و Alpha Vantage كمصادر احتياطية حقيقية
-  - بيانات OHLC حقيقية 100%
-  - دعم جميع الأطر الزمنية
-  - أولوية: TwelveData → Yahoo Finance → Alpha Vantage
-
-**2. تحسين حساب Stop Loss & Take Profit:**
-- ❌ **المشكلة السابقة**: حساب ثابت بناءً على ATR فقط
-  ```javascript
-  stopLoss = ATR * 2  // مشكلة: غير ملائم لجميع الأسعار
-  takeProfit = ATR * 3
-  ```
-- ✅ **الحل الجديد**: حساب نسبة مئوية من السعر
-  ```javascript
-  atrPercent = (ATR / Price) * 100
-  stopLossPercent = max(atrPercent * 1.5, 0.5%)  // حد أدنى 0.5%
-  takeProfitPercent = stopLossPercent * 2
-  ```
-  - ملائم لجميع نطاقات الأسعار
-  - نسبة Risk/Reward متوازنة
-  - الحد الأدنى 0.5% لتجنب SL/TP صغيرة جداً
-
-**3. تحسين تحليل Fibonacci:**
-- ❌ **المشكلة السابقة**: نطاق ثابت (آخر 50 شمعة) و استخدام Close فقط
-- ✅ **الحل**: 
-  - نطاق ديناميكي: حتى 100 شمعة (حسب البيانات المتاحة)
-  - استخدام High/Low الحقيقية لدقة أعلى
-  - تحديد مستويات فيبوناتشي بشكل أكثر دقة
-
-**4. التحقق الصارم من جودة البيانات:**
-- ✅ فحص OHLC في كل شمعة:
-  - High >= Low
-  - High >= Max(Open, Close)
-  - Low <= Min(Open, Close)
-  - جميع القيم > 0
-- ✅ الحد الأدنى: 20 شمعة للتحليل
-- ✅ رفض البيانات غير المنطقية فوراً
-- ✅ رسائل خطأ واضحة ومفصلة
-
-#### 📊 ملف التوثيق الشامل
-- ✅ تم إنشاء `DATA_SOURCES.md` يشرح:
-  - جميع مصادر البيانات وأولوياتها
-  - آليات التحقق من الجودة
-  - التحسينات المطبقة
-  - كيفية التحقق من دقة التحليل
-
-**5. أنظمة التحليل الثلاثة - من العادي إلى المضمون:**
-
-**A. نظام التحليل العادي (Regular Analysis):**
-- توافق 65%+ من المؤشرات
-- يعطي جميع الإشارات المتاحة
-- مناسب للمتداولين ذوي الخبرة
-
-**B. نظام Ultra Analysis - تحليل عالي الدقة:**
-- ✅ **نظام تحليل شامل** يجمع جميع المؤشرات والأنماط:
-  - RSI, MACD, EMA, SMA, Bollinger Bands, ATR, Stochastic, ADX
-  - Volume Analysis, Fibonacci, Candle Patterns, Head & Shoulders
-  - Support & Resistance Levels
-- ✅ **معايير صارمة للدخول**:
-  - توافق 75%+ من المؤشرات للإشارة العادية
-  - توافق 85%+ و ADX>30 للإشارة عالية الجودة جداً
-  - 6+ تأكيدات من المؤشرات المختلفة
-  - حجم تداول عالي أو ضخم
-- ✅ **نظام تقييم الثقة**:
-  - عالية جداً (Ultra High): 85%+ توافق، ADX>30، 7+ تأكيدات
-  - عالية: 75%+ توافق، ADX>25، 6+ تأكيدات
-  - متوسطة: 65%+ توافق (مع تحذير)
-  - منخفضة: أقل من 65% (لا ينصح بالدخول)
-
-**C. نظام Zero Reversal - صفقات مضمونة 100% (احتمال انعكاس 0%):**
-- ✅ **أشد الأنظمة صرامة - لا يعطي صفقة إلا إذا كانت مضمونة**:
-  - نقاط القوة >= 38 من 41 (93% معايير)
-  - ADX >= 45 (اتجاه قوي جداً ومستمر)
-  - Risk/Reward >= 1:4 (نسبة مخاطرة/عائد ممتازة)
-  - حجم تداول ضخم فقط (لا يقبل حجم متوسط أو عالي)
-  - اتجاه واضح 100% (السعر فوق/تحت جميع المتوسطات المرتبة)
-  - RSI في منطقة آمنة جداً (25-55 للشراء، 45-75 للبيع)
-  - MACD قوي ومتوافق مع الاتجاه
-  - Stochastic في المنطقة المثالية
-  - Bollinger Bands يؤكد الاتجاه
-  - تأكيد من 4+ شموع من آخر 5 شموع
-  - جميع المؤشرات متوافقة بنسبة 100%
-- ✅ **نظام الضمان**:
-  - عرض "صفقة مضمونة 100%" فقط عند تحقق جميع الشروط
-  - عرض "لا توجد صفقة مضمونة" مع الأسباب إذا فشل أي شرط
-  - احتمال الانعكاس: 0% عند التوصية
-  - 💚❤️ ألوان خاصة للصفقات المضمونة (أخضر للشراء، أحمر للبيع)
-- ✅ **واجهة مستخدم خاصة**:
-  - تصميم أحمر مميز (⛔ ZERO REVERSAL)
-  - عرض واضح لاحتمال الانعكاس
-  - شرح مفصل للأسباب عند عدم التوصية
-  - تنبيه بارز عند وجود صفقة مضمونة
-
-- ✅ **تحليل المخاطر في جميع الأنظمة**:
-  - تقييم مستوى المخاطرة (منخفض جداً، منخفض، متوسط، مرتفع)
-  - حساب دقيق لـ Stop Loss & Take Profit
-  - نسبة Risk/Reward متوازنة (1:2 للسبوت، 1:3 للفيوتشر)
-- ✅ **واجهة مستخدم مميزة**:
-  - عرض شامل لجميع التفاصيل
-  - إظهار الأسباب والتحذيرات
-  - تنبيه واضح عند عدم استيفاء المعايير
-  - نتائج مفصلة لكل مؤشر
-
-### Previous Update - Enhanced Analyst System Security & Quality (Oct 7, 2025)
-
-#### Subscription Management Enhancements
-- **Advanced Duplicate Prevention**: Multi-layer subscription protection system
-  - Prevents active duplicate subscriptions to the same analyst
-  - Enforces 7-day cooldown period after subscription expiration
-  - Clear error messages with remaining days until re-subscription allowed
-  - Database-level checks in `getRecentAnalystSubscription` function
-  
-#### Analyst Name Quality & Uniqueness
-- **Centralized Name Sanitization**: Robust input validation system
-  - `sanitizeAnalystName()` function removes special characters and normalizes spacing
-  - Supports Arabic, English, numbers, and limited special chars (_-)
-  - Auto-truncates names to 50 characters maximum
-  - Enforces minimum 3-character length post-sanitization
-  
-- **Database-Level Duplicate Prevention**:
-  - Unique index with case-insensitive collation prevents duplicate names
-  - All creation paths (API & Telegram bot) validate through `createAnalyst()`
-  - Duplicate checks use sanitized values to prevent bypass attempts
-  - Description validation enforces 10-character minimum
-  
-#### Trading Room Content Moderation
-- **Comprehensive Banned Words System**: Enhanced spam/promotion prevention
-  - Expanded forbidden words list (30+ terms in Arabic & English)
-  - Blocks: channel references, social media platforms, contact requests, URLs
-  - Detects: telegram, whatsapp, instagram, facebook, twitter, youtube, discord, tiktok
-  - Prevents: @mentions, t.me links, wa.me links, short URLs (bit.ly)
-  - Case-insensitive pattern matching on all trade post content
-  
-#### Quality Assurance
-- **Centralized Validation**: All analyst creation flows validated in `database.createAnalyst()`
-  - Name sanitization + length check + uniqueness verification
-  - Description length validation (10+ characters)
-  - Proper error propagation to API and bot interfaces
-  - No path allows empty or duplicate analyst names
-  
-- **Error Handling**: Clear user-facing error messages in Arabic
-  - API endpoints catch and return validation errors
-  - Telegram bot displays specific error reasons
-  - All validation errors logged for monitoring
-
-### Data Accuracy Improvements (Oct 7, 2025)
-- **Real Price Data Implementation**: Replaced all estimated/placeholder data with authentic real-time market data
-  - **Cryptocurrency Candles**: Now using OKX API (primary), Bybit (secondary), and Binance (fallback) for accurate OHLC data
-  - **Forex Candles**: Integrated TwelveData API for real forex candle data with proper OHLC values
-  - **Stocks, Indices & Commodities**: Integrated Yahoo Finance API v8 for authentic market data
-    - Supports stocks (AAPL, MSFT, TSLA, etc.)
-    - Supports indices (US30→^DJI, SPX500→^GSPC, NAS100→^IXIC)
-    - Supports commodities (XAUUSD→GC=F, XAGUSD→SI=F, USOIL→CL=F)
-    - Accurate OHLC data with correct closeTime calculation based on interval
-    - Null value filtering - excludes invalid candles completely
-  - **Removed Deprecated Services**: Deleted old unused files (`multi-market-data.js`, `unified-market-service.js`, `binance-service.js`)
-  - **Priority System**: OKX is now the primary data source for all cryptocurrency market data
-  - **Fallback Strategy**: Enhanced error handling with proper fallback mechanisms for data reliability
-
-### Data Integrity Enhancement
-- Removed all mock/test data from the project
-  - Eliminated `test_mode` bypass in API authentication
-  - Removed placeholder user ID (123456789) from frontend
-  - Deleted test files: `test-market-data.js`, `test-prices.js`, `public/test-analysis.html`
-  - Application now strictly requires genuine Telegram WebApp data to function
-  - Clear error messages displayed when app is accessed outside Telegram bot
-
 ## User Preferences
 - Default Language: Arabic (ar)
 - يمكن للمستخدمين تغيير اللغة من خلال القائمة الرئيسية
@@ -193,80 +16,56 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comp
 - **Interaction**: Transitioned from traditional Telegram buttons to a single "🚀 Open App" button to direct all user interaction through the Web App.
 
 ### Technical Implementations
-- **Core Logic**:
-    - `index.js`: Main entry point, Express server, and API endpoints.
-    - `bot.js`: Telegram Bot logic and message handling.
-    - `database.js`: MongoDB operations.
-    - `config.js`: Environment settings and secrets.
-    - `languages.js`: Multi-language translation system (7 languages).
-    - `binance-service.js`: Integration with Binance API for automated withdrawals.
-    - `market-data.js`: Fetches market data from various cryptocurrency APIs.
-    - `forex-service.js`: Fetches forex market data.
-    - `analysis.js`: Technical analysis indicators (RSI, MACD, EMA, SMA, BBANDS, ATR).
-    - `notifications.js`: User notifications.
-    - `tron.js`: TRON blockchain integration for USDT TRC20 deposits.
-    - `admin.js`: Owner dashboard for bot management.
-    - `rate-limiter.js`: Protects against repeated requests.
-- **Web App Structure**:
-    - `/public/index.html`: Main web application interface.
-    - `/public/css/style.css`: Comprehensive professional dark theme styling.
-    - `/public/js/app.js`: Full application logic and Telegram integration.
-- **Security**:
-    - API keys are stored in environment variables, not hardcoded.
-    - Application stops immediately if essential environment variables are missing.
-    - Advanced security with rate limiting.
-    - Telegram signature verification for all Web App API requests.
+- **Core Logic**: Express server, Telegram Bot logic, MongoDB operations, environment configuration, multi-language support, automated withdrawals, market data fetching, technical analysis, notifications, TRON blockchain integration, and admin dashboard.
+- **Web App Structure**: Main HTML interface, comprehensive professional dark theme styling (CSS), and full application logic with Telegram integration (JavaScript).
+- **Security**: API keys in environment variables, robust error handling, rate limiting, and Telegram signature verification for Web App API requests.
 - **Multi-language Support**: 7 languages (Arabic, English, French, Spanish, German, Russian, Chinese) with user-selectable preference.
+- **Data Quality & Analysis**:
+    - **Data Validation**: Strict validation of OHLC data (High >= Low, High >= Max(Open, Close), Low <= Min(Open, Close), all values > 0) and minimum 20 candles for analysis.
+    - **Stop Loss & Take Profit**: Calculated as a percentage of the price, adapting to different price ranges with a balanced Risk/Reward ratio and a minimum of 0.5%.
+    - **Fibonacci Analysis**: Dynamic range up to 100 candles using actual High/Low for improved accuracy.
+    - **Analyst System Enhancements**: Advanced duplicate subscription prevention, centralized analyst name sanitization (supports Arabic, English, numbers, limited special chars, 3-50 chars length), and unique index for case-insensitive names.
+    - **Trading Room Moderation**: Comprehensive banned words system (30+ terms in Arabic & English) to prevent spam and promotion, blocking channel references, social media, contact requests, and URLs.
+    - **Analysis Systems**:
+        - **Regular Analysis**: 65%+ indicator agreement, provides all available signals.
+        - **Ultra Analysis**: Comprehensive analysis across 10+ indicators and patterns. Requires 75%+ indicator agreement (or 85%+ with ADX>30) and high trading volume for entry. Includes a confidence rating (Ultra High, High, Medium, Low).
+        - **Zero Reversal Analysis**: Strictest system, requiring 93%+ criteria (38/41 points), ADX >= 45, Risk/Reward >= 1:4, massive trading volume, 100% clear trend, safe RSI zone, strong MACD, ideal Stochastic, Bollinger Bands confirmation, and 4+ candle confirmations. Provides "100% guaranteed trade" only when all conditions are met, otherwise explains why not. Features a distinctive red UI.
+    - **Risk Analysis**: All systems include risk assessment (very low, low, medium, high), precise Stop Loss & Take Profit calculation, and balanced Risk/Reward ratios.
 
 ### Feature Specifications
-- **Comprehensive Web App**:
-    - Technical Analysis: Select currency, timeframe, indicators, market type (Crypto/Forex).
-    - Top Movers: Displaying top gainers, losers, and highest volume assets.
-    - Wallet: Deposit/withdraw USDT with transaction history.
-    - Analysts: View available analysts and subscribe to services.
-    - My Account: User info, subscription, referral system, language settings.
-- **Trading Features**:
-    - Technical analysis for crypto, forex, stocks, indices, and commodities.
-    - Trading recommendations with entry/exit points.
-    - Tracking of trending cryptocurrencies.
-    - Support for 15+ cryptocurrencies, 10+ forex pairs, major stocks, global indices, and commodities.
-- **Financial Features**:
-    - Internal wallet for USDT TRC20.
-    - Automated withdrawals via Binance API.
-    - Deposits via TRON blockchain (USDT TRC20 transaction verification, duplicate prevention, instant notifications).
-- **User Management**:
-    - Analyst subscription system.
-    - Referral system with 10% commission.
-- **Admin Dashboard**: Accessible via `/admin` command, offering system statistics, user management, withdrawal processing, transaction viewing, analyst management, referral tracking, and mass messaging.
+- **Comprehensive Web App**: Offers technical analysis tools, top movers, wallet (deposit/withdraw USDT), analyst subscriptions, and account management (user info, subscription, referral, language).
+- **Trading Features**: Technical analysis for crypto, forex, stocks, indices, commodities; trading recommendations; trending cryptocurrency tracking.
+- **Financial Features**: Internal USDT TRC20 wallet, automated withdrawals via OKX API, and deposits via TRON blockchain with transaction verification.
+- **User Management**: Analyst subscription system and a 10% commission referral system.
+- **Admin Dashboard**: Provides system statistics, user management, withdrawal processing, transaction viewing, analyst management, referral tracking, and mass messaging.
 
 ### System Design Choices
 - **Database**: MongoDB Atlas for scalable and flexible data storage.
-- **Deployment**: Configured for 24/7 operation on Replit using Reserved VM or UptimeRobot.
-- **Error Handling**: Improved error processing and logging for better diagnostics in `config.js`, `multi-market-data.js`, and `tron.js`.
-- **API Strategy**: Utilizes multiple APIs for data redundancy and fallback, addressing regional restrictions (e.g., Binance/Bybit in Libya).
+- **Deployment**: Configured for 24/7 operation on Replit.
+- **Error Handling**: Improved error processing and logging across the system.
+- **API Strategy**: Utilizes multiple APIs for data redundancy and fallback, addressing regional restrictions.
 
 ## External Dependencies
 
 - **Databases**:
     - MongoDB Atlas
 - **Cryptocurrency Market Data APIs** (Priority Order):
-    - **OKX** (Primary) - Real-time prices and authentic OHLC candle data
-    - **Bybit** (Secondary) - Real candle data with proper High/Low values
-    - **Binance** (Fallback) - Additional data source
-    - CoinGecko - Price verification
-    - Gate.io, Kraken, Coinbase, CoinPaprika, Huobi, Crypto.com, Bitfinex - Alternative sources
+    - **OKX** (Primary)
+    - **Bybit** (Secondary)
+    - **Binance** (Fallback)
+    - CoinGecko, Gate.io, Kraken, Coinbase, CoinPaprika, Huobi, Crypto.com, Bitfinex (Alternative sources)
 - **Forex Market Data APIs** (Priority Order):
-    - **TwelveData API** (Primary) - Real forex candle data with authentic OHLC
-    - **Yahoo Finance** (Secondary) - Real forex data for all timeframes
-    - **Alpha Vantage** (Tertiary) - Professional forex data
-    - ExchangeRate-API, Frankfurter (ECB), FloatRates, VATComply - Rate verification
+    - **TwelveData API** (Primary)
+    - **Yahoo Finance** (Secondary)
+    - **Alpha Vantage** (Tertiary)
+    - ExchangeRate-API, Frankfurter (ECB), FloatRates, VATComply (Rate verification)
 - **Market Data APIs (No API Keys Required)**:
-    - **Yahoo Finance API** - للأسهم والسلع والمؤشرات (بدون مفاتيح API)
-    - **Frankfurter API (ECB Data)** - للفوركس (بدون مفاتيح API، بيانات البنك المركزي الأوروبي)
+    - **Yahoo Finance API** (for stocks, commodities, indices)
+    - **Frankfurter API (ECB Data)** (for forex)
 - **Blockchain Integration**:
     - TRON Network (for USDT TRC20 deposits)
 - **Withdrawal Integration**:
-    - Binance API
+    - OKX API (USDT TRC20 withdrawals with automated processing)
 - **Telegram**:
     - Telegram Bot API
     - Telegram Web App
