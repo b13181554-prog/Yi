@@ -787,6 +787,20 @@ async function getTop100Analysts() {
     .toArray();
 }
 
+async function getTop100AnalystsByMarket(marketType) {
+  return await db.collection('analysts')
+    .find({ 
+      is_active: true,
+      total_trades: { $gte: 5 },
+      markets: marketType
+    })
+    .sort({ 
+      likes: -1
+    })
+    .limit(100)
+    .toArray();
+}
+
 async function getAnalystRank(analystId) {
   const allAnalysts = await db.collection('analysts')
     .find({ 
@@ -873,12 +887,13 @@ async function getActiveSignals() {
     .toArray();
 }
 
-async function createAnalystReview(userId, analystId, rating, comment) {
+async function createAnalystReview(userId, analystId, rating, comment, marketType = null) {
   const review = {
     user_id: userId,
     analyst_id: new ObjectId(analystId),
     rating: rating,
     comment: comment,
+    market_type: marketType,
     created_at: new Date()
   };
   
@@ -886,11 +901,26 @@ async function createAnalystReview(userId, analystId, rating, comment) {
   return { ...review, _id: result.insertedId };
 }
 
-async function getAnalystReviews(analystId) {
+async function getAnalystReviews(analystId, marketType = null) {
+  const query = { analyst_id: new ObjectId(analystId) };
+  if (marketType) {
+    query.market_type = marketType;
+  }
   return await db.collection('analyst_reviews')
-    .find({ analyst_id: new ObjectId(analystId) })
+    .find(query)
     .sort({ created_at: -1 })
     .toArray();
+}
+
+async function getAnalystLikesByMarket(analystId, marketType) {
+  const reviews = await db.collection('analyst_reviews')
+    .find({ 
+      analyst_id: new ObjectId(analystId),
+      market_type: marketType,
+      rating: 1
+    })
+    .toArray();
+  return reviews.length;
 }
 
 async function getAnalystByName(name) {
@@ -1003,6 +1033,7 @@ module.exports = {
   closeAnalystTrade,
   updateAnalystStats,
   getTop100Analysts,
+  getTop100AnalystsByMarket,
   getAnalystRank,
   getAnalystTrades,
   getAnalystStats,
@@ -1013,6 +1044,7 @@ module.exports = {
   getActiveSignals,
   createAnalystReview,
   getAnalystReviews,
+  getAnalystLikesByMarket,
   createAnalystRoomPost,
   getAnalystRoomPosts,
   deleteAnalystRoomPost

@@ -2265,16 +2265,46 @@ async function loadInactiveAnalysts() {
     }
 }
 
-async function loadTop100Analysts() {
+let currentTop100Market = 'all';
+
+function switchTop100Market(marketType, event) {
+    document.querySelectorAll('.top100-market-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.background = 'white';
+        btn.style.color = '#333';
+        btn.style.border = '1px solid #ddd';
+    });
+    
+    if (event && event.target) {
+        event.target.classList.add('active');
+        event.target.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        event.target.style.color = 'white';
+        event.target.style.border = 'none';
+    }
+    
+    currentTop100Market = marketType;
+    loadTop100Analysts(marketType);
+}
+
+async function loadTop100Analysts(marketType = 'all') {
     const container = document.getElementById('top100-container');
     container.innerHTML = '<p class="empty-state">جاري تحميل الترتيب...</p>';
+
+    const marketIcons = {
+        'crypto': '💎',
+        'forex': '💱',
+        'stocks': '📈',
+        'commodities': '🛢️',
+        'indices': '📊'
+    };
 
     try {
         const response = await fetch('/api/top-analysts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                init_data: tg.initData
+                init_data: tg.initData,
+                market_type: marketType === 'all' ? null : marketType
             })
         });
 
@@ -2288,11 +2318,13 @@ async function loadTop100Analysts() {
                         ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.analyst_name || analyst.name}" class="analyst-avatar" onerror="this.style.display='none'" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid ${analyst.rank <= 3 ? '#FFD700' : '#667eea'};">` : '<div class="analyst-avatar-placeholder" style="width: 50px; height: 50px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>'}
                         <div style="flex: 1;">
                             <h4 style="margin: 0; color: #333;">${analyst.analyst_name || analyst.name}</h4>
-                            <p style="margin: 5px 0; color: #666; font-size: 14px;">نسبة النجاح: ${(analyst.success_rate || 0).toFixed(1)}%</p>
+                            <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                                ${marketType !== 'all' ? marketIcons[marketType] + ' ' : ''}👍 ${analyst.likes || 0} إعجاب
+                            </p>
                         </div>
                         <div style="text-align: left;">
-                            <div style="font-size: 18px; font-weight: bold; color: #667eea;">${analyst.performance_score ? analyst.performance_score.toFixed(1) : '0.0'}</div>
-                            <div style="font-size: 11px; color: #888;">نقاط الأداء</div>
+                            <div style="font-size: 18px; font-weight: bold; color: #10b981;">${(analyst.success_rate || 0).toFixed(1)}%</div>
+                            <div style="font-size: 11px; color: #888;">نسبة النجاح</div>
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding-top: 10px; border-top: 1px solid #eee;">

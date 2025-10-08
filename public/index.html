@@ -465,8 +465,18 @@
                 <div id="top100-analysts-tab" class="analysts-tab-content">
                     <div class="top100-header">
                         <h3>🏆 أفضل 100 محلل</h3>
-                        <p class="top100-desc">مرتبون حسب نسبة النجاح والأداء العام</p>
+                        <p class="top100-desc">مرتبون حسب عدد الإعجابات في كل سوق</p>
                     </div>
+                    
+                    <div class="top100-market-tabs" style="display: flex; gap: 5px; overflow-x: auto; margin-bottom: 15px; padding: 10px 0;">
+                        <button class="top100-market-btn active" onclick="switchTop100Market('all', event)" style="padding: 8px 12px; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; white-space: nowrap; font-size: 13px;">🏆 الكل</button>
+                        <button class="top100-market-btn" onclick="switchTop100Market('crypto', event)" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap; font-size: 13px;">💎 عملات رقمية</button>
+                        <button class="top100-market-btn" onclick="switchTop100Market('forex', event)" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap; font-size: 13px;">💱 فوركس</button>
+                        <button class="top100-market-btn" onclick="switchTop100Market('stocks', event)" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap; font-size: 13px;">📈 أسهم</button>
+                        <button class="top100-market-btn" onclick="switchTop100Market('commodities', event)" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap; font-size: 13px;">🛢️ سلع</button>
+                        <button class="top100-market-btn" onclick="switchTop100Market('indices', event)" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap; font-size: 13px;">📊 مؤشرات</button>
+                    </div>
+                    
                     <div id="top100-container">
                         <p class="empty-state">جاري تحميل الترتيب...</p>
                     </div>

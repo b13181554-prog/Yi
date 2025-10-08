@@ -706,18 +706,21 @@ app.post('/api/analysts', async (req, res) => {
 
 app.post('/api/top-analysts', async (req, res) => {
   try {
-    const { init_data } = req.body;
+    const { init_data, market_type } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    const topAnalysts = await db.getTop100Analysts();
+    const topAnalysts = market_type 
+      ? await db.getTop100AnalystsByMarket(market_type)
+      : await db.getTop100Analysts();
     
     const analystsWithRank = await Promise.all(topAnalysts.map(async (analyst, index) => {
       const stats = await db.getAnalystStats(analyst._id);
       return {
         ...analyst,
+        id: analyst._id.toString(),
         rank: index + 1,
         ...stats
       };
