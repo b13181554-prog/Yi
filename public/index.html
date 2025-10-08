@@ -102,7 +102,7 @@
                     <div class="form-group">
                         <label>نوع التحليل:</label>
                         <div class="analysis-type-grid">
-                            <div class="analysis-type-card active" data-type="complete" onclick="selectAnalysisType('complete', event)">
+                            <div class="analysis-type-card" data-type="complete" onclick="selectAnalysisType('complete', event)">
                                 <span class="type-icon">📈</span>
                                 <span class="type-label">تحليل شامل</span>
                             </div>
@@ -110,6 +110,11 @@
                                 <span class="type-icon">💎</span>
                                 <span class="type-label">Ultra Analysis</span>
                                 <small style="font-size: 10px; color: #667eea; display: block; margin-top: 2px;">دقة عالية جداً</small>
+                            </div>
+                            <div class="analysis-type-card active" data-type="zero-reversal" onclick="selectAnalysisType('zero-reversal', event)" style="border: 3px solid #FF0000; background: linear-gradient(135deg, #FF000020 0%, #FF006620 100%);">
+                                <span class="type-icon">⛔</span>
+                                <span class="type-label">Zero Reversal</span>
+                                <small style="font-size: 10px; color: #FF0000; display: block; margin-top: 2px; font-weight: bold;">انعكاس 0%</small>
                             </div>
                             <div class="analysis-type-card" data-type="fibonacci" onclick="selectAnalysisType('fibonacci', event)">
                                 <span class="type-icon">🎯</span>

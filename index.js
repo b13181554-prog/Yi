@@ -1381,6 +1381,41 @@ app.post('/api/analyze-ultra', async (req, res) => {
   }
 });
 
+app.post('/api/analyze-zero-reversal', async (req, res) => {
+  try {
+    const { user_id, symbol, timeframe, market_type, trading_type, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    let candles;
+    
+    if (market_type === 'forex') {
+      candles = await forexService.getCandles(symbol, timeframe, 100);
+    } else {
+      candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
+    }
+    
+    if (!candles || candles.length < 100) {
+      return res.json({ success: false, error: 'بيانات غير كافية لنظام Zero Reversal - يجب توفر 100 شمعة على الأقل' });
+    }
+    
+    const ZeroReversalAnalysis = require('./zero-reversal-analysis');
+    const zeroReversalAnalysis = new ZeroReversalAnalysis(candles);
+    
+    const zeroReversalRecommendation = zeroReversalAnalysis.getZeroReversalRecommendation(market_type, trading_type || 'spot', timeframe);
+    
+    res.json({
+      success: true,
+      analysis: zeroReversalRecommendation
+    });
+  } catch (error) {
+    console.error('Zero Reversal Analysis API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/change-language', async (req, res) => {
   try {
     const { user_id, language, init_data } = req.body;
