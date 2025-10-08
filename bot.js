@@ -456,12 +456,7 @@ ID: ${userId}
       
       if (user.referred_by) {
         await db.updateUserBalance(user.referred_by, referralCommission);
-        await db.createReferralEarning({
-          referrer_id: user.referred_by,
-          referred_user_id: userId,
-          amount: referralCommission,
-          type: 'subscription'
-        });
+        await db.addReferralEarning(user.referred_by, userId, 'subscription', config.SUBSCRIPTION_PRICE, referralCommission);
       }
       
       await bot.sendMessage(chatId, `
