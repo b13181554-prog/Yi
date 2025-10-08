@@ -1346,6 +1346,41 @@ app.post('/api/analyze-advanced', async (req, res) => {
   }
 });
 
+app.post('/api/analyze-ultra', async (req, res) => {
+  try {
+    const { user_id, symbol, timeframe, market_type, trading_type, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    let candles;
+    
+    if (market_type === 'forex') {
+      candles = await forexService.getCandles(symbol, timeframe, 100);
+    } else {
+      candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
+    }
+    
+    if (!candles || candles.length < 50) {
+      return res.json({ success: false, error: 'بيانات غير كافية للتحليل المتقدم - يجب توفر 50 شمعة على الأقل' });
+    }
+    
+    const UltraAnalysis = require('./ultra-analysis');
+    const ultraAnalysis = new UltraAnalysis(candles);
+    
+    const ultraRecommendation = ultraAnalysis.getUltraRecommendation(market_type, trading_type || 'spot');
+    
+    res.json({
+      success: true,
+      analysis: ultraRecommendation
+    });
+  } catch (error) {
+    console.error('Ultra Analysis API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 // SPA fallback - يخدم index.html لجميع المسارات غير API
 app.use((req, res, next) => {
   if (!req.path.startsWith('/api/') && !req.path.startsWith('/health') && !req.path.startsWith('/ping')) {
