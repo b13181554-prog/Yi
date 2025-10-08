@@ -808,6 +808,13 @@ class TechnicalAnalysis {
       takeProfit = currentPrice + takeProfitDistance;
     }
     
+    // حساب النسب المئوية
+    const totalIndicators = 10; // عدد المؤشرات المستخدمة
+    const maxScore = totalIndicators * 2;
+    const buyPercentage = (buySignals / maxScore) * 100;
+    const sellPercentage = (sellSignals / maxScore) * 100;
+    const agreementPercentage = Math.max(buyPercentage, sellPercentage);
+
     return {
       recommendation,
       action: recommendation,
@@ -820,6 +827,15 @@ class TechnicalAnalysis {
       buySignals: buySignals.toFixed(1),
       sellSignals: sellSignals.toFixed(1),
       trendStrength: strength,
+      scores: {
+        buyScore: buySignals.toFixed(1),
+        sellScore: sellSignals.toFixed(1),
+        buyPercentage: buyPercentage.toFixed(1) + '%',
+        sellPercentage: sellPercentage.toFixed(1) + '%',
+        agreementPercentage: agreementPercentage.toFixed(1) + '%',
+        confirmations: Math.max(buySignals, sellSignals).toFixed(0),
+        totalIndicators
+      },
       indicators: {
         RSI: rsi,
         MACD: macd,
