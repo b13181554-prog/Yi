@@ -279,8 +279,6 @@ TxID: <code>${data.tx_id}</code>
 `, { parse_mode: 'HTML' });
       
       if (!okx.isConfigured()) {
-        await db.updateUserBalance(userId, totalWithFee);
-        
         await db.createWithdrawalRequest({
           user_id: userId,
           amount: amount,
@@ -289,12 +287,15 @@ TxID: <code>${data.tx_id}</code>
         });
         
         await bot.editMessageText(`
-⚠️ <b>السحب التلقائي غير متاح</b>
+⚠️ <b>السحب التلقائي غير متاح حالياً</b>
 
 تم إنشاء طلب السحب وسيتم معالجته يدوياً خلال 24 ساعة.
 
-المبلغ: ${amount} USDT
+المبلغ المحجوز: ${amount} USDT
+الرسوم: ${config.WITHDRAWAL_FEE} USDT
 العنوان: <code>${address}</code>
+
+سيتم إعلامك فور المعالجة 📬
 `, {
           chat_id: chatId,
           message_id: processingMsg.message_id,
@@ -308,6 +309,8 @@ TxID: <code>${data.tx_id}</code>
 ID: ${userId}
 المبلغ: ${amount} USDT
 العنوان: <code>${address}</code>
+
+⚠️ الأموال محجوزة - يجب المعالجة يدوياً
 `, { parse_mode: 'HTML' });
         
         return;

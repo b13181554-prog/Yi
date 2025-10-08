@@ -1236,7 +1236,7 @@ async function submitWithdraw() {
     }
 
     tg.showConfirm(
-        `سيتم سحب ${amount} USDT + 1 USDT رسوم = ${totalWithFee} USDT\nهل أنت متأكد؟`,
+        `⚡ سحب تلقائي\n\nالمبلغ: ${amount} USDT\nالرسوم: 1 USDT\nالإجمالي: ${totalWithFee} USDT\n\nسيتم معالجة السحب فوراً تلقائياً\nهل أنت متأكد؟`,
         async (confirmed) => {
             if (confirmed) {
                 tg.sendData(JSON.stringify({
@@ -1244,7 +1244,7 @@ async function submitWithdraw() {
                     address: address,
                     amount: amount
                 }));
-                tg.showAlert('تم إرسال طلب السحب! سيتم معالجته خلال 24 ساعة.');
+                tg.showAlert('⏳ جاري معالجة السحب... سيصلك إشعار بالنتيجة!');
                 hideWithdraw();
             }
         }
