@@ -1369,7 +1369,7 @@ app.post('/api/analyze-ultra', async (req, res) => {
     const UltraAnalysis = require('./ultra-analysis');
     const ultraAnalysis = new UltraAnalysis(candles);
     
-    const ultraRecommendation = ultraAnalysis.getUltraRecommendation(market_type, trading_type || 'spot');
+    const ultraRecommendation = ultraAnalysis.getUltraRecommendation(market_type, trading_type || 'spot', timeframe);
     
     res.json({
       success: true,

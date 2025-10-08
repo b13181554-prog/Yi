@@ -6,8 +6,11 @@ class UltraAnalysis {
     this.candles = candles;
   }
 
-  getUltraRecommendation(marketType = 'spot', tradingType = 'spot') {
+  getUltraRecommendation(marketType = 'spot', tradingType = 'spot', timeframe = '1h') {
     const currentPrice = this.candles[this.candles.length - 1].close;
+    
+    // تطبيع الإطار الزمني لضمان التوافق
+    const normalizedTimeframe = timeframe?.toLowerCase().trim() || '1h';
     
     const rsi = this.analysis.calculateRSI();
     const macd = this.analysis.calculateMACD();
@@ -189,8 +192,31 @@ class UltraAnalysis {
 
     const atrValue = parseFloat(atr.value);
     const atrPercent = (atrValue / currentPriceFloat) * 100;
-    const stopLossPercent = Math.max(atrPercent * 1.5, 0.5);
-    const takeProfitPercent = stopLossPercent * (tradingType === 'futures' ? 3 : 2.5);
+    
+    // معاملات دقيقة لكل إطار زمني
+    const timeframeMultipliers = {
+      '1m': { sl: 0.8, tp: 1.5 },   // صفقات سريعة جداً - أهداف قريبة
+      '5m': { sl: 1.0, tp: 2.0 },   // صفقات سكالبينج - أهداف قريبة
+      '15m': { sl: 1.2, tp: 2.5 },  // صفقات قصيرة - أهداف قريبة نسبياً
+      '30m': { sl: 1.4, tp: 2.8 },  // صفقات قصيرة إلى متوسطة
+      '1h': { sl: 1.5, tp: 3.0 },   // صفقات متوسطة - أهداف متوسطة
+      '2h': { sl: 1.6, tp: 3.2 },   // صفقات متوسطة
+      '4h': { sl: 1.8, tp: 3.5 },   // صفقات متوسطة إلى طويلة
+      '1d': { sl: 2.0, tp: 4.0 },   // صفقات طويلة - أهداف بعيدة
+      '1w': { sl: 2.5, tp: 5.0 }    // صفقات طويلة جداً - أهداف بعيدة جداً
+    };
+    
+    // الحصول على المعاملات المناسبة للإطار الزمني
+    const multiplier = timeframeMultipliers[normalizedTimeframe] || timeframeMultipliers['1h'];
+    
+    // حساب Stop Loss و Take Profit بناءً على الإطار الزمني
+    let stopLossPercent = Math.max(atrPercent * multiplier.sl, 0.3);
+    let takeProfitPercent = stopLossPercent * multiplier.tp;
+    
+    // تعديل إضافي للفيوتشر (مخاطر أعلى = أهداف أبعد)
+    if (tradingType === 'futures') {
+      takeProfitPercent = takeProfitPercent * 1.2;
+    }
     
     const stopLossDistance = (currentPriceFloat * stopLossPercent) / 100;
     const takeProfitDistance = (currentPriceFloat * takeProfitPercent) / 100;
@@ -289,6 +315,7 @@ class UltraAnalysis {
       riskLevel,
       tradingType,
       marketType,
+      timeframe,
       analysisTime: new Date().toLocaleString('ar-SA', { 
         timeZone: 'Asia/Riyadh',
         year: 'numeric',
