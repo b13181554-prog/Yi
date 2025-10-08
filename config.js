@@ -34,8 +34,9 @@ module.exports = {
   CURRENCY_API_KEY: process.env.CURRENCY_API_KEY || null,
   CURRENCY_FREAKS_API_KEY: process.env.CURRENCY_FREAKS_API_KEY || null,
   
-  BINANCE_API_KEY: process.env.BINANCE_API_KEY || null,
-  BINANCE_SECRET_KEY: process.env.BINANCE_SECRET_KEY || null,
+  OKX_API_KEY: process.env.OKX_API_KEY || null,
+  OKX_SECRET_KEY: process.env.OKX_SECRET_KEY || null,
+  OKX_PASSPHRASE: process.env.OKX_PASSPHRASE || null,
   
   WEBAPP_URL: process.env.WEBAPP_URL 
     || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : null)
