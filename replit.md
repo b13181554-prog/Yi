@@ -35,7 +35,7 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comp
 ### Feature Specifications
 - **Comprehensive Web App**: Offers technical analysis tools, top movers, wallet (deposit/withdraw USDT), analyst subscriptions, and account management (user info, subscription, referral, language).
 - **Trading Features**: Technical analysis for crypto, forex, stocks, indices, commodities; trading recommendations; trending cryptocurrency tracking.
-- **Financial Features**: Internal USDT TRC20 wallet, automated withdrawals via OKX API, and deposits via TRON blockchain with transaction verification.
+- **Financial Features**: Internal USDT TRC20 wallet, **instant automated withdrawals** via OKX API (fully automatic with comprehensive error handling and fund protection), and deposits via TRON blockchain with transaction verification.
 - **User Management**: Analyst subscription system and a 10% commission referral system.
 - **Admin Dashboard**: Provides system statistics, user management, withdrawal processing, transaction viewing, analyst management, referral tracking, and mass messaging.
 
@@ -65,7 +65,11 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comp
 - **Blockchain Integration**:
     - TRON Network (for USDT TRC20 deposits)
 - **Withdrawal Integration**:
-    - OKX API (USDT TRC20 withdrawals with automated processing)
+    - **OKX API** (USDT TRC20 instant automated withdrawals)
+      - Fully automatic processing without admin approval
+      - Comprehensive error handling with automatic fund refund on failure
+      - Protected against double-withdrawal scenarios
+      - Real-time user notifications for all withdrawal states
 - **Telegram**:
     - Telegram Bot API
     - Telegram Web App
