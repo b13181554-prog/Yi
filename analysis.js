@@ -85,7 +85,7 @@ class TechnicalAnalysis {
     const currentRSI = rsiValues[rsiValues.length - 1];
     
     let signal = 'محايد';
-    let emoji = '⚪';
+    let emoji = '🔵';
     let recommendation = '';
     
     if (currentRSI > 70) {
@@ -98,11 +98,11 @@ class TechnicalAnalysis {
       recommendation = 'فرصة شراء محتملة';
     } else if (currentRSI >= 50 && currentRSI <= 70) {
       signal = 'صاعد';
-      emoji = '🔺';
+      emoji = '📈';
       recommendation = 'اتجاه صعودي';
     } else if (currentRSI >= 30 && currentRSI < 50) {
       signal = 'هابط';
-      emoji = '🔻';
+      emoji = '📉';
       recommendation = 'اتجاه هبوطي';
     }
     
@@ -133,13 +133,13 @@ class TechnicalAnalysis {
         name: 'MACD',
         value: 'N/A',
         signal: 'غير متاح',
-        emoji: '⚪',
+        emoji: '⚫',
         recommendation: 'بيانات غير كافية'
       };
     }
     
     let signal = 'محايد';
-    let emoji = '⚪';
+    let emoji = '🔵';
     let recommendation = '';
     
     if (current.MACD > current.signal && current.MACD > 0) {
@@ -148,7 +148,7 @@ class TechnicalAnalysis {
       recommendation = 'إشارة شراء قوية';
     } else if (current.MACD > current.signal && current.MACD < 0) {
       signal = 'بداية صعود';
-      emoji = '🔺';
+      emoji = '📈';
       recommendation = 'بداية اتجاه صعودي';
     } else if (current.MACD < current.signal && current.MACD < 0) {
       signal = 'هابط قوي';
@@ -156,7 +156,7 @@ class TechnicalAnalysis {
       recommendation = 'إشارة بيع قوية';
     } else if (current.MACD < current.signal && current.MACD > 0) {
       signal = 'بداية هبوط';
-      emoji = '🔻';
+      emoji = '📉';
       recommendation = 'بداية اتجاه هبوطي';
     }
     
@@ -179,16 +179,16 @@ class TechnicalAnalysis {
     const currentPrice = this.closes[this.closes.length - 1];
     
     let signal = 'محايد';
-    let emoji = '⚪';
+    let emoji = '🔵';
     let recommendation = '';
     
     if (currentPrice > currentEMA) {
       signal = 'صاعد';
-      emoji = '🔺';
+      emoji = '📈';
       recommendation = 'السعر فوق المتوسط - اتجاه صعودي';
     } else if (currentPrice < currentEMA) {
       signal = 'هابط';
-      emoji = '🔻';
+      emoji = '📉';
       recommendation = 'السعر تحت المتوسط - اتجاه هبوطي';
     }
     
@@ -211,16 +211,16 @@ class TechnicalAnalysis {
     const currentPrice = this.closes[this.closes.length - 1];
     
     let signal = 'محايد';
-    let emoji = '⚪';
+    let emoji = '🔵';
     let recommendation = '';
     
     if (currentPrice > currentSMA) {
       signal = 'صاعد';
-      emoji = '🔺';
+      emoji = '📈';
       recommendation = 'السعر فوق المتوسط - اتجاه صعودي';
     } else if (currentPrice < currentSMA) {
       signal = 'هابط';
-      emoji = '🔻';
+      emoji = '📉';
       recommendation = 'السعر تحت المتوسط - اتجاه هبوطي';
     }
     
@@ -248,13 +248,13 @@ class TechnicalAnalysis {
         name: 'Bollinger Bands',
         value: 'N/A',
         signal: 'غير متاح',
-        emoji: '⚪',
+        emoji: '⚫',
         recommendation: 'بيانات غير كافية'
       };
     }
     
     let signal = 'محايد';
-    let emoji = '⚪';
+    let emoji = '🔵';
     let recommendation = '';
     
     if (currentPrice >= current.upper) {
@@ -267,11 +267,11 @@ class TechnicalAnalysis {
       recommendation = 'السعر عند الحد السفلي - فرصة شراء';
     } else if (currentPrice > current.middle) {
       signal = 'صاعد';
-      emoji = '🔺';
+      emoji = '📈';
       recommendation = 'السعر فوق الوسط';
     } else if (currentPrice < current.middle) {
       signal = 'هابط';
-      emoji = '🔻';
+      emoji = '📉';
       recommendation = 'السعر تحت الوسط';
     }
     
@@ -345,13 +345,13 @@ class TechnicalAnalysis {
         name: 'Stochastic',
         value: 'N/A',
         signal: 'غير متاح',
-        emoji: '⚪',
+        emoji: '⚫',
         recommendation: 'بيانات غير كافية'
       };
     }
     
     let signal = 'محايد';
-    let emoji = '⚪';
+    let emoji = '🔵';
     let recommendation = '';
     
     if (current.k > 80 && current.d > 80) {
@@ -364,11 +364,11 @@ class TechnicalAnalysis {
       recommendation = 'منطقة تشبع بيعي - فرصة شراء محتملة';
     } else if (current.k > current.d && current.k < 80) {
       signal = 'صاعد';
-      emoji = '🔺';
+      emoji = '📈';
       recommendation = 'تقاطع صعودي';
     } else if (current.k < current.d && current.k > 20) {
       signal = 'هابط';
-      emoji = '🔻';
+      emoji = '📉';
       recommendation = 'تقاطع هبوطي';
     }
     
@@ -397,13 +397,13 @@ class TechnicalAnalysis {
         name: 'ADX',
         value: 'N/A',
         signal: 'غير متاح',
-        emoji: '⚪',
+        emoji: '⚫',
         recommendation: 'بيانات غير كافية'
       };
     }
     
     let signal = 'ضعيف';
-    let emoji = '⚪';
+    let emoji = '⚫';
     let recommendation = '';
     
     if (current.adx > 50) {
@@ -420,7 +420,7 @@ class TechnicalAnalysis {
       recommendation = 'اتجاه متوسط القوة';
     } else {
       signal = 'اتجاه ضعيف';
-      emoji = '⚪';
+      emoji = '⚫';
       recommendation = 'لا يوجد اتجاه واضح - تجنب التداول';
     }
     
@@ -441,7 +441,7 @@ class TechnicalAnalysis {
         name: 'تحليل الحجم',
         value: 'N/A',
         signal: 'غير متاح',
-        emoji: '⚪',
+        emoji: '⚫',
         recommendation: 'بيانات غير كافية'
       };
     }
@@ -451,7 +451,7 @@ class TechnicalAnalysis {
     const volumeRatio = currentVolume / avgVolume;
     
     let signal = 'عادي';
-    let emoji = '⚪';
+    let emoji = '🔵';
     let recommendation = '';
     
     if (volumeRatio > 2) {
@@ -464,7 +464,7 @@ class TechnicalAnalysis {
       recommendation = 'حجم تداول عالي - نشاط قوي';
     } else if (volumeRatio > 0.8) {
       signal = 'حجم عادي';
-      emoji = '⚪';
+      emoji = '🔵';
       recommendation = 'حجم تداول عادي';
     } else {
       signal = 'حجم منخفض';

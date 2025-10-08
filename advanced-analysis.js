@@ -30,7 +30,7 @@ class AdvancedAnalysis {
     
     const currentPrice = this.closes[this.closes.length - 1];
     let signal = 'محايد';
-    let emoji = '⚪';
+    let emoji = '🔵';
     let recommendation = '';
     
     if (currentPrice <= levels['23.6%']) {
@@ -47,11 +47,11 @@ class AdvancedAnalysis {
       recommendation = 'السعر في المنتصف - انتظر إشارة واضحة';
     } else if (currentPrice < levels['50%']) {
       signal = 'اتجاه هبوطي';
-      emoji = '🔻';
+      emoji = '📉';
       recommendation = 'السعر تحت المستوى 50%';
     } else {
       signal = 'اتجاه صعودي';
-      emoji = '🔺';
+      emoji = '📈';
       recommendation = 'السعر فوق المستوى 50%';
     }
     
@@ -74,7 +74,7 @@ class AdvancedAnalysis {
         name: 'أنماط الشموع',
         patterns: [],
         signal: 'غير متاح',
-        emoji: '⚪',
+        emoji: '⚫',
         recommendation: 'بيانات غير كافية'
       };
     }
@@ -118,7 +118,7 @@ class AdvancedAnalysis {
     }
     
     let overallSignal = 'محايد';
-    let emoji = '⚪';
+    let emoji = '🔵';
     let recommendation = '';
     
     if (patterns.length > 0) {
@@ -235,7 +235,7 @@ class AdvancedAnalysis {
         name: 'Head & Shoulders',
         detected: false,
         signal: 'غير متاح',
-        emoji: '⚪',
+        emoji: '⚫',
         recommendation: 'بيانات غير كافية'
       };
     }
@@ -283,7 +283,7 @@ class AdvancedAnalysis {
       name: 'Head & Shoulders',
       detected: false,
       signal: 'محايد',
-      emoji: '⚪',
+      emoji: '🔵',
       recommendation: 'لم يتم اكتشاف النموذج'
     };
   }
@@ -320,7 +320,7 @@ class AdvancedAnalysis {
     const resistance = clusters.find(c => c > currentPrice) || sorted[sorted.length - 1];
     
     let signal = 'محايد';
-    let emoji = '⚪';
+    let emoji = '🔵';
     let recommendation = '';
     
     const distanceToSupport = ((currentPrice - support) / currentPrice) * 100;
