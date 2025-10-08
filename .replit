@@ -20,10 +20,6 @@ expertMode = true
 localPort = 5000
 externalPort = 80
 
-[[ports]]
-localPort = 45337
-externalPort = 3000
-
 [workflows]
 runButton = "Project"
 
