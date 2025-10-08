@@ -775,8 +775,7 @@ async function updateAnalystStats(analystId) {
 async function getTop100Analysts() {
   return await db.collection('analysts')
     .find({ 
-      is_active: true,
-      total_trades: { $gte: 5 }
+      is_active: true
     })
     .sort({ 
       likes: -1,
@@ -791,7 +790,6 @@ async function getTop100AnalystsByMarket(marketType) {
   return await db.collection('analysts')
     .find({ 
       is_active: true,
-      total_trades: { $gte: 5 },
       markets: marketType
     })
     .sort({ 
