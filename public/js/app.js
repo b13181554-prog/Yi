@@ -246,6 +246,19 @@ async function loadUserData() {
         if (data.success) {
             userData = data.user;
             userBalance = parseFloat(userData.balance || 0);
+            
+            // تطبيق لغة المستخدم
+            const userLang = userData.language || 'ar';
+            const langSelect = document.getElementById('language-select');
+            if (langSelect) {
+                langSelect.value = userLang;
+            }
+            
+            // تطبيق اتجاه النص حسب اللغة
+            const isRTL = userLang === 'ar' || userLang === 'fa' || userLang === 'he';
+            document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+            document.documentElement.setAttribute('lang', userLang);
+            
             document.getElementById('loading').style.display = 'none';
             updateUI();
         } else {
