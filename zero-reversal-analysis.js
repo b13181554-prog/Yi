@@ -287,6 +287,14 @@ class ZeroReversalAnalysis {
       return str;
     };
 
+    // حساب النسب المئوية
+    const buyScore = direction === 'BUY' ? strengthScore : 0;
+    const sellScore = direction === 'SELL' ? strengthScore : 0;
+    const maxScore = 41;
+    const buyPercentage = (buyScore / maxScore) * 100;
+    const sellPercentage = (sellScore / maxScore) * 100;
+    const agreementPercentage = Math.max(buyPercentage, sellPercentage);
+
     return {
       mode: 'ZERO_REVERSAL',
       recommendation,
@@ -317,6 +325,15 @@ class ZeroReversalAnalysis {
       riskRewardRatio: riskRewardRatio.toFixed(2),
       reasons,
       warnings: [],
+      scores: {
+        buyScore: buyScore.toFixed(1),
+        sellScore: sellScore.toFixed(1),
+        buyPercentage: buyPercentage.toFixed(1) + '%',
+        sellPercentage: sellPercentage.toFixed(1) + '%',
+        agreementPercentage: agreementPercentage.toFixed(1) + '%',
+        confirmations: strengthScore.toFixed(0),
+        totalIndicators: 11
+      },
       indicators: {
         RSI: rsi,
         MACD: macd,
@@ -368,6 +385,15 @@ class ZeroReversalAnalysis {
       riskRewardRatio: 'N/A',
       reasons: [],
       warnings,
+      scores: {
+        buyScore: '0.0',
+        sellScore: '0.0',
+        buyPercentage: '0.0%',
+        sellPercentage: '0.0%',
+        agreementPercentage: '0.0%',
+        confirmations: '0',
+        totalIndicators: 11
+      },
       indicators: {}
     };
   }
