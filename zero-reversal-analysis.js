@@ -9,6 +9,7 @@ class ZeroReversalAnalysis {
   getZeroReversalRecommendation(marketType = 'spot', tradingType = 'spot', timeframe = '1h') {
     const currentPrice = this.candles[this.candles.length - 1].close;
     const normalizedTimeframe = timeframe?.toLowerCase().trim() || '1h';
+    const candlesCount = this.candles.length;
     
     // حساب جميع المؤشرات
     const rsi = this.analysis.calculateRSI();
@@ -20,10 +21,22 @@ class ZeroReversalAnalysis {
     const volume = this.analysis.calculateVolumeAnalysis();
     const ema20 = this.analysis.calculateEMA(20);
     const ema50 = this.analysis.calculateEMA(50);
-    const ema200 = this.analysis.calculateEMA(200);
     const sma20 = this.analysis.calculateSMA(20);
     const sma50 = this.analysis.calculateSMA(50);
-    const sma200 = this.analysis.calculateSMA(200);
+    
+    // استخدام EMA/SMA طويلة المدى بناءً على عدد الشموع المتاحة
+    let emaLong, smaLong;
+    if (candlesCount >= 200) {
+      emaLong = this.analysis.calculateEMA(200);
+      smaLong = this.analysis.calculateSMA(200);
+    } else if (candlesCount >= 100) {
+      emaLong = this.analysis.calculateEMA(100);
+      smaLong = this.analysis.calculateSMA(100);
+    } else {
+      // للحالات التي لدينا فيها 80-99 شمعة
+      emaLong = this.analysis.calculateEMA(Math.floor(candlesCount * 0.8));
+      smaLong = this.analysis.calculateSMA(Math.floor(candlesCount * 0.8));
+    }
     
     const fibonacci = this.analysis.advancedAnalysis.calculateFibonacci();
     const candlePatterns = this.analysis.advancedAnalysis.detectCandlePatterns();
@@ -40,20 +53,20 @@ class ZeroReversalAnalysis {
     const currentPriceFloat = parseFloat(currentPrice);
     const ema20Value = parseFloat(ema20.value);
     const ema50Value = parseFloat(ema50.value);
-    const ema200Value = parseFloat(ema200.value);
-    const sma200Value = parseFloat(sma200.value);
+    const emaLongValue = parseFloat(emaLong.value);
+    const smaLongValue = parseFloat(smaLong.value);
 
     // الاتجاه الصعودي القوي: السعر فوق جميع المتوسطات + المتوسطات مرتبة
     const strongBullishTrend = currentPriceFloat > ema20Value && 
                                ema20Value > ema50Value && 
-                               ema50Value > ema200Value &&
-                               currentPriceFloat > sma200Value;
+                               ema50Value > emaLongValue &&
+                               currentPriceFloat > smaLongValue;
     
     // الاتجاه الهبوطي القوي: السعر تحت جميع المتوسطات + المتوسطات مرتبة
     const strongBearishTrend = currentPriceFloat < ema20Value && 
                                ema20Value < ema50Value && 
-                               ema50Value < ema200Value &&
-                               currentPriceFloat < sma200Value;
+                               ema50Value < emaLongValue &&
+                               currentPriceFloat < smaLongValue;
 
     if (strongBullishTrend) {
       direction = 'BUY';
@@ -339,8 +352,8 @@ class ZeroReversalAnalysis {
         MACD: macd,
         EMA20: ema20,
         EMA50: ema50,
-        EMA200: ema200,
-        SMA200: { value: sma200Value },
+        EMA_LONG: emaLong,
+        SMA_LONG: smaLong,
         BBANDS: bb,
         ATR: atr,
         STOCH: stoch,

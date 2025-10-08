@@ -1397,8 +1397,19 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
       candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
     }
     
-    if (!candles || candles.length < 100) {
-      return res.json({ success: false, error: 'بيانات غير كافية لنظام Zero Reversal - يجب توفر 100 شمعة على الأقل' });
+    // للسلع والأسهم، نقبل 80 شمعة كحد أدنى بسبب محدودية البيانات التاريخية
+    const minCandles = (market_type === 'commodities' || market_type === 'stocks') ? 80 : 100;
+    
+    if (!candles || candles.length < minCandles) {
+      let errorMessage = `بيانات غير كافية لنظام Zero Reversal - متوفر ${candles?.length || 0} شمعة فقط`;
+      
+      if (market_type === 'commodities' || market_type === 'stocks') {
+        errorMessage += `\n💡 نصيحة: استخدم إطار زمني أطول (4h أو 1d) للحصول على بيانات أكثر`;
+      } else {
+        errorMessage += `\nيجب توفر ${minCandles} شمعة على الأقل`;
+      }
+      
+      return res.json({ success: false, error: errorMessage });
     }
     
     const ZeroReversalAnalysis = require('./zero-reversal-analysis');

@@ -599,24 +599,49 @@ class MarketDataService {
       const period2 = Math.floor(Date.now() / 1000);
       let period1;
       
-      switch(interval) {
-        case '1m': case '5m': case '15m': case '30m':
-          period1 = period2 - (7 * 24 * 60 * 60);
-          break;
-        case '1h':
-          period1 = period2 - (30 * 24 * 60 * 60);
-          break;
-        case '4h':
-          period1 = period2 - (90 * 24 * 60 * 60);
-          break;
-        case '1d':
-          period1 = period2 - (365 * 24 * 60 * 60);
-          break;
-        case '1w':
-          period1 = period2 - (5 * 365 * 24 * 60 * 60);
-          break;
-        default:
-          period1 = period2 - (30 * 24 * 60 * 60);
+      // للسلع والأسهم، نحتاج فترة زمنية أطول لضمان الحصول على 100 شمعة
+      // لأن الأسواق لا تعمل 24/7 وهناك عطلات نهاية الأسبوع والعطلات الرسمية
+      if (marketType === 'commodities' || marketType === 'stocks' || marketType === 'indices') {
+        switch(interval) {
+          case '1m': case '5m': case '15m': case '30m':
+            period1 = period2 - (60 * 24 * 60 * 60); // 60 يوم
+            break;
+          case '1h':
+            period1 = period2 - (365 * 24 * 60 * 60); // سنة واحدة
+            break;
+          case '4h':
+            period1 = period2 - (730 * 24 * 60 * 60); // سنتين
+            break;
+          case '1d':
+            period1 = period2 - (1095 * 24 * 60 * 60); // 3 سنوات
+            break;
+          case '1w':
+            period1 = period2 - (5 * 365 * 24 * 60 * 60); // 5 سنوات
+            break;
+          default:
+            period1 = period2 - (365 * 24 * 60 * 60); // سنة واحدة
+        }
+      } else {
+        // للعملات الرقمية والفوركس (تعمل 24/7)
+        switch(interval) {
+          case '1m': case '5m': case '15m': case '30m':
+            period1 = period2 - (7 * 24 * 60 * 60);
+            break;
+          case '1h':
+            period1 = period2 - (30 * 24 * 60 * 60);
+            break;
+          case '4h':
+            period1 = period2 - (90 * 24 * 60 * 60);
+            break;
+          case '1d':
+            period1 = period2 - (365 * 24 * 60 * 60);
+            break;
+          case '1w':
+            period1 = period2 - (5 * 365 * 24 * 60 * 60);
+            break;
+          default:
+            period1 = period2 - (30 * 24 * 60 * 60);
+        }
       }
 
       const response = await axios.get(`https://query2.finance.yahoo.com/v8/finance/chart/${yahooSymbol}`, {
