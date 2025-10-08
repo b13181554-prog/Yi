@@ -5,7 +5,61 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comp
 
 ## Recent Changes (October 2025)
 
-### Latest Update - Enhanced Analyst System Security & Quality (Oct 7, 2025)
+### Latest Update - Critical Analysis & Data Source Fixes (Oct 8, 2025)
+
+#### 🔧 مصادر البيانات - إصلاحات حاسمة
+
+**1. إصلاح بيانات الفوركس الاحتياطية:**
+- ❌ **المشكلة السابقة**: كان النظام يستخدم بيانات تقريبية من Frankfurter API عند فشل TwelveData
+  - البيانات التقريبية تستخدم variation عشوائية (±0.1%)
+  - OHLC غير حقيقية (محسوبة من سعر واحد فقط)
+  - بيانات يومية فقط حتى للأطر الزمنية الأقل (1h, 4h)
+- ✅ **الحل**: إضافة Yahoo Finance و Alpha Vantage كمصادر احتياطية حقيقية
+  - بيانات OHLC حقيقية 100%
+  - دعم جميع الأطر الزمنية
+  - أولوية: TwelveData → Yahoo Finance → Alpha Vantage
+
+**2. تحسين حساب Stop Loss & Take Profit:**
+- ❌ **المشكلة السابقة**: حساب ثابت بناءً على ATR فقط
+  ```javascript
+  stopLoss = ATR * 2  // مشكلة: غير ملائم لجميع الأسعار
+  takeProfit = ATR * 3
+  ```
+- ✅ **الحل الجديد**: حساب نسبة مئوية من السعر
+  ```javascript
+  atrPercent = (ATR / Price) * 100
+  stopLossPercent = max(atrPercent * 1.5, 0.5%)  // حد أدنى 0.5%
+  takeProfitPercent = stopLossPercent * 2
+  ```
+  - ملائم لجميع نطاقات الأسعار
+  - نسبة Risk/Reward متوازنة
+  - الحد الأدنى 0.5% لتجنب SL/TP صغيرة جداً
+
+**3. تحسين تحليل Fibonacci:**
+- ❌ **المشكلة السابقة**: نطاق ثابت (آخر 50 شمعة) و استخدام Close فقط
+- ✅ **الحل**: 
+  - نطاق ديناميكي: حتى 100 شمعة (حسب البيانات المتاحة)
+  - استخدام High/Low الحقيقية لدقة أعلى
+  - تحديد مستويات فيبوناتشي بشكل أكثر دقة
+
+**4. التحقق الصارم من جودة البيانات:**
+- ✅ فحص OHLC في كل شمعة:
+  - High >= Low
+  - High >= Max(Open, Close)
+  - Low <= Min(Open, Close)
+  - جميع القيم > 0
+- ✅ الحد الأدنى: 20 شمعة للتحليل
+- ✅ رفض البيانات غير المنطقية فوراً
+- ✅ رسائل خطأ واضحة ومفصلة
+
+#### 📊 ملف التوثيق الشامل
+- ✅ تم إنشاء `DATA_SOURCES.md` يشرح:
+  - جميع مصادر البيانات وأولوياتها
+  - آليات التحقق من الجودة
+  - التحسينات المطبقة
+  - كيفية التحقق من دقة التحليل
+
+### Previous Update - Enhanced Analyst System Security & Quality (Oct 7, 2025)
 
 #### Subscription Management Enhancements
 - **Advanced Duplicate Prevention**: Multi-layer subscription protection system
@@ -144,10 +198,11 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comp
     - **Binance** (Fallback) - Additional data source
     - CoinGecko - Price verification
     - Gate.io, Kraken, Coinbase, CoinPaprika, Huobi, Crypto.com, Bitfinex - Alternative sources
-- **Forex Market Data APIs**:
+- **Forex Market Data APIs** (Priority Order):
     - **TwelveData API** (Primary) - Real forex candle data with authentic OHLC
-    - **Frankfurter API** (Fallback) - ECB historical data
-    - ExchangeRate-API, FloatRates, VATComply - Rate verification
+    - **Yahoo Finance** (Secondary) - Real forex data for all timeframes
+    - **Alpha Vantage** (Tertiary) - Professional forex data
+    - ExchangeRate-API, Frankfurter (ECB), FloatRates, VATComply - Rate verification
 - **Market Data APIs (No API Keys Required)**:
     - **Yahoo Finance API** - للأسهم والسلع والمؤشرات (بدون مفاتيح API)
     - **Frankfurter API (ECB Data)** - للفوركس (بدون مفاتيح API، بيانات البنك المركزي الأوروبي)
