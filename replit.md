@@ -4,11 +4,21 @@
 OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comprehensive technical analysis using various market APIs. The project aims to offer advanced trading tools, real-time data, and automated functionalities to users, supporting both cryptocurrency and forex markets. It includes features like a full-fledged Telegram Web App for a rich user experience, automated withdrawal and deposit systems, and multi-language support. The business vision is to provide a robust and accessible trading assistant with global market potential, empowering users with advanced analytical capabilities and a seamless trading workflow.
 
 ## Recent Changes
-- **2025-10-08**: Fixed critical referral system bugs:
-  - Fixed bot.js subscription referral earnings not being saved (was calling non-existent `createReferralEarning` instead of `addReferralEarning`)
-  - Fixed API referral stats showing incorrect total earnings (was summing transaction amounts instead of commissions)
-  - Verified 10% referral commission rate is correctly applied across all payment types
-  - Referral system now fully operational with accurate tracking and reporting
+- **2025-10-08**: 
+  - **Fixed critical referral system bugs:**
+    - Fixed bot.js subscription referral earnings not being saved (was calling non-existent `createReferralEarning` instead of `addReferralEarning`)
+    - Fixed API referral stats showing incorrect total earnings (was summing transaction amounts instead of commissions)
+    - Verified 10% referral commission rate is correctly applied across all payment types
+    - Referral system now fully operational with accurate tracking and reporting
+  
+  - **Added Analyst Referral System (20% Commission):**
+    - Created separate referral system for analysts with 20% commission rate (vs 10% for regular users)
+    - Implemented analyst_ref_ link format for analyst referrals
+    - Added priority logic: analyst referrals take precedence over regular user referrals
+    - Built dedicated UI section in analyst dashboard displaying referral link with promotional text
+    - Created API endpoint `/api/get-analyst-referral-link` for fetching analyst referral links
+    - Database schema updated with `referred_by_analyst` field to track analyst referrals
+    - Commission distribution: 20% to referring analyst, remainder to owner (after deducting analyst's share)
 
 ## User Preferences
 - Default Language: Arabic (ar)
