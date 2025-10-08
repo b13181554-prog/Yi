@@ -257,6 +257,7 @@ TxID: <code>${data.tx_id}</code>
     }
     
     else if (data.action === 'withdraw') {
+      const okx = require('./okx');
       const amount = parseFloat(data.amount);
       const address = data.address;
       const totalWithFee = amount + config.WITHDRAWAL_FEE;
@@ -265,36 +266,162 @@ TxID: <code>${data.tx_id}</code>
         return bot.sendMessage(chatId, '❌ رصيدك غير كافٍ!');
       }
       
-      await db.createWithdrawalRequest({
-        user_id: userId,
-        amount: amount,
-        address: address,
-        status: 'pending'
-      });
-      
       await db.updateUserBalance(userId, -totalWithFee);
       
-      await bot.sendMessage(chatId, `
-📤 <b>طلب سحب</b>
+      const processingMsg = await bot.sendMessage(chatId, `
+⏳ <b>جاري معالجة السحب...</b>
 
-تم استلام طلبك للسحب.
 المبلغ: ${amount} USDT
 الرسوم: ${config.WITHDRAWAL_FEE} USDT
-الإجمالي: ${totalWithFee} USDT
+العنوان: <code>${address}</code>
 
-⏳ سيتم معالجة الطلب خلال 24 ساعة
+⏳ يرجى الانتظار...
 `, { parse_mode: 'HTML' });
       
-      await bot.sendMessage(config.OWNER_ID, `
-💸 <b>طلب سحب جديد</b>
+      if (!okx.isConfigured()) {
+        await db.updateUserBalance(userId, totalWithFee);
+        
+        await db.createWithdrawalRequest({
+          user_id: userId,
+          amount: amount,
+          address: address,
+          status: 'pending'
+        });
+        
+        await bot.editMessageText(`
+⚠️ <b>السحب التلقائي غير متاح</b>
+
+تم إنشاء طلب السحب وسيتم معالجته يدوياً خلال 24 ساعة.
+
+المبلغ: ${amount} USDT
+العنوان: <code>${address}</code>
+`, {
+          chat_id: chatId,
+          message_id: processingMsg.message_id,
+          parse_mode: 'HTML'
+        });
+        
+        await bot.sendMessage(config.OWNER_ID, `
+💸 <b>طلب سحب جديد (يدوي)</b>
 
 المستخدم: ${user.first_name} (@${user.username})
 ID: ${userId}
 المبلغ: ${amount} USDT
 العنوان: <code>${address}</code>
-
-/approve_withdrawal أو /reject_withdrawal
 `, { parse_mode: 'HTML' });
+        
+        return;
+      }
+      
+      try {
+        const result = await okx.withdrawUSDT(address, amount);
+        
+        if (result.success) {
+          await db.createWithdrawalRequest({
+            user_id: userId,
+            amount: amount,
+            address: address,
+            status: 'approved'
+          });
+          
+          await db.createTransaction(
+            userId, 
+            'withdrawal', 
+            amount, 
+            result.data.withdrawId, 
+            address, 
+            'completed'
+          );
+          
+          await bot.editMessageText(`
+✅ <b>تم السحب بنجاح!</b>
+
+💸 المبلغ: ${amount} USDT
+📍 العنوان: <code>${address}</code>
+🆔 معرف السحب: <code>${result.data.withdrawId}</code>
+⚡ الشبكة: TRC20
+
+سيصل المبلغ خلال دقائق قليلة 🎉
+`, {
+            chat_id: chatId,
+            message_id: processingMsg.message_id,
+            parse_mode: 'HTML'
+          });
+          
+          await bot.sendMessage(config.OWNER_ID, `
+✅ <b>سحب تلقائي ناجح</b>
+
+المستخدم: ${user.first_name} (@${user.username})
+ID: ${userId}
+المبلغ: ${amount} USDT
+العنوان: <code>${address}</code>
+معرف السحب: <code>${result.data.withdrawId}</code>
+`, { parse_mode: 'HTML' });
+          
+        } else {
+          await db.updateUserBalance(userId, totalWithFee);
+          
+          await db.createWithdrawalRequest({
+            user_id: userId,
+            amount: amount,
+            address: address,
+            status: 'failed'
+          });
+          
+          await bot.editMessageText(`
+❌ <b>فشل السحب</b>
+
+السبب: ${result.error}
+
+تم إرجاع المبلغ لرصيدك: ${totalWithFee} USDT
+يرجى المحاولة مرة أخرى أو التواصل مع الدعم.
+`, {
+            chat_id: chatId,
+            message_id: processingMsg.message_id,
+            parse_mode: 'HTML'
+          });
+          
+          await bot.sendMessage(config.OWNER_ID, `
+❌ <b>فشل سحب تلقائي</b>
+
+المستخدم: ${user.first_name} (@${user.username})
+ID: ${userId}
+المبلغ: ${amount} USDT
+العنوان: <code>${address}</code>
+السبب: ${result.error}
+
+تم إرجاع المبلغ للمستخدم.
+`, { parse_mode: 'HTML' });
+        }
+        
+      } catch (error) {
+        console.error('❌ خطأ في معالجة السحب:', error);
+        
+        await db.updateUserBalance(userId, totalWithFee);
+        
+        await bot.editMessageText(`
+❌ <b>خطأ في معالجة السحب</b>
+
+حدث خطأ غير متوقع. تم إرجاع المبلغ لرصيدك.
+يرجى المحاولة مرة أخرى لاحقاً.
+
+الرصيد المُرجع: ${totalWithFee} USDT
+`, {
+          chat_id: chatId,
+          message_id: processingMsg.message_id,
+          parse_mode: 'HTML'
+        });
+        
+        await bot.sendMessage(config.OWNER_ID, `
+⚠️ <b>خطأ في نظام السحب</b>
+
+المستخدم: ${user.first_name}
+المبلغ: ${amount} USDT
+الخطأ: ${error.message}
+
+تم إرجاع المبلغ للمستخدم.
+`, { parse_mode: 'HTML' });
+      }
     }
     
     else if (data.action === 'subscribe') {
