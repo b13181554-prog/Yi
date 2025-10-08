@@ -59,6 +59,31 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comp
   - التحسينات المطبقة
   - كيفية التحقق من دقة التحليل
 
+**5. نظام Ultra Analysis - تحليل متقدم بدقة عالية جداً:**
+- ✅ **نظام تحليل شامل** يجمع جميع المؤشرات والأنماط:
+  - RSI, MACD, EMA, SMA, Bollinger Bands, ATR, Stochastic, ADX
+  - Volume Analysis, Fibonacci, Candle Patterns, Head & Shoulders
+  - Support & Resistance Levels
+- ✅ **معايير صارمة للدخول**:
+  - توافق 75%+ من المؤشرات للإشارة العادية
+  - توافق 85%+ و ADX>30 للإشارة عالية الجودة جداً
+  - 6+ تأكيدات من المؤشرات المختلفة
+  - حجم تداول عالي أو ضخم
+- ✅ **نظام تقييم الثقة**:
+  - عالية جداً (Ultra High): 85%+ توافق، ADX>30، 7+ تأكيدات
+  - عالية: 75%+ توافق، ADX>25، 6+ تأكيدات
+  - متوسطة: 65%+ توافق (مع تحذير)
+  - منخفضة: أقل من 65% (لا ينصح بالدخول)
+- ✅ **تحليل المخاطر**:
+  - تقييم مستوى المخاطرة (منخفض جداً، منخفض، متوسط، مرتفع)
+  - حساب دقيق لـ Stop Loss & Take Profit
+  - نسبة Risk/Reward متوازنة (1:2 للسبوت، 1:3 للفيوتشر)
+- ✅ **واجهة مستخدم مميزة**:
+  - عرض شامل لجميع التفاصيل
+  - إظهار الأسباب والتحذيرات
+  - تنبيه واضح عند عدم استيفاء المعايير
+  - نتائج مفصلة لكل مؤشر
+
 ### Previous Update - Enhanced Analyst System Security & Quality (Oct 7, 2025)
 
 #### Subscription Management Enhancements
