@@ -937,8 +937,29 @@ app.post('/api/register-analyst', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
+    // فحص حالة الحظر
+    const banStatus = await db.checkUserBanStatus(user_id);
+    if (banStatus.banned) {
+      return res.json({ 
+        success: false, 
+        error: `حسابك محظور. السبب: ${banStatus.reason}` 
+      });
+    }
+    
     if (!name || !description || !monthly_price) {
       return res.json({ success: false, error: 'جميع الحقول مطلوبة' });
+    }
+    
+    // فلتر المحتوى للاسم
+    const nameCheck = db.containsProhibitedContent(name);
+    if (nameCheck.prohibited) {
+      return res.json({ success: false, error: nameCheck.reason });
+    }
+    
+    // فلتر المحتوى للوصف
+    const descCheck = db.containsProhibitedContent(description);
+    if (descCheck.prohibited) {
+      return res.json({ success: false, error: descCheck.reason });
     }
     
     const price = parseFloat(monthly_price);
@@ -1169,6 +1190,15 @@ app.post('/api/create-room-post', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
+    // فحص حالة الحظر
+    const banStatus = await db.checkUserBanStatus(user_id);
+    if (banStatus.banned) {
+      return res.json({ 
+        success: false, 
+        error: `حسابك محظور. السبب: ${banStatus.reason}` 
+      });
+    }
+    
     const analyst = await db.getAnalystByUserId(user_id);
     if (!analyst) {
       return res.json({ success: false, error: 'يجب أن تكون محللاً لنشر الصفقات' });
@@ -1178,24 +1208,13 @@ app.post('/api/create-room-post', async (req, res) => {
       return res.json({ success: false, error: 'يجب تحديد الرمز والنوع وسعر الدخول على الأقل' });
     }
     
-    const forbiddenWords = [
-      'قناة', 'channel', 'telegram', 'واتساب', 'whatsapp', 'انستقرام', 'instagram', 
-      'تواصل معي', 'contact me', 'خارج', 'outside', 'تيليجرام', 'انضم', 'join',
-      'واتس', 'whats', 'فيسبوك', 'facebook', 'تويتر', 'twitter', 'يوتيوب', 'youtube',
-      'لينك', 'link', 'رابط', 'url', 'http', 'www', '.com', '.net', '.org',
-      'اشتراك خاص', 'private', 'خاص', 'dm', 'رسالة خاصة', 'inbox', 
-      'سناب', 'snap', 'تيك توك', 'tiktok', 'ديسكورد', 'discord',
-      '@', 't.me', 'wa.me', 'bit.ly', 'اشترك', 'subscribe'
-    ];
-    const analysisText = (post_data.analysis || '').toLowerCase();
-    
-    for (const word of forbiddenWords) {
-      if (analysisText.includes(word)) {
-        return res.json({ 
-          success: false, 
-          error: 'غير مسموح بالترويج لقنوات أو منتجات خارجية. يرجى التركيز على التحليل فقط' 
-        });
-      }
+    // فلتر المحتوى للتحليل
+    const contentCheck = db.containsProhibitedContent(post_data.analysis);
+    if (contentCheck.prohibited) {
+      return res.json({ 
+        success: false, 
+        error: contentCheck.reason 
+      });
     }
     
     const post = await db.createAnalystRoomPost(analyst._id, user_id, post_data);
@@ -1449,6 +1468,127 @@ app.post('/api/change-language', async (req, res) => {
     res.json({ success: true, message: 'Language updated successfully' });
   } catch (error) {
     console.error('Change Language API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// Admin Endpoints (Owner Only)
+app.post('/api/admin/users', async (req, res) => {
+  try {
+    const { admin_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    if (parseInt(admin_id) !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    const users = await db.getAllUsersForAdmin();
+    res.json({ success: true, users });
+  } catch (error) {
+    console.error('Admin Users API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/admin/ban-user', async (req, res) => {
+  try {
+    const { admin_id, target_user_id, reason, duration, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    if (parseInt(admin_id) !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    await db.banUser(target_user_id, reason, admin_id, duration);
+    res.json({ success: true, message: 'تم حظر المستخدم بنجاح' });
+  } catch (error) {
+    console.error('Ban User API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/admin/unban-user', async (req, res) => {
+  try {
+    const { admin_id, target_user_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    if (parseInt(admin_id) !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    await db.unbanUser(target_user_id);
+    res.json({ success: true, message: 'تم إلغاء حظر المستخدم بنجاح' });
+  } catch (error) {
+    console.error('Unban User API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/admin/delete-user', async (req, res) => {
+  try {
+    const { admin_id, target_user_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    if (parseInt(admin_id) !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    await db.deleteUserAccount(target_user_id);
+    res.json({ success: true, message: 'تم حذف المستخدم بنجاح' });
+  } catch (error) {
+    console.error('Delete User API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/admin/restrict-user', async (req, res) => {
+  try {
+    const { admin_id, target_user_id, restrictions, duration, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    if (parseInt(admin_id) !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    await db.restrictUser(target_user_id, restrictions, duration);
+    res.json({ success: true, message: 'تم تقييد المستخدم بنجاح' });
+  } catch (error) {
+    console.error('Restrict User API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/admin/banned-users', async (req, res) => {
+  try {
+    const { admin_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    if (parseInt(admin_id) !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    const bannedUsers = await db.getBannedUsers();
+    res.json({ success: true, users: bannedUsers });
+  } catch (error) {
+    console.error('Banned Users API Error:', error);
     res.json({ success: false, error: error.message });
   }
 });

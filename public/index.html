@@ -48,6 +48,10 @@
                     <span class="icon">👤</span>
                     <span>حسابي</span>
                 </button>
+                <button class="nav-btn" id="admin-nav-btn" onclick="showSection('admin-section', event)" style="display: none;">
+                    <span class="icon">👑</span>
+                    <span>إدارة</span>
+                </button>
             </nav>
 
             <!-- التحليل الفني -->
@@ -561,6 +565,34 @@
                             <option value="ru">Русский 🇷🇺</option>
                             <option value="zh">中文 🇨🇳</option>
                         </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم الإدارة (للمالك فقط) -->
+            <div id="admin-section" class="section">
+                <div class="section-header">
+                    <h2>👑 لوحة الإدارة</h2>
+                    <p style="color: #888; font-size: 13px;">إدارة المستخدمين والمحتوى</p>
+                </div>
+
+                <div class="admin-tabs" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto;">
+                    <button class="admin-tab-btn active" onclick="switchAdminTab('users')" style="padding: 10px 20px; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; white-space: nowrap;">👥 المستخدمين</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('banned')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">🚫 المحظورين</button>
+                </div>
+
+                <div id="admin-users-tab" class="admin-tab-content">
+                    <div style="margin-bottom: 15px;">
+                        <input type="text" id="user-search" placeholder="🔍 ابحث عن مستخدم (ID, الاسم)" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <div id="users-list" style="display: flex; flex-direction: column; gap: 10px;">
+                        <p class="empty-state">جاري التحميل...</p>
+                    </div>
+                </div>
+
+                <div id="admin-banned-tab" class="admin-tab-content" style="display: none;">
+                    <div id="banned-users-list" style="display: flex; flex-direction: column; gap: 10px;">
+                        <p class="empty-state">جاري التحميل...</p>
                     </div>
                 </div>
             </div>

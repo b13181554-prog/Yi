@@ -928,6 +928,146 @@ async function getAnalystByName(name) {
   );
 }
 
+// Admin Functions
+async function banUser(userId, reason, bannedBy, duration = null) {
+  const banData = {
+    is_banned: true,
+    ban_reason: reason,
+    banned_by: bannedBy,
+    banned_at: new Date()
+  };
+  
+  if (duration) {
+    const unbanDate = new Date();
+    unbanDate.setHours(unbanDate.getHours() + duration);
+    banData.ban_expires = unbanDate;
+  }
+  
+  await db.collection('users').updateOne(
+    { user_id: userId },
+    { $set: banData }
+  );
+  
+  return banData;
+}
+
+async function unbanUser(userId) {
+  await db.collection('users').updateOne(
+    { user_id: userId },
+    { 
+      $set: { 
+        is_banned: false,
+        ban_expires: null 
+      },
+      $unset: {
+        ban_reason: "",
+        banned_by: "",
+        banned_at: ""
+      }
+    }
+  );
+}
+
+async function restrictUser(userId, restrictions, duration) {
+  const restrictUntil = new Date();
+  restrictUntil.setHours(restrictUntil.getHours() + duration);
+  
+  await db.collection('users').updateOne(
+    { user_id: userId },
+    { 
+      $set: { 
+        restrictions: restrictions,
+        restrict_until: restrictUntil
+      }
+    }
+  );
+}
+
+async function deleteUserAccount(userId) {
+  await db.collection('users').deleteOne({ user_id: userId });
+  await db.collection('transactions').deleteMany({ user_id: userId });
+  await db.collection('analyst_subscriptions').deleteMany({ user_id: userId });
+  return true;
+}
+
+async function checkUserBanStatus(userId) {
+  const user = await db.collection('users').findOne({ user_id: userId });
+  
+  if (!user) return { banned: false };
+  
+  if (user.is_banned) {
+    if (user.ban_expires) {
+      if (new Date() > new Date(user.ban_expires)) {
+        await unbanUser(userId);
+        return { banned: false };
+      }
+    }
+    return { 
+      banned: true, 
+      reason: user.ban_reason,
+      expires: user.ban_expires 
+    };
+  }
+  
+  return { banned: false };
+}
+
+// Content Filter Functions
+function containsProhibitedContent(text) {
+  if (!text) return { prohibited: false };
+  
+  const lowerText = text.toLowerCase();
+  
+  // روابط
+  const urlPattern = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|(\w+\.(com|net|org|io|me|co|app|xyz|info|biz)[^\s]*)/gi;
+  if (urlPattern.test(text)) {
+    return { prohibited: true, reason: 'يمنع نشر الروابط' };
+  }
+  
+  // معرفات تليجرام
+  const telegramPattern = /@\w+|t\.me\/\w+/gi;
+  if (telegramPattern.test(text)) {
+    return { prohibited: true, reason: 'يمنع نشر معرفات التليجرام' };
+  }
+  
+  // كلمات محظورة تدل على منتجات خارجية
+  const prohibitedWords = [
+    'binance', 'bybit', 'okx', 'kucoin', 'huobi', 'gate.io',
+    'whatsapp', 'واتساب', 'واتس اب', 'واتس',
+    'telegram channel', 'قناة', 'قناتي', 'قناتنا',
+    'انضم', 'اشترك معي', 'اشترك معنا',
+    'خدمة خارجية', 'منصة أخرى', 'تطبيق آخر',
+    'للتواصل', 'راسلني', 'كلمني',
+    'vip', 'premium', 'بريميوم'
+  ];
+  
+  for (const word of prohibitedWords) {
+    if (lowerText.includes(word)) {
+      return { 
+        prohibited: true, 
+        reason: `يمنع استخدام كلمات تشير لمنتجات خارجية: "${word}"` 
+      };
+    }
+  }
+  
+  return { prohibited: false };
+}
+
+async function getAllUsersForAdmin() {
+  return await db.collection('users')
+    .find({})
+    .sort({ created_at: -1 })
+    .limit(100)
+    .toArray();
+}
+
+async function getBannedUsers() {
+  return await db.collection('users')
+    .find({ is_banned: true })
+    .sort({ banned_at: -1 })
+    .toArray();
+}
+
 async function createAnalystRoomPost(analystId, userId, postData) {
   const post = {
     analyst_id: new ObjectId(analystId),
@@ -1045,5 +1185,13 @@ module.exports = {
   getAnalystLikesByMarket,
   createAnalystRoomPost,
   getAnalystRoomPosts,
-  deleteAnalystRoomPost
+  deleteAnalystRoomPost,
+  banUser,
+  unbanUser,
+  restrictUser,
+  deleteUserAccount,
+  checkUserBanStatus,
+  containsProhibitedContent,
+  getAllUsersForAdmin,
+  getBannedUsers
 };

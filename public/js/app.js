@@ -318,6 +318,9 @@ async function init() {
         // تحميل بيانات المستخدم أولاً
         await loadUserData();
         await loadMyAnalystProfile();
+        
+        // تحميل لوحة الإدارة للمالك
+        await loadAdminPanel();
 
         // تحميل جميع الأصول بشكل متوازي
         const loadAssetsPromises = [
@@ -2349,6 +2352,230 @@ async function loadTop100Analysts(marketType = 'all') {
     } catch (error) {
         console.error('Error loading top analysts:', error);
         container.innerHTML = '<p class="empty-state">حدث خطأ في تحميل الترتيب</p>';
+    }
+}
+
+// Admin Functions
+const OWNER_ID = 7594466342;
+
+async function loadAdminPanel() {
+    if (userId !== OWNER_ID) {
+        return;
+    }
+    
+    // إظهار زر الإدارة
+    document.getElementById('admin-nav-btn').style.display = 'flex';
+    
+    // تحميل المستخدمين
+    loadAllUsers();
+}
+
+function switchAdminTab(tab) {
+    document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.style.background = 'white';
+        btn.style.color = '#333';
+        btn.style.border = '1px solid #ddd';
+    });
+    
+    document.querySelectorAll('.admin-tab-content').forEach(content => {
+        content.style.display = 'none';
+    });
+    
+    if (tab === 'users') {
+        document.querySelector('.admin-tab-btn').classList.add('active');
+        document.querySelector('.admin-tab-btn').style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        document.querySelector('.admin-tab-btn').style.color = 'white';
+        document.querySelector('.admin-tab-btn').style.border = 'none';
+        document.getElementById('admin-users-tab').style.display = 'block';
+        loadAllUsers();
+    } else if (tab === 'banned') {
+        document.querySelectorAll('.admin-tab-btn')[1].classList.add('active');
+        document.querySelectorAll('.admin-tab-btn')[1].style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        document.querySelectorAll('.admin-tab-btn')[1].style.color = 'white';
+        document.querySelectorAll('.admin-tab-btn')[1].style.border = 'none';
+        document.getElementById('admin-banned-tab').style.display = 'block';
+        loadBannedUsers();
+    }
+}
+
+async function loadAllUsers() {
+    const container = document.getElementById('users-list');
+    container.innerHTML = '<p class="empty-state">جاري التحميل...</p>';
+    
+    try {
+        const response = await fetch('/api/admin/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.users) {
+            container.innerHTML = data.users.map(user => `
+                <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <div>
+                            <h4 style="margin: 0 0 5px 0; color: #333;">${user.first_name || 'مستخدم'} ${user.last_name || ''}</h4>
+                            <p style="margin: 0; color: #888; font-size: 12px;">ID: ${user.user_id}</p>
+                            <p style="margin: 5px 0 0 0; color: #888; font-size: 12px;">@${user.username || 'لا يوجد'}</p>
+                        </div>
+                        <div style="text-align: left;">
+                            <div style="font-size: 16px; font-weight: bold; color: #10b981;">${user.balance || 0} USDT</div>
+                            ${user.is_banned ? '<span style="color: red; font-size: 12px;">🚫 محظور</span>' : ''}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <button onclick="banUserPrompt('${user.user_id}')" style="flex: 1; padding: 8px; border: none; border-radius: 6px; background: #ef4444; color: white; cursor: pointer; font-size: 12px;">🚫 حظر</button>
+                        <button onclick="banUserTempPrompt('${user.user_id}')" style="flex: 1; padding: 8px; border: none; border-radius: 6px; background: #f59e0b; color: white; cursor: pointer; font-size: 12px;">⏰ حظر مؤقت</button>
+                        <button onclick="deleteUserPrompt('${user.user_id}')" style="flex: 1; padding: 8px; border: none; border-radius: 6px; background: #dc2626; color: white; cursor: pointer; font-size: 12px;">🗑️ حذف</button>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p class="empty-state">لا يوجد مستخدمين</p>';
+        }
+    } catch (error) {
+        console.error('Error loading users:', error);
+        container.innerHTML = '<p class="empty-state">حدث خطأ في التحميل</p>';
+    }
+}
+
+async function loadBannedUsers() {
+    const container = document.getElementById('banned-users-list');
+    container.innerHTML = '<p class="empty-state">جاري التحميل...</p>';
+    
+    try {
+        const response = await fetch('/api/admin/banned-users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.users && data.users.length > 0) {
+            container.innerHTML = data.users.map(user => `
+                <div style="background: #fee; padding: 15px; border-radius: 10px; border: 2px solid #ef4444;">
+                    <div style="margin-bottom: 10px;">
+                        <h4 style="margin: 0 0 5px 0; color: #333;">${user.first_name || 'مستخدم'} ${user.last_name || ''}</h4>
+                        <p style="margin: 0; color: #888; font-size: 12px;">ID: ${user.user_id}</p>
+                        <p style="margin: 5px 0 0 0; color: #ef4444; font-size: 13px;">السبب: ${user.ban_reason || 'لم يحدد'}</p>
+                        ${user.ban_expires ? `<p style="margin: 5px 0 0 0; color: #f59e0b; font-size: 12px;">ينتهي: ${new Date(user.ban_expires).toLocaleString('ar')}</p>` : '<p style="margin: 5px 0 0 0; color: #dc2626; font-size: 12px;">حظر دائم</p>'}
+                    </div>
+                    <button onclick="unbanUser('${user.user_id}')" style="width: 100%; padding: 10px; border: none; border-radius: 6px; background: #10b981; color: white; cursor: pointer;">✅ إلغاء الحظر</button>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p class="empty-state">لا يوجد مستخدمين محظورين</p>';
+        }
+    } catch (error) {
+        console.error('Error loading banned users:', error);
+        container.innerHTML = '<p class="empty-state">حدث خطأ في التحميل</p>';
+    }
+}
+
+function banUserPrompt(targetUserId) {
+    const reason = prompt('أدخل سبب الحظر:');
+    if (!reason) return;
+    banUserAction(targetUserId, reason, null);
+}
+
+function banUserTempPrompt(targetUserId) {
+    const reason = prompt('أدخل سبب الحظر:');
+    if (!reason) return;
+    const hours = prompt('أدخل مدة الحظر بالساعات:');
+    if (!hours) return;
+    banUserAction(targetUserId, reason, parseInt(hours));
+}
+
+async function banUserAction(targetUserId, reason, duration) {
+    try {
+        const response = await fetch('/api/admin/ban-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                target_user_id: targetUserId,
+                reason: reason,
+                duration: duration,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            tg.showAlert('✅ تم حظر المستخدم بنجاح');
+            loadAllUsers();
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'فشل الحظر'));
+        }
+    } catch (error) {
+        tg.showAlert('حدث خطأ');
+    }
+}
+
+async function unbanUser(targetUserId) {
+    if (!confirm('هل تريد إلغاء حظر هذا المستخدم؟')) return;
+    
+    try {
+        const response = await fetch('/api/admin/unban-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                target_user_id: targetUserId,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            tg.showAlert('✅ تم إلغاء الحظر بنجاح');
+            loadBannedUsers();
+            loadAllUsers();
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'فشل إلغاء الحظر'));
+        }
+    } catch (error) {
+        tg.showAlert('حدث خطأ');
+    }
+}
+
+function deleteUserPrompt(targetUserId) {
+    if (!confirm('⚠️ تحذير: سيتم حذف جميع بيانات المستخدم بشكل نهائي. هل أنت متأكد؟')) return;
+    
+    deleteUserAction(targetUserId);
+}
+
+async function deleteUserAction(targetUserId) {
+    try {
+        const response = await fetch('/api/admin/delete-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                target_user_id: targetUserId,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            tg.showAlert('✅ تم حذف المستخدم بنجاح');
+            loadAllUsers();
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'فشل الحذف'));
+        }
+    } catch (error) {
+        tg.showAlert('حدث خطأ');
     }
 }
 
