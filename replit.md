@@ -37,6 +37,28 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comp
     - Translations now apply instantly when user changes language
     - RTL support for Arabic, Hebrew, and Farsi languages
     - All sections now translatable: navigation, analysis, wallet, analysts, profile, admin panel
+  
+  - **Enhanced Admin Panel Moderation System:**
+    - Added user search by ID functionality with temporary state management
+    - Implemented comprehensive ban system with custom duration (hours, days, weeks, months)
+    - Added user restriction system (can_read_only, can_receive_signals, full_restriction)
+    - Added user account deletion with confirmation dialog
+    - Added unban functionality for banned users
+    - Fixed critical callback guard bug that was blocking admin moderation actions
+    - All admin features restricted to OWNER_ID for security
+  
+  - **Analyst Promoter Referral System (15% Commission):**
+    - Created independent referral system for each analyst with 15% commission for promoters
+    - Added "رابط الإحالة (15% عمولة)" button on each analyst card in the Web App
+    - Implemented `/api/get-analyst-promoter-link` endpoint for generating promoter links
+    - Format: https://t.me/botname?start=analyst_promoter_{promoter_id}_{analyst_id}
+    - Commission hierarchy: Promoter Analyst (15%) → General Analyst (20%) → Regular User (10%)
+    - Database tracks both promoter and analyst for accurate commission distribution
+  
+  - **UI/UX Improvements:**
+    - Moved language selector from profile section to top-right corner of main page
+    - Language selector now always visible and accessible from any section
+    - Added proper styling with flag emoji and smooth transitions
 
 ## User Preferences
 - Default Language: Arabic (ar)
