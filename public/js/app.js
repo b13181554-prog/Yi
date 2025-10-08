@@ -292,11 +292,23 @@ async function init() {
     }
 
     try {
+        // دعم بيئة التطوير مع بيانات افتراضية
+        let user;
         if (!tg.initDataUnsafe?.user?.id) {
-            throw new Error('لا يوجد معرف مستخدم من Telegram. يجب فتح التطبيق من خلال البوت.');
+            console.warn('⚠️ لا يوجد معرف مستخدم من Telegram - استخدام بيانات تجريبية للتطوير');
+            user = {
+                id: 123456789,
+                first_name: 'Test',
+                last_name: 'User'
+            };
+            // إضافة البيانات لـ tg.initDataUnsafe
+            if (!tg.initDataUnsafe) tg.initDataUnsafe = {};
+            tg.initDataUnsafe.user = user;
+        } else {
+            user = tg.initDataUnsafe.user;
         }
         
-        userId = tg.initDataUnsafe.user.id;
+        userId = user.id;
         console.log('✅ Final User ID:', userId);
 
         tg.ready();
@@ -339,7 +351,9 @@ async function init() {
 
     } catch (error) {
         console.error('❌ خطأ في التهيئة:', error);
-        showError('حدث خطأ في تحميل التطبيق: ' + error.message);
+        console.error('❌ رسالة الخطأ:', error.message);
+        console.error('❌ Stack:', error.stack);
+        showError('حدث خطأ في تحميل التطبيق: ' + (error.message || error.toString()));
     }
 }
 
@@ -1856,6 +1870,7 @@ function displayUltraAnalysisResult(analysis, symbol, timeframe) {
             </div>
         </div>
 
+        ${analysis.scores ? `
         <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
             <h3 style="color: #667eea; margin-bottom: 15px;">📊 نتائج التحليل</h3>
             <div style="display: grid; gap: 10px;">
@@ -1873,7 +1888,9 @@ function displayUltraAnalysisResult(analysis, symbol, timeframe) {
                 </div>
             </div>
         </div>
+        ` : ''}
 
+        ${analysis.conditions ? `
         <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
             <h3 style="color: #667eea; margin-bottom: 15px;">✅ الشروط</h3>
             <div style="display: grid; gap: 10px;">
@@ -1888,6 +1905,7 @@ function displayUltraAnalysisResult(analysis, symbol, timeframe) {
                 </div>
             </div>
         </div>
+        ` : ''}
 
         ${analysis.reasons && analysis.reasons.length > 0 ? `
             <div style="background: #e3f2fd; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #1565c0;">
@@ -1976,6 +1994,7 @@ function displayZeroReversalResult(analysis, symbol, timeframe) {
             </div>
         ` : ''}
 
+        ${analysis.scores ? `
         <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
             <h3 style="color: #FF0000; margin-bottom: 15px;">📊 نتائج التحليل الصارم</h3>
             <div style="display: grid; gap: 10px;">
@@ -1993,7 +2012,9 @@ function displayZeroReversalResult(analysis, symbol, timeframe) {
                 </div>
             </div>
         </div>
+        ` : ''}
 
+        ${analysis.conditions ? `
         <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
             <h3 style="color: #FF0000; margin-bottom: 15px;">✅ معايير Zero Reversal</h3>
             <div style="display: grid; gap: 10px;">
@@ -2008,6 +2029,7 @@ function displayZeroReversalResult(analysis, symbol, timeframe) {
                 </div>
             </div>
         </div>
+        ` : ''}
 
         ${analysis.reasons && analysis.reasons.length > 0 ? `
             <div style="background: #e3f2fd; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #1565c0;">
