@@ -498,7 +498,7 @@ app.post('/api/referral-stats', async (req, res) => {
     
     const stats = {
       total_referrals: referrals.length,
-      total_earnings: earnings.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0)
+      total_earnings: earnings.reduce((sum, e) => sum + parseFloat(e.commission || 0), 0)
     };
     
     res.json({ success: true, stats });
