@@ -1,6 +1,7 @@
 
 const db = require('./database');
 const config = require('./config');
+const okx = require('./okx');
 
 async function initAdminCommands(bot) {
   
@@ -405,10 +406,10 @@ async function initAdminCommands(bot) {
           });
         }
         
-        const processingMsg = await bot.sendMessage(chatId, '⏳ جاري معالجة السحب عبر Binance...');
+        const processingMsg = await bot.sendMessage(chatId, '⏳ جاري معالجة السحب عبر OKX...');
         
-        if (binance.isConfigured()) {
-          const result = await binance.withdrawUSDT(withdrawal.wallet_address, withdrawal.amount);
+        if (okx.isConfigured()) {
+          const result = await okx.withdrawUSDT(withdrawal.wallet_address, withdrawal.amount);
           
           if (result.success) {
             await db.approveWithdrawal(withdrawalId);
@@ -430,17 +431,17 @@ async function initAdminCommands(bot) {
 📍 العنوان: <code>${withdrawal.wallet_address}</code>
 🆔 معرف السحب: <code>${result.data.withdrawId}</code>
 
-تم تحويل المبلغ عبر Binance
+تم تحويل المبلغ عبر OKX
 `, { parse_mode: 'HTML' });
             
             await bot.answerCallbackQuery(query.id, { 
-              text: '✅ تم السحب بنجاح عبر Binance', 
+              text: '✅ تم السحب بنجاح عبر OKX', 
               show_alert: true 
             });
           } else {
             await bot.deleteMessage(chatId, processingMsg.message_id);
             await bot.sendMessage(chatId, `
-❌ <b>فشل السحب عبر Binance</b>
+❌ <b>فشل السحب عبر OKX</b>
 
 السبب: ${result.error}
 
@@ -448,7 +449,7 @@ async function initAdminCommands(bot) {
 المبلغ: ${withdrawal.amount} USDT
 العنوان: <code>${withdrawal.wallet_address}</code>
 
-يرجى المعالجة يدوياً أو التحقق من إعدادات Binance
+يرجى المعالجة يدوياً أو التحقق من إعدادات OKX
 `, { parse_mode: 'HTML' });
             
             return bot.answerCallbackQuery(query.id, { 
@@ -461,7 +462,7 @@ async function initAdminCommands(bot) {
           await bot.deleteMessage(chatId, processingMsg.message_id);
           
           await bot.sendMessage(chatId, `
-⚠️ <b>Binance API غير مكوّن</b>
+⚠️ <b>OKX API غير مكوّن</b>
 
 تمت الموافقة على الطلب ولكن يجب المعالجة يدوياً:
 
