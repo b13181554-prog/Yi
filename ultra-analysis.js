@@ -110,8 +110,6 @@ class UltraAnalysis {
         sellScore += 2;
         reasons.push(`ADX قوي (${adxValue.toFixed(0)}) - اتجاه هبوطي قوي`);
       }
-    } else if (adxValue < 20) {
-      warnings.push('⚠️ ADX ضعيف - لا يوجد اتجاه واضح');
     }
     totalIndicators++;
 
@@ -129,8 +127,6 @@ class UltraAnalysis {
       } else if (sellScore > buyScore) {
         sellScore += 1;
       }
-    } else if (volume.signal.includes('منخفض')) {
-      warnings.push('⚠️ حجم تداول منخفض - قد لا تكون الحركة قوية');
     }
     totalIndicators++;
 
@@ -237,11 +233,9 @@ class UltraAnalysis {
       } else if (agreementPercentage >= 65) {
         confidenceLevel = 'متوسطة';
         riskLevel = 'متوسط';
-        warnings.push('⚠️ لا يفي بالمعايير الصارمة - يفضل الانتظار');
       } else {
         confidenceLevel = 'منخفضة';
         riskLevel = 'مرتفع';
-        warnings.push('❌ إشارة ضعيفة - لا ينصح بالدخول');
       }
     } else if (sellScore > buyScore) {
       recommendation = 'بيع';
@@ -262,14 +256,11 @@ class UltraAnalysis {
       } else if (agreementPercentage >= 65) {
         confidenceLevel = 'متوسطة';
         riskLevel = 'متوسط';
-        warnings.push('⚠️ لا يفي بالمعايير الصارمة - يفضل الانتظار');
       } else {
         confidenceLevel = 'منخفضة';
         riskLevel = 'مرتفع';
-        warnings.push('❌ إشارة ضعيفة - لا ينصح بالدخول');
       }
     } else {
-      warnings.push('⚠️ إشارات متعارضة - انتظر حتى تتضح الصورة');
       riskLevel = 'مرتفع جداً';
     }
 
@@ -346,8 +337,7 @@ class UltraAnalysis {
         CANDLE_PATTERNS: candlePatterns,
         HEAD_SHOULDERS: headShoulders,
         SUPPORT_RESISTANCE: supportResistance
-      },
-      disclaimer: '⚠️ هذا التحليل لأغراض تعليمية فقط. التداول يحمل مخاطر عالية وقد تخسر رأس مالك. استشر خبير مالي قبل اتخاذ أي قرار.'
+      }
     };
   }
 }
