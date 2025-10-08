@@ -903,11 +903,25 @@ app.post('/api/subscribe-analyst', async (req, res) => {
     let referrerId = null;
     let referralType = '';
     
-    if (user.referred_by_analyst) {
+    // التحقق من الإحالة الخاصة بمحلل معين (أولوية)
+    if (user.promoter_analyst_id && user.promoter_referrer_id) {
+      // التحقق إذا كان الاشتراك في نفس المحلل الذي تم الإحالة له
+      if (user.promoter_analyst_id === analyst_id.toString()) {
+        referralCommission = price * 0.15;
+        referrerId = user.promoter_referrer_id;
+        referralType = 'analyst_promoter_referral';
+      }
+    }
+    
+    // الإحالة العامة للمحللين (20%)
+    if (!referrerId && user.referred_by_analyst) {
       referralCommission = price * 0.2;
       referrerId = user.referred_by_analyst;
       referralType = 'analyst_referral';
-    } else if (user.referred_by) {
+    } 
+    
+    // الإحالة العامة للمستخدمين (10%)
+    if (!referrerId && user.referred_by) {
       referralCommission = price * 0.1;
       referrerId = user.referred_by;
       referralType = 'analyst_subscription';
@@ -970,6 +984,35 @@ app.post('/api/get-analyst-referral-link', async (req, res) => {
     });
   } catch (error) {
     console.error('Get Analyst Referral Link API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/get-analyst-promoter-link', async (req, res) => {
+  try {
+    const { user_id, analyst_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const analyst = await db.getAnalyst(analyst_id);
+    if (!analyst) {
+      return res.json({ success: false, error: 'المحلل غير موجود' });
+    }
+    
+    const botInfo = await bot.bot.getMe();
+    const botUsername = botInfo.username;
+    const referralLink = `https://t.me/${botUsername}?start=analyst_${analyst_id}_ref_${user_id}`;
+    
+    res.json({ 
+      success: true, 
+      referral_link: referralLink,
+      analyst_name: analyst.name,
+      commission_rate: 15
+    });
+  } catch (error) {
+    console.error('Get Analyst Promoter Link API Error:', error);
     res.json({ success: false, error: error.message });
   }
 });

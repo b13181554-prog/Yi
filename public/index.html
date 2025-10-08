@@ -10,6 +10,17 @@
 <body>
     <div id="app">
         <header class="app-header">
+            <div class="language-selector">
+                <select id="language-select" onchange="changeLanguage()">
+                    <option value="ar">🇸🇦</option>
+                    <option value="en">🇺🇸</option>
+                    <option value="fr">🇫🇷</option>
+                    <option value="es">🇪🇸</option>
+                    <option value="de">🇩🇪</option>
+                    <option value="ru">🇷🇺</option>
+                    <option value="zh">🇨🇳</option>
+                </select>
+            </div>
             <h1>🤖 OBENTCHI</h1>
             <p class="subtitle" data-i18n="app_title">بوت التداول الاحترافي</p>
         </header>
@@ -560,21 +571,6 @@
                     </div>
                 </div>
 
-                <div class="settings-card">
-                    <h3 data-i18n="settings_title">⚙️ الإعدادات</h3>
-                    <div class="form-group">
-                        <label data-i18n="language_label">🌐 اللغة:</label>
-                        <select id="language-select" onchange="changeLanguage()">
-                            <option value="ar">العربية 🇸🇦</option>
-                            <option value="en">English 🇺🇸</option>
-                            <option value="fr">Français 🇫🇷</option>
-                            <option value="es">Español 🇪🇸</option>
-                            <option value="de">Deutsch 🇩🇪</option>
-                            <option value="ru">Русский 🇷🇺</option>
-                            <option value="zh">中文 🇨🇳</option>
-                        </select>
-                    </div>
-                </div>
             </div>
 
             <!-- قسم الإدارة (للمالك فقط) -->

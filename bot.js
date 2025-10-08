@@ -105,11 +105,24 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
     let user = await db.getUser(userId);
     let referrerId = null;
     let analystReferrerId = null;
+    let promoterAnalystId = null;
+    let promoterReferrerId = null;
     
     if (params && params.startsWith('ref_')) {
       referrerId = parseInt(params.replace('ref_', ''));
       if (referrerId === userId) {
         referrerId = null;
+      }
+    } else if (params && params.startsWith('analyst_') && params.includes('_ref_')) {
+      // Format: analyst_{analyst_id}_ref_{promoter_user_id}
+      const parts = params.split('_');
+      if (parts.length >= 4) {
+        promoterAnalystId = parts[1]; // analyst_id (can be ObjectId string)
+        promoterReferrerId = parseInt(parts[3]); // promoter user_id
+        if (promoterReferrerId === userId) {
+          promoterReferrerId = null;
+          promoterAnalystId = null;
+        }
       }
     } else if (params && params.startsWith('analyst_ref_')) {
       analystReferrerId = parseInt(params.replace('analyst_ref_', ''));
@@ -120,6 +133,14 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
     
     if (!user) {
       await db.createUser(userId, username, firstName, lastName, referrerId, analystReferrerId);
+      
+      // حفظ معلومات الإحالة الخاصة بمحلل معين
+      if (promoterAnalystId && promoterReferrerId) {
+        await db.updateUser(userId, { 
+          promoter_analyst_id: promoterAnalystId,
+          promoter_referrer_id: promoterReferrerId
+        });
+      }
       
       if (referrerId) {
         await bot.sendMessage(referrerId, `
@@ -136,6 +157,15 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
 
 أحد أصدقائك انضم عبر رابط الإحالة الخاص بك!
 ستحصل على 20% من جميع مدفوعاته 💰
+        `, { parse_mode: 'HTML' });
+      }
+      
+      if (promoterReferrerId) {
+        await bot.sendMessage(promoterReferrerId, `
+🎉 <b>إحالة جديدة لمحلل!</b>
+
+أحد أصدقائك انضم عبر رابط الإحالة الخاص بك لمحلل معين!
+ستحصل على 15% من اشتراكه في هذا المحلل 💰
         `, { parse_mode: 'HTML' });
       }
       

@@ -62,7 +62,13 @@ async function initAdminCommands(bot) {
     
     const isAdminCallback = adminCallbacks.some(cb => data.startsWith(cb)) || 
                            data.startsWith('approve_withdrawal_') || 
-                           data.startsWith('reject_withdrawal_');
+                           data.startsWith('reject_withdrawal_') ||
+                           data.startsWith('ban_user_') ||
+                           data.startsWith('ban_duration_') ||
+                           data.startsWith('unban_user_') ||
+                           data.startsWith('restrict_user_') ||
+                           data.startsWith('restrict_action_') ||
+                           data.startsWith('delete_user_');
     
     if (isAdminCallback && userId !== config.OWNER_ID) {
       console.warn(`⚠️ محاولة وصول غير مصرح من ${userId} إلى ${data}`);
@@ -494,6 +500,256 @@ async function initAdminCommands(bot) {
         bot.emit('callback_query', { ...query, data: 'admin_withdrawals' });
       }
       
+      // البحث عن مستخدم
+      else if (data === 'admin_search_user') {
+        await bot.editMessageText(`
+🔍 <b>البحث عن مستخدم</b>
+
+أرسل معرف المستخدم (User ID) الذي تريد البحث عنه:
+
+<i>مثال: 123456789</i>
+`, {
+          chat_id: chatId,
+          message_id: query.message.message_id,
+          parse_mode: 'HTML',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: '❌ إلغاء', callback_data: 'admin_back' }]
+            ]
+          }
+        });
+        
+        // حفظ حالة البحث
+        await db.updateUser(userId, { temp_withdrawal_address: 'admin_search_user' });
+      }
+      
+      // حظر مستخدم
+      else if (data.startsWith('ban_user_')) {
+        const targetUserId = parseInt(data.replace('ban_user_', ''));
+        const keyboard = [
+          [
+            { text: '🕐 1 ساعة', callback_data: `ban_duration_${targetUserId}_1` },
+            { text: '📅 24 ساعة', callback_data: `ban_duration_${targetUserId}_24` }
+          ],
+          [
+            { text: '🗓️ 7 أيام', callback_data: `ban_duration_${targetUserId}_168` },
+            { text: '⛔ دائم', callback_data: `ban_duration_${targetUserId}_permanent` }
+          ],
+          [{ text: '🔙 رجوع', callback_data: 'admin_users' }]
+        ];
+        
+        await bot.editMessageText(`
+⛔ <b>حظر المستخدم</b>
+
+اختر مدة الحظر للمستخدم ID: <code>${targetUserId}</code>
+`, {
+          chat_id: chatId,
+          message_id: query.message.message_id,
+          parse_mode: 'HTML',
+          reply_markup: { inline_keyboard: keyboard }
+        });
+      }
+      
+      // تنفيذ الحظر بالمدة المحددة
+      else if (data.startsWith('ban_duration_')) {
+        const parts = data.replace('ban_duration_', '').split('_');
+        const targetUserId = parseInt(parts[0]);
+        const duration = parts[1];
+        
+        try {
+          const durationHours = duration === 'permanent' ? null : parseInt(duration);
+          await db.banUser(targetUserId, 'تم الحظر من لوحة الإدارة', userId, durationHours);
+          
+          const durationText = duration === 'permanent' ? 'بشكل دائم' : `لمدة ${duration} ساعة`;
+          
+          await bot.answerCallbackQuery(query.id, { 
+            text: `✅ تم حظر المستخدم ${durationText}`, 
+            show_alert: true 
+          });
+          
+          // إرسال إشعار للمستخدم المحظور
+          try {
+            await bot.sendMessage(targetUserId, `
+⛔ <b>تم حظرك من استخدام البوت</b>
+
+السبب: تم الحظر من لوحة الإدارة
+المدة: ${durationText}
+`, { parse_mode: 'HTML' });
+          } catch (e) {
+            console.log('لم يتم إرسال إشعار الحظر للمستخدم');
+          }
+          
+          // العودة لقائمة المستخدمين
+          bot.emit('callback_query', { ...query, data: 'admin_users' });
+        } catch (error) {
+          console.error('Error banning user:', error);
+          await bot.answerCallbackQuery(query.id, { 
+            text: '❌ حدث خطأ في حظر المستخدم', 
+            show_alert: true 
+          });
+        }
+      }
+      
+      // إلغاء حظر المستخدم
+      else if (data.startsWith('unban_user_')) {
+        const targetUserId = parseInt(data.replace('unban_user_', ''));
+        
+        try {
+          await db.unbanUser(targetUserId);
+          
+          await bot.answerCallbackQuery(query.id, { 
+            text: '✅ تم إلغاء حظر المستخدم', 
+            show_alert: true 
+          });
+          
+          // إرسال إشعار للمستخدم
+          try {
+            await bot.sendMessage(targetUserId, `
+✅ <b>تم إلغاء حظرك</b>
+
+يمكنك الآن استخدام البوت بشكل طبيعي!
+`, { parse_mode: 'HTML' });
+          } catch (e) {
+            console.log('لم يتم إرسال إشعار إلغاء الحظر للمستخدم');
+          }
+          
+          // العودة لقائمة المستخدمين
+          bot.emit('callback_query', { ...query, data: 'admin_users' });
+        } catch (error) {
+          console.error('Error unbanning user:', error);
+          await bot.answerCallbackQuery(query.id, { 
+            text: '❌ حدث خطأ في إلغاء الحظر', 
+            show_alert: true 
+          });
+        }
+      }
+      
+      // تقييد مستخدم
+      else if (data.startsWith('restrict_user_')) {
+        const targetUserId = parseInt(data.replace('restrict_user_', ''));
+        const keyboard = [
+          [
+            { text: '🚫 منع التداول', callback_data: `restrict_action_${targetUserId}_no_trading` },
+            { text: '🚫 منع الإيداع', callback_data: `restrict_action_${targetUserId}_no_deposit` }
+          ],
+          [
+            { text: '🚫 منع السحب', callback_data: `restrict_action_${targetUserId}_no_withdraw` },
+            { text: '🚫 منع الإحالة', callback_data: `restrict_action_${targetUserId}_no_referral` }
+          ],
+          [{ text: '🔙 رجوع', callback_data: 'admin_users' }]
+        ];
+        
+        await bot.editMessageText(`
+🚫 <b>تقييد المستخدم</b>
+
+اختر نوع التقييد للمستخدم ID: <code>${targetUserId}</code>
+`, {
+          chat_id: chatId,
+          message_id: query.message.message_id,
+          parse_mode: 'HTML',
+          reply_markup: { inline_keyboard: keyboard }
+        });
+      }
+      
+      // تنفيذ التقييد
+      else if (data.startsWith('restrict_action_')) {
+        const parts = data.replace('restrict_action_', '').split('_');
+        const targetUserId = parseInt(parts[0]);
+        const restrictionType = parts.slice(1).join('_');
+        
+        try {
+          const restrictions = { [restrictionType]: true };
+          await db.restrictUser(targetUserId, restrictions, 168); // 7 أيام
+          
+          const restrictionNames = {
+            'no_trading': 'منع التداول',
+            'no_deposit': 'منع الإيداع',
+            'no_withdraw': 'منع السحب',
+            'no_referral': 'منع الإحالة'
+          };
+          
+          await bot.answerCallbackQuery(query.id, { 
+            text: `✅ تم تطبيق: ${restrictionNames[restrictionType]}`, 
+            show_alert: true 
+          });
+          
+          // إرسال إشعار للمستخدم
+          try {
+            await bot.sendMessage(targetUserId, `
+⚠️ <b>تم تقييد حسابك</b>
+
+التقييد: ${restrictionNames[restrictionType]}
+المدة: 7 أيام
+`, { parse_mode: 'HTML' });
+          } catch (e) {
+            console.log('لم يتم إرسال إشعار التقييد للمستخدم');
+          }
+          
+          // العودة لقائمة المستخدمين
+          bot.emit('callback_query', { ...query, data: 'admin_users' });
+        } catch (error) {
+          console.error('Error restricting user:', error);
+          await bot.answerCallbackQuery(query.id, { 
+            text: '❌ حدث خطأ في تقييد المستخدم', 
+            show_alert: true 
+          });
+        }
+      }
+      
+      // حذف حساب المستخدم
+      else if (data.startsWith('delete_user_confirm_')) {
+        const targetUserId = parseInt(data.replace('delete_user_confirm_', ''));
+        
+        try {
+          await db.deleteUserAccount(targetUserId);
+          
+          await bot.answerCallbackQuery(query.id, { 
+            text: '✅ تم حذف حساب المستخدم نهائياً', 
+            show_alert: true 
+          });
+          
+          // العودة لقائمة المستخدمين
+          bot.emit('callback_query', { ...query, data: 'admin_users' });
+        } catch (error) {
+          console.error('Error deleting user:', error);
+          await bot.answerCallbackQuery(query.id, { 
+            text: '❌ حدث خطأ في حذف المستخدم', 
+            show_alert: true 
+          });
+        }
+      }
+      
+      // تأكيد حذف المستخدم
+      else if (data.startsWith('delete_user_')) {
+        const targetUserId = parseInt(data.replace('delete_user_', ''));
+        
+        const keyboard = [
+          [
+            { text: '✅ نعم، احذف الحساب', callback_data: `delete_user_confirm_${targetUserId}` }
+          ],
+          [
+            { text: '❌ إلغاء', callback_data: 'admin_users' }
+          ]
+        ];
+        
+        await bot.editMessageText(`
+⚠️ <b>تحذير: حذف حساب مستخدم</b>
+
+هل أنت متأكد من حذف حساب المستخدم ID: <code>${targetUserId}</code>؟
+
+⚠️ <b>تحذير:</b> هذا الإجراء لا يمكن التراجع عنه!
+سيتم حذف:
+• بيانات المستخدم
+• جميع المعاملات
+• اشتراكات المحللين
+`, {
+          chat_id: chatId,
+          message_id: query.message.message_id,
+          parse_mode: 'HTML',
+          reply_markup: { inline_keyboard: keyboard }
+        });
+      }
+      
       // الرجوع للقائمة الرئيسية
       else if (data === 'admin_back' || data === 'admin_refresh') {
         const keyboard = {
@@ -541,7 +797,7 @@ async function initAdminCommands(bot) {
     }
   });
   
-  // معالج الرسائل الجماعية
+  // معالج الرسائل الجماعية والبحث عن المستخدمين
   bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     const userId = msg.from.id;
@@ -550,6 +806,95 @@ async function initAdminCommands(bot) {
     if (userId !== config.OWNER_ID) return;
     
     const user = await db.getUser(userId);
+    
+    // معالج البحث عن مستخدم
+    if (user && user.temp_withdrawal_address === 'admin_search_user') {
+      if (!text || text.startsWith('/')) return;
+      
+      const searchUserId = parseInt(text.trim());
+      
+      if (isNaN(searchUserId)) {
+        return bot.sendMessage(chatId, '❌ معرف المستخدم يجب أن يكون رقماً');
+      }
+      
+      const targetUser = await db.getUser(searchUserId);
+      
+      if (!targetUser) {
+        await db.updateUser(userId, { temp_withdrawal_address: null });
+        return bot.sendMessage(chatId, '❌ لم يتم العثور على مستخدم بهذا المعرف');
+      }
+      
+      const banStatus = await db.checkUserBanStatus(searchUserId);
+      const subscriptionActive = await db.isSubscriptionActive(searchUserId);
+      const referralStats = await db.getReferralStats(searchUserId);
+      
+      let statusEmoji = '✅';
+      let statusText = 'نشط';
+      
+      if (banStatus.banned) {
+        statusEmoji = '⛔';
+        statusText = 'محظور';
+        if (banStatus.expires) {
+          statusText += ` حتى ${new Date(banStatus.expires).toLocaleString('ar')}`;
+        } else {
+          statusText += ' بشكل دائم';
+        }
+      }
+      
+      const message = `
+👤 <b>معلومات المستخدم</b>
+
+━━━━━━━━━━━━━━━━━━━━
+📋 <b>البيانات الأساسية:</b>
+• الاسم: ${targetUser.first_name} ${targetUser.last_name || ''}
+• المعرف: @${targetUser.username || 'لا يوجد'}
+• User ID: <code>${targetUser.user_id}</code>
+• تاريخ التسجيل: ${new Date(targetUser.created_at).toLocaleDateString('ar')}
+
+━━━━━━━━━━━━━━━━━━━━
+💰 <b>المالية:</b>
+• الرصيد: ${targetUser.balance || 0} USDT
+• أرباح الإحالات: ${targetUser.referral_earnings || 0} USDT
+
+━━━━━━━━━━━━━━━━━━━━
+📊 <b>الحالة:</b>
+• الحالة: ${statusEmoji} ${statusText}
+• الاشتراك: ${subscriptionActive ? '✅ نشط' : '❌ منتهي'}
+${banStatus.banned && banStatus.reason ? `• سبب الحظر: ${banStatus.reason}` : ''}
+
+━━━━━━━━━━━━━━━━━━━━
+🎁 <b>الإحالات:</b>
+• عدد الإحالات: ${referralStats.total_referrals}
+• إجمالي الأرباح: ${referralStats.total_earnings.toFixed(2)} USDT
+
+━━━━━━━━━━━━━━━━━━━━
+⚙️ <b>إعدادات:</b>
+• اللغة: ${targetUser.language || 'ar'}
+• الإشعارات: ${targetUser.notifications_enabled ? '✅ مفعلة' : '❌ معطلة'}
+`;
+      
+      const keyboard = [];
+      
+      if (banStatus.banned) {
+        keyboard.push([{ text: '✅ إلغاء الحظر', callback_data: `unban_user_${searchUserId}` }]);
+      } else {
+        keyboard.push([{ text: '⛔ حظر المستخدم', callback_data: `ban_user_${searchUserId}` }]);
+      }
+      
+      keyboard.push([{ text: '🚫 تقييد المستخدم', callback_data: `restrict_user_${searchUserId}` }]);
+      keyboard.push([{ text: '🗑️ حذف الحساب', callback_data: `delete_user_${searchUserId}` }]);
+      keyboard.push([{ text: '🔙 رجوع', callback_data: 'admin_users' }]);
+      
+      await bot.sendMessage(chatId, message, {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: keyboard
+        }
+      });
+      
+      await db.updateUser(userId, { temp_withdrawal_address: null });
+      return;
+    }
     
     if (user && user.temp_withdrawal_address === 'admin_broadcast') {
       if (!text || text.startsWith('/')) return;

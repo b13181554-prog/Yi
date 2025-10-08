@@ -783,6 +783,11 @@ async function loadAnalysts() {
                                 ${analyst.is_subscribed ? '🔄 تجديد' : '✅ اشترك'}
                             </button>
                         </div>
+                        <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                            <button onclick="getAnalystPromoterLink('${analyst.id}', '${analyst.name}')" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                                🎁 رابط الإحالة (15% عمولة)
+                            </button>
+                        </div>
                     </div>
                 `).join('');
             } else {
@@ -1077,6 +1082,40 @@ function copyAnalystReferralLink() {
         document.execCommand('copy');
         tg.showAlert('✅ تم نسخ الرابط!');
     });
+}
+
+async function getAnalystPromoterLink(analystId, analystName) {
+    if (!userId) {
+        tg.showAlert('خطأ: لا يمكن تحديد هوية المستخدم');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/get-analyst-promoter-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                analyst_id: analystId,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.referral_link) {
+            navigator.clipboard.writeText(data.referral_link).then(() => {
+                tg.showAlert(`✅ تم نسخ رابط الإحالة للمحلل ${analystName}!\n\nشارك هذا الرابط واحصل على ${data.commission_rate}% عمولة من كل اشتراك! 💰`);
+            }).catch(() => {
+                tg.showAlert(`رابط الإحالة: ${data.referral_link}\n\nاحصل على ${data.commission_rate}% عمولة!`);
+            });
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'فشل الحصول على الرابط'));
+        }
+    } catch (error) {
+        console.error('Error getting analyst promoter link:', error);
+        tg.showAlert('❌ حدث خطأ في الحصول على الرابط');
+    }
 }
 
 async function toggleAnalystStatus() {
