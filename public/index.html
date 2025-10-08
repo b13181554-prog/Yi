@@ -11,18 +11,18 @@
     <div id="app">
         <header class="app-header">
             <h1>🤖 OBENTCHI</h1>
-            <p class="subtitle">بوت التداول الاحترافي</p>
+            <p class="subtitle" data-i18n="app_title">بوت التداول الاحترافي</p>
         </header>
 
         <div id="loading" class="loading">
             <div class="spinner"></div>
-            <p>جاري التحميل...</p>
+            <p data-i18n="loading">جاري التحميل...</p>
         </div>
 
         <main id="main-content" style="display: none;">
             <div class="user-info">
                 <div class="balance-card">
-                    <div class="balance-label">💰 الرصيد الحالي</div>
+                    <div class="balance-label" data-i18n="current_balance">💰 الرصيد الحالي</div>
                     <div class="balance-amount" id="balance">0.00 USDT</div>
                 </div>
             </div>
@@ -30,116 +30,116 @@
             <nav class="main-nav">
                 <button class="nav-btn active" onclick="showSection('analysis-section', event)">
                     <span class="icon">📊</span>
-                    <span>التحليل</span>
+                    <span data-i18n="nav_analysis">التحليل</span>
                 </button>
                 <button class="nav-btn" onclick="showSection('movers-section', event)">
                     <span class="icon">🔥</span>
-                    <span>الأفضل</span>
+                    <span data-i18n="nav_movers">الأفضل</span>
                 </button>
                 <button class="nav-btn" onclick="showSection('wallet-section', event)">
                     <span class="icon">💳</span>
-                    <span>المحفظة</span>
+                    <span data-i18n="nav_wallet">المحفظة</span>
                 </button>
                 <button class="nav-btn" onclick="showSection('analysts-section', event)">
                     <span class="icon">👨‍💼</span>
-                    <span>محللين</span>
+                    <span data-i18n="nav_analysts">محللين</span>
                 </button>
                 <button class="nav-btn" onclick="showSection('profile-section', event)">
                     <span class="icon">👤</span>
-                    <span>حسابي</span>
+                    <span data-i18n="nav_profile">حسابي</span>
                 </button>
                 <button class="nav-btn" id="admin-nav-btn" onclick="showSection('admin-section', event)" style="display: none;">
                     <span class="icon">👑</span>
-                    <span>إدارة</span>
+                    <span data-i18n="nav_admin">إدارة</span>
                 </button>
             </nav>
 
             <!-- التحليل الفني -->
             <div id="analysis-section" class="section active">
                 <div class="section-header">
-                    <h2>📊 التحليل الفني</h2>
-                    <p style="color: #666; font-size: 14px; margin-top: 5px;">اختر العملة والإطار الزمني ثم اضغط على زر التحليل بالأسفل 👇</p>
+                    <h2 data-i18n="technical_analysis">📊 التحليل الفني</h2>
+                    <p style="color: #666; font-size: 14px; margin-top: 5px;" data-i18n="analysis_instruction">اختر العملة والإطار الزمني ثم اضغط على زر التحليل بالأسفل 👇</p>
                 </div>
 
                 <div class="analysis-controls">
                     <div class="form-group">
-                        <label>نوع السوق:</label>
+                        <label data-i18n="market_type_label">نوع السوق:</label>
                         <select id="market-type" onchange="updateSymbolsList()">
-                            <option value="crypto">العملات الرقمية 💎</option>
-                            <option value="forex">الفوركس 💱</option>
-                            <option value="stocks">الأسهم 📈</option>
-                            <option value="commodities">السلع 🛢️</option>
-                            <option value="indices">المؤشرات 📊</option>
+                            <option value="crypto" data-i18n="market_crypto">العملات الرقمية 💎</option>
+                            <option value="forex" data-i18n="market_forex">الفوركس 💱</option>
+                            <option value="stocks" data-i18n="market_stocks">الأسهم 📈</option>
+                            <option value="commodities" data-i18n="market_commodities">السلع 🛢️</option>
+                            <option value="indices" data-i18n="market_indices">المؤشرات 📊</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label>نوع التداول:</label>
+                        <label data-i18n="trading_type_label">نوع التداول:</label>
                         <select id="trading-type">
-                            <option value="spot">Spot 📊</option>
-                            <option value="futures">Futures ⚡</option>
+                            <option value="spot" data-i18n="trading_spot">Spot 📊</option>
+                            <option value="futures" data-i18n="trading_futures">Futures ⚡</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label>الأصل / الرمز:</label>
-                        <input type="text" id="symbol-search" placeholder="🔍 ابحث عن عملة أو زوج..." style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-size: 14px;">
+                        <label data-i18n="asset_symbol_label">الأصل / الرمز:</label>
+                        <input type="text" id="symbol-search" data-i18n="search_placeholder" placeholder="🔍 ابحث عن عملة أو زوج..." style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-size: 14px;">
                         <select id="symbol-select" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; background: white; font-size: 14px;">
                             <option value="BTCUSDT">💰 Bitcoin (BTC)</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label>الإطار الزمني:</label>
+                        <label data-i18n="timeframe_label">الإطار الزمني:</label>
                         <select id="timeframe">
-                            <option value="1m">1 دقيقة</option>
-                            <option value="5m">5 دقائق</option>
-                            <option value="15m">15 دقيقة</option>
-                            <option value="30m">30 دقيقة</option>
-                            <option value="1h" selected>1 ساعة</option>
-                            <option value="4h">4 ساعات</option>
-                            <option value="1d">يوم</option>
-                            <option value="1w">أسبوع</option>
+                            <option value="1m" data-i18n="timeframe_1m">1 دقيقة</option>
+                            <option value="5m" data-i18n="timeframe_5m">5 دقائق</option>
+                            <option value="15m" data-i18n="timeframe_15m">15 دقيقة</option>
+                            <option value="30m" data-i18n="timeframe_30m">30 دقيقة</option>
+                            <option value="1h" selected data-i18n="timeframe_1h">1 ساعة</option>
+                            <option value="4h" data-i18n="timeframe_4h">4 ساعات</option>
+                            <option value="1d" data-i18n="timeframe_1d">يوم</option>
+                            <option value="1w" data-i18n="timeframe_1w">أسبوع</option>
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label>نوع التحليل:</label>
+                        <label data-i18n="analysis_type_label">نوع التحليل:</label>
                         <div class="analysis-type-grid">
                             <div class="analysis-type-card" data-type="complete" onclick="selectAnalysisType('complete', event)">
                                 <span class="type-icon">📈</span>
-                                <span class="type-label">تحليل شامل</span>
+                                <span class="type-label" data-i18n="analysis_complete">تحليل شامل</span>
                             </div>
                             <div class="analysis-type-card" data-type="ultra" onclick="selectAnalysisType('ultra', event)" style="border: 2px solid #FFD700; background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);">
                                 <span class="type-icon">💎</span>
-                                <span class="type-label">Ultra Analysis</span>
-                                <small style="font-size: 10px; color: #667eea; display: block; margin-top: 2px;">دقة عالية جداً</small>
+                                <span class="type-label" data-i18n="analysis_ultra">Ultra Analysis</span>
+                                <small style="font-size: 10px; color: #667eea; display: block; margin-top: 2px;" data-i18n="analysis_ultra_desc">دقة عالية جداً</small>
                             </div>
                             <div class="analysis-type-card active" data-type="zero-reversal" onclick="selectAnalysisType('zero-reversal', event)" style="border: 3px solid #FF0000; background: linear-gradient(135deg, #FF000020 0%, #FF006620 100%);">
                                 <span class="type-icon">⛔</span>
-                                <span class="type-label">Zero Reversal</span>
-                                <small style="font-size: 10px; color: #FF0000; display: block; margin-top: 2px; font-weight: bold;">انعكاس 0%</small>
+                                <span class="type-label" data-i18n="analysis_zero_reversal">Zero Reversal</span>
+                                <small style="font-size: 10px; color: #FF0000; display: block; margin-top: 2px; font-weight: bold;" data-i18n="analysis_zero_desc">انعكاس 0%</small>
                             </div>
                             <div class="analysis-type-card" data-type="fibonacci" onclick="selectAnalysisType('fibonacci', event)">
                                 <span class="type-icon">🎯</span>
-                                <span class="type-label">فيبوناتشي</span>
+                                <span class="type-label" data-i18n="analysis_fibonacci">فيبوناتشي</span>
                             </div>
                             <div class="analysis-type-card" data-type="patterns" onclick="selectAnalysisType('patterns', event)">
                                 <span class="type-icon">🕯️</span>
-                                <span class="type-label">أنماط الشموع</span>
+                                <span class="type-label" data-i18n="analysis_patterns">أنماط الشموع</span>
                             </div>
                             <div class="analysis-type-card" data-type="indicators" onclick="selectAnalysisType('indicators', event)">
                                 <span class="type-icon">📊</span>
-                                <span class="type-label">المؤشرات الفنية</span>
+                                <span class="type-label" data-i18n="analysis_indicators">المؤشرات الفنية</span>
                             </div>
                         </div>
                     </div>
 
-                    <button class="submit-btn" onclick="analyzeMarketAdvanced()" style="font-size: 18px; padding: 16px; margin-top: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s;">🎯 ابدأ التحليل المتقدم</button>
+                    <button class="submit-btn" onclick="analyzeMarketAdvanced()" style="font-size: 18px; padding: 16px; margin-top: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s;" data-i18n="start_analysis_btn">🎯 ابدأ التحليل المتقدم</button>
                 </div>
 
                 <div id="analysis-result" class="analysis-result" style="display: none;">
-                    <h3>نتيجة التحليل</h3>
+                    <h3 data-i18n="analysis_result_title">نتيجة التحليل</h3>
                     <div id="recommendation-card" class="recommendation-card"></div>
                     <div id="indicators-details" class="indicators-details"></div>
                 </div>
@@ -148,78 +148,78 @@
             <!-- أكثر الأصول حركة -->
             <div id="movers-section" class="section">
                 <div class="section-header">
-                    <h2>🔥 أكثر الأصول حركة</h2>
+                    <h2 data-i18n="top_movers_title">🔥 أكثر الأصول حركة</h2>
                 </div>
 
                 <div class="movers-filters">
-                    <button class="filter-btn active" onclick="loadMovers('gainers', event)">📈 الأعلى ارتفاعاً</button>
-                    <button class="filter-btn" onclick="loadMovers('losers', event)">📉 الأعلى انخفاضاً</button>
+                    <button class="filter-btn active" onclick="loadMovers('gainers', event)" data-i18n="top_gainers">📈 الأعلى ارتفاعاً</button>
+                    <button class="filter-btn" onclick="loadMovers('losers', event)" data-i18n="top_losers">📉 الأعلى انخفاضاً</button>
                 </div>
                 <div class="movers-filters" style="margin-top: 10px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px;">
-                    <button class="filter-btn active" onclick="setMoverMarketType('crypto', event)">💎 عملات</button>
-                    <button class="filter-btn" onclick="setMoverMarketType('forex', event)">💱 فوركس</button>
-                    <button class="filter-btn" onclick="setMoverMarketType('stocks', event)">📈 أسهم</button>
-                    <button class="filter-btn" onclick="setMoverMarketType('commodities', event)">🛢️ سلع</button>
-                    <button class="filter-btn" onclick="setMoverMarketType('indices', event)">📊 مؤشرات</button>
+                    <button class="filter-btn active" onclick="setMoverMarketType('crypto', event)" data-i18n="movers_crypto">💎 عملات</button>
+                    <button class="filter-btn" onclick="setMoverMarketType('forex', event)" data-i18n="movers_forex">💱 فوركس</button>
+                    <button class="filter-btn" onclick="setMoverMarketType('stocks', event)" data-i18n="movers_stocks">📈 أسهم</button>
+                    <button class="filter-btn" onclick="setMoverMarketType('commodities', event)" data-i18n="movers_commodities">🛢️ سلع</button>
+                    <button class="filter-btn" onclick="setMoverMarketType('indices', event)" data-i18n="movers_indices">📊 مؤشرات</button>
                 </div>
                 <div id="movers-list" class="movers-list">
-                    <p class="empty-state">جاري التحميل...</p>
+                    <p class="empty-state" data-i18n="empty_state_loading">جاري التحميل...</p>
                 </div>
             </div>
 
             <!-- المحفظة -->
             <div id="wallet-section" class="section">
                 <div class="section-header">
-                    <h2>💳 المحفظة</h2>
+                    <h2 data-i18n="wallet_title">💳 المحفظة</h2>
                 </div>
 
                 <div class="action-buttons">
                     <button class="action-btn deposit-btn" onclick="showDeposit()">
                         <span class="icon">📥</span>
-                        <span>إيداع</span>
+                        <span data-i18n="deposit_btn">إيداع</span>
                     </button>
                     <button class="action-btn withdraw-btn" onclick="showWithdraw()">
                         <span class="icon">📤</span>
-                        <span>سحب</span>
+                        <span data-i18n="withdraw_btn">سحب</span>
                     </button>
                 </div>
 
                 <div id="deposit-form" class="form-container" style="display: none;">
-                    <h3>📥 إيداع USDT</h3>
+                    <h3 data-i18n="deposit_usdt_title">📥 إيداع USDT</h3>
                     <div class="info-box">
-                        <p><strong>عنوان المحفظة (TRC20):</strong></p>
+                        <p><strong data-i18n="wallet_address_label">عنوان المحفظة (TRC20):</strong></p>
                         <div class="wallet-address" id="wallet-address">
                             <code>TCZwoWnmi8uBssqjtKGmUwAjToAxcJkjLP</code>
                             <button onclick="copyAddress()" class="copy-btn">📋</button>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>معرف المعاملة (TxID):</label>
-                        <input type="text" id="tx-id" placeholder="أدخل معرف المعاملة">
+                        <label data-i18n="tx_id_label">معرف المعاملة (TxID):</label>
+                        <input type="text" id="tx-id" data-i18n="tx_id_placeholder" placeholder="أدخل معرف المعاملة">
                     </div>
-                    <button class="submit-btn" onclick="submitDeposit()">تأكيد الإيداع</button>
-                    <button class="cancel-btn" onclick="hideDeposit()">إلغاء</button>
+                    <button class="submit-btn" onclick="submitDeposit()" data-i18n="confirm_deposit_btn">تأكيد الإيداع</button>
+                    <button class="cancel-btn" onclick="hideDeposit()" data-i18n="cancel_btn">إلغاء</button>
                 </div>
 
                 <div id="withdraw-form" class="form-container" style="display: none;">
-                    <h3>📤 سحب USDT</h3>
+                    <h3 data-i18n="withdraw_usdt_title">📤 سحب USDT</h3>
                     <div class="form-group">
-                        <label>عنوان المحفظة (TRC20):</label>
-                        <input type="text" id="withdraw-address" placeholder="أدخل عنوان المحفظة">
+                        <label data-i18n="withdraw_address_label">عنوان المحفظة (TRC20):</label>
+                        <input type="text" id="withdraw-address" data-i18n="withdraw_address_placeholder" placeholder="أدخل عنوان المحفظة">
                     </div>
                     <div class="form-group">
-                        <label>المبلغ (USDT):</label>
-                        <input type="number" id="withdraw-amount" placeholder="أدخل المبلغ" min="1" step="0.01">
-                        <small>رسوم السحب: 1 USDT</small>
+                        <label data-i18n="withdraw_amount_label">المبلغ (USDT):</label>
+                        <input type="number" id="withdraw-amount" data-i18n="withdraw_amount_placeholder" placeholder="أدخل المبلغ" min="1" step="0.01">
+                        <small data-i18n="withdraw_fee">رسوم السحب: 1 USDT</small>
                     </div>
-                    <button class="submit-btn" onclick="submitWithdraw()">تأكيد السحب</button>
-                    <button class="cancel-btn" onclick="hideWithdraw()">إلغاء</button>
+                    <button class="submit-btn" onclick="submitWithdraw()" data-i18n="confirm_withdraw_btn">تأكيد السحب</button>
+                    <button class="cancel-btn" onclick="hideWithdraw()" data-i18n="cancel_btn">إلغاء</button>
                 </div>
 
                 <div class="transactions-list" id="transactions">
-                    <h3>📜 آخر المعاملات</h3>
+                    <h3 data-i18n="transactions_title">📜 آخر المعاملات</h3>
                     <div id="transactions-container">
-                        <p class="empty-state">لا توجد معاملات حتى الآن</p>
+                        <p class="empty-state" data-i18n="no_transactions">لا توجد معاملات حتى الآن</p>
                     </div>
                 </div>
             </div>
@@ -227,26 +227,26 @@
             <!-- المحللين -->
             <div id="analysts-section" class="section">
                 <div class="section-header">
-                    <h2>👨‍💼 المحللين المحترفين</h2>
+                    <h2 data-i18n="analysts_title">👨‍💼 المحللين المحترفين</h2>
                 </div>
                 
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 8px 15px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; font-size: 13px; box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);">
                     <span style="margin-left: 8px;">👉</span>
-                    <span>مرر الأقسام لليسار لرؤية المزيد</span>
+                    <span data-i18n="swipe_instruction">مرر الأقسام لليسار لرؤية المزيد</span>
                     <span style="margin-right: 8px; animation: slideLeft 1.5s infinite;">←</span>
                 </div>
 
                 <div class="analysts-tabs">
-                    <div class="tab-btn active" onclick="switchAnalystTab('all', event)">كل المحللين</div>
-                    <div class="tab-btn" onclick="switchAnalystTab('crypto', event)">💎 عملات رقمية</div>
-                    <div class="tab-btn" onclick="switchAnalystTab('forex', event)">💱 فوركس</div>
-                    <div class="tab-btn" onclick="switchAnalystTab('stocks', event)">📈 أسهم</div>
-                    <div class="tab-btn" onclick="switchAnalystTab('commodities', event)">🛢️ سلع</div>
-                    <div class="tab-btn" onclick="switchAnalystTab('indices', event)">📊 مؤشرات</div>
-                    <div class="tab-btn" onclick="switchAnalystTab('active', event)">✅ نشطين</div>
-                    <div class="tab-btn" onclick="switchAnalystTab('inactive', event)">⏸️ متوقفين</div>
-                    <div class="tab-btn" onclick="switchAnalystTab('top100', event)">🏆 Top 100</div>
-                    <div class="tab-btn" onclick="switchAnalystTab('subscriptions', event)">اشتراكاتي</div>
+                    <div class="tab-btn active" onclick="switchAnalystTab('all', event)" data-i18n="all_analysts">كل المحللين</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('crypto', event)" data-i18n="market_crypto">💎 عملات رقمية</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('forex', event)" data-i18n="market_forex">💱 فوركس</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('stocks', event)" data-i18n="market_stocks">📈 أسهم</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('commodities', event)" data-i18n="market_commodities">🛢️ سلع</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('indices', event)" data-i18n="market_indices">📊 مؤشرات</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('active', event)" data-i18n="active_analysts">✅ نشطين</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('inactive', event)" data-i18n="inactive_analysts">⏸️ متوقفين</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('top100', event)" data-i18n="top100_analysts">🏆 Top 100</div>
+                    <div class="tab-btn" onclick="switchAnalystTab('subscriptions', event)" data-i18n="my_subscriptions">اشتراكاتي</div>
                 </div>
 
                 <div id="all-analysts-tab" class="analysts-tab-content active">
@@ -509,61 +509,61 @@
             <!-- الحساب -->
             <div id="profile-section" class="section">
                 <div class="section-header">
-                    <h2>👤 حسابي</h2>
+                    <h2 data-i18n="profile_title">👤 حسابي</h2>
                 </div>
 
                 <div class="profile-info">
                     <div class="info-row">
-                        <span class="label">🆔 معرف المستخدم:</span>
+                        <span class="label" data-i18n="user_id_label">🆔 معرف المستخدم:</span>
                         <span class="value" id="user-id">-</span>
                     </div>
                     <div class="info-row">
-                        <span class="label">👤 الاسم:</span>
+                        <span class="label" data-i18n="user_name_label">👤 الاسم:</span>
                         <span class="value" id="user-name">-</span>
                     </div>
                     <div class="info-row">
-                        <span class="label">💰 الرصيد:</span>
+                        <span class="label" data-i18n="user_balance_label">💰 الرصيد:</span>
                         <span class="value" id="user-balance">0 USDT</span>
                     </div>
                     <div class="info-row">
-                        <span class="label">⭐ حالة الاشتراك:</span>
+                        <span class="label" data-i18n="subscription_status_label">⭐ حالة الاشتراك:</span>
                         <span class="value" id="subscription-status">-</span>
                     </div>
                 </div>
 
                 <div class="subscription-card">
-                    <h3>⭐ الاشتراك الشهري</h3>
+                    <h3 data-i18n="monthly_subscription_title">⭐ الاشتراك الشهري</h3>
                     <div class="price">10 USDT</div>
-                    <p class="period">شهرياً</p>
+                    <p class="period" data-i18n="price_per_month">شهرياً</p>
                     <div id="sub-details" class="sub-details"></div>
-                    <button class="subscribe-btn" id="subscribe-btn" onclick="subscribe()">
+                    <button class="subscribe-btn" id="subscribe-btn" onclick="subscribe()" data-i18n="subscribe_now_btn">
                         اشترك الآن
                     </button>
                 </div>
 
                 <div class="referral-section">
-                    <h3>🎁 رابط الإحالة</h3>
-                    <p class="info-text">احصل على 10% من جميع مدفوعات أصدقائك!</p>
+                    <h3 data-i18n="referral_link_title">🎁 رابط الإحالة</h3>
+                    <p class="info-text" data-i18n="referral_benefit">احصل على 10% من جميع مدفوعات أصدقائك!</p>
                     <div class="referral-link" id="referral-link">
-                        <code id="ref-link">جاري التحميل...</code>
+                        <code id="ref-link" data-i18n="loading">جاري التحميل...</code>
                         <button onclick="copyReferralLink()" class="copy-btn">📋</button>
                     </div>
                     <div class="referral-stats">
                         <div class="stat">
                             <div class="stat-value" id="referral-count">0</div>
-                            <div class="stat-label">الإحالات</div>
+                            <div class="stat-label" data-i18n="referrals_stat">الإحالات</div>
                         </div>
                         <div class="stat">
                             <div class="stat-value" id="referral-earnings">0 USDT</div>
-                            <div class="stat-label">الأرباح</div>
+                            <div class="stat-label" data-i18n="earnings_stat">الأرباح</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="settings-card">
-                    <h3>⚙️ الإعدادات</h3>
+                    <h3 data-i18n="settings_title">⚙️ الإعدادات</h3>
                     <div class="form-group">
-                        <label>🌐 اللغة:</label>
+                        <label data-i18n="language_label">🌐 اللغة:</label>
                         <select id="language-select" onchange="changeLanguage()">
                             <option value="ar">العربية 🇸🇦</option>
                             <option value="en">English 🇺🇸</option>
@@ -580,33 +580,34 @@
             <!-- قسم الإدارة (للمالك فقط) -->
             <div id="admin-section" class="section">
                 <div class="section-header">
-                    <h2>👑 لوحة الإدارة</h2>
-                    <p style="color: #888; font-size: 13px;">إدارة المستخدمين والمحتوى</p>
+                    <h2 data-i18n="admin_title">👑 لوحة الإدارة</h2>
+                    <p style="color: #888; font-size: 13px;" data-i18n="admin_subtitle">إدارة المستخدمين والمحتوى</p>
                 </div>
 
                 <div class="admin-tabs" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto;">
-                    <button class="admin-tab-btn active" onclick="switchAdminTab('users')" style="padding: 10px 20px; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; white-space: nowrap;">👥 المستخدمين</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('banned')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">🚫 المحظورين</button>
+                    <button class="admin-tab-btn active" onclick="switchAdminTab('users')" style="padding: 10px 20px; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_users_tab">👥 المستخدمين</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('banned')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_banned_tab">🚫 المحظورين</button>
                 </div>
 
                 <div id="admin-users-tab" class="admin-tab-content">
                     <div style="margin-bottom: 15px;">
-                        <input type="text" id="user-search" placeholder="🔍 ابحث عن مستخدم (ID, الاسم)" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;">
+                        <input type="text" id="user-search" data-i18n="user_search_placeholder" placeholder="🔍 ابحث عن مستخدم (ID, الاسم)" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;">
                     </div>
                     <div id="users-list" style="display: flex; flex-direction: column; gap: 10px;">
-                        <p class="empty-state">جاري التحميل...</p>
+                        <p class="empty-state" data-i18n="empty_state_loading">جاري التحميل...</p>
                     </div>
                 </div>
 
                 <div id="admin-banned-tab" class="admin-tab-content" style="display: none;">
                     <div id="banned-users-list" style="display: flex; flex-direction: column; gap: 10px;">
-                        <p class="empty-state">جاري التحميل...</p>
+                        <p class="empty-state" data-i18n="empty_state_loading">جاري التحميل...</p>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
+    <script src="js/translations.js"></script>
     <script src="js/app.js" type="text/javascript"></script>
 </body>
 </html>

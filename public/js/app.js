@@ -261,8 +261,14 @@ async function loadUserData() {
             document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
             document.documentElement.setAttribute('lang', userLang);
             
+            // تطبيق الترجمات
+            if (typeof applyTranslations === 'function') {
+                applyTranslations();
+            }
+            
             document.getElementById('loading').style.display = 'none';
             updateUI();
+            loadAdminPanel();
         } else {
             throw new Error(data.error || 'فشل تحميل بيانات المستخدم');
         }
@@ -1473,6 +1479,16 @@ async function changeLanguage() {
         if (data.success) {
             // حفظ اللغة في localStorage
             localStorage.setItem('user_language', lang);
+            
+            // تطبيق اتجاه النص حسب اللغة
+            const isRTL = lang === 'ar' || lang === 'fa' || lang === 'he';
+            document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+            document.documentElement.setAttribute('lang', lang);
+            
+            // تطبيق الترجمات
+            if (typeof applyTranslations === 'function') {
+                applyTranslations();
+            }
             
             tg.showAlert('✅ تم تغيير اللغة بنجاح!');
             
