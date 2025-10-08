@@ -690,10 +690,32 @@ class MarketDataService {
     }
 
     if (candles && candles.length > 0) {
+      this.validateCandleData(candles, symbol);
       return candles;
     }
 
     throw new Error(`فشل في الحصول على بيانات الشموع الحقيقية لـ ${symbol}`);
+  }
+
+  validateCandleData(candles, symbol) {
+    if (candles.length < 20) {
+      console.warn(`⚠️ عدد الشموع قليل لـ ${symbol}: ${candles.length}`);
+    }
+
+    for (let i = 0; i < Math.min(5, candles.length); i++) {
+      const candle = candles[i];
+      const open = parseFloat(candle.open);
+      const high = parseFloat(candle.high);
+      const low = parseFloat(candle.low);
+      const close = parseFloat(candle.close);
+
+      if (high < low || high < Math.max(open, close) || low > Math.min(open, close)) {
+        console.error(`❌ بيانات غير صحيحة لـ ${symbol} في الشمعة ${i}:`, candle);
+        throw new Error(`بيانات OHLC غير صحيحة لـ ${symbol}`);
+      }
+    }
+
+    console.log(`✅ تم التحقق من صحة البيانات لـ ${symbol}`);
   }
 
   async getTopMoversFromBinance(type = 'gainers') {

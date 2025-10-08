@@ -8,11 +8,14 @@ class AdvancedAnalysis {
   }
 
   calculateFibonacci() {
-    const recentCandles = this.candles.slice(-50);
-    const prices = recentCandles.map(c => parseFloat(c.close));
+    const lookbackPeriod = Math.min(this.candles.length, 100);
+    const recentCandles = this.candles.slice(-lookbackPeriod);
     
-    const high = Math.max(...prices);
-    const low = Math.min(...prices);
+    const highs = recentCandles.map(c => parseFloat(c.high));
+    const lows = recentCandles.map(c => parseFloat(c.low));
+    
+    const high = Math.max(...highs);
+    const low = Math.min(...lows);
     const diff = high - low;
     
     const levels = {

@@ -3,6 +3,7 @@ const AdvancedAnalysis = require('./advanced-analysis');
 
 class TechnicalAnalysis {
   constructor(candles) {
+    this.validateCandles(candles);
     this.candles = candles;
     this.closes = candles.map(c => parseFloat(c.close));
     this.highs = candles.map(c => parseFloat(c.high));
@@ -12,6 +13,42 @@ class TechnicalAnalysis {
     
     // تهيئة التحليل المتقدم
     this.advancedAnalysis = new AdvancedAnalysis(candles);
+  }
+
+  validateCandles(candles) {
+    if (!candles || candles.length === 0) {
+      throw new Error('لا توجد بيانات شموع للتحليل');
+    }
+
+    if (candles.length < 20) {
+      throw new Error('بيانات غير كافية للتحليل - يجب توفر 20 شمعة على الأقل');
+    }
+
+    for (let i = 0; i < candles.length; i++) {
+      const candle = candles[i];
+      const open = parseFloat(candle.open);
+      const high = parseFloat(candle.high);
+      const low = parseFloat(candle.low);
+      const close = parseFloat(candle.close);
+
+      if (isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) {
+        throw new Error(`بيانات غير صالحة في الشمعة رقم ${i + 1}`);
+      }
+
+      if (high < low) {
+        throw new Error(`بيانات غير منطقية في الشمعة رقم ${i + 1}: القمة أقل من القاع`);
+      }
+
+      if (high < Math.max(open, close) || low > Math.min(open, close)) {
+        throw new Error(`بيانات غير منطقية في الشمعة رقم ${i + 1}: OHLC غير متسقة`);
+      }
+
+      if (open <= 0 || high <= 0 || low <= 0 || close <= 0) {
+        throw new Error(`قيم سالبة أو صفرية في الشمعة رقم ${i + 1}`);
+      }
+    }
+
+    console.log(`✅ تم التحقق من صحة ${candles.length} شمعة`);
   }
 
   formatPrice(price) {
