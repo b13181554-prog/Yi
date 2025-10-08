@@ -1381,6 +1381,29 @@ app.post('/api/analyze-ultra', async (req, res) => {
   }
 });
 
+app.post('/api/change-language', async (req, res) => {
+  try {
+    const { user_id, language, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const validLanguages = ['ar', 'en', 'fr', 'es', 'de', 'ru', 'zh'];
+    
+    if (!validLanguages.includes(language)) {
+      return res.json({ success: false, error: 'Invalid language' });
+    }
+    
+    await db.updateUser(user_id, { language });
+    
+    res.json({ success: true, message: 'Language updated successfully' });
+  } catch (error) {
+    console.error('Change Language API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 // SPA fallback - يخدم index.html لجميع المسارات غير API
 app.use((req, res, next) => {
   if (!req.path.startsWith('/api/') && !req.path.startsWith('/health') && !req.path.startsWith('/ping')) {

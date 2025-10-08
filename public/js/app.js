@@ -1393,13 +1393,44 @@ async function loadReferralStats() {
     }
 }
 
-function changeLanguage() {
+async function changeLanguage() {
     const lang = document.getElementById('language-select').value;
-    tg.sendData(JSON.stringify({
-        action: 'change_language',
-        language: lang
-    }));
-    tg.showAlert('تم تغيير اللغة بنجاح!');
+    
+    if (!userId) {
+        tg.showAlert('❌ خطأ: لا يمكن تغيير اللغة');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/change-language', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                language: lang,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // حفظ اللغة في localStorage
+            localStorage.setItem('user_language', lang);
+            
+            tg.showAlert('✅ تم تغيير اللغة بنجاح!');
+            
+            // إعادة تحميل الصفحة لتطبيق اللغة الجديدة
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } else {
+            tg.showAlert('❌ فشل تغيير اللغة: ' + (data.error || 'خطأ غير معروف'));
+        }
+    } catch (error) {
+        console.error('Error changing language:', error);
+        tg.showAlert('❌ حدث خطأ أثناء تغيير اللغة');
+    }
 }
 
 function copyAddress() {
