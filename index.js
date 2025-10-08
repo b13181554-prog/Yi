@@ -357,7 +357,10 @@ app.post('/api/user', authenticateAPI, async (req, res) => {
       user = { balance: 0, subscription_end: null };
     }
     
-    res.json({ success: true, user });
+    const botInfo = await bot.bot.getMe();
+    const botUsername = botInfo.username;
+    
+    res.json({ success: true, user, botUsername });
   } catch (error) {
     console.error('API Error:', error);
     res.json({ success: false, error: error.message });
