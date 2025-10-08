@@ -608,21 +608,36 @@ class TechnicalAnalysis {
     
     const signalDifference = Math.abs(buySignals - sellSignals);
     
+    // شروط صارمة: يجب أن تكون الإشارة قوية جداً
+    const hasStrongVolume = volume.signal.includes('ضخم');
+    const hasStrongADX = adxValue >= 35;
+    const riskRewardRatio = Math.abs(takeProfitDistance) / stopLossDistance;
+    const hasGoodRiskReward = riskRewardRatio >= 3;
+    
+    // التحقق من توافق المؤشرات الرئيسية
+    const hasRSIConfirmation = (buySignals > sellSignals && rsi.signal.includes('تشبع بيعي')) || 
+                               (sellSignals > buySignals && rsi.signal.includes('تشبع شرائي'));
+    const hasMACDConfirmation = (buySignals > sellSignals && macd.signal.includes('صاعد')) || 
+                                (sellSignals > buySignals && macd.signal.includes('هابط'));
+    
     if (buySignals > sellSignals) {
       recommendation = 'شراء';
       emoji = '🟢';
       stopLoss = currentPrice - stopLossDistance;
       takeProfit = currentPrice + takeProfitDistance;
       
-      if (signalDifference >= 3 && strength >= 5) {
-        confidence = 'عالية جداً';
+      // شروط صارمة جداً للتداول
+      if (signalDifference >= 4 && strength >= 7 && hasStrongVolume && hasStrongADX && 
+          hasRSIConfirmation && hasMACDConfirmation && hasGoodRiskReward) {
+        confidence = 'مضمونة - يمكن التداول';
         emoji = '💚';
-      } else if (signalDifference >= 2 && strength >= 3) {
-        confidence = 'عالية';
-      } else if (signalDifference >= 1) {
-        confidence = 'متوسطة';
+      } else if (signalDifference >= 3 && strength >= 5 && hasStrongVolume && hasStrongADX) {
+        confidence = 'عالية - يمكن التداول';
+        emoji = '💚';
       } else {
-        confidence = 'ضعيفة';
+        confidence = 'منخفضة - لا تتداول';
+        emoji = '⚫';
+        recommendation = 'انتظار';
       }
     } else if (sellSignals > buySignals) {
       recommendation = 'بيع';
@@ -630,20 +645,23 @@ class TechnicalAnalysis {
       stopLoss = currentPrice + stopLossDistance;
       takeProfit = currentPrice - takeProfitDistance;
       
-      if (signalDifference >= 3 && strength >= 5) {
-        confidence = 'عالية جداً';
+      // شروط صارمة جداً للتداول
+      if (signalDifference >= 4 && strength >= 7 && hasStrongVolume && hasStrongADX && 
+          hasRSIConfirmation && hasMACDConfirmation && hasGoodRiskReward) {
+        confidence = 'مضمونة - يمكن التداول';
         emoji = '❤️';
-      } else if (signalDifference >= 2 && strength >= 3) {
-        confidence = 'عالية';
-      } else if (signalDifference >= 1) {
-        confidence = 'متوسطة';
+      } else if (signalDifference >= 3 && strength >= 5 && hasStrongVolume && hasStrongADX) {
+        confidence = 'عالية - يمكن التداول';
+        emoji = '❤️';
       } else {
-        confidence = 'ضعيفة';
+        confidence = 'منخفضة - لا تتداول';
+        emoji = '⚫';
+        recommendation = 'انتظار';
       }
     } else {
       recommendation = 'انتظار';
-      emoji = '🟡';
-      confidence = 'منخفضة';
+      emoji = '⚫';
+      confidence = 'إشارات متضاربة - لا تتداول';
       stopLoss = currentPrice - stopLossDistance;
       takeProfit = currentPrice + takeProfitDistance;
     }
@@ -744,21 +762,26 @@ class TechnicalAnalysis {
     
     const signalDifference = Math.abs(buySignals - sellSignals);
     
+    // شروط صارمة للتحليل العادي أيضاً
+    const hasStrongVolume = volume.signal.includes('ضخم');
+    const hasStrongADX = adxValue >= 35;
+    
     if (buySignals > sellSignals) {
       recommendation = 'شراء';
       emoji = '🟢';
       stopLoss = currentPrice - stopLossDistance;
       takeProfit = currentPrice + takeProfitDistance;
       
-      if (signalDifference >= 3 && strength >= 4) {
-        confidence = 'عالية جداً';
+      if (signalDifference >= 4 && strength >= 6 && hasStrongVolume && hasStrongADX) {
+        confidence = 'مضمونة - يمكن التداول';
         emoji = '💚';
-      } else if (signalDifference >= 2 && strength >= 3) {
-        confidence = 'عالية';
-      } else if (signalDifference >= 1) {
-        confidence = 'متوسطة';
+      } else if (signalDifference >= 3 && strength >= 4 && hasStrongVolume) {
+        confidence = 'عالية - يمكن التداول';
+        emoji = '💚';
       } else {
-        confidence = 'ضعيفة';
+        confidence = 'منخفضة - لا تتداول';
+        emoji = '⚫';
+        recommendation = 'انتظار';
       }
     } else if (sellSignals > buySignals) {
       recommendation = 'بيع';
@@ -766,20 +789,21 @@ class TechnicalAnalysis {
       stopLoss = currentPrice + stopLossDistance;
       takeProfit = currentPrice - takeProfitDistance;
       
-      if (signalDifference >= 3 && strength >= 4) {
-        confidence = 'عالية جداً';
+      if (signalDifference >= 4 && strength >= 6 && hasStrongVolume && hasStrongADX) {
+        confidence = 'مضمونة - يمكن التداول';
         emoji = '❤️';
-      } else if (signalDifference >= 2 && strength >= 3) {
-        confidence = 'عالية';
-      } else if (signalDifference >= 1) {
-        confidence = 'متوسطة';
+      } else if (signalDifference >= 3 && strength >= 4 && hasStrongVolume) {
+        confidence = 'عالية - يمكن التداول';
+        emoji = '❤️';
       } else {
-        confidence = 'ضعيفة';
+        confidence = 'منخفضة - لا تتداول';
+        emoji = '⚫';
+        recommendation = 'انتظار';
       }
     } else {
       recommendation = 'انتظار';
-      emoji = '🟡';
-      confidence = 'منخفضة';
+      emoji = '⚫';
+      confidence = 'إشارات متضاربة - لا تتداول';
       stopLoss = currentPrice - stopLossDistance;
       takeProfit = currentPrice + takeProfitDistance;
     }

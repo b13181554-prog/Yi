@@ -745,7 +745,7 @@ async function loadAnalysts() {
                         <div class="analyst-stats">
                             <span>👥 ${analyst.total_subscribers || 0}</span>
                         </div>
-                        <div class="analyst-rating" style="display: flex; align-items: center; justify-content: center; gap: 15px; margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <div class="analyst-rating" style="display: flex; align-items: center; justify-content: center; gap: 15px; margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
                             <button class="rating-btn like-btn" onclick="rateAnalyst('${analyst.id}', true)" style="background: none; border: none; font-size: 32px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">👍</button>
                             <span style="font-size: 18px; font-weight: bold; color: #28a745;">${analyst.likes || 0}</span>
                             <span style="color: #ddd;">|</span>
@@ -1717,12 +1717,12 @@ function displayAdvancedAnalysisResult(analysis, symbol, timeframe, analysisType
         const fibonacci = analysis.indicators?.FIBONACCI || analysis.allIndicators?.find(i => i.name === 'Fibonacci');
         if (fibonacci) {
             indicatorsHTML = `
-                <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 12px;">
+                <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 12px; color: #333;">
                     <h3 style="color: #667eea; margin-bottom: 15px;">🎯 تحليل فيبوناتشي</h3>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <p><strong>الإشارة:</strong> ${fibonacci.emoji} ${fibonacci.signal}</p>
-                        <p><strong>التوصية:</strong> ${fibonacci.recommendation}</p>
-                        <p><strong>السعر الحالي:</strong> $${fibonacci.currentPrice || '-'}</p>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; color: #333;">
+                        <p><strong style="color: #000;">الإشارة:</strong> ${fibonacci.emoji} ${fibonacci.signal}</p>
+                        <p><strong style="color: #000;">التوصية:</strong> ${fibonacci.recommendation}</p>
+                        <p><strong style="color: #000;">السعر الحالي:</strong> $${fibonacci.currentPrice || '-'}</p>
                     </div>
                     ${fibonacci.levels ? `
                         <div style="display: grid; gap: 8px;">
@@ -1741,11 +1741,11 @@ function displayAdvancedAnalysisResult(analysis, symbol, timeframe, analysisType
         const patterns = analysis.indicators?.CANDLE_PATTERNS || analysis.allIndicators?.find(i => i.name === 'أنماط الشموع');
         if (patterns) {
             indicatorsHTML = `
-                <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 12px;">
+                <div style="margin-top: 20px; background: white; padding: 20px; border-radius: 12px; color: #333;">
                     <h3 style="color: #667eea; margin-bottom: 15px;">🕯️ أنماط الشموع</h3>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                        <p><strong>الإشارة:</strong> ${patterns.emoji} ${patterns.signal}</p>
-                        <p><strong>التوصية:</strong> ${patterns.recommendation}</p>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; color: #333;">
+                        <p><strong style="color: #000;">الإشارة:</strong> ${patterns.emoji} ${patterns.signal}</p>
+                        <p><strong style="color: #000;">التوصية:</strong> ${patterns.recommendation}</p>
                     </div>
                     ${patterns.patterns && patterns.patterns.length > 0 ? `
                         <div style="display: grid; gap: 8px;">
@@ -1821,13 +1821,13 @@ function displayUltraAnalysisResult(analysis, symbol, timeframe) {
             </div>
         ` : ``}
 
-        <div class="rec-details" style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-            <p><strong>💎 الرمز:</strong> ${symbol}</p>
-            <p><strong>📊 النوع:</strong> ${tradingTypeText} | ${marketTypeText}</p>
-            <p><strong>⏰ الإطار الزمني:</strong> ${timeframe}</p>
-            <p><strong>💰 السعر الحالي:</strong> $${analysis.entryPrice}</p>
-            <p><strong>مستوى المخاطرة:</strong> ${analysis.riskLevel}</p>
-            <p><strong>🕐 وقت التحليل:</strong> ${analysis.analysisTime}</p>
+        <div class="rec-details" style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
+            <p><strong style="color: #000;">💎 الرمز:</strong> ${symbol}</p>
+            <p><strong style="color: #000;">📊 النوع:</strong> ${tradingTypeText} | ${marketTypeText}</p>
+            <p><strong style="color: #000;">⏰ الإطار الزمني:</strong> ${timeframe}</p>
+            <p><strong style="color: #000;">💰 السعر الحالي:</strong> $${analysis.entryPrice}</p>
+            <p><strong style="color: #000;">مستوى المخاطرة:</strong> ${analysis.riskLevel}</p>
+            <p><strong style="color: #000;">🕐 وقت التحليل:</strong> ${analysis.analysisTime}</p>
         </div>
 
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px;">
@@ -1852,44 +1852,44 @@ function displayUltraAnalysisResult(analysis, symbol, timeframe) {
             </div>
         </div>
 
-        <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+        <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
             <h3 style="color: #667eea; margin-bottom: 15px;">📊 نتائج التحليل</h3>
             <div style="display: grid; gap: 10px;">
-                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
-                    <strong>📈 نسبة الشراء:</strong> ${analysis.scores.buyPercentage}
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">📈 نسبة الشراء:</strong> ${analysis.scores.buyPercentage}
                 </div>
-                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
-                    <strong>📉 نسبة البيع:</strong> ${analysis.scores.sellPercentage}
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">📉 نسبة البيع:</strong> ${analysis.scores.sellPercentage}
                 </div>
-                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
-                    <strong>🎯 نسبة التوافق:</strong> ${analysis.scores.agreementPercentage}
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">🎯 نسبة التوافق:</strong> ${analysis.scores.agreementPercentage}
                 </div>
-                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
-                    <strong>✅ عدد التأكيدات:</strong> ${analysis.scores.confirmations} من ${analysis.scores.totalIndicators}
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">✅ عدد التأكيدات:</strong> ${analysis.scores.confirmations} من ${analysis.scores.totalIndicators}
                 </div>
             </div>
         </div>
 
-        <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+        <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
             <h3 style="color: #667eea; margin-bottom: 15px;">✅ الشروط</h3>
             <div style="display: grid; gap: 10px;">
-                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
-                    <strong>قوة ADX:</strong> ${analysis.conditions.adxStrength}
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">قوة ADX:</strong> ${analysis.conditions.adxStrength}
                 </div>
-                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
-                    <strong>مستوى التوافق:</strong> ${analysis.conditions.agreementLevel}
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">مستوى التوافق:</strong> ${analysis.conditions.agreementLevel}
                 </div>
-                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
-                    <strong>تأكيد الحجم:</strong> ${analysis.conditions.volumeConfirmation}
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">تأكيد الحجم:</strong> ${analysis.conditions.volumeConfirmation}
                 </div>
             </div>
         </div>
 
         ${analysis.reasons && analysis.reasons.length > 0 ? `
-            <div style="background: #e3f2fd; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+            <div style="background: #e3f2fd; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #1565c0;">
                 <h3 style="color: #1976d2; margin-bottom: 15px;">💡 أسباب التوصية</h3>
-                <ul style="margin: 0; padding-right: 20px;">
-                    ${analysis.reasons.map(r => `<li style="margin-bottom: 8px;">${r}</li>`).join('')}
+                <ul style="margin: 0; padding-right: 20px; color: #1565c0;">
+                    ${analysis.reasons.map(r => `<li style="margin-bottom: 8px; color: #1565c0;">${r}</li>`).join('')}
                 </ul>
             </div>
         ` : ''}
@@ -2128,7 +2128,7 @@ async function loadTop100Analysts() {
 
         if (data.success && data.analysts && data.analysts.length > 0) {
             container.innerHTML = data.analysts.map((analyst, index) => `
-                <div class="top-analyst-card ${index >= 3 ? 'scrollable' : 'sticky-top'}" style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); ${index < 3 ? 'position: sticky; top: ' + (index * 5) + 'px; z-index: ' + (100 - index) + ';' : ''}">
+                <div class="top-analyst-card ${index >= 3 ? 'scrollable' : 'sticky-top'}" style="background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); color: #333; ${index < 3 ? 'position: sticky; top: ' + (index * 5) + 'px; z-index: ' + (100 - index) + ';' : ''}">
                     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
                         <div style="font-size: 24px; font-weight: bold; color: ${analyst.rank <= 3 ? '#FFD700' : '#667eea'}; min-width: 40px;">#${analyst.rank}</div>
                         ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.analyst_name || analyst.name}" class="analyst-avatar" onerror="this.style.display='none'" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid ${analyst.rank <= 3 ? '#FFD700' : '#667eea'};">` : '<div class="analyst-avatar-placeholder" style="width: 50px; height: 50px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>'}
