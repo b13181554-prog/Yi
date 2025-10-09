@@ -1036,6 +1036,7 @@ async function deleteUserAccount(userId) {
   await db.collection('users').deleteOne({ user_id: userId });
   await db.collection('transactions').deleteMany({ user_id: userId });
   await db.collection('analyst_subscriptions').deleteMany({ user_id: userId });
+  await db.collection('analysts').deleteOne({ user_id: userId });
   return true;
 }
 
