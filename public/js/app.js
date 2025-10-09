@@ -2268,6 +2268,11 @@ async function loadAnalystsByMarket(marketType) {
                             ${analyst.is_subscribed ? '🔄 تجديد' : '✅ اشترك'}
                         </button>
                     </div>
+                    <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <button onclick="getAnalystPromoterLink('${analyst.id}', '${analyst.name}')" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                            🎁 رابط الإحالة (15% عمولة)
+                        </button>
+                    </div>
                 </div>
             `).join('');
         } else {
@@ -2308,6 +2313,11 @@ async function loadActiveAnalysts() {
                         <span class="analyst-status active">✅ نشط</span>
                     </div>
                     ${userId !== analyst.user_id ? `<button class="subscribe-btn" onclick="subscribeToAnalyst('${analyst._id}')">اشتراك</button>` : ''}
+                    <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <button onclick="getAnalystPromoterLink('${analyst._id}', '${analyst.name}')" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                            🎁 رابط الإحالة (15% عمولة)
+                        </button>
+                    </div>
                 </div>
             `).join('');
         } else {
@@ -2436,6 +2446,11 @@ async function loadTop100Analysts(marketType = 'all') {
                             <div style="font-size: 16px; font-weight: bold; color: #667eea;">${analyst.total_subscribers || 0}</div>
                             <div style="font-size: 10px; color: #888;">مشتركين</div>
                         </div>
+                    </div>
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
+                        <button onclick="getAnalystPromoterLink('${analyst.analyst_id || analyst._id}', '${analyst.analyst_name || analyst.name}')" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                            🎁 رابط الإحالة (15% عمولة)
+                        </button>
                     </div>
                 </div>
             `).join('');
