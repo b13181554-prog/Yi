@@ -16,6 +16,7 @@ module.exports = {
   BOT_WALLET_ADDRESS: process.env.BOT_WALLET_ADDRESS || 'TCZwoWnmi8uBssqjtKGmUwAjToAxcJkjLP',
   
   SUBSCRIPTION_PRICE: parseInt(process.env.SUBSCRIPTION_PRICE) || 10,
+  PUMP_SUBSCRIPTION_PRICE: parseInt(process.env.PUMP_SUBSCRIPTION_PRICE) || 25,
   WITHDRAWAL_FEE: parseInt(process.env.WITHDRAWAL_FEE) || 1,
   FREE_TRIAL_DAYS: parseInt(process.env.FREE_TRIAL_DAYS) || 7,
   

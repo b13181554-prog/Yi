@@ -15,6 +15,7 @@ const rankingScheduler = require('./ranking-scheduler');
 const { authenticateAPI, apiRateLimit, validateRequestSize } = require('./api-security');
 const { initAnalystMonitor } = require('./analyst-monitor');
 const { getTelegramProfilePhoto } = require('./telegram-helpers');
+const { initTradeSignalsMonitor } = require('./trade-signals-monitor');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -79,6 +80,7 @@ async function main() {
     
     notifications.initNotifications(bot);
     initAnalystMonitor(bot);
+    initTradeSignalsMonitor(bot);
     admin.initAdminCommands(bot);
     rankingScheduler.start();
     
@@ -1716,6 +1718,51 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
   }
 });
 
+app.post('/api/analyze-pump', async (req, res) => {
+  try {
+    const { symbol, market_type, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const user_id = getUserIdFromInitData(init_data);
+    
+    const pumpSubscription = await db.getPumpSubscription(user_id);
+    if (!pumpSubscription) {
+      return res.json({ 
+        success: false, 
+        error: 'يتطلب الوصول لنظام Pump اشتراك خاص',
+        requires_subscription: true,
+        subscription_price: config.PUMP_SUBSCRIPTION_PRICE
+      });
+    }
+    
+    if (market_type !== 'crypto') {
+      return res.json({ success: false, error: 'تحليل Pump متاح للعملات الرقمية فقط' });
+    }
+    
+    const candles = await marketData.getCandles(symbol, '1h', 100, market_type);
+    
+    if (!candles || candles.length < 100) {
+      return res.json({ success: false, error: `بيانات غير كافية لتحليل Pump - متوفر ${candles?.length || 0} شمعة فقط` });
+    }
+    
+    const PumpAnalysis = require('./pump-analysis');
+    const pumpAnalysis = new PumpAnalysis(candles, symbol);
+    
+    const pumpPotential = pumpAnalysis.getPumpPotential();
+    
+    res.json({
+      success: true,
+      analysis: pumpPotential
+    });
+  } catch (error) {
+    console.error('Pump Analysis API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/change-language', async (req, res) => {
   try {
     const { user_id, language, init_data } = req.body;
@@ -1735,6 +1782,109 @@ app.post('/api/change-language', async (req, res) => {
     res.json({ success: true, message: 'Language updated successfully' });
   } catch (error) {
     console.error('Change Language API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/notification-settings', async (req, res) => {
+  try {
+    const { user_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const settings = await db.getNotificationSettings(user_id);
+    res.json({ success: true, settings });
+  } catch (error) {
+    console.error('Get Notification Settings API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/toggle-notifications', async (req, res) => {
+  try {
+    const { user_id, enabled, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    await db.toggleNotifications(user_id, enabled);
+    res.json({ success: true, message: enabled ? 'تم تفعيل الإشعارات' : 'تم إيقاف الإشعارات' });
+  } catch (error) {
+    console.error('Toggle Notifications API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/update-notification-markets', async (req, res) => {
+  try {
+    const { user_id, markets, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const validMarkets = ['crypto', 'forex', 'stocks', 'commodities', 'indices'];
+    const filteredMarkets = markets.filter(m => validMarkets.includes(m));
+    
+    await db.updateNotificationMarkets(user_id, filteredMarkets);
+    res.json({ success: true, message: 'تم تحديث تفضيلات الإشعارات' });
+  } catch (error) {
+    console.error('Update Notification Markets API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/pump-subscription', async (req, res) => {
+  try {
+    const { user_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const subscription = await db.getPumpSubscription(user_id);
+    res.json({ 
+      success: true, 
+      has_subscription: !!subscription,
+      subscription: subscription,
+      price: config.PUMP_SUBSCRIPTION_PRICE
+    });
+  } catch (error) {
+    console.error('Get Pump Subscription API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/subscribe-pump', async (req, res) => {
+  try {
+    const { user_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const existingSub = await db.getPumpSubscription(user_id);
+    if (existingSub) {
+      return res.json({ success: false, error: 'لديك اشتراك نشط بالفعل في نظام Pump' });
+    }
+    
+    const user = await db.getUser(user_id);
+    if (user.balance < config.PUMP_SUBSCRIPTION_PRICE) {
+      return res.json({ success: false, error: 'رصيدك غير كافٍ' });
+    }
+    
+    await db.updateUser(user_id, { balance: user.balance - config.PUMP_SUBSCRIPTION_PRICE });
+    await db.subscribeToPumpAnalysis(user_id, config.PUMP_SUBSCRIPTION_PRICE);
+    
+    const ownerShare = config.PUMP_SUBSCRIPTION_PRICE;
+    await db.updateUserBalance(config.OWNER_ID, ownerShare);
+    
+    res.json({ success: true, message: 'تم الاشتراك في نظام Pump بنجاح' });
+  } catch (error) {
+    console.error('Subscribe Pump API Error:', error);
     res.json({ success: false, error: error.message });
   }
 });

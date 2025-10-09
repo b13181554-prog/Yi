@@ -84,7 +84,8 @@ async function createUser(userId, username, firstName, lastName, referredBy = nu
     referred_by_analyst: referredByAnalyst,
     referral_earnings: 0,
     language: 'ar',
-    notifications_enabled: true
+    notifications_enabled: true,
+    notification_markets: ['crypto', 'forex', 'stocks', 'commodities', 'indices']
   };
   
   await db.collection('users').updateOne(
@@ -1379,6 +1380,66 @@ async function cancelSubscription(subscriptionId) {
   );
 }
 
+async function toggleNotifications(userId, enabled) {
+  await db.collection('users').updateOne(
+    { user_id: userId },
+    { $set: { notifications_enabled: enabled } }
+  );
+}
+
+async function updateNotificationMarkets(userId, markets) {
+  await db.collection('users').updateOne(
+    { user_id: userId },
+    { $set: { notification_markets: markets } }
+  );
+}
+
+async function getNotificationSettings(userId) {
+  const user = await getUser(userId);
+  return {
+    enabled: user?.notifications_enabled || false,
+    markets: user?.notification_markets || []
+  };
+}
+
+async function subscribeToPumpAnalysis(userId, amount) {
+  const endDate = new Date();
+  endDate.setMonth(endDate.getMonth() + 1);
+  
+  const subscription = {
+    user_id: userId,
+    type: 'pump_analysis',
+    amount: amount,
+    start_date: new Date(),
+    end_date: endDate,
+    status: 'active',
+    created_at: new Date()
+  };
+  
+  const result = await db.collection('pump_subscriptions').insertOne(subscription);
+  return { ...subscription, _id: result.insertedId };
+}
+
+async function getPumpSubscription(userId) {
+  return await db.collection('pump_subscriptions').findOne({
+    user_id: userId,
+    status: 'active',
+    end_date: { $gt: new Date() }
+  });
+}
+
+async function cancelPumpSubscription(userId) {
+  await db.collection('pump_subscriptions').updateOne(
+    { user_id: userId, status: 'active' },
+    {
+      $set: {
+        status: 'cancelled',
+        cancelled_at: new Date()
+      }
+    }
+  );
+}
+
 function getDB() {
   return db;
 }
@@ -1466,5 +1527,11 @@ module.exports = {
   getAnalystBalance,
   deductFromAnalystAvailableBalance,
   getUsersSubscribedToAnalyst,
-  cancelSubscription
+  cancelSubscription,
+  toggleNotifications,
+  updateNotificationMarkets,
+  getNotificationSettings,
+  subscribeToPumpAnalysis,
+  getPumpSubscription,
+  cancelPumpSubscription
 };

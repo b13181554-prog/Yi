@@ -109,7 +109,45 @@ const CRYPTO_SYMBOLS = [
     { value: 'APEUSDT', label: '🦧 ApeCoin (APE)' },
     { value: 'CHZUSDT', label: '🌶️ Chiliz (CHZ)' },
     { value: 'ENJUSDT', label: '🎮 Enjin Coin (ENJ)' },
-    { value: 'QNTUSDT', label: '⚡ Quant (QNT)' }
+    { value: 'QNTUSDT', label: '⚡ Quant (QNT)' },
+    { value: 'TONUSDT', label: '💎 Toncoin (TON)' },
+    { value: 'HBARUSDT', label: '🔷 Hedera (HBAR)' },
+    { value: 'BCHUSDT', label: '💰 Bitcoin Cash (BCH)' },
+    { value: 'ETCUSDT', label: '🟢 Ethereum Classic (ETC)' },
+    { value: 'FILUSDT', label: '🗂️ Filecoin (FIL)' },
+    { value: 'THETAUSDT', label: '🎬 Theta (THETA)' },
+    { value: 'EOSUSDT', label: '⚡ EOS' },
+    { value: 'RUNEUSDT', label: '⚔️ THORChain (RUNE)' },
+    { value: 'IMXUSDT', label: '🎮 Immutable X (IMX)' },
+    { value: 'RENDERUSDT', label: '🎨 Render (RENDER)' },
+    { value: 'FETUSDT', label: '🤖 Fetch.ai (FET)' },
+    { value: 'AGIXUSDT', label: '🧠 SingularityNET (AGIX)' },
+    { value: 'OCEANUSDT', label: '🌊 Ocean Protocol (OCEAN)' },
+    { value: 'LRCUSDT', label: '⭕ Loopring (LRC)' },
+    { value: 'STXUSDT', label: '📚 Stacks (STX)' },
+    { value: 'KAVAUSDT', label: '🔴 Kava (KAVA)' },
+    { value: 'BONKUSDT', label: '🐕 Bonk (BONK)' },
+    { value: 'WIFUSDT', label: '🐶 dogwifhat (WIF)' },
+    { value: 'BRETTUSDT', label: '🎭 Brett (BRETT)' },
+    { value: 'BOMEUSDT', label: '📖 BOOK OF MEME (BOME)' },
+    { value: 'MEWUSDT', label: '😸 cat in a dogs world (MEW)' },
+    { value: 'TURBOUSDT', label: '🌪️ Turbo (TURBO)' },
+    { value: 'SEIUSDT', label: '🔺 Sei (SEI)' },
+    { value: 'TIAUSDT', label: '🌌 Celestia (TIA)' },
+    { value: 'ORDIUSDT', label: '🟠 ORDI' },
+    { value: 'JUPUSDT', label: '🪐 Jupiter (JUP)' },
+    { value: 'WUSDT', label: '🟣 Wormhole (W)' },
+    { value: 'PYTHUSDT', label: '🔮 Pyth Network (PYTH)' },
+    { value: 'DYMUSDT', label: '🌀 Dymension (DYM)' },
+    { value: 'ONDOUSDT', label: '💧 Ondo (ONDO)' },
+    { value: 'STRKUSDT', label: '⚡ Starknet (STRK)' },
+    { value: 'ENAUSDT', label: '🌐 Ethena (ENA)' },
+    { value: 'NOTUSDT', label: '🎵 Notcoin (NOT)' },
+    { value: 'IOTAUSDT', label: '📡 IOTA (IOTA)' },
+    { value: 'KASUSDT', label: '👻 Kaspa (KAS)' },
+    { value: 'TAOUSDT', label: '🧬 Bittensor (TAO)' },
+    { value: 'BEAMUSDT', label: '💫 Beam (BEAM)' },
+    { value: 'AIUSDT', label: '🤖 Sleepless AI (AI)' }
 ];
 
 // جميع أزواج الفوركس الرئيسية والثانوية
@@ -779,7 +817,7 @@ async function loadAnalysts() {
                         </div>
                         <div class="analyst-footer">
                             <span class="price">${analyst.monthly_price} USDT/شهر</span>
-                            <button class="subscribe-analyst-btn" onclick="subscribeToAnalyst(${analyst.id})">
+                            <button class="subscribe-analyst-btn" onclick="subscribeToAnalyst('${analyst.id}')">
                                 ${analyst.is_subscribed ? '🔄 تجديد' : '✅ اشترك'}
                             </button>
                         </div>
@@ -803,7 +841,7 @@ async function loadAnalysts() {
                             <strong>${sub.analyst_name}</strong>
                             <span>صالح حتى: ${new Date(sub.end_date).toLocaleDateString('ar')}</span>
                         </div>
-                        <button onclick="viewAnalystSignals(${sub.analyst_id})">📊 الإشارات</button>
+                        <button onclick="viewAnalystSignals('${sub.analyst_id}')">📊 الإشارات</button>
                     </div>
                 `).join('');
             }
