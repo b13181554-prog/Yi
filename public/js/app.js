@@ -2440,7 +2440,13 @@ async function loadTop100Analysts(marketType = 'all') {
                             <div style="font-size: 10px; color: #888;">مشتركين</div>
                         </div>
                     </div>
-                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee;">
+                    <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-size: 16px; font-weight: bold; color: #667eea;">${analyst.monthly_price || 0} USDT/شهر</span>
+                        <button class="subscribe-analyst-btn" onclick="subscribeToAnalyst('${analyst.analyst_id || analyst._id}')" style="padding: 8px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                            ${analyst.is_subscribed ? '🔄 تجديد' : '✅ اشترك'}
+                        </button>
+                    </div>
+                    <div style="margin-top: 10px;">
                         <button onclick="getAnalystPromoterLink('${analyst.analyst_id || analyst._id}', '${analyst.analyst_name || analyst.name}')" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
                             🎁 رابط الإحالة (15% عمولة)
                         </button>
