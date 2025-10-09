@@ -1324,9 +1324,6 @@ app.post('/api/delete-analyst', async (req, res) => {
       return res.json({ success: false, error: 'فشل حذف الحساب، يرجى المحاولة مرة أخرى' });
     }
     
-    await db.getDB().collection('users').deleteOne({ user_id: user_id });
-    console.log(`🗑️ تم حذف سجل المستخدم ${user_id} من جدول users`);
-    
     if (subscriberCount > 0) {
       console.log(`✅ تم حذف المحلل ${analyst.name} وإرجاع ${totalRefunded.toFixed(2)} USDT لـ ${subscriberCount} مشتركين`);
       
