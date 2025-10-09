@@ -2467,11 +2467,22 @@ async function loadAdminPanel() {
     // إظهار زر الإدارة
     document.getElementById('admin-nav-btn').style.display = 'flex';
     
-    // تحميل المستخدمين
-    loadAllUsers();
+    // تحميل الإحصائيات
+    loadAdminStats();
 }
 
 function switchAdminTab(tab) {
+    const tabs = {
+        'stats': { element: 'admin-stats-tab', load: loadAdminStats },
+        'users': { element: 'admin-users-tab', load: loadAllUsers },
+        'analysts': { element: 'admin-analysts-tab', load: loadAdminAnalysts },
+        'withdrawals': { element: 'admin-withdrawals-tab', load: loadAdminWithdrawals },
+        'transactions': { element: 'admin-transactions-tab', load: loadAdminTransactions },
+        'referrals': { element: 'admin-referrals-tab', load: loadAdminReferrals },
+        'broadcast': { element: 'admin-broadcast-tab', load: null },
+        'search': { element: 'admin-search-tab', load: null }
+    };
+    
     document.querySelectorAll('.admin-tab-btn').forEach(btn => {
         btn.classList.remove('active');
         btn.style.background = 'white';
@@ -2483,20 +2494,20 @@ function switchAdminTab(tab) {
         content.style.display = 'none';
     });
     
-    if (tab === 'users') {
-        document.querySelector('.admin-tab-btn').classList.add('active');
-        document.querySelector('.admin-tab-btn').style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        document.querySelector('.admin-tab-btn').style.color = 'white';
-        document.querySelector('.admin-tab-btn').style.border = 'none';
-        document.getElementById('admin-users-tab').style.display = 'block';
-        loadAllUsers();
-    } else if (tab === 'banned') {
-        document.querySelectorAll('.admin-tab-btn')[1].classList.add('active');
-        document.querySelectorAll('.admin-tab-btn')[1].style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        document.querySelectorAll('.admin-tab-btn')[1].style.color = 'white';
-        document.querySelectorAll('.admin-tab-btn')[1].style.border = 'none';
-        document.getElementById('admin-banned-tab').style.display = 'block';
-        loadBannedUsers();
+    const activeBtn = event?.target.closest('.admin-tab-btn');
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+        activeBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        activeBtn.style.color = 'white';
+        activeBtn.style.border = 'none';
+    }
+    
+    const tabInfo = tabs[tab];
+    if (tabInfo) {
+        document.getElementById(tabInfo.element).style.display = 'block';
+        if (tabInfo.load) {
+            tabInfo.load();
+        }
     }
 }
 
@@ -2678,6 +2689,439 @@ async function deleteUserAction(targetUserId) {
     } catch (error) {
         tg.showAlert('حدث خطأ');
     }
+}
+
+async function loadAdminStats() {
+    try {
+        const response = await fetch('/api/admin/stats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.stats) {
+            const stats = data.stats;
+            document.getElementById('stat-total-users').textContent = stats.total_users;
+            document.getElementById('stat-active-today').textContent = stats.active_users_today;
+            document.getElementById('stat-active-week').textContent = stats.active_users_week;
+            document.getElementById('stat-total-balance').textContent = stats.total_balance + ' USDT';
+            document.getElementById('stat-subscriptions').textContent = stats.total_subscriptions;
+            document.getElementById('stat-analysts').textContent = stats.total_analysts;
+            document.getElementById('stat-transactions').textContent = stats.total_transactions;
+            document.getElementById('stat-pending-withdrawals').textContent = stats.total_withdrawals_pending;
+            document.getElementById('stat-referral-earnings').textContent = stats.total_referral_earnings + ' USDT';
+        }
+    } catch (error) {
+        console.error('Error loading admin stats:', error);
+    }
+}
+
+async function loadAdminAnalysts() {
+    const container = document.getElementById('analysts-list');
+    container.innerHTML = '<p class="empty-state">جاري التحميل...</p>';
+    
+    try {
+        const response = await fetch('/api/admin/analysts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.analysts && data.analysts.length > 0) {
+            container.innerHTML = data.analysts.map(analyst => `
+                <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                        <div>
+                            <h3 style="margin: 0 0 5px 0; color: #333;">${analyst.name}</h3>
+                            <p style="margin: 0; color: #888; font-size: 13px;">ID: ${analyst.user_id}</p>
+                            <p style="margin: 5px 0 0 0; color: #888; font-size: 13px;">@${analyst.username || 'لا يوجد'}</p>
+                        </div>
+                        <div style="text-align: left;">
+                            <div style="font-size: 18px; font-weight: bold; color: #667eea;">${analyst.monthly_price} USDT</div>
+                            <div style="font-size: 12px; color: #888;">السعر الشهري</div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 15px; padding: 12px; background: #f5f5f5; border-radius: 8px;">
+                        <div style="font-size: 14px; color: #666;">${analyst.description || 'لا يوجد وصف'}</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
+                        <div style="text-align: center; padding: 10px; background: #e8f5e9; border-radius: 8px;">
+                            <div style="font-size: 20px; font-weight: bold; color: #4caf50;">${analyst.total_subscribers || 0}</div>
+                            <div style="font-size: 12px; color: #666;">المشتركين</div>
+                        </div>
+                        <div style="text-align: center; padding: 10px; background: ${analyst.is_active ? '#e3f2fd' : '#ffebee'}; border-radius: 8px;">
+                            <div style="font-size: 14px; font-weight: bold; color: ${analyst.is_active ? '#2196f3' : '#f44336'};">${analyst.is_active ? 'نشط ✅' : 'متوقف ⏸️'}</div>
+                            <div style="font-size: 12px; color: #666;">الحالة</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button onclick="toggleAnalystStatus('${analyst._id}', ${analyst.is_active})" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: ${analyst.is_active ? '#ff9800' : '#4caf50'}; color: white; cursor: pointer; font-size: 13px;">
+                            ${analyst.is_active ? '⏸️ إيقاف' : '▶️ تفعيل'}
+                        </button>
+                        <button onclick="deleteAnalyst('${analyst._id}')" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: #f44336; color: white; cursor: pointer; font-size: 13px;">🗑️ حذف</button>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p class="empty-state">لا يوجد محللين</p>';
+        }
+    } catch (error) {
+        console.error('Error loading analysts:', error);
+        container.innerHTML = '<p class="empty-state">حدث خطأ في التحميل</p>';
+    }
+}
+
+async function loadAdminWithdrawals() {
+    const container = document.getElementById('withdrawals-list');
+    container.innerHTML = '<p class="empty-state">جاري التحميل...</p>';
+    
+    try {
+        const response = await fetch('/api/admin/withdrawals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.withdrawals && data.withdrawals.length > 0) {
+            container.innerHTML = data.withdrawals.map(w => `
+                <div style="background: #fffbea; padding: 20px; border-radius: 12px; border: 2px solid #ffc107;">
+                    <div style="margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 8px 0; color: #333;">طلب سحب من ${w.first_name || 'مستخدم'}</h4>
+                        <p style="margin: 0; color: #888; font-size: 13px;">ID: ${w.user_id}</p>
+                        <p style="margin: 5px 0 0 0; color: #888; font-size: 13px;">التاريخ: ${new Date(w.created_at).toLocaleString('ar')}</p>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #667eea;">المبلغ:</strong>
+                            <span style="font-size: 20px; font-weight: bold; color: #10b981; margin-right: 10px;">${w.amount} USDT</span>
+                        </div>
+                        <div>
+                            <strong style="color: #667eea;">عنوان المحفظة:</strong>
+                            <code style="display: block; margin-top: 5px; padding: 8px; background: #f5f5f5; border-radius: 6px; font-size: 12px; word-break: break-all;">${w.wallet_address}</code>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="approveWithdrawal('${w._id}')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: #10b981; color: white; cursor: pointer; font-weight: bold;">✅ موافقة</button>
+                        <button onclick="rejectWithdrawalPrompt('${w._id}')" style="flex: 1; padding: 12px; border: none; border-radius: 8px; background: #ef4444; color: white; cursor: pointer; font-weight: bold;">❌ رفض</button>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p class="empty-state">لا توجد طلبات سحب معلقة</p>';
+        }
+    } catch (error) {
+        console.error('Error loading withdrawals:', error);
+        container.innerHTML = '<p class="empty-state">حدث خطأ في التحميل</p>';
+    }
+}
+
+async function approveWithdrawal(withdrawalId) {
+    if (!confirm('هل تريد الموافقة على طلب السحب؟')) return;
+    
+    try {
+        const response = await fetch('/api/admin/approve-withdrawal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                withdrawal_id: withdrawalId,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            tg.showAlert('✅ تمت الموافقة على طلب السحب');
+            loadAdminWithdrawals();
+            loadAdminStats();
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'فشلت العملية'));
+        }
+    } catch (error) {
+        console.error('Error approving withdrawal:', error);
+        tg.showAlert('حدث خطأ');
+    }
+}
+
+function rejectWithdrawalPrompt(withdrawalId) {
+    const reason = prompt('أدخل سبب الرفض (اختياري):');
+    if (reason === null) return;
+    rejectWithdrawal(withdrawalId, reason);
+}
+
+async function rejectWithdrawal(withdrawalId, reason) {
+    try {
+        const response = await fetch('/api/admin/reject-withdrawal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                withdrawal_id: withdrawalId,
+                reason: reason || 'لم يتم تحديد السبب',
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            tg.showAlert('✅ تم رفض طلب السحب');
+            loadAdminWithdrawals();
+            loadAdminStats();
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'فشلت العملية'));
+        }
+    } catch (error) {
+        console.error('Error rejecting withdrawal:', error);
+        tg.showAlert('حدث خطأ');
+    }
+}
+
+async function loadAdminTransactions() {
+    const container = document.getElementById('transactions-list');
+    const typeFilter = document.getElementById('transaction-type-filter').value;
+    container.innerHTML = '<p class="empty-state">جاري التحميل...</p>';
+    
+    try {
+        const response = await fetch('/api/admin/transactions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                type_filter: typeFilter,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.transactions && data.transactions.length > 0) {
+            container.innerHTML = data.transactions.map(t => {
+                const typeColors = {
+                    'deposit': { bg: '#e8f5e9', text: '#4caf50', icon: '📥' },
+                    'withdrawal': { bg: '#ffebee', text: '#f44336', icon: '📤' },
+                    'subscription': { bg: '#e3f2fd', text: '#2196f3', icon: '💎' },
+                    'referral': { bg: '#f3e5f5', text: '#9c27b0', icon: '🎁' }
+                };
+                const colors = typeColors[t.type] || { bg: '#f5f5f5', text: '#666', icon: '💰' };
+                
+                return `
+                    <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+                                    <span style="font-size: 20px;">${colors.icon}</span>
+                                    <span style="font-weight: bold; color: ${colors.text};">${t.type === 'deposit' ? 'إيداع' : t.type === 'withdrawal' ? 'سحب' : t.type === 'subscription' ? 'اشتراك' : 'إحالة'}</span>
+                                </div>
+                                <p style="margin: 0; color: #888; font-size: 12px;">المستخدم: ${t.user_id}</p>
+                                <p style="margin: 3px 0 0 0; color: #888; font-size: 11px;">${new Date(t.created_at).toLocaleString('ar')}</p>
+                            </div>
+                            <div style="text-align: left;">
+                                <div style="font-size: 18px; font-weight: bold; color: ${colors.text};">${t.amount} USDT</div>
+                                <div style="font-size: 11px; color: #888; margin-top: 3px;">${t.status || 'مكتمل'}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            container.innerHTML = '<p class="empty-state">لا توجد معاملات</p>';
+        }
+    } catch (error) {
+        console.error('Error loading transactions:', error);
+        container.innerHTML = '<p class="empty-state">حدث خطأ في التحميل</p>';
+    }
+}
+
+async function loadAdminReferrals() {
+    const container = document.getElementById('referrals-list');
+    container.innerHTML = '<p class="empty-state">جاري التحميل...</p>';
+    
+    try {
+        const response = await fetch('/api/admin/top-referrers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.referrers && data.referrers.length > 0) {
+            container.innerHTML = data.referrers.map((ref, index) => `
+                <div style="background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px;">
+                        ${index + 1}
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 5px 0; color: #333;">${ref.first_name || 'مستخدم'}</h4>
+                        <p style="margin: 0; color: #888; font-size: 12px;">@${ref.username || 'لا يوجد'} - ID: ${ref.user_id}</p>
+                    </div>
+                    <div style="text-align: left;">
+                        <div style="font-size: 16px; font-weight: bold; color: #10b981;">${ref.total_earnings} USDT</div>
+                        <div style="font-size: 12px; color: #888;">${ref.total_referrals} إحالة</div>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            container.innerHTML = '<p class="empty-state">لا توجد إحالات</p>';
+        }
+    } catch (error) {
+        console.error('Error loading referrals:', error);
+        container.innerHTML = '<p class="empty-state">حدث خطأ في التحميل</p>';
+    }
+}
+
+async function sendBroadcastMessage() {
+    const message = document.getElementById('broadcast-message').value.trim();
+    
+    if (!message) {
+        tg.showAlert('❌ الرسالة فارغة');
+        return;
+    }
+    
+    if (!confirm('⚠️ هل أنت متأكد من إرسال هذه الرسالة لجميع المستخدمين؟')) {
+        return;
+    }
+    
+    try {
+        tg.showAlert('⏳ جاري الإرسال...');
+        
+        const response = await fetch('/api/admin/broadcast', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                message: message,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            tg.showAlert(`✅ ${data.message}`);
+            document.getElementById('broadcast-message').value = '';
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'فشل الإرسال'));
+        }
+    } catch (error) {
+        console.error('Error broadcasting:', error);
+        tg.showAlert('حدث خطأ');
+    }
+}
+
+async function searchUserAdvanced() {
+    const query = document.getElementById('advanced-search-input').value.trim();
+    const resultDiv = document.getElementById('search-result');
+    const detailsDiv = document.getElementById('search-user-details');
+    
+    if (!query) {
+        tg.showAlert('❌ يرجى إدخال معرف المستخدم أو الاسم');
+        return;
+    }
+    
+    resultDiv.style.display = 'none';
+    detailsDiv.innerHTML = '<p class="empty-state">جاري البحث...</p>';
+    
+    try {
+        const response = await fetch('/api/admin/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                query: query,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.user) {
+            const user = data.user;
+            resultDiv.style.display = 'block';
+            
+            detailsDiv.innerHTML = `
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <h4 style="margin: 0 0 10px 0;">👤 معلومات المستخدم</h4>
+                    <p><strong>الاسم:</strong> ${user.first_name || '-'} ${user.last_name || ''}</p>
+                    <p><strong>اسم المستخدم:</strong> @${user.username || 'لا يوجد'}</p>
+                    <p><strong>ID:</strong> ${user.user_id}</p>
+                    <p><strong>الرصيد:</strong> ${user.balance || 0} USDT</p>
+                    <p><strong>اللغة:</strong> ${user.language || 'ar'}</p>
+                    ${user.is_banned ? '<p style="color: red;"><strong>⚠️ محظور</strong></p>' : ''}
+                </div>
+                
+                ${user.analyst ? `
+                    <div style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 10px 0;">👨‍💼 معلومات المحلل</h4>
+                        <p><strong>اسم المحلل:</strong> ${user.analyst.name}</p>
+                        <p><strong>السعر الشهري:</strong> ${user.analyst.monthly_price} USDT</p>
+                        <p><strong>المشتركين:</strong> ${user.analyst.total_subscribers || 0}</p>
+                        <p><strong>الحالة:</strong> ${user.analyst.is_active ? 'نشط ✅' : 'متوقف ⏸️'}</p>
+                    </div>
+                ` : ''}
+                
+                ${user.referral_stats ? `
+                    <div style="background: #f3e5f5; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 10px 0;">🎁 إحصائيات الإحالة</h4>
+                        <p><strong>عدد الإحالات:</strong> ${user.referral_stats.total_referrals || 0}</p>
+                        <p><strong>الأرباح:</strong> ${user.referral_stats.total_earnings || 0} USDT</p>
+                    </div>
+                ` : ''}
+                
+                ${user.subscriptions && user.subscriptions.length > 0 ? `
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        <h4 style="margin: 0 0 10px 0;">💎 الاشتراكات</h4>
+                        ${user.subscriptions.map(sub => `
+                            <p>• ${sub.analyst_name} - ينتهي: ${new Date(sub.expires_at).toLocaleDateString('ar')}</p>
+                        `).join('')}
+                    </div>
+                ` : ''}
+                
+                ${user.transactions && user.transactions.length > 0 ? `
+                    <div style="background: #fff3e0; padding: 15px; border-radius: 10px;">
+                        <h4 style="margin: 0 0 10px 0;">💰 آخر المعاملات (5)</h4>
+                        ${user.transactions.slice(0, 5).map(t => `
+                            <p style="font-size: 13px;">• ${t.type === 'deposit' ? '📥' : t.type === 'withdrawal' ? '📤' : '💎'} ${t.amount} USDT - ${new Date(t.created_at).toLocaleDateString('ar')}</p>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            `;
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'المستخدم غير موجود'));
+        }
+    } catch (error) {
+        console.error('Error searching user:', error);
+        tg.showAlert('حدث خطأ في البحث');
+    }
+}
+
+async function toggleAnalystStatus(analystId, currentStatus) {
+    if (!confirm(`هل تريد ${currentStatus ? 'إيقاف' : 'تفعيل'} هذا المحلل؟`)) return;
+    
+    tg.showAlert('⏳ جاري التحديث...');
+}
+
+async function deleteAnalyst(analystId) {
+    if (!confirm('⚠️ هل أنت متأكد من حذف هذا المحلل؟ سيتم إلغاء جميع اشتراكاته.')) return;
+    
+    tg.showAlert('⏳ جاري الحذف...');
 }
 
 if (document.readyState === 'loading') {

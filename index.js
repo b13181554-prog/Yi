@@ -373,6 +373,18 @@ function verifyTelegramWebAppData(initData) {
   }
 }
 
+function getUserIdFromInitData(initData) {
+  try {
+    const urlParams = new URLSearchParams(initData);
+    const userParam = urlParams.get('user');
+    if (!userParam) return null;
+    const userData = JSON.parse(userParam);
+    return userData.id;
+  } catch (error) {
+    return null;
+  }
+}
+
 app.post('/api/user', authenticateAPI, async (req, res) => {
   try {
     const { user_id } = req.body;
@@ -1716,13 +1728,14 @@ app.post('/api/change-language', async (req, res) => {
 // Admin Endpoints (Owner Only)
 app.post('/api/admin/users', async (req, res) => {
   try {
-    const { admin_id, init_data } = req.body;
+    const { init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    if (parseInt(admin_id) !== config.OWNER_ID) {
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
       return res.json({ success: false, error: 'Unauthorized: Admin only' });
     }
     
@@ -1736,17 +1749,18 @@ app.post('/api/admin/users', async (req, res) => {
 
 app.post('/api/admin/ban-user', async (req, res) => {
   try {
-    const { admin_id, target_user_id, reason, duration, init_data } = req.body;
+    const { target_user_id, reason, duration, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    if (parseInt(admin_id) !== config.OWNER_ID) {
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
       return res.json({ success: false, error: 'Unauthorized: Admin only' });
     }
     
-    await db.banUser(target_user_id, reason, admin_id, duration);
+    await db.banUser(target_user_id, reason, authenticatedUserId, duration);
     res.json({ success: true, message: 'تم حظر المستخدم بنجاح' });
   } catch (error) {
     console.error('Ban User API Error:', error);
@@ -1756,13 +1770,14 @@ app.post('/api/admin/ban-user', async (req, res) => {
 
 app.post('/api/admin/unban-user', async (req, res) => {
   try {
-    const { admin_id, target_user_id, init_data } = req.body;
+    const { target_user_id, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    if (parseInt(admin_id) !== config.OWNER_ID) {
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
       return res.json({ success: false, error: 'Unauthorized: Admin only' });
     }
     
@@ -1776,13 +1791,14 @@ app.post('/api/admin/unban-user', async (req, res) => {
 
 app.post('/api/admin/delete-user', async (req, res) => {
   try {
-    const { admin_id, target_user_id, init_data } = req.body;
+    const { target_user_id, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    if (parseInt(admin_id) !== config.OWNER_ID) {
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
       return res.json({ success: false, error: 'Unauthorized: Admin only' });
     }
     
@@ -1796,13 +1812,14 @@ app.post('/api/admin/delete-user', async (req, res) => {
 
 app.post('/api/admin/restrict-user', async (req, res) => {
   try {
-    const { admin_id, target_user_id, restrictions, duration, init_data } = req.body;
+    const { target_user_id, restrictions, duration, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    if (parseInt(admin_id) !== config.OWNER_ID) {
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
       return res.json({ success: false, error: 'Unauthorized: Admin only' });
     }
     
@@ -1816,13 +1833,14 @@ app.post('/api/admin/restrict-user', async (req, res) => {
 
 app.post('/api/admin/banned-users', async (req, res) => {
   try {
-    const { admin_id, init_data } = req.body;
+    const { init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    if (parseInt(admin_id) !== config.OWNER_ID) {
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
       return res.json({ success: false, error: 'Unauthorized: Admin only' });
     }
     
@@ -1830,6 +1848,396 @@ app.post('/api/admin/banned-users', async (req, res) => {
     res.json({ success: true, users: bannedUsers });
   } catch (error) {
     console.error('Banned Users API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// الإحصائيات الشاملة للإدارة
+app.post('/api/admin/stats', async (req, res) => {
+  try {
+    const { init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    const users = await db.getAllUsers();
+    const analysts = await db.getAllAnalysts();
+    const transactions = await db.getAllTransactions(1000);
+    const pendingWithdrawals = await db.getPendingWithdrawals();
+    
+    const now = new Date();
+    const today = new Date(now.setHours(0, 0, 0, 0));
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    const activeUsersToday = users.filter(u => {
+      return u.last_active && new Date(u.last_active) >= today;
+    }).length;
+    
+    const activeUsersWeek = users.filter(u => {
+      return u.last_active && new Date(u.last_active) >= weekAgo;
+    }).length;
+    
+    const totalBalance = users.reduce((sum, u) => sum + (parseFloat(u.balance) || 0), 0);
+    
+    const activeSubscriptions = users.filter(u => {
+      return u.subscription_expires && new Date(u.subscription_expires) > new Date();
+    }).length;
+    
+    const totalReferralEarnings = users.reduce((sum, u) => sum + (parseFloat(u.referral_earnings) || 0), 0);
+    
+    const stats = {
+      total_users: users.length,
+      active_users_today: activeUsersToday,
+      active_users_week: activeUsersWeek,
+      total_balance: totalBalance.toFixed(2),
+      total_subscriptions: activeSubscriptions,
+      total_analysts: analysts.length,
+      total_transactions: transactions.length,
+      total_withdrawals_pending: pendingWithdrawals.length,
+      total_referral_earnings: totalReferralEarnings.toFixed(2)
+    };
+    
+    res.json({ success: true, stats });
+  } catch (error) {
+    console.error('Admin Stats API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// إدارة المحللين
+app.post('/api/admin/analysts', async (req, res) => {
+  try {
+    const { init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    const analysts = await db.getDB().collection('analysts').aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user_id',
+          foreignField: 'user_id',
+          as: 'user'
+        }
+      },
+      { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+      {
+        $project: {
+          _id: 1,
+          user_id: 1,
+          name: 1,
+          description: 1,
+          monthly_price: 1,
+          total_subscribers: 1,
+          is_active: 1,
+          created_at: 1,
+          username: '$user.username',
+          first_name: '$user.first_name',
+          balance: '$user.balance'
+        }
+      },
+      { $sort: { total_subscribers: -1 } }
+    ]).toArray();
+    
+    res.json({ success: true, analysts });
+  } catch (error) {
+    console.error('Admin Analysts API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// طلبات السحب
+app.post('/api/admin/withdrawals', async (req, res) => {
+  try {
+    const { init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    const withdrawals = await db.getPendingWithdrawals();
+    res.json({ success: true, withdrawals });
+  } catch (error) {
+    console.error('Admin Withdrawals API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// الموافقة على طلب السحب
+app.post('/api/admin/approve-withdrawal', async (req, res) => {
+  try {
+    const { withdrawal_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    const { ObjectId } = require('mongodb');
+    const withdrawal = await db.getDB().collection('withdrawal_requests').findOne({
+      _id: new ObjectId(withdrawal_id)
+    });
+    
+    if (!withdrawal) {
+      return res.json({ success: false, error: 'طلب السحب غير موجود' });
+    }
+    
+    await db.approveWithdrawal(withdrawal_id);
+    await db.createTransaction(
+      withdrawal.user_id,
+      'withdrawal',
+      withdrawal.amount,
+      null,
+      withdrawal.wallet_address,
+      'completed'
+    );
+    
+    bot.sendMessage(withdrawal.user_id, `
+✅ <b>تم الموافقة على طلب السحب!</b>
+
+💸 المبلغ: ${withdrawal.amount} USDT
+📍 العنوان: <code>${withdrawal.wallet_address}</code>
+
+سيتم تحويل المبلغ خلال 24 ساعة
+`, { parse_mode: 'HTML' }).catch(err => console.error('Error notifying user:', err));
+    
+    res.json({ success: true, message: 'تم الموافقة على طلب السحب' });
+  } catch (error) {
+    console.error('Approve Withdrawal API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// رفض طلب السحب
+app.post('/api/admin/reject-withdrawal', async (req, res) => {
+  try {
+    const { withdrawal_id, reason, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    const { ObjectId } = require('mongodb');
+    const withdrawal = await db.getDB().collection('withdrawal_requests').findOne({
+      _id: new ObjectId(withdrawal_id)
+    });
+    
+    if (!withdrawal) {
+      return res.json({ success: false, error: 'طلب السحب غير موجود' });
+    }
+    
+    await db.getDB().collection('withdrawal_requests').updateOne(
+      { _id: new ObjectId(withdrawal_id) },
+      { $set: { status: 'rejected', processed_at: new Date(), rejection_reason: reason || 'تم الرفض' } }
+    );
+    
+    await db.updateUserBalance(withdrawal.user_id, withdrawal.amount);
+    
+    bot.sendMessage(withdrawal.user_id, `
+❌ <b>تم رفض طلب السحب</b>
+
+💸 المبلغ: ${withdrawal.amount} USDT
+السبب: ${reason || 'لم يتم تحديد السبب'}
+
+تم إرجاع المبلغ إلى محفظتك
+`, { parse_mode: 'HTML' }).catch(err => console.error('Error notifying user:', err));
+    
+    res.json({ success: true, message: 'تم رفض طلب السحب' });
+  } catch (error) {
+    console.error('Reject Withdrawal API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// المعاملات
+app.post('/api/admin/transactions', async (req, res) => {
+  try {
+    const { type_filter, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    let transactions = await db.getAllTransactions(100);
+    
+    if (type_filter && type_filter !== 'all') {
+      transactions = transactions.filter(t => t.type === type_filter);
+    }
+    
+    res.json({ success: true, transactions });
+  } catch (error) {
+    console.error('Admin Transactions API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// أفضل المحيلين
+app.post('/api/admin/top-referrers', async (req, res) => {
+  try {
+    const { init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    const users = await db.getAllUsers();
+    const topReferrers = [];
+    
+    for (const user of users) {
+      const stats = await db.getReferralStats(user.user_id);
+      if (stats.total_referrals > 0 || stats.total_earnings > 0) {
+        topReferrers.push({
+          user_id: user.user_id,
+          first_name: user.first_name,
+          username: user.username,
+          total_referrals: stats.total_referrals,
+          total_earnings: stats.total_earnings
+        });
+      }
+    }
+    
+    topReferrers.sort((a, b) => b.total_earnings - a.total_earnings);
+    
+    res.json({ success: true, referrers: topReferrers.slice(0, 20) });
+  } catch (error) {
+    console.error('Admin Top Referrers API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// إرسال رسالة جماعية
+app.post('/api/admin/broadcast', async (req, res) => {
+  try {
+    const { message, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    if (!message || message.trim().length === 0) {
+      return res.json({ success: false, error: 'الرسالة فارغة' });
+    }
+    
+    const users = await db.getAllUsers();
+    let successCount = 0;
+    let failCount = 0;
+    
+    for (const user of users) {
+      try {
+        await bot.sendMessage(user.user_id, message, { parse_mode: 'HTML' });
+        successCount++;
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (error) {
+        console.error(`Failed to send to ${user.user_id}:`, error.message);
+        failCount++;
+      }
+    }
+    
+    res.json({ 
+      success: true, 
+      message: `تم إرسال الرسالة إلى ${successCount} مستخدم. فشل ${failCount} مستخدم`,
+      success_count: successCount,
+      fail_count: failCount
+    });
+  } catch (error) {
+    console.error('Admin Broadcast API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// البحث عن مستخدم
+app.post('/api/admin/search', async (req, res) => {
+  try {
+    const { query, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    if (!query || query.trim().length === 0) {
+      return res.json({ success: false, error: 'يرجى إدخال معرف المستخدم أو الاسم' });
+    }
+    
+    let user = null;
+    
+    if (!isNaN(query)) {
+      user = await db.getUser(parseInt(query));
+    } else {
+      const users = await db.getAllUsers();
+      user = users.find(u => 
+        u.username && u.username.toLowerCase().includes(query.toLowerCase()) ||
+        u.first_name && u.first_name.toLowerCase().includes(query.toLowerCase())
+      );
+    }
+    
+    if (!user) {
+      return res.json({ success: false, error: 'المستخدم غير موجود' });
+    }
+    
+    const transactions = await db.getUserTransactions(user.user_id);
+    const referralStats = await db.getReferralStats(user.user_id);
+    const analyst = await db.getAnalystByUserId(user.user_id);
+    const subscriptions = await db.getAllUserAnalystSubscriptions(user.user_id);
+    
+    res.json({ 
+      success: true, 
+      user: {
+        ...user,
+        transactions,
+        referral_stats: referralStats,
+        analyst,
+        subscriptions
+      }
+    });
+  } catch (error) {
+    console.error('Admin Search API Error:', error);
     res.json({ success: false, error: error.message });
   }
 });

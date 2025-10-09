@@ -580,15 +580,64 @@
             <div id="admin-section" class="section">
                 <div class="section-header">
                     <h2 data-i18n="admin_title">👑 لوحة الإدارة</h2>
-                    <p style="color: #888; font-size: 13px;" data-i18n="admin_subtitle">إدارة المستخدمين والمحتوى</p>
+                    <p style="color: #888; font-size: 13px;" data-i18n="admin_subtitle">إدارة شاملة لجميع جوانب النظام</p>
                 </div>
 
                 <div class="admin-tabs" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto;">
-                    <button class="admin-tab-btn active" onclick="switchAdminTab('users')" style="padding: 10px 20px; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_users_tab">👥 المستخدمين</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('banned')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_banned_tab">🚫 المحظورين</button>
+                    <button class="admin-tab-btn active" onclick="switchAdminTab('stats')" style="padding: 10px 20px; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; white-space: nowrap;">📊 الإحصائيات</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('users')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_users_tab">👥 المستخدمين</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('analysts')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">👨‍💼 المحللين</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('withdrawals')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">💸 طلبات السحب</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('transactions')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">💰 المعاملات</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('referrals')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">🎁 الإحالات</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('broadcast')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">📢 رسالة جماعية</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('search')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">🔍 بحث متقدم</button>
                 </div>
 
-                <div id="admin-users-tab" class="admin-tab-content">
+                <!-- الإحصائيات -->
+                <div id="admin-stats-tab" class="admin-tab-content">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-total-users">-</div>
+                            <div style="font-size: 14px; opacity: 0.9;">إجمالي المستخدمين</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-active-today">-</div>
+                            <div style="font-size: 14px; opacity: 0.9;">نشط اليوم</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-active-week">-</div>
+                            <div style="font-size: 14px; opacity: 0.9;">نشط هذا الأسبوع</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: bold; margin-bottom: 5px;" id="stat-total-balance">- USDT</div>
+                            <div style="font-size: 14px; opacity: 0.9;">إجمالي الأرصدة</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-subscriptions">-</div>
+                            <div style="font-size: 14px; opacity: 0.9;">الاشتراكات النشطة</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-analysts">-</div>
+                            <div style="font-size: 14px; opacity: 0.9;">عدد المحللين</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-transactions">-</div>
+                            <div style="font-size: 14px; opacity: 0.8;">عدد المعاملات</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #333; padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-pending-withdrawals">-</div>
+                            <div style="font-size: 14px; opacity: 0.8;">طلبات السحب المعلقة</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333; padding: 20px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: bold; margin-bottom: 5px;" id="stat-referral-earnings">- USDT</div>
+                            <div style="font-size: 14px; opacity: 0.8;">أرباح الإحالات</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- المستخدمين -->
+                <div id="admin-users-tab" class="admin-tab-content" style="display: none;">
                     <div style="margin-bottom: 15px;">
                         <input type="text" id="user-search" data-i18n="user_search_placeholder" placeholder="🔍 ابحث عن مستخدم (ID, الاسم)" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;">
                     </div>
@@ -597,9 +646,71 @@
                     </div>
                 </div>
 
-                <div id="admin-banned-tab" class="admin-tab-content" style="display: none;">
-                    <div id="banned-users-list" style="display: flex; flex-direction: column; gap: 10px;">
-                        <p class="empty-state" data-i18n="empty_state_loading">جاري التحميل...</p>
+                <!-- المحللين -->
+                <div id="admin-analysts-tab" class="admin-tab-content" style="display: none;">
+                    <div id="analysts-list" style="display: flex; flex-direction: column; gap: 15px;">
+                        <p class="empty-state">جاري التحميل...</p>
+                    </div>
+                </div>
+
+                <!-- طلبات السحب -->
+                <div id="admin-withdrawals-tab" class="admin-tab-content" style="display: none;">
+                    <div id="withdrawals-list" style="display: flex; flex-direction: column; gap: 15px;">
+                        <p class="empty-state">جاري التحميل...</p>
+                    </div>
+                </div>
+
+                <!-- المعاملات -->
+                <div id="admin-transactions-tab" class="admin-tab-content" style="display: none;">
+                    <div style="margin-bottom: 15px;">
+                        <select id="transaction-type-filter" onchange="loadAdminTransactions()" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px;">
+                            <option value="all">جميع المعاملات</option>
+                            <option value="deposit">إيداع</option>
+                            <option value="withdrawal">سحب</option>
+                            <option value="subscription">اشتراك</option>
+                            <option value="referral">إحالة</option>
+                        </select>
+                    </div>
+                    <div id="transactions-list" style="display: flex; flex-direction: column; gap: 10px;">
+                        <p class="empty-state">جاري التحميل...</p>
+                    </div>
+                </div>
+
+                <!-- الإحالات -->
+                <div id="admin-referrals-tab" class="admin-tab-content" style="display: none;">
+                    <div id="referrals-list" style="display: flex; flex-direction: column; gap: 10px;">
+                        <p class="empty-state">جاري التحميل...</p>
+                    </div>
+                </div>
+
+                <!-- رسالة جماعية -->
+                <div id="admin-broadcast-tab" class="admin-tab-content" style="display: none;">
+                    <div style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <h3 style="margin-bottom: 15px;">📢 إرسال رسالة جماعية</h3>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: bold;">نص الرسالة (يدعم HTML):</label>
+                            <textarea id="broadcast-message" rows="8" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-family: inherit; resize: vertical;" placeholder="اكتب رسالتك هنا...&#10;&#10;يمكنك استخدام:&#10;<b>نص عريض</b>&#10;<i>نص مائل</i>&#10;<code>كود</code>"></textarea>
+                        </div>
+                        <div style="background: #fffbea; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-right: 4px solid #ffc107;">
+                            <p style="margin: 0; font-size: 14px; color: #856404;">⚠️ تنبيه: سيتم إرسال الرسالة إلى جميع المستخدمين. تأكد من صحة الرسالة قبل الإرسال.</p>
+                        </div>
+                        <button onclick="sendBroadcastMessage()" class="submit-btn" style="width: 100%; padding: 15px; font-size: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold;">📨 إرسال الرسالة</button>
+                    </div>
+                </div>
+
+                <!-- بحث متقدم -->
+                <div id="admin-search-tab" class="admin-tab-content" style="display: none;">
+                    <div style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <input type="text" id="advanced-search-input" placeholder="🔍 ابحث بمعرف المستخدم أو الاسم..." style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px;">
+                            <button onclick="searchUserAdvanced()" class="submit-btn" style="padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold;">بحث</button>
+                        </div>
+                    </div>
+                    <div id="search-result" style="display: none;">
+                        <div style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <h3 style="margin-bottom: 15px;">نتيجة البحث:</h3>
+                            <div id="search-user-details"></div>
+                        </div>
                     </div>
                 </div>
             </div>
