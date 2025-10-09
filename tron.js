@@ -93,7 +93,7 @@ async function verifyUSDTTransaction(txId, expectedAddress, expectedAmount) {
     };
     
   } catch (error) {
-    console.error('Error verifying transaction:', error);
+    console.error('Error verifying transaction:', error.message);
     return { success: false, error: 'فشل في التحقق من المعاملة: ' + error.message };
   }
 }
@@ -116,7 +116,7 @@ async function sendUSDT(toAddress, amount, privateKey) {
     };
     
   } catch (error) {
-    console.error('Error sending USDT:', error);
+    console.error('Error sending USDT:', error.message);
     return { success: false, error: 'فشل في إرسال USDT: ' + error.message };
   }
 }
@@ -132,7 +132,7 @@ async function getUSDTBalance(address) {
     };
     
   } catch (error) {
-    console.error('Error getting balance:', error);
+    console.error('Error getting balance:', error.message);
     return { success: false, error: 'فشل في جلب الرصيد: ' + error.message };
   }
 }

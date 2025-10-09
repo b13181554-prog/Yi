@@ -60,9 +60,13 @@ class OKXWithdrawal {
         timeout: 30000
       });
 
-      console.log('✅ OKX Withdrawal Response:', response.data);
-
       if (response.data && response.data.code === '0' && response.data.data && response.data.data.length > 0) {
+        console.log('✅ OKX Withdrawal Success:', {
+          withdrawId: response.data.data[0].wdId,
+          currency: response.data.data[0].ccy,
+          amount: amount
+        });
+        
         return {
           success: true,
           data: {
@@ -75,7 +79,8 @@ class OKXWithdrawal {
         };
       } else {
         const errorMsg = response.data?.msg || 'خطأ غير معروف';
-        console.error('❌ OKX Withdrawal Error:', response.data);
+        const errorCode = response.data?.code || 'unknown';
+        console.error('❌ OKX Withdrawal Error:', { code: errorCode, message: errorMsg });
         return {
           success: false,
           error: `فشل السحب عبر OKX: ${errorMsg}`
@@ -83,12 +88,12 @@ class OKXWithdrawal {
       }
 
     } catch (error) {
-      console.error('❌ OKX API Error:', error.response?.data || error.message);
-      
       const errorMsg = error.response?.data?.msg || 
                        error.response?.data?.error || 
                        error.message || 
                        'خطأ في الاتصال بـ OKX';
+      const errorCode = error.response?.data?.code || 'network_error';
+      console.error('❌ OKX API Error:', { code: errorCode, message: errorMsg });
       
       return {
         success: false,

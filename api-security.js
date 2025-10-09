@@ -1,6 +1,7 @@
 
 const crypto = require('crypto');
 const config = require('./config');
+const DOMPurify = require('isomorphic-dompurify');
 
 // التحقق من صحة بيانات Telegram WebApp
 function verifyTelegramWebAppData(initData) {
@@ -87,12 +88,60 @@ setInterval(() => {
   }
 }, 300000);
 
-// حماية ضد SQL/NoSQL Injection
+// حماية ضد XSS وInjection
 function sanitizeInput(input) {
   if (typeof input === 'string') {
-    return input.replace(/[<>'"]/g, '');
+    return input
+      .replace(/[<>'"`;()]/g, '')
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+\s*=/gi, '')
+      .replace(/eval\(/gi, '')
+      .replace(/expression\(/gi, '')
+      .replace(/vbscript:/gi, '')
+      .replace(/data:text\/html/gi, '')
+      .trim();
+  }
+  if (typeof input === 'object' && input !== null) {
+    const sanitized = Array.isArray(input) ? [] : {};
+    for (const key in input) {
+      sanitized[key] = sanitizeInput(input[key]);
+    }
+    return sanitized;
   }
   return input;
+}
+
+// دالة متقدمة لتنظيف HTML باستخدام DOMPurify
+function sanitizeHTML(html) {
+  if (typeof html !== 'string') return '';
+  
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'p', 'br', 'span', 'div'],
+    ALLOWED_ATTR: ['class', 'style'],
+    ALLOW_DATA_ATTR: false,
+    FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input', 'button'],
+    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover']
+  }).trim();
+}
+
+// التحقق من الأنماط الخطرة
+function containsDangerousPatterns(input) {
+  if (typeof input !== 'string') return false;
+  
+  const dangerousPatterns = [
+    /<script/i,
+    /javascript:/i,
+    /on\w+\s*=/i,
+    /eval\s*\(/i,
+    /expression\s*\(/i,
+    /vbscript:/i,
+    /data:text\/html/i,
+    /<iframe/i,
+    /<object/i,
+    /<embed/i
+  ];
+  
+  return dangerousPatterns.some(pattern => pattern.test(input));
 }
 
 // Middleware للتحقق من حجم البيانات
@@ -115,5 +164,7 @@ module.exports = {
   authenticateAPI,
   apiRateLimit,
   sanitizeInput,
+  sanitizeHTML,
+  containsDangerousPatterns,
   validateRequestSize
 };

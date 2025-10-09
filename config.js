@@ -1,27 +1,26 @@
-if (!process.env.BOT_TOKEN) {
-  console.error('❌ BOT_TOKEN environment variable is required');
-  throw new Error('BOT_TOKEN is required but not found in environment variables');
-}
+const requiredEnvVars = ['BOT_TOKEN', 'MONGODB_PASSWORD', 'OWNER_ID', 'MONGODB_USER'];
 
-if (!process.env.MONGODB_PASSWORD) {
-  console.error('❌ MONGODB_PASSWORD environment variable is required');
-  throw new Error('MONGODB_PASSWORD is required but not found in environment variables');
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    console.error(`❌ ${envVar} environment variable is required`);
+    throw new Error(`${envVar} is required but not found in environment variables`);
+  }
 }
 
 module.exports = { 
   BOT_TOKEN: process.env.BOT_TOKEN,
-  OWNER_ID: 7594466342,
-  CHANNEL_USERNAME: '@ME_MAGDY_TRADING',
-  CHANNEL_ID: -1002776929451,
+  OWNER_ID: parseInt(process.env.OWNER_ID),
+  CHANNEL_USERNAME: process.env.CHANNEL_USERNAME || '@ME_MAGDY_TRADING',
+  CHANNEL_ID: parseInt(process.env.CHANNEL_ID || '-1002776929451'),
   
-  BOT_WALLET_ADDRESS: 'TCZwoWnmi8uBssqjtKGmUwAjToAxcJkjLP',
+  BOT_WALLET_ADDRESS: process.env.BOT_WALLET_ADDRESS || 'TCZwoWnmi8uBssqjtKGmUwAjToAxcJkjLP',
   
-  SUBSCRIPTION_PRICE: 10,
-  WITHDRAWAL_FEE: 1,
-  FREE_TRIAL_DAYS: 7,
+  SUBSCRIPTION_PRICE: parseInt(process.env.SUBSCRIPTION_PRICE) || 10,
+  WITHDRAWAL_FEE: parseInt(process.env.WITHDRAWAL_FEE) || 1,
+  FREE_TRIAL_DAYS: parseInt(process.env.FREE_TRIAL_DAYS) || 7,
   
-  MONGODB_URI: `mongodb+srv://mjdymr816_db_user:${process.env.MONGODB_PASSWORD}@cluster0.m97dto9.mongodb.net/obentchi_bot?retryWrites=true&w=majority&appName=Cluster0`,
-  MONGODB_DB_NAME: 'obentchi_bot',
+  MONGODB_URI: `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@cluster0.m97dto9.mongodb.net/obentchi_bot?retryWrites=true&w=majority&appName=Cluster0`,
+  MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'obentchi_bot',
   
   PROXY_URL: process.env.PROXY_URL || null,
   
