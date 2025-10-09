@@ -58,10 +58,30 @@ async function checkAnalystActivity() {
         let subscriberCount = 0;
 
         for (const subscription of subscriptions) {
-          await db.updateUserBalance(subscription.user_id, subscription.amount);
+          const now = new Date();
+          const startDate = new Date(subscription.start_date);
+          const endDate = new Date(subscription.end_date);
+          
+          const totalDuration = endDate - startDate;
+          const remainingDuration = Math.max(0, endDate - now);
+          
+          let refundAmount = subscription.amount;
+          if (totalDuration > 0 && remainingDuration > 0) {
+            const clampedRemainingDuration = Math.min(totalDuration, remainingDuration);
+            refundAmount = (clampedRemainingDuration / totalDuration) * subscription.amount;
+          } else if (remainingDuration <= 0) {
+            refundAmount = 0;
+          }
+          
+          refundAmount = Math.min(subscription.amount, Math.max(0, Math.round(refundAmount * 100) / 100));
+          
+          if (refundAmount > 0) {
+            await db.updateUserBalance(subscription.user_id, refundAmount);
+          }
+          
           await db.cancelSubscription(subscription._id);
 
-          totalRefunded += subscription.amount;
+          totalRefunded += refundAmount;
           subscriberCount++;
 
           try {
@@ -72,7 +92,7 @@ async function checkAnalystActivity() {
 
 السبب: المحلل لم ينشر صفقات لمدة 3 أيام
 
-💰 تم إرجاع المبلغ: ${subscription.amount} USDT
+💰 تم إرجاع المبلغ: ${refundAmount.toFixed(2)} USDT
 ✅ الرصيد المُرجع متاح في محفظتك
 
 نأسف للإزعاج ونتمنى أن تجد محلل آخر مناسب 🙏

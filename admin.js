@@ -78,10 +78,9 @@ async function initAdminCommands(bot) {
     if (!isAdminCallback) return;
     
     try {
-      await bot.answerCallbackQuery(query.id);
-      
       // الإحصائيات العامة
       if (data === 'admin_stats') {
+        await bot.answerCallbackQuery(query.id);
         const users = await db.getAllUsers();
         const activeSubscriptions = users.filter(u => {
           if (!u.subscription_expires) return false;
@@ -165,6 +164,7 @@ async function initAdminCommands(bot) {
       
       // إدارة المستخدمين
       else if (data === 'admin_users') {
+        await bot.answerCallbackQuery(query.id);
         const users = await db.getAllUsers();
         const recentUsers = users.slice(0, 10);
         
@@ -194,6 +194,7 @@ async function initAdminCommands(bot) {
       
       // المعاملات
       else if (data === 'admin_transactions') {
+        await bot.answerCallbackQuery(query.id);
         const transactions = await db.getAllTransactions();
         const recentTransactions = transactions.slice(0, 15);
         
@@ -251,6 +252,7 @@ async function initAdminCommands(bot) {
       
       // طلبات السحب
       else if (data === 'admin_withdrawals') {
+        await bot.answerCallbackQuery(query.id);
         const withdrawals = await db.getPendingWithdrawals();
         
         if (withdrawals.length === 0) {
@@ -295,6 +297,7 @@ async function initAdminCommands(bot) {
       
       // المحللين
       else if (data === 'admin_analysts') {
+        await bot.answerCallbackQuery(query.id);
         const analysts = await db.getAllAnalysts();
         
         if (analysts.length === 0) {
@@ -334,6 +337,7 @@ async function initAdminCommands(bot) {
       
       // الإحالات
       else if (data === 'admin_referrals') {
+        await bot.answerCallbackQuery(query.id);
         const users = await db.getAllUsers();
         const topReferrers = users
           .filter(u => u.referral_earnings > 0)
@@ -377,6 +381,7 @@ async function initAdminCommands(bot) {
       
       // إرسال رسالة جماعية
       else if (data === 'admin_broadcast') {
+        await bot.answerCallbackQuery(query.id);
         await bot.editMessageText(`
 📢 <b>إرسال رسالة جماعية</b>
 
@@ -523,6 +528,7 @@ async function initAdminCommands(bot) {
       
       // البحث عن مستخدم
       else if (data === 'admin_search_user') {
+        await bot.answerCallbackQuery(query.id);
         await bot.editMessageText(`
 🔍 <b>البحث عن مستخدم</b>
 
@@ -546,6 +552,7 @@ async function initAdminCommands(bot) {
       
       // حظر مستخدم
       else if (data.startsWith('ban_user_')) {
+        await bot.answerCallbackQuery(query.id);
         const targetUserId = parseInt(data.replace('ban_user_', ''));
         const keyboard = [
           [
@@ -647,6 +654,7 @@ async function initAdminCommands(bot) {
       
       // تقييد مستخدم
       else if (data.startsWith('restrict_user_')) {
+        await bot.answerCallbackQuery(query.id);
         const targetUserId = parseInt(data.replace('restrict_user_', ''));
         const keyboard = [
           [
@@ -742,6 +750,7 @@ async function initAdminCommands(bot) {
       
       // تأكيد حذف المستخدم
       else if (data.startsWith('delete_user_')) {
+        await bot.answerCallbackQuery(query.id);
         const targetUserId = parseInt(data.replace('delete_user_', ''));
         
         const keyboard = [
@@ -773,6 +782,7 @@ async function initAdminCommands(bot) {
       
       // الرجوع للقائمة الرئيسية
       else if (data === 'admin_back' || data === 'admin_refresh') {
+        await bot.answerCallbackQuery(query.id);
         const keyboard = {
           inline_keyboard: [
             [

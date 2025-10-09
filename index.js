@@ -1272,10 +1272,30 @@ app.post('/api/delete-analyst', async (req, res) => {
     let subscriberCount = 0;
     
     for (const subscription of subscriptions) {
-      await db.updateUserBalance(subscription.user_id, subscription.amount);
+      const now = new Date();
+      const startDate = new Date(subscription.start_date);
+      const endDate = new Date(subscription.end_date);
+      
+      const totalDuration = endDate - startDate;
+      const remainingDuration = Math.max(0, endDate - now);
+      
+      let refundAmount = subscription.amount;
+      if (totalDuration > 0 && remainingDuration > 0) {
+        const clampedRemainingDuration = Math.min(totalDuration, remainingDuration);
+        refundAmount = (clampedRemainingDuration / totalDuration) * subscription.amount;
+      } else if (remainingDuration <= 0) {
+        refundAmount = 0;
+      }
+      
+      refundAmount = Math.min(subscription.amount, Math.max(0, Math.round(refundAmount * 100) / 100));
+      
+      if (refundAmount > 0) {
+        await db.updateUserBalance(subscription.user_id, refundAmount);
+      }
+      
       await db.cancelSubscription(subscription._id);
       
-      totalRefunded += subscription.amount;
+      totalRefunded += refundAmount;
       subscriberCount++;
       
       try {
@@ -1286,7 +1306,7 @@ app.post('/api/delete-analyst', async (req, res) => {
 
 السبب: المحلل قام بحذف حسابه
 
-💰 تم إرجاع المبلغ: ${subscription.amount} USDT
+💰 تم إرجاع المبلغ: ${refundAmount.toFixed(2)} USDT
 ✅ الرصيد المُرجع متاح في محفظتك
 
 نأسف للإزعاج ونتمنى أن تجد محلل آخر مناسب 🙏
@@ -1297,12 +1317,15 @@ app.post('/api/delete-analyst', async (req, res) => {
     }
     
     const deleteResult = await db.getDB().collection('analysts').deleteOne({ _id: analyst._id });
-    console.log(`🗑️ نتيجة الحذف: ${deleteResult.deletedCount} سجل تم حذفه`);
+    console.log(`🗑️ نتيجة حذف المحلل: ${deleteResult.deletedCount} سجل تم حذفه`);
     
     if (deleteResult.deletedCount === 0) {
       console.error(`❌ فشل حذف المحلل ${analyst.name} - لم يتم حذف أي سجل`);
       return res.json({ success: false, error: 'فشل حذف الحساب، يرجى المحاولة مرة أخرى' });
     }
+    
+    await db.getDB().collection('users').deleteOne({ user_id: user_id });
+    console.log(`🗑️ تم حذف سجل المستخدم ${user_id} من جدول users`);
     
     if (subscriberCount > 0) {
       console.log(`✅ تم حذف المحلل ${analyst.name} وإرجاع ${totalRefunded.toFixed(2)} USDT لـ ${subscriberCount} مشتركين`);
