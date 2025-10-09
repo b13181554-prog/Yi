@@ -763,6 +763,7 @@ async function loadAnalysts() {
                             ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.name}" class="analyst-avatar" onerror="this.style.display='none'">` : '<div class="analyst-avatar-placeholder">👤</div>'}
                             <div class="analyst-info">
                                 <h4>${analyst.name}</h4>
+                                ${analyst.username ? `<span style="font-size: 12px; color: #888; pointer-events: none;">@${analyst.username}</span>` : ''}
                                 ${analyst.is_subscribed ? '<span class="badge subscribed-badge">✅ مشترك</span>' : ''}
                             </div>
                         </div>
@@ -900,10 +901,8 @@ function showEditAnalystForm() {
     isEditingAnalyst = true;
     document.getElementById('analyst-form-title').textContent = '✏️ تعديل بيانات المحلل';
     document.getElementById('analyst-submit-btn').textContent = 'حفظ التعديلات';
-    document.getElementById('analyst-name').value = myAnalystData.name;
     document.getElementById('analyst-description').value = myAnalystData.description;
     document.getElementById('analyst-price').value = myAnalystData.monthly_price;
-    document.getElementById('analyst-profile-picture').value = myAnalystData.profile_picture || '';
     
     document.getElementById('market-crypto').checked = myAnalystData.markets && myAnalystData.markets.includes('crypto');
     document.getElementById('market-forex').checked = myAnalystData.markets && myAnalystData.markets.includes('forex');
@@ -928,10 +927,8 @@ function hideAnalystRegistrationForm() {
         document.getElementById('analyst-register-card').style.display = 'block';
     }
     
-    document.getElementById('analyst-name').value = '';
     document.getElementById('analyst-description').value = '';
     document.getElementById('analyst-price').value = '';
-    document.getElementById('analyst-profile-picture').value = '';
     document.getElementById('market-crypto').checked = false;
     document.getElementById('market-forex').checked = false;
     document.getElementById('market-stocks').checked = false;
@@ -941,10 +938,8 @@ function hideAnalystRegistrationForm() {
 }
 
 async function submitAnalystRegistration() {
-    const name = document.getElementById('analyst-name').value.trim();
     const description = document.getElementById('analyst-description').value.trim();
     const price = parseFloat(document.getElementById('analyst-price').value);
-    const profilePicture = document.getElementById('analyst-profile-picture').value.trim();
     
     const markets = [];
     if (document.getElementById('market-crypto').checked) markets.push('crypto');
@@ -953,7 +948,7 @@ async function submitAnalystRegistration() {
     if (document.getElementById('market-commodities').checked) markets.push('commodities');
     if (document.getElementById('market-indices').checked) markets.push('indices');
 
-    if (!name || !description || !price) {
+    if (!description || !price) {
         tg.showAlert('❌ يرجى ملء جميع الحقول');
         return;
     }
@@ -975,10 +970,8 @@ async function submitAnalystRegistration() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 user_id: userId,
-                name: name,
                 description: description,
                 monthly_price: price,
-                profile_picture: profilePicture,
                 markets: markets,
                 init_data: tg.initData
             })
@@ -1016,6 +1009,13 @@ async function loadMyAnalystProfile() {
         if (data.success && data.analyst) {
             myAnalystData = data.analyst;
             document.getElementById('my-analyst-name').textContent = data.analyst.name;
+            
+            const usernameEl = document.getElementById('my-analyst-username');
+            if (usernameEl) {
+                const telegramUsername = tg?.initDataUnsafe?.user?.username;
+                usernameEl.textContent = telegramUsername ? `@${telegramUsername}` : 'غير متوفر';
+            }
+            
             document.getElementById('my-analyst-desc').textContent = data.analyst.description;
             document.getElementById('my-analyst-price').textContent = data.analyst.monthly_price;
             document.getElementById('my-analyst-subs').textContent = data.analyst.total_subscribers || 0;
@@ -2243,6 +2243,7 @@ async function loadAnalystsByMarket(marketType) {
                         ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.name}" class="analyst-avatar" onerror="this.style.display='none'">` : '<div class="analyst-avatar-placeholder">👤</div>'}
                         <div class="analyst-info">
                             <h4>${analyst.name}</h4>
+                            ${analyst.username ? `<span style="font-size: 12px; color: #888; pointer-events: none;">@${analyst.username}</span>` : ''}
                             ${analyst.is_subscribed ? '<span class="badge subscribed-badge">✅ مشترك</span>' : ''}
                         </div>
                     </div>
@@ -2305,6 +2306,7 @@ async function loadActiveAnalysts() {
                 <div class="analyst-card">
                     <div class="analyst-header">
                         <h4>${analyst.name}</h4>
+                        ${analyst.username ? `<span style="font-size: 12px; color: #888; pointer-events: none;">@${analyst.username}</span>` : ''}
                         <span class="analyst-price">${analyst.monthly_price} USDT/شهر</span>
                     </div>
                     <p class="analyst-desc">${analyst.description}</p>
@@ -2352,6 +2354,7 @@ async function loadInactiveAnalysts() {
                         ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.name}" class="analyst-avatar" onerror="this.style.display='none'">` : '<div class="analyst-avatar-placeholder">👤</div>'}
                         <div class="analyst-info">
                             <h4>${analyst.name}</h4>
+                            ${analyst.username ? `<span style="font-size: 12px; color: #888; pointer-events: none;">@${analyst.username}</span>` : ''}
                             <span class="analyst-price">${analyst.monthly_price} USDT/شهر</span>
                         </div>
                     </div>
@@ -2424,6 +2427,7 @@ async function loadTop100Analysts(marketType = 'all') {
                         ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.analyst_name || analyst.name}" class="analyst-avatar" onerror="this.style.display='none'" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid ${analyst.rank <= 3 ? '#FFD700' : '#667eea'};">` : '<div class="analyst-avatar-placeholder" style="width: 50px; height: 50px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>'}
                         <div style="flex: 1;">
                             <h4 style="margin: 0; color: #333;">${analyst.analyst_name || analyst.name}</h4>
+                            ${analyst.username ? `<span style="font-size: 12px; color: #888; pointer-events: none;">@${analyst.username}</span>` : ''}
                             <p style="margin: 5px 0; color: #666; font-size: 14px;">
                                 ${marketType !== 'all' ? marketIcons[marketType] + ' ' : ''}👍 ${analyst.likes || 0} إعجاب
                             </p>

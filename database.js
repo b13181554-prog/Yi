@@ -449,10 +449,24 @@ async function getAnalystByUserId(userId) {
 }
 
 async function getAllAnalysts() {
-  return await db.collection('analysts')
-    .find({ is_active: true })
-    .sort({ total_subscribers: -1, created_at: -1 })
-    .toArray();
+  return await db.collection('analysts').aggregate([
+    { $match: { is_active: true } },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'user_id',
+        foreignField: 'user_id',
+        as: 'user'
+      }
+    },
+    { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+    {
+      $addFields: {
+        username: '$user.username'
+      }
+    },
+    { $sort: { total_subscribers: -1, created_at: -1 } }
+  ]).toArray();
 }
 
 async function updateAnalyst(analystId, updates) {
@@ -780,30 +794,58 @@ async function updateAnalystStats(analystId) {
 }
 
 async function getTop100Analysts() {
-  return await db.collection('analysts')
-    .find({ 
-      is_active: true
-    })
-    .sort({ 
-      likes: -1,
-      total_subscribers: -1,
-      performance_score: -1
-    })
-    .limit(100)
-    .toArray();
+  return await db.collection('analysts').aggregate([
+    { $match: { is_active: true } },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'user_id',
+        foreignField: 'user_id',
+        as: 'user'
+      }
+    },
+    { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+    {
+      $addFields: {
+        username: '$user.username'
+      }
+    },
+    { 
+      $sort: { 
+        likes: -1,
+        total_subscribers: -1,
+        performance_score: -1
+      }
+    },
+    { $limit: 100 }
+  ]).toArray();
 }
 
 async function getTop100AnalystsByMarket(marketType) {
-  return await db.collection('analysts')
-    .find({ 
-      is_active: true,
-      markets: marketType
-    })
-    .sort({ 
-      likes: -1
-    })
-    .limit(100)
-    .toArray();
+  return await db.collection('analysts').aggregate([
+    { 
+      $match: { 
+        is_active: true,
+        markets: marketType
+      }
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'user_id',
+        foreignField: 'user_id',
+        as: 'user'
+      }
+    },
+    { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+    {
+      $addFields: {
+        username: '$user.username'
+      }
+    },
+    { $sort: { likes: -1 } },
+    { $limit: 100 }
+  ]).toArray();
 }
 
 async function getAnalystRank(analystId) {

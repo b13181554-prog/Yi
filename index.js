@@ -14,6 +14,7 @@ const TechnicalAnalysis = require('./analysis');
 const rankingScheduler = require('./ranking-scheduler');
 const { authenticateAPI, apiRateLimit, validateRequestSize } = require('./api-security');
 const { initAnalystMonitor } = require('./analyst-monitor');
+const { getTelegramProfilePhoto } = require('./telegram-helpers');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -127,8 +128,34 @@ async function main() {
 `, { parse_mode: 'HTML' });
         }
         
-        await db.createAnalyst(userId, name, description, price);
-        await db.updateUser(userId, { temp_withdrawal_address: null });
+        try {
+          await db.createAnalyst(userId, name, description, price);
+          await db.updateUser(userId, { temp_withdrawal_address: null });
+        } catch (createError) {
+          await db.updateUser(userId, { temp_withdrawal_address: null });
+          
+          if (createError.message.includes('مستخدم بالفعل') || createError.message.includes('duplicate')) {
+            return bot.sendMessage(chatId, `
+❌ <b>الاسم مستخدم بالفعل!</b>
+
+هذا الاسم مستخدم من قبل محلل آخر.
+
+💡 <b>الحل:</b>
+• اختر اسماً مختلفاً
+• أو قم بتعيين username في حساب تلجرام وحاول مرة أخرى
+
+يرجى المحاولة مرة أخرى بإرسال البيانات:
+`, { parse_mode: 'HTML' });
+          }
+          
+          return bot.sendMessage(chatId, `
+❌ <b>حدث خطأ أثناء التسجيل</b>
+
+${createError.message}
+
+يرجى المحاولة مرة أخرى أو التواصل مع الدعم.
+`, { parse_mode: 'HTML' });
+        }
         
         await bot.sendMessage(chatId, `
 ✅ <b>تم تسجيلك كمحلل بنجاح!</b>
@@ -359,7 +386,7 @@ app.post('/api/user', authenticateAPI, async (req, res) => {
       user = { balance: 0, subscription_end: null };
     }
     
-    const botInfo = await bot.bot.getMe();
+    const botInfo = await bot.getMe();
     const botUsername = botInfo.username;
     
     res.json({ success: true, user, botUsername });
@@ -986,7 +1013,7 @@ app.post('/api/get-analyst-referral-link', async (req, res) => {
       return res.json({ success: false, error: 'أنت لست محلل مسجل' });
     }
     
-    const botInfo = await bot.bot.getMe();
+    const botInfo = await bot.getMe();
     const botUsername = botInfo.username;
     const referralLink = `https://t.me/${botUsername}?start=analyst_ref_${user_id}`;
     
@@ -1014,7 +1041,7 @@ app.post('/api/get-analyst-promoter-link', async (req, res) => {
       return res.json({ success: false, error: 'المحلل غير موجود' });
     }
     
-    const botInfo = await bot.bot.getMe();
+    const botInfo = await bot.getMe();
     const botUsername = botInfo.username;
     const referralLink = `https://t.me/${botUsername}?start=analyst_${analyst_id}_ref_${user_id}`;
     
@@ -1032,7 +1059,7 @@ app.post('/api/get-analyst-promoter-link', async (req, res) => {
 
 app.post('/api/register-analyst', async (req, res) => {
   try {
-    const { user_id, name, description, monthly_price, markets, profile_picture, init_data } = req.body;
+    const { user_id, description, monthly_price, markets, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
@@ -1047,14 +1074,8 @@ app.post('/api/register-analyst', async (req, res) => {
       });
     }
     
-    if (!name || !description || !monthly_price) {
+    if (!description || !monthly_price) {
       return res.json({ success: false, error: 'جميع الحقول مطلوبة' });
-    }
-    
-    // فلتر المحتوى للاسم
-    const nameCheck = db.containsProhibitedContent(name);
-    if (nameCheck.prohibited) {
-      return res.json({ success: false, error: nameCheck.reason });
     }
     
     // فلتر المحتوى للوصف
@@ -1073,12 +1094,44 @@ app.post('/api/register-analyst', async (req, res) => {
       return res.json({ success: false, error: 'أنت مسجل كمحلل بالفعل' });
     }
     
+    // الحصول على بيانات المستخدم من قاعدة البيانات
+    const user = await db.getUser(user_id);
+    if (!user) {
+      return res.json({ success: false, error: 'المستخدم غير موجود' });
+    }
+    
+    // إنشاء اسم المحلل - استخدام username إن وُجد لضمان التفرد
+    let name;
+    if (user.username) {
+      name = user.username;
+    } else {
+      const fullName = `${user.first_name || ''}${user.last_name ? ' ' + user.last_name : ''}`.trim();
+      if (!fullName) {
+        return res.json({ success: false, error: 'يجب أن يكون لديك اسم في حساب تلجرام الخاص بك' });
+      }
+      name = `${fullName} (${user_id})`;
+    }
+    
+    if (!name || name.length < 2) {
+      return res.json({ success: false, error: 'يجب أن يكون لديك اسم في حساب تلجرام الخاص بك' });
+    }
+    
+    // الحصول على صورة البروفايل من تلجرام
+    let profilePicture = null;
+    try {
+      profilePicture = await getTelegramProfilePhoto(bot, user_id);
+      if (!profilePicture) {
+        console.log(`⚠️ No profile photo found for user ${user_id}`);
+      }
+    } catch (photoError) {
+      console.error('❌ Error getting profile photo:', photoError);
+      profilePicture = null;
+    }
+    
     const analystMarkets = markets || [];
     
     try {
-      const analyst = await db.createAnalyst(user_id, name, description, price, analystMarkets, profile_picture);
-    
-    const user = await db.getUser(user_id);
+      const analyst = await db.createAnalyst(user_id, name, description, price, analystMarkets, profilePicture);
     
     bot.sendMessage(config.OWNER_ID, `
 📝 <b>محلل جديد</b>
@@ -1093,6 +1146,13 @@ ID: ${user_id}
     
       res.json({ success: true, analyst });
     } catch (createError) {
+      if (createError.message.includes('مستخدم بالفعل') || createError.message.includes('duplicate')) {
+        const errorMessage = user.username 
+          ? 'هذا الاسم مستخدم بالفعل، يرجى اختيار اسم آخر'
+          : `⚠️ هذا الاسم مستخدم بالفعل من قبل محلل آخر.\n\n💡 للحل:\n• قم بتعيين username في حساب تلجرام الخاص بك\n• ثم حاول التسجيل مرة أخرى\n\nهذا سيضمن تفرد اسمك كمحلل.`;
+        
+        return res.json({ success: false, error: errorMessage });
+      }
       return res.json({ success: false, error: createError.message });
     }
   } catch (error) {
@@ -1119,13 +1179,13 @@ app.post('/api/my-analyst-profile', async (req, res) => {
 
 app.post('/api/update-analyst', async (req, res) => {
   try {
-    const { user_id, name, description, monthly_price, markets, profile_picture, init_data } = req.body;
+    const { user_id, description, monthly_price, markets, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    if (!name || !description || !monthly_price) {
+    if (!description || !monthly_price) {
       return res.json({ success: false, error: 'جميع الحقول مطلوبة' });
     }
     
@@ -1144,39 +1204,19 @@ app.post('/api/update-analyst', async (req, res) => {
       return res.json({ success: false, error: 'لم يتم العثور على حسابك كمحلل' });
     }
     
-    const sanitizedName = db.sanitizeAnalystName(name);
     const sanitizedDescription = description.trim().slice(0, 500);
-    
-    if (!sanitizedName || sanitizedName.length < 3) {
-      return res.json({ success: false, error: 'الاسم يجب أن يحتوي على 3 أحرف على الأقل بعد إزالة الأحرف الخاصة' });
-    }
     
     if (!sanitizedDescription || sanitizedDescription.length < 10) {
       return res.json({ success: false, error: 'الوصف يجب أن يحتوي على 10 أحرف على الأقل' });
     }
     
-    if (sanitizedName !== analyst.name) {
-      const duplicateName = await db.getAnalystByName(sanitizedName);
-      if (duplicateName && duplicateName._id.toString() !== analyst._id.toString()) {
-        return res.json({ success: false, error: 'هذا الاسم مستخدم بالفعل، يرجى اختيار اسم آخر' });
-      }
-    }
-    
-    console.log(`✏️ تحديث بيانات محلل - المستخدم: ${user_id}, الاسم: ${sanitizedName}`);
+    console.log(`✏️ تحديث بيانات محلل - المستخدم: ${user_id}`);
     
     const updateData = {
-      name: sanitizedName,
       description: sanitizedDescription,
-      monthly_price: price
+      monthly_price: price,
+      markets: analystMarkets
     };
-    
-    if (markets) {
-      updateData.markets = markets;
-    }
-    
-    if (profile_picture !== undefined) {
-      updateData.profile_picture = profile_picture;
-    }
     
     await db.updateAnalyst(analyst._id, updateData);
     
@@ -1243,11 +1283,24 @@ app.post('/api/analysts-by-status', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    const { MongoClient, ObjectId } = require('mongodb');
-    const analysts = await db.getDB().collection('analysts')
-      .find({ is_active })
-      .sort({ total_subscribers: -1, created_at: -1 })
-      .toArray();
+    const analysts = await db.getDB().collection('analysts').aggregate([
+      { $match: { is_active } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'user_id',
+          foreignField: 'user_id',
+          as: 'user'
+        }
+      },
+      { $unwind: { path: '$user', preserveNullAndEmptyArrays: true } },
+      {
+        $addFields: {
+          username: '$user.username'
+        }
+      },
+      { $sort: { total_subscribers: -1, created_at: -1 } }
+    ]).toArray();
     
     res.json({ success: true, analysts });
   } catch (error) {
