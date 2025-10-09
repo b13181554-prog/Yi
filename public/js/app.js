@@ -763,7 +763,6 @@ async function loadAnalysts() {
                             ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.name}" class="analyst-avatar" onerror="this.style.display='none'">` : '<div class="analyst-avatar-placeholder">👤</div>'}
                             <div class="analyst-info">
                                 <h4>${analyst.name}</h4>
-                                ${analyst.username ? `<span style="font-size: 12px; color: #888; pointer-events: none;">@${analyst.username}</span>` : ''}
                                 ${analyst.is_subscribed ? '<span class="badge subscribed-badge">✅ مشترك</span>' : ''}
                             </div>
                         </div>
@@ -1009,12 +1008,6 @@ async function loadMyAnalystProfile() {
         if (data.success && data.analyst) {
             myAnalystData = data.analyst;
             document.getElementById('my-analyst-name').textContent = data.analyst.name;
-            
-            const usernameEl = document.getElementById('my-analyst-username');
-            if (usernameEl) {
-                const telegramUsername = tg?.initDataUnsafe?.user?.username;
-                usernameEl.textContent = telegramUsername ? `@${telegramUsername}` : 'غير متوفر';
-            }
             
             document.getElementById('my-analyst-desc').textContent = data.analyst.description;
             document.getElementById('my-analyst-price').textContent = data.analyst.monthly_price;
@@ -2243,7 +2236,6 @@ async function loadAnalystsByMarket(marketType) {
                         ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.name}" class="analyst-avatar" onerror="this.style.display='none'">` : '<div class="analyst-avatar-placeholder">👤</div>'}
                         <div class="analyst-info">
                             <h4>${analyst.name}</h4>
-                            ${analyst.username ? `<span style="font-size: 12px; color: #888; pointer-events: none;">@${analyst.username}</span>` : ''}
                             ${analyst.is_subscribed ? '<span class="badge subscribed-badge">✅ مشترك</span>' : ''}
                         </div>
                     </div>
@@ -2306,7 +2298,6 @@ async function loadActiveAnalysts() {
                 <div class="analyst-card">
                     <div class="analyst-header">
                         <h4>${analyst.name}</h4>
-                        ${analyst.username ? `<span style="font-size: 12px; color: #888; pointer-events: none;">@${analyst.username}</span>` : ''}
                         <span class="analyst-price">${analyst.monthly_price} USDT/شهر</span>
                     </div>
                     <p class="analyst-desc">${analyst.description}</p>
@@ -2354,7 +2345,6 @@ async function loadInactiveAnalysts() {
                         ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.name}" class="analyst-avatar" onerror="this.style.display='none'">` : '<div class="analyst-avatar-placeholder">👤</div>'}
                         <div class="analyst-info">
                             <h4>${analyst.name}</h4>
-                            ${analyst.username ? `<span style="font-size: 12px; color: #888; pointer-events: none;">@${analyst.username}</span>` : ''}
                             <span class="analyst-price">${analyst.monthly_price} USDT/شهر</span>
                         </div>
                     </div>
@@ -2427,7 +2417,6 @@ async function loadTop100Analysts(marketType = 'all') {
                         ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.analyst_name || analyst.name}" class="analyst-avatar" onerror="this.style.display='none'" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid ${analyst.rank <= 3 ? '#FFD700' : '#667eea'};">` : '<div class="analyst-avatar-placeholder" style="width: 50px; height: 50px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>'}
                         <div style="flex: 1;">
                             <h4 style="margin: 0; color: #333;">${analyst.analyst_name || analyst.name}</h4>
-                            ${analyst.username ? `<span style="font-size: 12px; color: #888; pointer-events: none;">@${analyst.username}</span>` : ''}
                             <p style="margin: 5px 0; color: #666; font-size: 14px;">
                                 ${marketType !== 'all' ? marketIcons[marketType] + ' ' : ''}👍 ${analyst.likes || 0} إعجاب
                             </p>

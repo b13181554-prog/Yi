@@ -107,41 +107,49 @@ async function checkAnalystActivity() {
   }
 }
 
-async function processMonthlyEscrow() {
+async function processDailyEscrowRelease() {
   try {
-    const analysts = await db.getDB().collection('analysts').find({}).toArray();
+    const results = await db.processDailyEscrowRelease();
 
-    for (const analyst of analysts) {
-      const monthStart = analyst.current_month_start ? new Date(analyst.current_month_start) : new Date(analyst.created_at);
-      const now = new Date();
-      const nextMonthStart = new Date(monthStart);
-      nextMonthStart.setMonth(nextMonthStart.getMonth() + 1);
+    if (results && results.length > 0) {
+      const analystAmounts = {};
+      
+      for (const result of results) {
+        const analystIdStr = result.analyst_id.toString();
+        if (!analystAmounts[analystIdStr]) {
+          analystAmounts[analystIdStr] = 0;
+        }
+        analystAmounts[analystIdStr] += result.amount;
+      }
 
-      if (now >= nextMonthStart) {
-        const result = await db.moveEscrowToAvailable(analyst._id);
-
-        if (result && result.moved_amount > 0) {
-          console.log(`✅ تم تحرير رصيد الضمان للمحلل ${analyst.name}: ${result.moved_amount.toFixed(2)} USDT`);
+      for (const [analystIdStr, totalAmount] of Object.entries(analystAmounts)) {
+        const { ObjectId } = require('mongodb');
+        const analyst = await db.getDB().collection('analysts').findOne({ _id: new ObjectId(analystIdStr) });
+        
+        if (analyst && totalAmount > 0.01) {
+          console.log(`✅ تم تحرير رصيد يومي للمحلل ${analyst.name}: ${totalAmount.toFixed(2)} USDT`);
 
           try {
             await botInstance.sendMessage(analyst.user_id, `
-💰 <b>تحرير رصيد الضمان</b>
+💰 <b>تحرير رصيد يومي</b>
 
-تم تحرير رصيد الضمان الشهري وإضافته لرصيدك المتاح!
+تم تحرير جزء من رصيد الضمان اليومي وإضافته لرصيدك المتاح!
 
-💵 المبلغ المُحرر: ${result.moved_amount.toFixed(2)} USDT
-💰 الرصيد المتاح الجديد: ${result.new_available_balance.toFixed(2)} USDT
+💵 المبلغ المُحرر اليوم: ${totalAmount.toFixed(2)} USDT
+💰 الرصيد المتاح: ${analyst.available_balance.toFixed(2)} USDT
 
-يمكنك الآن سحب هذا المبلغ 🎉
+✅ يمكنك سحب رصيدك المتاح في أي وقت
 `, { parse_mode: 'HTML' });
           } catch (error) {
-            console.error(`Error sending escrow release notification to analyst ${analyst.user_id}:`, error.message);
+            console.error(`Error sending daily escrow release notification to analyst ${analyst.user_id}:`, error.message);
           }
         }
       }
+      
+      console.log(`✅ تم معالجة ${results.length} إطلاق يومي للأموال`);
     }
   } catch (error) {
-    console.error('❌ خطأ في processMonthlyEscrow:', error);
+    console.error('❌ خطأ في processDailyEscrowRelease:', error);
   }
 }
 
@@ -151,7 +159,7 @@ function initAnalystMonitor(botRef) {
   cron.schedule('0 0 * * *', async () => {
     console.log('🔍 Running daily analyst monitoring...');
     await checkAnalystActivity();
-    await processMonthlyEscrow();
+    await processDailyEscrowRelease();
   });
 
   console.log('✅ Analyst monitoring system initialized');

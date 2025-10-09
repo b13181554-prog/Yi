@@ -1242,6 +1242,72 @@ async function addToAnalystEscrow(analystId, amount) {
   return result.value;
 }
 
+async function processDailyEscrowRelease() {
+  try {
+    const now = new Date();
+    const oneDayAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+    
+    const activeSubscriptions = await db.collection('analyst_subscriptions').find({
+      status: 'active',
+      start_date: { $lt: now },
+      end_date: { $gte: oneDayAgo }
+    }).toArray();
+
+    const results = [];
+
+    for (const subscription of activeSubscriptions) {
+      const startDate = new Date(subscription.start_date);
+      const endDate = new Date(subscription.end_date);
+      
+      const totalDuration = endDate - startDate;
+      const elapsedDuration = now - startDate;
+      
+      if (elapsedDuration < (1000 * 60 * 60)) continue;
+      
+      const totalAmount = subscription.amount;
+      const releasedAmount = subscription.released_amount || 0;
+      
+      let totalEarned;
+      if (now >= endDate) {
+        totalEarned = totalAmount;
+      } else {
+        const progressRatio = Math.min(elapsedDuration / totalDuration, 1);
+        totalEarned = totalAmount * progressRatio;
+      }
+      
+      const amountToRelease = totalEarned - releasedAmount;
+
+      if (amountToRelease > 0.01) {
+        await db.collection('analysts').updateOne(
+          { _id: subscription.analyst_id },
+          {
+            $inc: {
+              escrow_balance: -amountToRelease,
+              available_balance: amountToRelease
+            }
+          }
+        );
+
+        await db.collection('analyst_subscriptions').updateOne(
+          { _id: subscription._id },
+          { $set: { released_amount: totalEarned } }
+        );
+
+        results.push({
+          analyst_id: subscription.analyst_id,
+          amount: amountToRelease,
+          subscription_id: subscription._id
+        });
+      }
+    }
+
+    return results;
+  } catch (error) {
+    console.error('Error in processDailyEscrowRelease:', error);
+    return [];
+  }
+}
+
 async function getAnalystBalance(analystId) {
   const analyst = await db.collection('analysts').findOne({ _id: new ObjectId(analystId) });
   if (!analyst) return null;
@@ -1396,6 +1462,7 @@ module.exports = {
   suspendAnalyst,
   unsuspendAnalyst,
   addToAnalystEscrow,
+  processDailyEscrowRelease,
   getAnalystBalance,
   deductFromAnalystAvailableBalance,
   getUsersSubscribedToAnalyst,

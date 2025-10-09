@@ -1266,7 +1266,58 @@ app.post('/api/delete-analyst', async (req, res) => {
     
     console.log(`🗑️ حذف حساب محلل - المستخدم: ${user_id}`);
     
-    await db.updateAnalyst(analyst._id, { is_active: false });
+    const subscriptions = await db.getUsersSubscribedToAnalyst(analyst._id);
+    
+    let totalRefunded = 0;
+    let subscriberCount = 0;
+    
+    for (const subscription of subscriptions) {
+      await db.updateUserBalance(subscription.user_id, subscription.amount);
+      await db.cancelSubscription(subscription._id);
+      
+      totalRefunded += subscription.amount;
+      subscriberCount++;
+      
+      try {
+        await bot.sendMessage(subscription.user_id, `
+⚠️ <b>إشعار إلغاء اشتراك</b>
+
+تم إلغاء اشتراكك في المحلل: <b>${analyst.name}</b>
+
+السبب: المحلل قام بحذف حسابه
+
+💰 تم إرجاع المبلغ: ${subscription.amount} USDT
+✅ الرصيد المُرجع متاح في محفظتك
+
+نأسف للإزعاج ونتمنى أن تجد محلل آخر مناسب 🙏
+`, { parse_mode: 'HTML' });
+      } catch (error) {
+        console.error(`Error sending refund notification to user ${subscription.user_id}:`, error.message);
+      }
+    }
+    
+    await db.getDB().collection('analysts').deleteOne({ _id: analyst._id });
+    
+    if (subscriberCount > 0) {
+      console.log(`✅ تم حذف المحلل ${analyst.name} وإرجاع ${totalRefunded.toFixed(2)} USDT لـ ${subscriberCount} مشتركين`);
+      
+      try {
+        await bot.sendMessage(user_id, `
+✅ <b>تم حذف حسابك كمحلل</b>
+
+تم إلغاء جميع الاشتراكات وإرجاع المبالغ للمشتركين.
+
+📊 عدد المشتركين المتأثرين: ${subscriberCount}
+💰 إجمالي المبالغ المُرجعة: ${totalRefunded.toFixed(2)} USDT
+
+يمكنك إنشاء حساب محلل جديد في أي وقت.
+`, { parse_mode: 'HTML' });
+      } catch (error) {
+        console.error(`Error sending deletion notification to analyst ${user_id}:`, error.message);
+      }
+    } else {
+      console.log(`✅ تم حذف المحلل ${analyst.name} (بدون مشتركين)`);
+    }
     
     res.json({ success: true });
   } catch (error) {
