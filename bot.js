@@ -307,11 +307,28 @@ TxID: <code>${data.tx_id}</code>
       const address = data.address;
       const totalWithFee = amount + config.WITHDRAWAL_FEE;
       
-      if (user.balance < totalWithFee) {
-        return bot.sendMessage(chatId, '❌ رصيدك غير كافٍ!');
-      }
+      const analyst = await db.getAnalystByUserId(userId);
       
-      await db.updateUserBalance(userId, -totalWithFee);
+      if (analyst) {
+        const balance = await db.getAnalystBalance(analyst._id);
+        
+        if (balance.available_balance < totalWithFee) {
+          return bot.sendMessage(chatId, `
+❌ <b>الرصيد المتاح للسحب غير كافٍ!</b>
+
+💰 رصيدك المتاح للسحب: ${balance.available_balance.toFixed(2)} USDT
+🔒 رصيد الضمان: ${balance.escrow_balance.toFixed(2)} USDT (سيتم تحريره نهاية الشهر)
+
+المبلغ المطلوب (مع الرسوم): ${totalWithFee.toFixed(2)} USDT
+`, { parse_mode: 'HTML' });
+        }
+      } else {
+        if (user.balance < totalWithFee) {
+          return bot.sendMessage(chatId, '❌ رصيدك غير كافٍ!');
+        }
+        
+        await db.updateUserBalance(userId, -totalWithFee);
+      }
       
       const processingMsg = await bot.sendMessage(chatId, `
 ⏳ <b>جاري معالجة السحب...</b>
@@ -407,7 +424,9 @@ ID: ${userId}
 `, { parse_mode: 'HTML' });
           
         } else {
-          await db.updateUserBalance(userId, totalWithFee);
+          if (!analyst) {
+            await db.updateUserBalance(userId, totalWithFee);
+          }
           
           await db.createWithdrawalRequest({
             user_id: userId,
@@ -445,7 +464,9 @@ ID: ${userId}
       } catch (error) {
         console.error('❌ خطأ في معالجة السحب:', error);
         
-        await db.updateUserBalance(userId, totalWithFee);
+        if (!analyst) {
+          await db.updateUserBalance(userId, totalWithFee);
+        }
         
         await bot.editMessageText(`
 ❌ <b>خطأ في معالجة السحب</b>

@@ -412,6 +412,22 @@ async function initAdminCommands(bot) {
           });
         }
         
+        const analyst = await db.getAnalystByUserId(withdrawal.user_id);
+        
+        if (analyst) {
+          const balance = await db.getAnalystBalance(analyst._id);
+          const totalWithFee = withdrawal.amount + config.WITHDRAWAL_FEE;
+          
+          if (balance.available_balance < totalWithFee) {
+            return bot.answerCallbackQuery(query.id, { 
+              text: `❌ الرصيد المتاح للسحب غير كافٍ! المتاح: ${balance.available_balance.toFixed(2)} USDT`, 
+              show_alert: true 
+            });
+          }
+          
+          await db.deductFromAnalystAvailableBalance(analyst._id, totalWithFee);
+        }
+        
         const processingMsg = await bot.sendMessage(chatId, '⏳ جاري معالجة السحب عبر OKX...');
         
         if (okx.isConfigured()) {
@@ -445,6 +461,11 @@ async function initAdminCommands(bot) {
               show_alert: true 
             });
           } else {
+            if (analyst) {
+              const totalWithFee = withdrawal.amount + config.WITHDRAWAL_FEE;
+              await db.deductFromAnalystAvailableBalance(analyst._id, -totalWithFee);
+            }
+            
             await bot.deleteMessage(chatId, processingMsg.message_id);
             await bot.sendMessage(chatId, `
 ❌ <b>فشل السحب عبر OKX</b>

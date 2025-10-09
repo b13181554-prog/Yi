@@ -4,6 +4,18 @@
 OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comprehensive technical analysis using various market APIs. The project aims to offer advanced trading tools, real-time data, and automated functionalities to users, supporting both cryptocurrency and forex markets. It includes features like a full-fledged Telegram Web App for a rich user experience, automated withdrawal and deposit systems, and multi-language support. The business vision is to provide a robust and accessible trading assistant with global market potential, empowering users with advanced analytical capabilities and a seamless trading workflow.
 
 ## Recent Changes
+- **2025-10-09**:
+  - **نظام حماية المشتركين من المحللين غير النشطين (Analyst Protection System):**
+    - نظام ضمان (Escrow): أرباح المحللين تُحجز في escrow_balance حتى نهاية الشهر
+    - مراقبة يومية تلقائية: cron job يفحص نشاط المحللين يومياً
+    - إيقاف تلقائي: إذا لم ينشر المحلل صفقة لمدة 3 أيام، يتم إيقافه تلقائياً
+    - استرجاع الأموال: عند إيقاف المحلل، يتم إرجاع اشتراكات جميع المشتركين
+    - تحرير الأرباح شهرياً: نهاية كل شهر، يتم نقل escrow_balance إلى available_balance
+    - سحب محدود: المحللون يمكنهم فقط سحب من available_balance (الأشهر السابقة)
+    - إعادة تفعيل تلقائية: المحلل الموقوف يُعاد تفعيله تلقائياً عند نشر صفقة جديدة
+    - حقول جديدة للمحللين: escrow_balance, available_balance, current_month_start, last_post_date, is_suspended, suspension_reason
+    - إشعارات شاملة: للمحللين والمشتركين عند الإيقاف والاسترجاع وتحرير الأرباح
+
 - **2025-10-08**: 
   - **Fixed critical referral system bugs:**
     - Fixed bot.js subscription referral earnings not being saved (was calling non-existent `createReferralEarning` instead of `addReferralEarning`)

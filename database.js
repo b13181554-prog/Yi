@@ -426,7 +426,13 @@ async function createAnalyst(userId, name, description, monthlyPrice, markets = 
     is_active: true,
     total_subscribers: 0,
     rating: 0,
-    created_at: new Date()
+    created_at: new Date(),
+    last_post_date: new Date(),
+    escrow_balance: 0,
+    available_balance: 0,
+    current_month_start: new Date(),
+    is_suspended: false,
+    suspension_reason: null
   };
   
   const result = await db.collection('analysts').insertOne(analyst);
@@ -1088,6 +1094,14 @@ async function createAnalystRoomPost(analystId, userId, postData) {
   };
   
   const result = await db.collection('analyst_room_posts').insertOne(post);
+  
+  // تحديث تاريخ آخر نشر للمحلل
+  try {
+    await updateAnalystLastPost(analystId);
+  } catch (error) {
+    console.error('خطأ في تحديث تاريخ آخر نشر للمحلل:', error);
+  }
+  
   return { ...post, _id: result.insertedId };
 }
 
@@ -1115,6 +1129,146 @@ async function getSubscriberCount(analystId) {
     status: 'active',
     end_date: { $gt: new Date() }
   });
+}
+
+async function updateAnalystLastPost(analystId) {
+  // إذا كان المحلل موقوفاً، قم بإعادة تفعيله تلقائياً
+  const analyst = await db.collection('analysts').findOne({ _id: new ObjectId(analystId) });
+  if (analyst && analyst.is_suspended) {
+    await unsuspendAnalyst(analystId);
+    console.log(`✅ تم إعادة تفعيل المحلل ${analyst.name} بعد نشر صفقة جديدة`);
+  }
+  
+  await db.collection('analysts').updateOne(
+    { _id: new ObjectId(analystId) },
+    { $set: { last_post_date: new Date() } }
+  );
+}
+
+async function moveEscrowToAvailable(analystId) {
+  const analyst = await db.collection('analysts').findOne({ _id: new ObjectId(analystId) });
+  if (!analyst) return null;
+  
+  const escrowAmount = analyst.escrow_balance || 0;
+  
+  await db.collection('analysts').updateOne(
+    { _id: new ObjectId(analystId) },
+    {
+      $inc: { available_balance: escrowAmount },
+      $set: { 
+        escrow_balance: 0,
+        current_month_start: new Date()
+      }
+    }
+  );
+  
+  return {
+    moved_amount: escrowAmount,
+    new_available_balance: (analyst.available_balance || 0) + escrowAmount
+  };
+}
+
+async function suspendAnalyst(analystId, reason) {
+  await db.collection('analysts').updateOne(
+    { _id: new ObjectId(analystId) },
+    {
+      $set: {
+        is_suspended: true,
+        suspension_reason: reason,
+        suspended_at: new Date()
+      }
+    }
+  );
+}
+
+async function unsuspendAnalyst(analystId) {
+  await db.collection('analysts').updateOne(
+    { _id: new ObjectId(analystId) },
+    {
+      $set: { is_suspended: false },
+      $unset: { suspension_reason: "", suspended_at: "" }
+    }
+  );
+}
+
+async function addToAnalystEscrow(analystId, amount) {
+  const result = await db.collection('analysts').findOneAndUpdate(
+    { _id: new ObjectId(analystId) },
+    { $inc: { escrow_balance: amount } },
+    { returnDocument: 'after' }
+  );
+  return result.value;
+}
+
+async function getAnalystBalance(analystId) {
+  const analyst = await db.collection('analysts').findOne({ _id: new ObjectId(analystId) });
+  if (!analyst) return null;
+  
+  const escrowBalance = analyst.escrow_balance || 0;
+  const availableBalance = analyst.available_balance || 0;
+  
+  return {
+    escrow_balance: escrowBalance,
+    available_balance: availableBalance,
+    total_balance: escrowBalance + availableBalance
+  };
+}
+
+async function deductFromAnalystAvailableBalance(analystId, amount) {
+  const result = await db.collection('analysts').findOneAndUpdate(
+    { _id: new ObjectId(analystId) },
+    { $inc: { available_balance: -amount } },
+    { returnDocument: 'after' }
+  );
+  return result.value;
+}
+
+async function getUsersSubscribedToAnalyst(analystId) {
+  return await db.collection('analyst_subscriptions').aggregate([
+    {
+      $match: {
+        analyst_id: new ObjectId(analystId),
+        status: 'active',
+        end_date: { $gt: new Date() }
+      }
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'user_id',
+        foreignField: 'user_id',
+        as: 'user'
+      }
+    },
+    { $unwind: '$user' },
+    {
+      $project: {
+        _id: 1,
+        user_id: 1,
+        analyst_id: 1,
+        amount: 1,
+        start_date: 1,
+        end_date: 1,
+        status: 1,
+        created_at: 1,
+        username: '$user.username',
+        first_name: '$user.first_name'
+      }
+    },
+    { $sort: { created_at: -1 } }
+  ]).toArray();
+}
+
+async function cancelSubscription(subscriptionId) {
+  await db.collection('analyst_subscriptions').updateOne(
+    { _id: new ObjectId(subscriptionId) },
+    {
+      $set: {
+        status: 'cancelled',
+        cancelled_at: new Date()
+      }
+    }
+  );
 }
 
 function getDB() {
@@ -1194,5 +1348,14 @@ module.exports = {
   checkUserBanStatus,
   containsProhibitedContent,
   getAllUsersForAdmin,
-  getBannedUsers
+  getBannedUsers,
+  updateAnalystLastPost,
+  moveEscrowToAvailable,
+  suspendAnalyst,
+  unsuspendAnalyst,
+  addToAnalystEscrow,
+  getAnalystBalance,
+  deductFromAnalystAvailableBalance,
+  getUsersSubscribedToAnalyst,
+  cancelSubscription
 };

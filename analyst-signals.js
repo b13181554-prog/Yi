@@ -19,7 +19,16 @@ class AnalystSignalsManager {
       created_at: new Date()
     };
     
-    return await db.createAnalystSignal(signal);
+    const result = await db.createAnalystSignal(signal);
+    
+    // تحديث تاريخ آخر نشر للمحلل
+    try {
+      await db.updateAnalystLastPost(analystId);
+    } catch (error) {
+      console.error('خطأ في تحديث تاريخ آخر نشر للمحلل:', error);
+    }
+    
+    return result;
   }
   
   // تحديث حالة الإشارة

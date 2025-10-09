@@ -13,6 +13,7 @@ const forexService = require('./forex-service');
 const TechnicalAnalysis = require('./analysis');
 const rankingScheduler = require('./ranking-scheduler');
 const { authenticateAPI, apiRateLimit, validateRequestSize } = require('./api-security');
+const { initAnalystMonitor } = require('./analyst-monitor');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -62,6 +63,7 @@ async function main() {
     await db.initDatabase();
     
     notifications.initNotifications(bot);
+    initAnalystMonitor(bot);
     admin.initAdminCommands(bot);
     rankingScheduler.start();
     
@@ -850,6 +852,13 @@ app.post('/api/create-analyst-signal', async (req, res) => {
     // إرسال إشعار للمشتركين
     await analystSignals.notifySubscribers(analyst_id, signal);
     
+    // تحديث تاريخ آخر نشر للمحلل
+    try {
+      await db.updateAnalystLastPost(analyst_id);
+    } catch (error) {
+      console.error('خطأ في تحديث تاريخ آخر نشر للمحلل:', error);
+    }
+    
     res.json({ 
       success: true, 
       signal
@@ -931,7 +940,11 @@ app.post('/api/subscribe-analyst', async (req, res) => {
     
     const newBalance = user.balance - price;
     await db.updateUser(user_id, { balance: newBalance });
-    await db.updateUserBalance(analyst.user_id, analystShare);
+    
+    // إضافة نصيب المحلل إلى الضمان (escrow) بدلاً من الرصيد المتاح مباشرة
+    // المبلغ سيبقى في الضمان حتى يتم تحريره من قبل المالك
+    await db.addToAnalystEscrow(new ObjectId(analyst_id), analystShare);
+    
     await db.updateUserBalance(config.OWNER_ID, ownerShare);
     
     if (referrerId) {
