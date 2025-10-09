@@ -31,13 +31,6 @@
         </div>
 
         <main id="main-content" style="display: none;">
-            <div class="user-info">
-                <div class="balance-card">
-                    <div class="balance-label" data-i18n="current_balance">💰 الرصيد الحالي</div>
-                    <div class="balance-amount" id="balance">0.00 USDT</div>
-                </div>
-            </div>
-
             <nav class="main-nav">
                 <button class="nav-btn active" onclick="showSection('analysis-section', event)">
                     <span class="icon">📊</span>
@@ -182,6 +175,11 @@
             <div id="wallet-section" class="section">
                 <div class="section-header">
                     <h2 data-i18n="wallet_title">💳 المحفظة</h2>
+                </div>
+
+                <div class="balance-card" style="margin-bottom: 20px;">
+                    <div class="balance-label" data-i18n="current_balance">💰 الرصيد الحالي</div>
+                    <div class="balance-amount" id="balance">0.00 USDT</div>
                 </div>
 
                 <div class="action-buttons">

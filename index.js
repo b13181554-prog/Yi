@@ -1296,27 +1296,43 @@ app.post('/api/delete-analyst', async (req, res) => {
       }
     }
     
-    await db.getDB().collection('analysts').deleteOne({ _id: analyst._id });
+    const deleteResult = await db.getDB().collection('analysts').deleteOne({ _id: analyst._id });
+    console.log(`🗑️ نتيجة الحذف: ${deleteResult.deletedCount} سجل تم حذفه`);
+    
+    if (deleteResult.deletedCount === 0) {
+      console.error(`❌ فشل حذف المحلل ${analyst.name} - لم يتم حذف أي سجل`);
+      return res.json({ success: false, error: 'فشل حذف الحساب، يرجى المحاولة مرة أخرى' });
+    }
     
     if (subscriberCount > 0) {
       console.log(`✅ تم حذف المحلل ${analyst.name} وإرجاع ${totalRefunded.toFixed(2)} USDT لـ ${subscriberCount} مشتركين`);
       
       try {
         await bot.sendMessage(user_id, `
-✅ <b>تم حذف حسابك كمحلل</b>
+✅ <b>تم حذف حسابك كمحلل بنجاح</b>
 
 تم إلغاء جميع الاشتراكات وإرجاع المبالغ للمشتركين.
 
 📊 عدد المشتركين المتأثرين: ${subscriberCount}
 💰 إجمالي المبالغ المُرجعة: ${totalRefunded.toFixed(2)} USDT
 
-يمكنك إنشاء حساب محلل جديد في أي وقت.
+✅ يمكنك إنشاء حساب محلل جديد في أي وقت.
 `, { parse_mode: 'HTML' });
       } catch (error) {
         console.error(`Error sending deletion notification to analyst ${user_id}:`, error.message);
       }
     } else {
-      console.log(`✅ تم حذف المحلل ${analyst.name} (بدون مشتركين)`);
+      console.log(`✅ تم حذف المحلل ${analyst.name} بنجاح (بدون مشتركين)`);
+      
+      try {
+        await bot.sendMessage(user_id, `
+✅ <b>تم حذف حسابك كمحلل بنجاح</b>
+
+يمكنك إنشاء حساب محلل جديد في أي وقت.
+`, { parse_mode: 'HTML' });
+      } catch (error) {
+        console.error(`Error sending deletion notification to analyst ${user_id}:`, error.message);
+      }
     }
     
     res.json({ success: true });
