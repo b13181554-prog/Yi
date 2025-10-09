@@ -152,3 +152,17 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot offering comprehensive t
     - جميع البيانات حقيقية من MongoDB (no mock data)
     - استخدام دوال database.js الموجودة
     - تحديثات فورية للإحصائيات
+
+### تحسينات نظام المحللين - 2025-10-09
+- ✅ **إضافة زر الاشتراك في قسم Top 100 المحللين**:
+  - عرض السعر الشهري للمحلل مباشرة في البطاقة
+  - زر اشتراك/تجديد متكامل مع النظام الحالي
+  - معالجة fallback للأسعار غير المعرفة (عرض 0 USDT)
+  - تصميم متناسق مع باقي واجهة المحللين
+
+### تنظيف المشروع - 2025-10-09
+- ✅ **حذف الملفات والأكواد القديمة غير المستخدمة**:
+  - حذف ملفات Render (render.yaml - لا حاجة للنشر على Render)
+  - حذف ملفات التوثيق المكررة (RENDER_DEPLOY.md, RENDER_DEPLOY_GUIDE.md, SETUP_INSTRUCTIONS.md)
+  - حذف 15 صورة screenshot قديمة من attached_assets/
+  - تنظيف الكود وتحسين هيكلة المشروع
