@@ -16,7 +16,31 @@ async function checkAnalystActivity() {
       const now = new Date();
       const daysDiff = Math.floor((now - lastPostDate) / (1000 * 60 * 60 * 24));
 
-      if (daysDiff >= 3) {
+      if (daysDiff === 2) {
+        try {
+          await botInstance.sendMessage(analyst.user_id, `
+⚠️ <b>تحذير: نشاط المحلل</b>
+
+عزيزي المحلل <b>${analyst.name}</b>،
+
+لم تنشر أي صفقات منذ يومين!
+
+🚨 تنبيه هام:
+إذا لم تنشر صفقة خلال 24 ساعة القادمة، سيتم:
+• إيقاف حسابك كمحلل تلقائياً
+• إلغاء جميع الاشتراكات
+• إرجاع المبالغ للمشتركين
+
+👥 عدد المشتركين الحاليين: ${analyst.total_subscribers || 0}
+
+يرجى نشر صفقة الآن للحفاظ على حسابك نشطاً ✅
+`, { parse_mode: 'HTML' });
+          
+          console.log(`⚠️ تم إرسال تحذير اليوم الثاني للمحلل ${analyst.name}`);
+        } catch (error) {
+          console.error(`Error sending day 2 warning to analyst ${analyst.user_id}:`, error.message);
+        }
+      } else if (daysDiff >= 3) {
         await db.suspendAnalyst(analyst._id, "عدم نشر صفقات لمدة 3 أيام");
 
         const subscriptions = await db.getUsersSubscribedToAnalyst(analyst._id);
