@@ -2419,6 +2419,7 @@ function switchAnalystTab(tab, event) {
     } else if (tab === 'subscriptions') {
         const subsTab = document.getElementById('subscriptions-analysts-tab');
         if (subsTab) subsTab.classList.add('active');
+        loadAnalysts();
     }
 }
 
