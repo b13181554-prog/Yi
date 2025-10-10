@@ -81,8 +81,7 @@ async function scanCryptoMarket(signals, symbols) {
       const candles = await marketData.getCandles(symbol, '1h', 100, 'crypto');
       if (!candles || candles.length < 50) continue;
       
-      const analysis = new TechnicalAnalysis(candles);
-      const ultraAnalysis = new UltraAnalysis(analysis, candles);
+      const ultraAnalysis = new UltraAnalysis(candles);
       const recommendation = ultraAnalysis.getUltraRecommendation('crypto', 'spot', '1h');
       
       if (isStrongSignal(recommendation)) {
@@ -109,8 +108,7 @@ async function scanForexMarket(signals, pairs) {
       const candles = await forexService.getCandles(pair, '1h', 100);
       if (!candles || candles.length < 50) continue;
       
-      const analysis = new TechnicalAnalysis(candles);
-      const ultraAnalysis = new UltraAnalysis(analysis, candles);
+      const ultraAnalysis = new UltraAnalysis(candles);
       const recommendation = ultraAnalysis.getUltraRecommendation('forex', 'spot', '1h');
       
       if (isStrongSignal(recommendation)) {
@@ -135,8 +133,7 @@ async function scanStocksMarket(signals, stocks) {
       const candles = await marketData.getCandles(stock, '1h', 100, 'stocks');
       if (!candles || candles.length < 50) continue;
       
-      const analysis = new TechnicalAnalysis(candles);
-      const ultraAnalysis = new UltraAnalysis(analysis, candles);
+      const ultraAnalysis = new UltraAnalysis(candles);
       const recommendation = ultraAnalysis.getUltraRecommendation('stocks', 'spot', '1h');
       
       if (isStrongSignal(recommendation)) {
@@ -161,8 +158,7 @@ async function scanCommoditiesMarket(signals, commodities) {
       const candles = await marketData.getCandles(commodity, '1h', 100, 'commodities');
       if (!candles || candles.length < 50) continue;
       
-      const analysis = new TechnicalAnalysis(candles);
-      const ultraAnalysis = new UltraAnalysis(analysis, candles);
+      const ultraAnalysis = new UltraAnalysis(candles);
       const recommendation = ultraAnalysis.getUltraRecommendation('commodities', 'spot', '1h');
       
       if (isStrongSignal(recommendation)) {
@@ -187,8 +183,7 @@ async function scanIndicesMarket(signals, indices) {
       const candles = await marketData.getCandles(index, '1h', 100, 'indices');
       if (!candles || candles.length < 50) continue;
       
-      const analysis = new TechnicalAnalysis(candles);
-      const ultraAnalysis = new UltraAnalysis(analysis, candles);
+      const ultraAnalysis = new UltraAnalysis(candles);
       const recommendation = ultraAnalysis.getUltraRecommendation('indices', 'spot', '1h');
       
       if (isStrongSignal(recommendation)) {
