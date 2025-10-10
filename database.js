@@ -263,6 +263,18 @@ async function approveWithdrawal(requestId) {
   );
 }
 
+async function rejectWithdrawal(requestId) {
+  await db.collection('withdrawal_requests').updateOne(
+    { _id: new ObjectId(requestId) },
+    { 
+      $set: { 
+        status: 'rejected', 
+        processed_at: new Date() 
+      } 
+    }
+  );
+}
+
 async function updateUserSettings(userId, symbol, timeframe, indicators, marketType) {
   await db.collection('users').updateOne(
     { user_id: userId },
@@ -1508,6 +1520,7 @@ module.exports = {
   createWithdrawalRequest,
   getPendingWithdrawals,
   approveWithdrawal,
+  rejectWithdrawal,
   updateUserSettings,
   getUserSettings,
   getAllUsers,

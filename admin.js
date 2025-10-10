@@ -517,9 +517,38 @@ async function initAdminCommands(bot) {
       else if (data.startsWith('reject_withdrawal_')) {
         const withdrawalId = data.replace('reject_withdrawal_', '');
         
-        // يمكنك إضافة دالة رفض في database.js إذا لزم الأمر
+        const withdrawals = await db.getPendingWithdrawals();
+        const withdrawal = withdrawals.find(w => w._id.toString() === withdrawalId);
+        
+        if (!withdrawal) {
+          return bot.answerCallbackQuery(query.id, { 
+            text: '❌ طلب السحب غير موجود', 
+            show_alert: true 
+          });
+        }
+        
+        const totalWithFee = withdrawal.amount + config.WITHDRAWAL_FEE;
+        const analyst = await db.getAnalystByUserId(withdrawal.user_id);
+        
+        if (analyst) {
+          await db.deductFromAnalystAvailableBalance(analyst._id, -totalWithFee);
+        } else {
+          await db.updateUserBalance(withdrawal.user_id, totalWithFee);
+        }
+        
+        await db.rejectWithdrawal(withdrawalId);
+        
+        await bot.sendMessage(withdrawal.user_id, `
+❌ <b>تم رفض طلب السحب</b>
+
+المبلغ: ${withdrawal.amount} USDT
+العنوان: <code>${withdrawal.wallet_address}</code>
+
+تم إرجاع المبلغ لرصيدك: ${totalWithFee} USDT
+`, { parse_mode: 'HTML' });
+        
         await bot.answerCallbackQuery(query.id, { 
-          text: '❌ تم رفض طلب السحب', 
+          text: '✅ تم رفض الطلب وإرجاع المبلغ للمستخدم', 
           show_alert: true 
         });
         
