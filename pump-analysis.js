@@ -120,7 +120,20 @@ class PumpAnalysis {
     const nearestSupport = supportResistance.support;
     
     const potentialTarget = currentPrice * (1 + (totalScore / 50));
-    const stopLoss = nearestSupport || currentPrice * 0.90;
+    let stopLoss = nearestSupport || currentPrice * 0.90;
+    
+    // التأكد من أن stopLoss رقم صحيح
+    if (isNaN(stopLoss) || stopLoss === null || stopLoss === undefined) {
+      stopLoss = currentPrice * 0.90;
+    }
+    
+    // التأكد من أن potentialTarget رقم صحيح
+    const validTarget = (isNaN(potentialTarget) || potentialTarget === null) ? currentPrice * 1.1 : potentialTarget;
+    
+    // حساب نسبة المخاطرة إلى العائد بشكل آمن
+    const riskReward = (currentPrice > stopLoss) 
+      ? ((validTarget - currentPrice) / (currentPrice - stopLoss))
+      : 0;
     
     return {
       symbol: this.symbol,
@@ -131,9 +144,9 @@ class PumpAnalysis {
       recommendation: recommendation,
       action_emoji: action,
       current_price: currentPrice.toFixed(8),
-      target_price: potentialTarget.toFixed(8),
+      target_price: validTarget.toFixed(8),
       stop_loss: stopLoss.toFixed(8),
-      risk_reward_ratio: ((potentialTarget - currentPrice) / (currentPrice - stopLoss)).toFixed(2),
+      risk_reward_ratio: riskReward.toFixed(2),
       
       scores: {
         volume: volumeScore.toFixed(2),
