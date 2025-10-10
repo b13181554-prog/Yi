@@ -34,6 +34,7 @@ The platform offers a comprehensive Web App with technical analysis tools, top m
     -   Commodities: 18 assets (added Platinum, Palladium, Natural Gas, Copper, grains, metals)
     -   Indices: 20 global indices (added FRA40, JPN225, HK50, AUS200, and more)
     -   Stocks: 31 major stocks (added BABA, JPM, V, JNJ, WMT, and more)
+-   **Analyst Subscription UI Fix**: Fixed unsubscribe button not appearing in subscriptions tab by ensuring `loadAnalysts()` is called when switching to subscriptions view, refreshing the DOM with current subscription data.
 
 ### System Design Choices
 The project utilizes MongoDB Atlas for its database and is configured for 24/7 operation. It features improved error processing and logging, and employs multiple APIs for data redundancy and fallback.
