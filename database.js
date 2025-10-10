@@ -1475,7 +1475,12 @@ async function cancelPumpSubscription(userId) {
     }
   );
 
-  await updateUserBalance(userId, refundAmount);
+  if (refundAmount > 0) {
+    await updateUserBalance(userId, refundAmount);
+    
+    const config = require('./config');
+    await updateUserBalance(config.OWNER_ID, -refundAmount);
+  }
 
   return {
     refunded_amount: refundAmount,

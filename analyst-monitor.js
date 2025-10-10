@@ -77,6 +77,26 @@ async function checkAnalystActivity() {
           
           if (refundAmount > 0) {
             await db.updateUserBalance(subscription.user_id, refundAmount);
+            
+            const refundPercentage = refundAmount / subscription.amount;
+            const distribution = subscription.payment_distribution || {};
+            
+            const analystRefund = parseFloat((distribution.analyst_share * refundPercentage).toFixed(2));
+            const ownerRefund = parseFloat((distribution.owner_share * refundPercentage).toFixed(2));
+            const referralRefund = parseFloat((distribution.referral_commission * refundPercentage).toFixed(2));
+            
+            if (analystRefund > 0) {
+              await db.deductFromAnalystEscrow(analyst._id, analystRefund);
+            }
+            
+            const config = require('./config');
+            if (ownerRefund > 0) {
+              await db.updateUserBalance(config.OWNER_ID, -ownerRefund);
+            }
+            
+            if (referralRefund > 0 && distribution.referrer_id) {
+              await db.updateUserBalance(distribution.referrer_id, -referralRefund);
+            }
           }
           
           await db.cancelSubscription(subscription._id);
