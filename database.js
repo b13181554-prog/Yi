@@ -264,15 +264,147 @@ async function approveWithdrawal(requestId) {
 }
 
 async function rejectWithdrawal(requestId) {
+  const config = require('./config');
+  
+  if (client && client.startSession) {
+    try {
+      const session = client.startSession();
+      let withdrawal;
+      
+      try {
+        await session.withTransaction(async () => {
+          const result = await db.collection('withdrawal_requests').findOneAndUpdate(
+            { 
+              _id: new ObjectId(requestId),
+              status: 'pending'
+            },
+            { 
+              $set: { 
+                status: 'rejected', 
+                processed_at: new Date() 
+              } 
+            },
+            { returnDocument: 'before', session }
+          );
+          
+          withdrawal = result.value;
+          
+          if (!withdrawal) {
+            throw new Error('طلب السحب غير موجود أو تم معالجته مسبقاً');
+          }
+          
+          const totalWithFee = withdrawal.amount + config.WITHDRAWAL_FEE;
+          const analyst = await getAnalystByUserId(withdrawal.user_id);
+          
+          if (analyst) {
+            await db.collection('analysts').updateOne(
+              { _id: analyst._id },
+              { $inc: { available_balance: totalWithFee } },
+              { session }
+            );
+          } else {
+            await db.collection('users').updateOne(
+              { user_id: withdrawal.user_id },
+              { $inc: { balance: totalWithFee } },
+              { session }
+            );
+          }
+        });
+        
+        return withdrawal;
+      } finally {
+        await session.endSession();
+      }
+    } catch (transactionError) {
+      if (transactionError.message && 
+          (transactionError.message.includes('Transaction') || 
+           transactionError.message.includes('replica set') ||
+           transactionError.message.includes('session'))) {
+        console.warn('⚠️ MongoDB transactions not supported - using fallback approach');
+      } else if (transactionError.message && transactionError.message.includes('طلب السحب')) {
+        throw transactionError;
+      } else {
+        console.error('Transaction error:', transactionError);
+      }
+    }
+  }
+  
+  console.warn('⚠️ Using fallback two-phase approach for withdrawal rejection (no transactions)');
+  console.warn('⚠️ Note: Without transactions, there is a small risk of double-refund in rare crash scenarios.');
+  console.warn('⚠️ For production, strongly recommend using MongoDB Replica Set with transactions.');
+  
+  let withdrawal = await db.collection('withdrawal_requests').findOne({ 
+    _id: new ObjectId(requestId)
+  });
+  
+  if (!withdrawal) {
+    throw new Error('طلب السحب غير موجود');
+  }
+  
+  if (withdrawal.status === 'approved' || withdrawal.status === 'rejected') {
+    throw new Error('طلب السحب تم معالجته مسبقاً');
+  }
+  
+  if (withdrawal.status === 'pending') {
+    const phaseOneResult = await db.collection('withdrawal_requests').findOneAndUpdate(
+      { 
+        _id: new ObjectId(requestId),
+        status: 'pending'
+      },
+      { 
+        $set: { 
+          status: 'refund_in_progress'
+        } 
+      },
+      { returnDocument: 'before' }
+    );
+    
+    if (!phaseOneResult.value) {
+      throw new Error('طلب السحب تم معالجته من قبل شخص آخر');
+    }
+  }
+  
+  withdrawal = await db.collection('withdrawal_requests').findOne({ 
+    _id: new ObjectId(requestId)
+  });
+  
+  const checkRefundedResult = await db.collection('withdrawal_requests').findOne(
+    { 
+      _id: new ObjectId(requestId),
+      refunded: true
+    }
+  );
+  
+  if (!checkRefundedResult) {
+    const totalWithFee = withdrawal.amount + config.WITHDRAWAL_FEE;
+    const analyst = await getAnalystByUserId(withdrawal.user_id);
+    
+    if (analyst) {
+      await deductFromAnalystAvailableBalance(analyst._id, -totalWithFee);
+    } else {
+      await updateUserBalance(withdrawal.user_id, totalWithFee);
+    }
+    
+    await db.collection('withdrawal_requests').updateOne(
+      { _id: new ObjectId(requestId) },
+      { $set: { refunded: true } }
+    );
+  }
+  
   await db.collection('withdrawal_requests').updateOne(
-    { _id: new ObjectId(requestId) },
+    { 
+      _id: new ObjectId(requestId),
+      status: 'refund_in_progress'
+    },
     { 
       $set: { 
-        status: 'rejected', 
-        processed_at: new Date() 
+        status: 'rejected',
+        processed_at: new Date()
       } 
     }
   );
+  
+  return withdrawal;
 }
 
 async function updateUserSettings(userId, symbol, timeframe, indicators, marketType) {
