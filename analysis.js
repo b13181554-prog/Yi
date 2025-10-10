@@ -592,27 +592,11 @@ class TechnicalAnalysis {
     const atrValue = parseFloat(atr.value);
     const leverage = tradingType === 'futures' ? 10 : 1;
     
-    const atrPercent = (atrValue / currentPrice) * 100;
-    const stopLossPercent = Math.max(atrPercent * 1.5, 0.5);
-    const takeProfitPercent = stopLossPercent * (tradingType === 'futures' ? 3 : 2);
-    
-    const stopLossDistance = (currentPrice * stopLossPercent) / 100;
-    const takeProfitDistance = (currentPrice * takeProfitPercent) / 100;
-    
-    let recommendation = '';
-    let entryPrice = currentPrice;
-    let stopLoss = 0;
-    let takeProfit = 0;
-    let emoji = '';
-    let confidence = '';
-    
     const signalDifference = Math.abs(buySignals - sellSignals);
     
     // شروط صارمة: يجب أن تكون الإشارة قوية جداً
     const hasStrongVolume = volume.signal.includes('ضخم');
     const hasStrongADX = adxValue >= 35;
-    const riskRewardRatio = Math.abs(takeProfitDistance) / stopLossDistance;
-    const hasGoodRiskReward = riskRewardRatio >= 3;
     
     // التحقق من توافق المؤشرات الرئيسية
     const hasRSIConfirmation = (buySignals > sellSignals && rsi.signal.includes('تشبع بيعي')) || 
@@ -620,50 +604,83 @@ class TechnicalAnalysis {
     const hasMACDConfirmation = (buySignals > sellSignals && macd.signal.includes('صاعد')) || 
                                 (sellSignals > buySignals && macd.signal.includes('هابط'));
     
+    let recommendation = 'انتظار';
+    let emoji = '⚫';
+    let confidence = 'منخفضة - لا تتداول';
+    let shouldTrade = false;
+    let entryPrice = null;
+    let stopLoss = null;
+    let takeProfit = null;
+    let riskRewardRatio = null;
+    
     if (buySignals > sellSignals) {
-      recommendation = 'شراء';
-      emoji = '🟢';
-      stopLoss = currentPrice - stopLossDistance;
-      takeProfit = currentPrice + takeProfitDistance;
+      // حساب المسافات فقط إذا كانت الإشارة قوية
+      const atrPercent = (atrValue / currentPrice) * 100;
+      const stopLossPercent = Math.max(atrPercent * 1.5, 0.5);
+      const takeProfitPercent = stopLossPercent * (tradingType === 'futures' ? 3 : 2);
+      const stopLossDistance = (currentPrice * stopLossPercent) / 100;
+      const takeProfitDistance = (currentPrice * takeProfitPercent) / 100;
+      const calculatedRR = Math.abs(takeProfitDistance) / stopLossDistance;
+      const hasGoodRiskReward = calculatedRR >= 3;
       
-      // شروط صارمة جداً للتداول
+      // شروط صارمة جداً للتداول - يجب تحقيق جميع الشروط
       if (signalDifference >= 4 && strength >= 7 && hasStrongVolume && hasStrongADX && 
           hasRSIConfirmation && hasMACDConfirmation && hasGoodRiskReward) {
+        recommendation = 'شراء';
+        emoji = '💚';
         confidence = 'مضمونة - يمكن التداول';
-        emoji = '💚';
+        shouldTrade = true;
+        entryPrice = currentPrice;
+        stopLoss = currentPrice - stopLossDistance;
+        takeProfit = currentPrice + takeProfitDistance;
+        riskRewardRatio = calculatedRR.toFixed(2);
       } else if (signalDifference >= 3 && strength >= 5 && hasStrongVolume && hasStrongADX) {
-        confidence = 'عالية - يمكن التداول';
+        recommendation = 'شراء';
         emoji = '💚';
+        confidence = 'عالية - يمكن التداول';
+        shouldTrade = true;
+        entryPrice = currentPrice;
+        stopLoss = currentPrice - stopLossDistance;
+        takeProfit = currentPrice + takeProfitDistance;
+        riskRewardRatio = calculatedRR.toFixed(2);
       } else {
-        confidence = 'منخفضة - لا تتداول';
-        emoji = '⚫';
-        recommendation = 'انتظار';
+        confidence = 'منخفضة - لا تتداول (إشارة ضعيفة)';
       }
     } else if (sellSignals > buySignals) {
-      recommendation = 'بيع';
-      emoji = '🔴';
-      stopLoss = currentPrice + stopLossDistance;
-      takeProfit = currentPrice - takeProfitDistance;
+      // حساب المسافات فقط إذا كانت الإشارة قوية
+      const atrPercent = (atrValue / currentPrice) * 100;
+      const stopLossPercent = Math.max(atrPercent * 1.5, 0.5);
+      const takeProfitPercent = stopLossPercent * (tradingType === 'futures' ? 3 : 2);
+      const stopLossDistance = (currentPrice * stopLossPercent) / 100;
+      const takeProfitDistance = (currentPrice * takeProfitPercent) / 100;
+      const calculatedRR = Math.abs(takeProfitDistance) / stopLossDistance;
+      const hasGoodRiskReward = calculatedRR >= 3;
       
-      // شروط صارمة جداً للتداول
+      // شروط صارمة جداً للتداول - يجب تحقيق جميع الشروط
       if (signalDifference >= 4 && strength >= 7 && hasStrongVolume && hasStrongADX && 
           hasRSIConfirmation && hasMACDConfirmation && hasGoodRiskReward) {
+        recommendation = 'بيع';
+        emoji = '❤️';
         confidence = 'مضمونة - يمكن التداول';
-        emoji = '❤️';
+        shouldTrade = true;
+        entryPrice = currentPrice;
+        stopLoss = currentPrice + stopLossDistance;
+        takeProfit = currentPrice - takeProfitDistance;
+        riskRewardRatio = calculatedRR.toFixed(2);
       } else if (signalDifference >= 3 && strength >= 5 && hasStrongVolume && hasStrongADX) {
-        confidence = 'عالية - يمكن التداول';
+        recommendation = 'بيع';
         emoji = '❤️';
+        confidence = 'عالية - يمكن التداول';
+        shouldTrade = true;
+        entryPrice = currentPrice;
+        stopLoss = currentPrice + stopLossDistance;
+        takeProfit = currentPrice - takeProfitDistance;
+        riskRewardRatio = calculatedRR.toFixed(2);
       } else {
-        confidence = 'منخفضة - لا تتداول';
-        emoji = '⚫';
-        recommendation = 'انتظار';
+        confidence = 'منخفضة - لا تتداول (إشارة ضعيفة)';
       }
     } else {
-      recommendation = 'انتظار';
-      emoji = '⚫';
       confidence = 'إشارات متضاربة - لا تتداول';
-      stopLoss = currentPrice - stopLossDistance;
-      takeProfit = currentPrice + takeProfitDistance;
     }
     
     return {
@@ -671,14 +688,15 @@ class TechnicalAnalysis {
       action: recommendation,
       emoji,
       confidence,
+      shouldTrade,
       tradingType,
       marketType,
       leverage,
       analysisTime,
-      entryPrice: this.formatPrice(entryPrice),
-      stopLoss: this.formatPrice(stopLoss),
-      takeProfit: this.formatPrice(takeProfit),
-      riskRewardRatio: (Math.abs(takeProfitDistance) / stopLossDistance).toFixed(2),
+      entryPrice: entryPrice !== null ? this.formatPrice(entryPrice) : null,
+      stopLoss: stopLoss !== null ? this.formatPrice(stopLoss) : null,
+      takeProfit: takeProfit !== null ? this.formatPrice(takeProfit) : null,
+      riskRewardRatio,
       buySignals: buySignals.toFixed(1),
       sellSignals: sellSignals.toFixed(1),
       trendStrength: strength,

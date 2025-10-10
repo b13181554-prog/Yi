@@ -2039,6 +2039,57 @@ app.post('/api/cancel-pump-subscription', async (req, res) => {
   }
 });
 
+// Enhanced Pump Scanner APIs
+app.post('/api/enhanced-pump-scan', async (req, res) => {
+  try {
+    const { init_data, limit } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const enhancedPumpScanner = require('./enhanced-pump-scanner');
+    const opportunities = await enhancedPumpScanner.getTopPumpOpportunities(limit || 20);
+    
+    res.json({
+      success: true,
+      opportunities,
+      count: opportunities.length,
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    console.error('Enhanced Pump Scan API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/search-pump-token', async (req, res) => {
+  try {
+    const { query, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    if (!query || query.trim().length === 0) {
+      return res.json({ success: false, error: 'يرجى إدخال اسم أو رمز العملة' });
+    }
+    
+    const enhancedPumpScanner = require('./enhanced-pump-scanner');
+    const results = await enhancedPumpScanner.searchToken(query);
+    
+    res.json({
+      success: true,
+      results,
+      count: results.length,
+      query: query
+    });
+  } catch (error) {
+    console.error('Search Pump Token API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 // Admin Endpoints (Owner Only)
 app.post('/api/admin/users', async (req, res) => {
   try {
