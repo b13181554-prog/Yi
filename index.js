@@ -1014,7 +1014,13 @@ app.post('/api/subscribe-analyst', async (req, res) => {
       await db.updateUserBalance(referrerId, referralCommission);
     }
     
-    await db.subscribeToAnalyst(user_id, analyst_id, price);
+    await db.subscribeToAnalyst(user_id, analyst_id, price, {
+      analyst_share: analystShare,
+      owner_share: ownerShare,
+      referral_commission: referralCommission,
+      referrer_id: referrerId,
+      referral_type: referralType
+    });
     await db.updateAnalystSubscriberCount(analyst_id, 1);
     
     bot.sendMessage(analyst.user_id, `
@@ -1080,6 +1086,25 @@ app.post('/api/cancel-analyst-subscription', async (req, res) => {
     
     if (refundAmount > 0) {
       await db.updateUserBalance(user_id, refundAmount);
+      
+      const refundPercentage = refundAmount / subscription.amount;
+      const distribution = subscription.payment_distribution || {};
+      
+      const analystRefund = parseFloat((distribution.analyst_share * refundPercentage).toFixed(2));
+      const ownerRefund = parseFloat((distribution.owner_share * refundPercentage).toFixed(2));
+      const referralRefund = parseFloat((distribution.referral_commission * refundPercentage).toFixed(2));
+      
+      if (analystRefund > 0) {
+        await db.deductFromAnalystEscrow(subscription.analyst_id, analystRefund);
+      }
+      
+      if (ownerRefund > 0) {
+        await db.updateUserBalance(config.OWNER_ID, -ownerRefund);
+      }
+      
+      if (referralRefund > 0 && distribution.referrer_id) {
+        await db.updateUserBalance(distribution.referrer_id, -referralRefund);
+      }
     }
     
     await db.updateAnalystSubscriberCount(subscription.analyst_id, -1);

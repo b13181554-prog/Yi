@@ -486,7 +486,7 @@ async function updateAnalystSubscriberCount(analystId, increment = 1) {
   );
 }
 
-async function subscribeToAnalyst(userId, analystId, amount) {
+async function subscribeToAnalyst(userId, analystId, amount, paymentDistribution = {}) {
   const endDate = new Date();
   endDate.setMonth(endDate.getMonth() + 1);
   
@@ -497,7 +497,14 @@ async function subscribeToAnalyst(userId, analystId, amount) {
     start_date: new Date(),
     end_date: endDate,
     status: 'active',
-    created_at: new Date()
+    created_at: new Date(),
+    payment_distribution: {
+      analyst_share: paymentDistribution.analyst_share || 0,
+      owner_share: paymentDistribution.owner_share || 0,
+      referral_commission: paymentDistribution.referral_commission || 0,
+      referrer_id: paymentDistribution.referrer_id || null,
+      referral_type: paymentDistribution.referral_type || null
+    }
   };
   
   const result = await db.collection('analyst_subscriptions').insertOne(subscription);
@@ -1243,6 +1250,15 @@ async function addToAnalystEscrow(analystId, amount) {
   return result.value;
 }
 
+async function deductFromAnalystEscrow(analystId, amount) {
+  const result = await db.collection('analysts').findOneAndUpdate(
+    { _id: new ObjectId(analystId) },
+    { $inc: { escrow_balance: -amount } },
+    { returnDocument: 'after' }
+  );
+  return result.value;
+}
+
 async function processDailyEscrowRelease() {
   try {
     const now = new Date();
@@ -1550,6 +1566,7 @@ module.exports = {
   suspendAnalyst,
   unsuspendAnalyst,
   addToAnalystEscrow,
+  deductFromAnalystEscrow,
   processDailyEscrowRelease,
   getAnalystBalance,
   deductFromAnalystAvailableBalance,
