@@ -26,6 +26,15 @@ All analysis systems include risk assessment (very low, low, medium, high), prec
 ### Feature Specifications
 The platform offers a comprehensive Web App with technical analysis tools, top movers, a wallet for USDT TRC20 deposits/withdrawals, analyst subscriptions, and account management. Trading features include technical analysis for crypto, forex, stocks, indices, and commodities, along with trading recommendations and trending cryptocurrency tracking. Financial functionalities include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management includes an analyst subscription system and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, withdrawal processing, transaction viewing, referral tracking, and mass messaging. Automated trade signal monitoring checks all markets every 15 minutes for strong opportunities (70%+ indicator agreement) and sends instant notifications based on user preferences.
 
+**Recent Updates (October 10, 2025):**
+-   **Pump Subscription System**: Independent subscription for pump analysis at 5 USDT for 30 days. Users can subscribe, view status, and cancel with prorated refunds based on remaining days.
+-   **Analyst Subscription Cancellation**: Users can now cancel analyst subscriptions directly from the UI with automatic refund calculation based on remaining days (refunds available up to 90% usage).
+-   **Expanded Market Coverage**: Trade signals monitoring expanded to cover:
+    -   Forex: 15 pairs (added AUDJPY, EURAUD, EURCHF, AUDNZD, NZDJPY)
+    -   Commodities: 18 assets (added Platinum, Palladium, Natural Gas, Copper, grains, metals)
+    -   Indices: 20 global indices (added FRA40, JPN225, HK50, AUS200, and more)
+    -   Stocks: 31 major stocks (added BABA, JPM, V, JNJ, WMT, and more)
+
 ### System Design Choices
 The project utilizes MongoDB Atlas for its database and is configured for 24/7 operation. It features improved error processing and logging, and employs multiple APIs for data redundancy and fallback.
 

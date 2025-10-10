@@ -506,6 +506,11 @@ function showSection(sectionId, event) {
     if (sectionId === 'analysts-section') {
         loadAnalysts();
     }
+
+    if (sectionId === 'wallet-section') {
+        loadTransactions();
+        loadPumpSubscription();
+    }
 }
 
 function setupSymbolSearch() {
@@ -835,15 +840,37 @@ async function loadAnalysts() {
             // تحميل الاشتراكات النشطة
             if (data.active_subscriptions && data.active_subscriptions.length > 0) {
                 const subsContainer = document.getElementById('active-subscriptions');
-                subsContainer.innerHTML = data.active_subscriptions.map(sub => `
-                    <div class="subscription-item">
-                        <div class="sub-info">
-                            <strong>${sub.analyst_name}</strong>
-                            <span>صالح حتى: ${new Date(sub.end_date).toLocaleDateString('ar')}</span>
+                subsContainer.innerHTML = data.active_subscriptions.map(sub => {
+                    const now = new Date();
+                    const endDate = new Date(sub.end_date);
+                    const startDate = new Date(sub.start_date);
+                    
+                    const daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+                    const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                    const percentageUsed = ((totalDays - daysRemaining) / totalDays) * 100;
+                    
+                    let refundAmount = 0;
+                    if (percentageUsed <= 90) {
+                        refundAmount = ((daysRemaining / totalDays) * sub.amount).toFixed(2);
+                    }
+                    
+                    return `
+                    <div class="subscription-item" style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 15px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+                        <div class="sub-info" style="margin-bottom: 12px;">
+                            <strong style="font-size: 16px; color: #333;">${sub.analyst_name}</strong>
+                            <div style="margin-top: 8px; font-size: 14px; color: #666;">
+                                <div>📅 صالح حتى: ${endDate.toLocaleDateString('ar')}</div>
+                                <div style="margin-top: 5px;">⏳ الأيام المتبقية: <strong>${daysRemaining}</strong> يوم</div>
+                                <div style="margin-top: 5px;">💰 المبلغ المتوقع استرجاعه: <strong style="color: ${refundAmount > 0 ? '#28a745' : '#dc3545'};">${refundAmount > 0 ? refundAmount + ' USDT' : 'لا يوجد استرجاع (مر أكثر من 90%)'}</strong></div>
+                            </div>
                         </div>
-                        <button onclick="viewAnalystSignals('${sub.analyst_id}')">📊 الإشارات</button>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button onclick="viewAnalystSignals('${sub.analyst_id}')" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">📊 الإشارات</button>
+                            <button onclick="cancelAnalystSubscription('${sub._id}', '${sub.analyst_name}', ${refundAmount})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">❌ إلغاء الاشتراك</button>
+                        </div>
                     </div>
-                `).join('');
+                `;
+                }).join('');
             }
         }
     } catch (error) {
@@ -881,6 +908,54 @@ async function subscribeToAnalyst(analystId) {
         }
     } catch (error) {
         tg.showAlert('حدث خطأ في الاشتراك');
+    }
+}
+
+async function cancelAnalystSubscription(subscriptionId, analystName, refundAmount) {
+    if (!userId) {
+        if (tg.showAlert) {
+            tg.showAlert('خطأ: لا يمكن تحديد هوية المستخدم');
+        }
+        return;
+    }
+
+    const refundMsg = refundAmount > 0 
+        ? `سيتم إضافة ${refundAmount} USDT إلى رصيدك`
+        : 'لن يتم استرجاع أي مبلغ (مر أكثر من 90% من فترة الاشتراك)';
+
+    const confirmMsg = `هل أنت متأكد من إلغاء اشتراكك في ${analystName}؟\n\n${refundMsg}`;
+
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/cancel-analyst-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                subscription_id: subscriptionId,
+                user_id: userId,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const successMsg = data.refund_amount > 0 
+                ? `✅ تم إلغاء الاشتراك بنجاح!\n\n💰 تم إضافة ${data.refund_amount} USDT إلى رصيدك`
+                : '✅ تم إلغاء الاشتراك بنجاح!';
+            
+            tg.showAlert(successMsg);
+            loadAnalysts();
+            loadUserData();
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'فشل إلغاء الاشتراك'));
+        }
+    } catch (error) {
+        console.error('Error cancelling subscription:', error);
+        tg.showAlert('حدث خطأ في إلغاء الاشتراك');
     }
 }
 
@@ -1523,6 +1598,121 @@ async function loadReferralStats() {
     } catch (error) {
         console.error('Error loading referral stats:', error);
     }
+}
+
+async function loadPumpSubscription() {
+    if (!userId) {
+        console.warn('⚠️ لا يوجد userId لتحميل اشتراك Pump');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/pump-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            const activeSection = document.getElementById('pump-status-active');
+            const inactiveSection = document.getElementById('pump-status-inactive');
+
+            if (data.has_subscription && data.subscription) {
+                const endDate = new Date(data.subscription.end_date);
+                const now = new Date();
+                const daysLeft = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
+
+                document.getElementById('pump-end-date').textContent = endDate.toLocaleDateString('ar-SA');
+                document.getElementById('pump-days-left').textContent = daysLeft;
+
+                activeSection.style.display = 'block';
+                inactiveSection.style.display = 'none';
+            } else {
+                activeSection.style.display = 'none';
+                inactiveSection.style.display = 'block';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading pump subscription:', error);
+    }
+}
+
+async function subscribeToPump() {
+    if (userBalance < 5) {
+        tg.showAlert('رصيدك غير كافٍ للاشتراك! الاشتراك يتطلب 5 USDT');
+        return;
+    }
+
+    tg.showConfirm(
+        '🚀 الاشتراك في نظام Pump\n\nالسعر: 5 USDT\nالمدة: 30 يوم\n\nهل تريد الاشتراك؟',
+        async (confirmed) => {
+            if (confirmed) {
+                try {
+                    const response = await fetch('/api/subscribe-pump', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            init_data: tg.initData
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        tg.showAlert('✅ تم الاشتراك في نظام Pump بنجاح!');
+                        userBalance -= 5;
+                        updateUI();
+                        loadPumpSubscription();
+                    } else {
+                        tg.showAlert('❌ ' + (data.error || 'فشل الاشتراك'));
+                    }
+                } catch (error) {
+                    console.error('Error subscribing to pump:', error);
+                    tg.showAlert('❌ حدث خطأ في الاشتراك');
+                }
+            }
+        }
+    );
+}
+
+async function cancelPumpSubscription() {
+    tg.showConfirm(
+        '⚠️ إلغاء اشتراك Pump\n\nسيتم حساب المبلغ المسترجع بناءً على الأيام المتبقية.\n\nهل أنت متأكد؟',
+        async (confirmed) => {
+            if (confirmed) {
+                try {
+                    const response = await fetch('/api/cancel-pump-subscription', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            init_data: tg.initData
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        tg.showAlert(`✅ تم إلغاء الاشتراك بنجاح!\n\n💰 المبلغ المسترجع: ${data.refunded_amount.toFixed(2)} USDT`);
+                        userBalance += data.refunded_amount;
+                        updateUI();
+                        loadPumpSubscription();
+                    } else {
+                        tg.showAlert('❌ ' + (data.error || 'فشل إلغاء الاشتراك'));
+                    }
+                } catch (error) {
+                    console.error('Error canceling pump subscription:', error);
+                    tg.showAlert('❌ حدث خطأ في إلغاء الاشتراك');
+                }
+            }
+        }
+    );
 }
 
 async function changeLanguage() {

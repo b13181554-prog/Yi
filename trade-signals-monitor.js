@@ -18,20 +18,32 @@ const CRYPTO_SIGNALS_SYMBOLS = [
 
 const FOREX_SIGNALS_PAIRS = [
   'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD',
-  'NZDUSD', 'USDCHF', 'EURJPY', 'GBPJPY', 'EURGBP'
+  'NZDUSD', 'USDCHF', 'EURJPY', 'GBPJPY', 'EURGBP',
+  'AUDJPY', 'EURAUD', 'EURCHF', 'AUDNZD', 'NZDJPY'
 ];
 
 const STOCKS_SIGNALS = [
   'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA',
-  'META', 'NVDA', 'AMD', 'NFLX'
+  'META', 'NVDA', 'AMD', 'NFLX', 'BABA',
+  'JPM', 'V', 'JNJ', 'WMT', 'PG',
+  'DIS', 'PYPL', 'INTC', 'CSCO', 'ORCL',
+  'IBM', 'UBER', 'SNAP', 'SQ', 'SHOP',
+  'BA', 'GE', 'F', 'GM', 'XOM', 'CVX'
 ];
 
 const COMMODITIES_SIGNALS = [
-  'XAUUSD', 'XAGUSD', 'WTIUSD', 'BCOUSD'
+  'XAUUSD', 'XAGUSD', 'WTIUSD', 'BCOUSD',
+  'XPTUSD', 'XPDUSD', 'NGAS', 'COPPER',
+  'WHEAT', 'CORN', 'SOYBEAN', 'SUGAR',
+  'COFFEE', 'COCOA', 'COTTON', 'ZINC',
+  'NICKEL', 'ALUMINUM'
 ];
 
 const INDICES_SIGNALS = [
-  'US30', 'SPX500', 'NAS100', 'UK100', 'GER40'
+  'US30', 'SPX500', 'NAS100', 'UK100', 'GER40',
+  'FRA40', 'JPN225', 'HK50', 'AUS200', 'ESP35',
+  'ITA40', 'CHN50', 'IND50', 'KOR200', 'SWI20',
+  'NLD25', 'RUS50', 'BRA60', 'MEX35', 'SAF40'
 ];
 
 function initTradeSignalsMonitor(bot) {

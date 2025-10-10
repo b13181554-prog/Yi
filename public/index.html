@@ -225,6 +225,43 @@
                     <button class="cancel-btn" onclick="hideWithdraw()" data-i18n="cancel_btn">إلغاء</button>
                 </div>
 
+                <div id="pump-subscription-section" class="info-card" style="margin-bottom: 20px;">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">🚀 نظام Pump - التحليل المتقدم</h3>
+                    <div id="pump-status-active" style="display: none;">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <span style="font-size: 16px; font-weight: bold;">✅ الاشتراك نشط</span>
+                                <span style="font-size: 18px; font-weight: bold;">5 USDT</span>
+                            </div>
+                            <div style="font-size: 14px; opacity: 0.9;">
+                                <p style="margin: 5px 0;">📅 تاريخ الانتهاء: <span id="pump-end-date">-</span></p>
+                                <p style="margin: 5px 0;">⏳ الأيام المتبقية: <span id="pump-days-left">-</span> يوم</p>
+                            </div>
+                        </div>
+                        <button class="cancel-btn" onclick="cancelPumpSubscription()" style="width: 100%;">
+                            ❌ إلغاء الاشتراك واسترجاع المبلغ
+                        </button>
+                    </div>
+                    <div id="pump-status-inactive" style="display: none;">
+                        <div style="background: #f5f5f5; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                            <p style="color: #666; margin-bottom: 10px;">🚀 احصل على تحليلات Pump المتقدمة</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <span style="font-size: 16px; font-weight: bold; color: #333;">السعر الشهري:</span>
+                                <span style="font-size: 20px; font-weight: bold; color: #667eea;">5 USDT</span>
+                            </div>
+                            <ul style="color: #666; font-size: 14px; line-height: 1.8; margin: 10px 0; padding-right: 20px;">
+                                <li>تحليلات Pump المتقدمة</li>
+                                <li>إشعارات فورية</li>
+                                <li>دقة عالية جداً</li>
+                                <li>مدة الاشتراك: 30 يوم</li>
+                            </ul>
+                        </div>
+                        <button class="submit-btn" onclick="subscribeToPump()" style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            🚀 الاشتراك في نظام Pump - 5 USDT
+                        </button>
+                    </div>
+                </div>
+
                 <div class="transactions-list" id="transactions">
                     <h3 data-i18n="transactions_title">📜 آخر المعاملات</h3>
                     <div id="transactions-container">
