@@ -78,7 +78,7 @@ async function scanCryptoMarket(signals, symbols) {
   
   for (const symbol of symbols) {
     try {
-      const candles = await marketData.getCryptoCandles(symbol, '1h', 100);
+      const candles = await marketData.getCandles(symbol, '1h', 100, 'crypto');
       if (!candles || candles.length < 50) continue;
       
       const analysis = new TechnicalAnalysis(candles);
@@ -102,9 +102,11 @@ async function scanCryptoMarket(signals, symbols) {
 async function scanForexMarket(signals, pairs) {
   if (!pairs || pairs.length === 0) return;
   
+  const forexService = require('./forex-service');
+  
   for (const pair of pairs) {
     try {
-      const candles = await marketData.getForexCandles(pair, '1h', 100);
+      const candles = await forexService.getCandles(pair, '1h', 100);
       if (!candles || candles.length < 50) continue;
       
       const analysis = new TechnicalAnalysis(candles);
@@ -130,7 +132,7 @@ async function scanStocksMarket(signals, stocks) {
   
   for (const stock of stocks) {
     try {
-      const candles = await marketData.getStockCandles(stock, '1h', 100);
+      const candles = await marketData.getCandles(stock, '1h', 100, 'stocks');
       if (!candles || candles.length < 50) continue;
       
       const analysis = new TechnicalAnalysis(candles);
@@ -156,7 +158,7 @@ async function scanCommoditiesMarket(signals, commodities) {
   
   for (const commodity of commodities) {
     try {
-      const candles = await marketData.getCommodityCandles(commodity, '1h', 100);
+      const candles = await marketData.getCandles(commodity, '1h', 100, 'commodities');
       if (!candles || candles.length < 50) continue;
       
       const analysis = new TechnicalAnalysis(candles);
@@ -182,7 +184,7 @@ async function scanIndicesMarket(signals, indices) {
   
   for (const index of indices) {
     try {
-      const candles = await marketData.getIndexCandles(index, '1h', 100);
+      const candles = await marketData.getCandles(index, '1h', 100, 'indices');
       if (!candles || candles.length < 50) continue;
       
       const analysis = new TechnicalAnalysis(candles);

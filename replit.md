@@ -27,13 +27,37 @@ All analysis systems include risk assessment (very low, low, medium, high), prec
 The platform offers a comprehensive Web App with technical analysis tools, top movers, a wallet for USDT TRC20 deposits/withdrawals, analyst subscriptions, and account management. Trading features include technical analysis for crypto, forex, stocks, indices, and commodities, along with trading recommendations and trending cryptocurrency tracking. Financial functionalities include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management includes an analyst subscription system and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, withdrawal processing, transaction viewing, referral tracking, and mass messaging. Automated trade signal monitoring checks all markets every 15 minutes for strong opportunities (70%+ indicator agreement) and sends instant notifications based on user preferences.
 
 **Recent Updates (October 10, 2025):**
+-   **Pump Analysis Bug Fix**: Fixed critical `stopLoss.toFixed is not a function` error in pump analysis by adding proper validation for stopLoss and target values before formatting.
+-   **Comprehensive Asset Coverage - ALL Available Assets**: Implemented complete asset management system that automatically fetches ALL available trading assets from multiple APIs:
+    -   **Cryptocurrencies**: Dynamic fetching from OKX, Binance, and Bybit APIs - supports ALL USDT pairs (1000+ assets)
+    -   **Forex**: Expanded to ALL major and minor currency pairs (400+ pairs including EUR, GBP, USD, JPY, AUD, CAD, NZD, CHF, NOK, SEK, DKK, PLN, HUF, CZK, TRY, ZAR, MXN, SGD, HKD, THB, INR, CNY, KRW, BRL, RUB)
+    -   **Stocks**: Comprehensive global coverage (140+ stocks):
+        * US Tech: AAPL, MSFT, GOOGL, AMZN, META, NVDA, TSLA, AMD, INTC, NFLX, ADBE, CRM, ORCL, CSCO, AVGO, QCOM, TXN, IBM
+        * US Finance: JPM, BAC, WFC, C, GS, MS, V, MA, PYPL, BLK, SCHW, AXP
+        * US Healthcare: JNJ, UNH, PFE, ABBV, TMO, MRK, ABT, LLY, BMY, AMGN
+        * US Consumer: WMT, HD, MCD, NKE, SBUX, TGT, LOW, KO, PEP, PG, DIS, CMCSA
+        * US Energy/Industrial: XOM, CVX, COP, SLB, BA, CAT, GE, MMM, HON, UPS, FDX
+        * Asian: BABA, TSM, Tencent, JD, BIDU, NIO, XPEV, LI, PDD, Sony, Toyota, SoftBank, Samsung
+        * European: ASML, SAP, Nestle, Novartis, Roche, LVMH, L'Oreal, Sanofi, VW, Siemens, Shell, BP, HSBC
+        * Middle East: Aramco, Al Rajhi, STC, SABIC, ADNOC, FAB, ADIB, DIB, Emaar, QNB
+    -   **Commodities**: Complete coverage (40+ commodities):
+        * Precious Metals: Gold, Silver, Platinum, Palladium, Rhodium
+        * Energy: WTI Oil, Brent Oil, Natural Gas, Heating Oil, Gasoline
+        * Industrial Metals: Copper, Zinc, Nickel, Aluminum, Lead, Tin, Iron Ore, Steel
+        * Grains: Wheat, Corn, Soybean, Rice, Oats, Barley
+        * Soft: Sugar, Coffee, Cocoa, Cotton, Orange Juice, Lumber
+        * Livestock: Cattle, Hogs
+        * Other: Rubber, Palm Oil, Wool
+    -   **Indices**: Global coverage (50+ indices):
+        * Americas: US30, SPX500, NAS100, Russell 2000, VIX, Bovespa, IPC Mexico, MERVAL, IPSA, COLCAP
+        * Europe: UK100, GER40, FRA40, ESP35, ITA40, SWI20, NLD25, Euro Stoxx 50, BEL20, ATX, PSI20
+        * Asia-Pacific: JPN225, HK50, CHN50, AUS200, IND50, KOR200, STI, TAIEX, SET50, IDX, KLCI, PSEi
+        * MENA: FTSE/JSE, EGX30, TA-35, TASI, ADX, QE Index, Kuwait
+        * Other: MOEX Russia, BIST30, OBX, OMX30, OMX Copenhagen, OMX Helsinki
+-   **New API Endpoint**: `/api/all-assets` - Returns all available assets with real-time fetching and caching
+-   **Enhanced Trade Signals Monitor**: Now scans random samples from ALL available assets (50 crypto, 30 forex, 40 stocks, 20 commodities, 20 indices per cycle)
 -   **Pump Analysis Integration**: Pump analysis is now integrated as a standard analysis type in the Analysis section alongside other analysis options (Complete, Ultra, Zero Reversal, Fibonacci, etc.). The separate pump subscription system has been completely removed. Pump analysis is now available to all users without subscription requirement, restricted to cryptocurrency market only.
 -   **Analyst Subscription Cancellation**: Users can now cancel analyst subscriptions directly from the UI with automatic refund calculation based on remaining days (refunds available up to 90% usage).
--   **Expanded Market Coverage**: Trade signals monitoring expanded to cover:
-    -   Forex: 15 pairs (added AUDJPY, EURAUD, EURCHF, AUDNZD, NZDJPY)
-    -   Commodities: 18 assets (added Platinum, Palladium, Natural Gas, Copper, grains, metals)
-    -   Indices: 20 global indices (added FRA40, JPN225, HK50, AUS200, and more)
-    -   Stocks: 31 major stocks (added BABA, JPM, V, JNJ, WMT, and more)
 -   **Analyst Subscription UI Fix**: Fixed unsubscribe button not appearing in subscriptions tab by ensuring `loadAnalysts()` is called when switching to subscriptions view, refreshing the DOM with current subscription data.
 -   **Multi-Language Support for Pump Analysis**: Full translation support added for Pump analysis in all 7 supported languages (Arabic, English, French, Spanish, German, Russian, Chinese).
 
