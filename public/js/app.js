@@ -509,7 +509,6 @@ function showSection(sectionId, event) {
 
     if (sectionId === 'wallet-section') {
         loadTransactions();
-        loadPumpSubscription();
     }
 }
 
@@ -1600,120 +1599,6 @@ async function loadReferralStats() {
     }
 }
 
-async function loadPumpSubscription() {
-    if (!userId) {
-        console.warn('⚠️ لا يوجد userId لتحميل اشتراك Pump');
-        return;
-    }
-
-    try {
-        const response = await fetch('/api/pump-subscription', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                user_id: userId,
-                init_data: tg.initData
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            const activeSection = document.getElementById('pump-status-active');
-            const inactiveSection = document.getElementById('pump-status-inactive');
-
-            if (data.has_subscription && data.subscription) {
-                const endDate = new Date(data.subscription.end_date);
-                const now = new Date();
-                const daysLeft = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
-
-                document.getElementById('pump-end-date').textContent = endDate.toLocaleDateString('ar-SA');
-                document.getElementById('pump-days-left').textContent = daysLeft;
-
-                activeSection.style.display = 'block';
-                inactiveSection.style.display = 'none';
-            } else {
-                activeSection.style.display = 'none';
-                inactiveSection.style.display = 'block';
-            }
-        }
-    } catch (error) {
-        console.error('Error loading pump subscription:', error);
-    }
-}
-
-async function subscribeToPump() {
-    if (userBalance < 5) {
-        tg.showAlert('رصيدك غير كافٍ للاشتراك! الاشتراك يتطلب 5 USDT');
-        return;
-    }
-
-    tg.showConfirm(
-        '🚀 الاشتراك في نظام Pump\n\nالسعر: 5 USDT\nالمدة: 30 يوم\n\nهل تريد الاشتراك؟',
-        async (confirmed) => {
-            if (confirmed) {
-                try {
-                    const response = await fetch('/api/subscribe-pump', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            user_id: userId,
-                            init_data: tg.initData
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        tg.showAlert('✅ تم الاشتراك في نظام Pump بنجاح!');
-                        userBalance -= 5;
-                        updateUI();
-                        loadPumpSubscription();
-                    } else {
-                        tg.showAlert('❌ ' + (data.error || 'فشل الاشتراك'));
-                    }
-                } catch (error) {
-                    console.error('Error subscribing to pump:', error);
-                    tg.showAlert('❌ حدث خطأ في الاشتراك');
-                }
-            }
-        }
-    );
-}
-
-async function cancelPumpSubscription() {
-    tg.showConfirm(
-        '⚠️ إلغاء اشتراك Pump\n\nسيتم حساب المبلغ المسترجع بناءً على الأيام المتبقية.\n\nهل أنت متأكد؟',
-        async (confirmed) => {
-            if (confirmed) {
-                try {
-                    const response = await fetch('/api/cancel-pump-subscription', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            user_id: userId,
-                            init_data: tg.initData
-                        })
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        tg.showAlert(`✅ تم إلغاء الاشتراك بنجاح!\n\n💰 المبلغ المسترجع: ${data.refunded_amount.toFixed(2)} USDT`);
-                        userBalance += data.refunded_amount;
-                        updateUI();
-                        loadPumpSubscription();
-                    } else {
-                        tg.showAlert('❌ ' + (data.error || 'فشل إلغاء الاشتراك'));
-                    }
-                } catch (error) {
-                    console.error('Error canceling pump subscription:', error);
-                    tg.showAlert('❌ حدث خطأ في إلغاء الاشتراك');
-                }
-            }
-        }
-    );
-}
 
 async function changeLanguage() {
     const lang = document.getElementById('language-select').value;
@@ -1958,6 +1843,7 @@ async function analyzeMarketAdvanced() {
         
         const apiEndpoint = analysisType === 'ultra' ? '/api/analyze-ultra' : 
                             analysisType === 'zero-reversal' ? '/api/analyze-zero-reversal' : 
+                            analysisType === 'pump' ? '/api/analyze-pump' :
                             '/api/analyze-advanced';
 
         const response = await fetch(apiEndpoint, {
@@ -1983,6 +1869,8 @@ async function analyzeMarketAdvanced() {
                 displayUltraAnalysisResult(data.analysis, symbol, timeframe);
             } else if (analysisType === 'zero-reversal') {
                 displayZeroReversalResult(data.analysis, symbol, timeframe);
+            } else if (analysisType === 'pump') {
+                displayPumpAnalysisResult(data.analysis, symbol, timeframe);
             } else {
                 displayAdvancedAnalysisResult(data.analysis, symbol, timeframe, analysisType);
             }
@@ -2363,6 +2251,89 @@ function displayZeroReversalResult(analysis, symbol, timeframe) {
                 <h3 style="color: #d32f2f; margin-bottom: 15px;">⚠️ لماذا لا توجد صفقة مضمونة؟</h3>
                 <ul style="margin: 0; padding-right: 20px; color: #c62828;">
                     ${analysis.whyNotTrading.map(r => `<li style="margin-bottom: 8px; color: #c62828;">${r}</li>`).join('')}
+                </ul>
+            </div>
+        ` : ''}
+    `;
+
+    indDetails.innerHTML = '';
+    resultDiv.style.display = 'block';
+}
+
+function displayPumpAnalysisResult(analysis, symbol, timeframe) {
+    const resultDiv = document.getElementById('analysis-result');
+    const recCard = document.getElementById('recommendation-card');
+    const indDetails = document.getElementById('indicators-details');
+
+    const actionEmoji = '🚀';
+    const tradingTypeText = analysis.tradingType === 'futures' ? 'فيوتشر ⚡' : 'سبوت 📊';
+    const marketTypeText = analysis.marketType === 'forex' ? 'فوركس 💱' : 'عملات رقمية 💎';
+
+    recCard.innerHTML = `
+        <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #FF6B00 0%, #FFA500 100%); border-radius: 12px; color: white; margin-bottom: 20px; border: 3px solid #FF6B00;">
+            <h1 style="font-size: 48px; margin: 0;">${actionEmoji}</h1>
+            <h2 style="margin: 10px 0;">🚀 PUMP ANALYSIS</h2>
+            <h3 style="margin: 10px 0; font-size: 24px;">${analysis.potential || 'تحليل احتمال الارتفاع السريع'}</h3>
+            <div style="background: rgba(255,255,255,0.3); padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 16px;">
+                <strong>احتمال الارتفاع:</strong> ${analysis.potentialPercent || '-'}
+            </div>
+            <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; font-weight: bold;">
+                مستوى الثقة: ${analysis.confidence || 'متوسط'}
+            </div>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
+            <h3 style="color: #FF6B00; margin-bottom: 15px;">📊 معلومات الصفقة</h3>
+            <div style="display: grid; gap: 10px;">
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">💎 العملة:</strong> ${symbol}
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">📊 النوع:</strong> ${tradingTypeText} | ${marketTypeText}
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">⏰ الإطار الزمني:</strong> ${timeframe}
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">💰 السعر الحالي:</strong> $${analysis.currentPrice || '-'}
+                </div>
+            </div>
+        </div>
+
+        ${analysis.scores ? `
+        <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
+            <h3 style="color: #FF6B00; margin-bottom: 15px;">📈 مؤشرات Pump</h3>
+            <div style="display: grid; gap: 10px;">
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">📊 نسبة الحجم:</strong> ${analysis.scores.volumeScore || '-'}/100
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">📉 نسبة التجميع:</strong> ${analysis.scores.consolidationScore || '-'}/100
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">🎯 نسبة الزخم:</strong> ${analysis.scores.momentumScore || '-'}/100
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
+                    <strong style="color: #000;">🚀 نسبة الاختراق:</strong> ${analysis.scores.breakoutScore || '-'}/100
+                </div>
+            </div>
+        </div>
+        ` : ''}
+
+        ${analysis.reasons && analysis.reasons.length > 0 ? `
+            <div style="background: #e8f5e9; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #2e7d32;">
+                <h3 style="color: #388e3c; margin-bottom: 15px;">✅ أسباب احتمال Pump</h3>
+                <ul style="margin: 0; padding-right: 20px; color: #2e7d32;">
+                    ${analysis.reasons.map(r => `<li style="margin-bottom: 8px; color: #2e7d32;">${r}</li>`).join('')}
+                </ul>
+            </div>
+        ` : ''}
+
+        ${analysis.warnings && analysis.warnings.length > 0 ? `
+            <div style="background: #fff3e0; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #e65100;">
+                <h3 style="color: #f57c00; margin-bottom: 15px;">⚠️ تحذيرات</h3>
+                <ul style="margin: 0; padding-right: 20px; color: #e65100;">
+                    ${analysis.warnings.map(w => `<li style="margin-bottom: 8px; color: #e65100;">${w}</li>`).join('')}
                 </ul>
             </div>
         ` : ''}

@@ -1815,29 +1815,17 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
 
 app.post('/api/analyze-pump', async (req, res) => {
   try {
-    const { symbol, market_type, init_data } = req.body;
+    const { symbol, market_type, timeframe, trading_type, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
-    }
-    
-    const user_id = getUserIdFromInitData(init_data);
-    
-    const pumpSubscription = await db.getPumpSubscription(user_id);
-    if (!pumpSubscription) {
-      return res.json({ 
-        success: false, 
-        error: 'يتطلب الوصول لنظام Pump اشتراك خاص',
-        requires_subscription: true,
-        subscription_price: config.PUMP_SUBSCRIPTION_PRICE
-      });
     }
     
     if (market_type !== 'crypto') {
       return res.json({ success: false, error: 'تحليل Pump متاح للعملات الرقمية فقط' });
     }
     
-    const candles = await marketData.getCandles(symbol, '1h', 100, market_type);
+    const candles = await marketData.getCandles(symbol, timeframe || '1h', 100, market_type);
     
     if (!candles || candles.length < 100) {
       return res.json({ success: false, error: `بيانات غير كافية لتحليل Pump - متوفر ${candles?.length || 0} شمعة فقط` });
@@ -1847,6 +1835,8 @@ app.post('/api/analyze-pump', async (req, res) => {
     const pumpAnalysis = new PumpAnalysis(candles, symbol);
     
     const pumpPotential = pumpAnalysis.getPumpPotential();
+    pumpPotential.tradingType = trading_type || 'spot';
+    pumpPotential.marketType = market_type;
     
     res.json({
       success: true,
