@@ -452,6 +452,8 @@ TxID: <code>${data.tx_id}</code>
 المبلغ المطلوب (مع الرسوم): ${totalWithFee.toFixed(2)} USDT
 `, { parse_mode: 'HTML' });
         }
+        
+        await db.deductFromAnalystAvailableBalance(analyst._id, totalWithFee);
       } else {
         if (user.balance < totalWithFee) {
           return bot.sendMessage(chatId, '❌ رصيدك غير كافٍ!');
@@ -554,7 +556,9 @@ ID: ${userId}
 `, { parse_mode: 'HTML' });
           
         } else {
-          if (!analyst) {
+          if (analyst) {
+            await db.deductFromAnalystAvailableBalance(analyst._id, -totalWithFee);
+          } else {
             await db.updateUserBalance(userId, totalWithFee);
           }
           
@@ -594,7 +598,9 @@ ID: ${userId}
       } catch (error) {
         console.error('❌ خطأ في معالجة السحب:', error);
         
-        if (!analyst) {
+        if (analyst) {
+          await db.deductFromAnalystAvailableBalance(analyst._id, -totalWithFee);
+        } else {
           await db.updateUserBalance(userId, totalWithFee);
         }
         
