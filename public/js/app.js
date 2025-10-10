@@ -802,32 +802,17 @@ async function loadAnalysts() {
             if (data.analysts && data.analysts.length > 0) {
                 container.innerHTML = data.analysts.map(analyst => {
                     let subscriptionInfo = '';
-                    let cancelButton = '';
                     
                     if (analyst.is_subscribed && analyst.subscription_end_date) {
                         const now = new Date();
                         const endDate = new Date(analyst.subscription_end_date);
-                        const startDate = new Date(analyst.subscription_start_date);
                         const daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
-                        const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-                        const percentageUsed = ((totalDays - daysRemaining) / totalDays) * 100;
-                        
-                        let refundAmount = 0;
-                        if (percentageUsed <= 90) {
-                            refundAmount = ((daysRemaining / totalDays) * analyst.subscription_amount).toFixed(2);
-                        }
                         
                         subscriptionInfo = `
                             <div style="margin-top: 10px; padding: 10px; background: #e8f5e9; border-radius: 8px; font-size: 13px;">
                                 <div style="color: #2e7d32; margin-bottom: 5px;">⏳ متبقي: ${daysRemaining} يوم</div>
-                                ${refundAmount > 0 ? `<div style="color: #1976d2;">💰 استرجاع محتمل: ${refundAmount} USDT</div>` : '<div style="color: #d32f2f; font-size: 11px;">⚠️ لا يمكن استرجاع المبلغ (مر أكثر من 90%)</div>'}
+                                <div style="color: #1976d2;">📅 صالح حتى: ${endDate.toLocaleDateString('ar')}</div>
                             </div>
-                        `;
-                        
-                        cancelButton = `
-                            <button onclick="cancelAnalystSubscription('${analyst.subscription_id}', '${analyst.name}', ${refundAmount})" style="width: 100%; padding: 10px; margin-top: 10px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
-                                ❌ إلغاء الاشتراك
-                            </button>
                         `;
                     }
                     
@@ -858,7 +843,6 @@ async function loadAnalysts() {
                                 ${analyst.is_subscribed ? '🔄 تجديد' : '✅ اشترك'}
                             </button>
                         </div>
-                        ${cancelButton}
                         <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
                             <button onclick="getAnalystPromoterLink('${analyst.id}', '${analyst.name}')" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
                                 🎁 رابط الإحالة (15% عمولة)
@@ -877,16 +861,7 @@ async function loadAnalysts() {
                 subsContainer.innerHTML = data.active_subscriptions.map(sub => {
                     const now = new Date();
                     const endDate = new Date(sub.end_date);
-                    const startDate = new Date(sub.start_date);
-                    
                     const daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
-                    const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-                    const percentageUsed = ((totalDays - daysRemaining) / totalDays) * 100;
-                    
-                    let refundAmount = 0;
-                    if (percentageUsed <= 90) {
-                        refundAmount = ((daysRemaining / totalDays) * sub.amount).toFixed(2);
-                    }
                     
                     return `
                     <div class="subscription-item" style="border: 2px solid #e0e0e0; border-radius: 12px; padding: 15px; margin-bottom: 15px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
@@ -895,13 +870,9 @@ async function loadAnalysts() {
                             <div style="margin-top: 8px; font-size: 14px; color: #666;">
                                 <div>📅 صالح حتى: ${endDate.toLocaleDateString('ar')}</div>
                                 <div style="margin-top: 5px;">⏳ الأيام المتبقية: <strong>${daysRemaining}</strong> يوم</div>
-                                <div style="margin-top: 5px;">💰 المبلغ المتوقع استرجاعه: <strong style="color: ${refundAmount > 0 ? '#28a745' : '#dc3545'};">${refundAmount > 0 ? refundAmount + ' USDT' : 'لا يوجد استرجاع (مر أكثر من 90%)'}</strong></div>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 10px; margin-top: 10px;">
-                            <button onclick="viewAnalystSignals('${sub.analyst_id}')" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">📊 الإشارات</button>
-                            <button onclick="cancelAnalystSubscription('${sub._id}', '${sub.analyst_name}', ${refundAmount})" style="flex: 1; padding: 10px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">❌ إلغاء الاشتراك</button>
-                        </div>
+                        <button onclick="viewAnalystSignals('${sub.analyst_id}')" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">📊 عرض الإشارات</button>
                     </div>
                 `;
                 }).join('');
@@ -945,53 +916,6 @@ async function subscribeToAnalyst(analystId) {
     }
 }
 
-async function cancelAnalystSubscription(subscriptionId, analystName, refundAmount) {
-    if (!userId) {
-        if (tg.showAlert) {
-            tg.showAlert('خطأ: لا يمكن تحديد هوية المستخدم');
-        }
-        return;
-    }
-
-    const refundMsg = refundAmount > 0 
-        ? `سيتم إضافة ${refundAmount} USDT إلى رصيدك`
-        : 'لن يتم استرجاع أي مبلغ (مر أكثر من 90% من فترة الاشتراك)';
-
-    const confirmMsg = `هل أنت متأكد من إلغاء اشتراكك في ${analystName}؟\n\n${refundMsg}`;
-
-    if (!confirm(confirmMsg)) {
-        return;
-    }
-
-    try {
-        const response = await fetch('/api/cancel-analyst-subscription', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                subscription_id: subscriptionId,
-                user_id: userId,
-                init_data: tg.initData
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            const successMsg = data.refund_amount > 0 
-                ? `✅ تم إلغاء الاشتراك بنجاح!\n\n💰 تم إضافة ${data.refund_amount} USDT إلى رصيدك`
-                : '✅ تم إلغاء الاشتراك بنجاح!';
-            
-            tg.showAlert(successMsg);
-            loadAnalysts();
-            loadUserData();
-        } else {
-            tg.showAlert('❌ ' + (data.error || 'فشل إلغاء الاشتراك'));
-        }
-    } catch (error) {
-        console.error('Error cancelling subscription:', error);
-        tg.showAlert('حدث خطأ في إلغاء الاشتراك');
-    }
-}
 
 async function rateAnalyst(analystId, isLike) {
     if (!userId) {
