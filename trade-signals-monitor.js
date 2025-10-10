@@ -4,51 +4,22 @@ const marketData = require('./market-data');
 const TechnicalAnalysis = require('./analysis');
 const UltraAnalysis = require('./ultra-analysis');
 const config = require('./config');
+const assetsManager = require('./assets-manager');
 
 let botInstance = null;
 let isMonitoring = false;
 
-const CRYPTO_SIGNALS_SYMBOLS = [
-  'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT',
-  'ADAUSDT', 'AVAXUSDT', 'DOGEUSDT', 'DOTUSDT', 'MATICUSDT',
-  'LINKUSDT', 'UNIUSDT', 'ATOMUSDT', 'NEARUSDT', 'APTUSDT',
-  'ARBUSDT', 'OPUSDT', 'SUIUSDT', 'INJUSDT', 'SEIUSDT',
-  'TIAUSDT', 'JUPUSDT', 'WIFUSDT', 'BONKUSDT', 'PEPEUSDT'
-];
-
-const FOREX_SIGNALS_PAIRS = [
-  'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD',
-  'NZDUSD', 'USDCHF', 'EURJPY', 'GBPJPY', 'EURGBP',
-  'AUDJPY', 'EURAUD', 'EURCHF', 'AUDNZD', 'NZDJPY'
-];
-
-const STOCKS_SIGNALS = [
-  'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA',
-  'META', 'NVDA', 'AMD', 'NFLX', 'BABA',
-  'JPM', 'V', 'JNJ', 'WMT', 'PG',
-  'DIS', 'PYPL', 'INTC', 'CSCO', 'ORCL',
-  'IBM', 'UBER', 'SNAP', 'SQ', 'SHOP',
-  'BA', 'GE', 'F', 'GM', 'XOM', 'CVX'
-];
-
-const COMMODITIES_SIGNALS = [
-  'XAUUSD', 'XAGUSD', 'WTIUSD', 'BCOUSD',
-  'XPTUSD', 'XPDUSD', 'NGAS', 'COPPER',
-  'WHEAT', 'CORN', 'SOYBEAN', 'SUGAR',
-  'COFFEE', 'COCOA', 'COTTON', 'ZINC',
-  'NICKEL', 'ALUMINUM'
-];
-
-const INDICES_SIGNALS = [
-  'US30', 'SPX500', 'NAS100', 'UK100', 'GER40',
-  'FRA40', 'JPN225', 'HK50', 'AUS200', 'ESP35',
-  'ITA40', 'CHN50', 'IND50', 'KOR200', 'SWI20',
-  'NLD25', 'RUS50', 'BRA60', 'MEX35', 'SAF40'
-];
-
 function initTradeSignalsMonitor(bot) {
   botInstance = bot;
   console.log('🔍 Trade Signals Monitor initialized');
+  
+  // تحديث الأصول عند بدء التشغيل
+  console.log('🔄 جلب جميع الأصول المتوفرة...');
+  assetsManager.updateAllAssets().then(() => {
+    console.log('✅ تم تحميل جميع الأصول المتوفرة للمراقبة');
+  }).catch(err => {
+    console.error('❌ خطأ في تحميل الأصول:', err.message);
+  });
   
   cron.schedule('*/15 * * * *', async () => {
     if (!isMonitoring) {
@@ -71,12 +42,19 @@ async function scanAllMarkets() {
   
   const signals = [];
   
+  // جلب عينة عشوائية من الأصول لتجنب التحليل المفرط
+  const cryptoSample = getRandomSample(assetsManager.cryptoAssets.map(a => a.symbol), 50);
+  const forexSample = getRandomSample(assetsManager.forexPairs.map(a => a.value), 30);
+  const stocksSample = getRandomSample(assetsManager.stocks.map(a => a.value), 40);
+  const commoditiesSample = getRandomSample(assetsManager.commodities.map(a => a.value), 20);
+  const indicesSample = getRandomSample(assetsManager.indices.map(a => a.value), 20);
+  
   await Promise.all([
-    scanCryptoMarket(signals),
-    scanForexMarket(signals),
-    scanStocksMarket(signals),
-    scanCommoditiesMarket(signals),
-    scanIndicesMarket(signals)
+    scanCryptoMarket(signals, cryptoSample),
+    scanForexMarket(signals, forexSample),
+    scanStocksMarket(signals, stocksSample),
+    scanCommoditiesMarket(signals, commoditiesSample),
+    scanIndicesMarket(signals, indicesSample)
   ]);
   
   if (signals.length > 0) {
@@ -87,8 +65,18 @@ async function scanAllMarkets() {
   }
 }
 
-async function scanCryptoMarket(signals) {
-  for (const symbol of CRYPTO_SIGNALS_SYMBOLS) {
+function getRandomSample(array, size) {
+  if (!array || array.length === 0) return [];
+  if (array.length <= size) return array;
+  
+  const shuffled = [...array].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, size);
+}
+
+async function scanCryptoMarket(signals, symbols) {
+  if (!symbols || symbols.length === 0) return;
+  
+  for (const symbol of symbols) {
     try {
       const candles = await marketData.getCryptoCandles(symbol, '1h', 100);
       if (!candles || candles.length < 50) continue;
@@ -111,8 +99,10 @@ async function scanCryptoMarket(signals) {
   }
 }
 
-async function scanForexMarket(signals) {
-  for (const pair of FOREX_SIGNALS_PAIRS) {
+async function scanForexMarket(signals, pairs) {
+  if (!pairs || pairs.length === 0) return;
+  
+  for (const pair of pairs) {
     try {
       const candles = await marketData.getForexCandles(pair, '1h', 100);
       if (!candles || candles.length < 50) continue;
@@ -135,8 +125,10 @@ async function scanForexMarket(signals) {
   }
 }
 
-async function scanStocksMarket(signals) {
-  for (const stock of STOCKS_SIGNALS) {
+async function scanStocksMarket(signals, stocks) {
+  if (!stocks || stocks.length === 0) return;
+  
+  for (const stock of stocks) {
     try {
       const candles = await marketData.getStockCandles(stock, '1h', 100);
       if (!candles || candles.length < 50) continue;
@@ -159,8 +151,10 @@ async function scanStocksMarket(signals) {
   }
 }
 
-async function scanCommoditiesMarket(signals) {
-  for (const commodity of COMMODITIES_SIGNALS) {
+async function scanCommoditiesMarket(signals, commodities) {
+  if (!commodities || commodities.length === 0) return;
+  
+  for (const commodity of commodities) {
     try {
       const candles = await marketData.getCommodityCandles(commodity, '1h', 100);
       if (!candles || candles.length < 50) continue;
@@ -183,8 +177,10 @@ async function scanCommoditiesMarket(signals) {
   }
 }
 
-async function scanIndicesMarket(signals) {
-  for (const index of INDICES_SIGNALS) {
+async function scanIndicesMarket(signals, indices) {
+  if (!indices || indices.length === 0) return;
+  
+  for (const index of indices) {
     try {
       const candles = await marketData.getIndexCandles(index, '1h', 100);
       if (!candles || candles.length < 50) continue;

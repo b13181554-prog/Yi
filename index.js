@@ -1848,6 +1848,48 @@ app.post('/api/analyze-pump', async (req, res) => {
   }
 });
 
+app.post('/api/all-assets', async (req, res) => {
+  try {
+    const { init_data, force_update } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const assetsManager = require('./assets-manager');
+    
+    // تحديث الأصول إذا كانت فارغة أو إذا طلب المستخدم التحديث
+    if (force_update || !assetsManager.lastUpdate || assetsManager.cryptoAssets.length === 0) {
+      await assetsManager.updateAllAssets();
+    }
+    
+    res.json({
+      success: true,
+      assets: {
+        crypto: assetsManager.cryptoAssets,
+        forex: assetsManager.forexPairs,
+        stocks: assetsManager.stocks,
+        commodities: assetsManager.commodities,
+        indices: assetsManager.indices
+      },
+      last_update: assetsManager.lastUpdate,
+      stats: {
+        crypto_count: assetsManager.cryptoAssets.length,
+        forex_count: assetsManager.forexPairs.length,
+        stocks_count: assetsManager.stocks.length,
+        commodities_count: assetsManager.commodities.length,
+        indices_count: assetsManager.indices.length,
+        total_count: assetsManager.cryptoAssets.length + assetsManager.forexPairs.length + 
+                     assetsManager.stocks.length + assetsManager.commodities.length + 
+                     assetsManager.indices.length
+      }
+    });
+  } catch (error) {
+    console.error('All Assets API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/change-language', async (req, res) => {
   try {
     const { user_id, language, init_data } = req.body;
