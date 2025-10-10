@@ -254,8 +254,8 @@ class AssetsManager {
       // الأسهم الأمريكية - السيارات والنقل
       { value: 'F', label: '🚗 Ford', market: 'US Auto' },
       { value: 'GM', label: '🚗 General Motors', market: 'US Auto' },
-      { value: 'UBER', label: '🚗 Uber', market: 'US Tech' },
-      { value: 'LYFT', label: '🚗 Lyft', market: 'US Tech' },
+      { value: 'STLA', label: '🚗 Stellantis', market: 'US Auto' },
+      { value: 'HMC', label: '🚗 Honda', market: 'Japan Auto' },
       
       // الأسهم الأمريكية - العقارات والاتصالات
       { value: 'T', label: '📱 AT&T', market: 'US Telecom' },
@@ -274,6 +274,26 @@ class AssetsManager {
       { value: 'ZM', label: '📹 Zoom', market: 'US Tech' },
       { value: 'DOCU', label: '📄 DocuSign', market: 'US Tech' },
       { value: 'ABNB', label: '🏠 Airbnb', market: 'US Tech' },
+      { value: 'UBER', label: '🚕 Uber', market: 'US Tech' },
+      { value: 'LYFT', label: '🚗 Lyft', market: 'US Tech' },
+      { value: 'DASH', label: '🍔 DoorDash', market: 'US Tech' },
+      { value: 'DKNG', label: '🎰 DraftKings', market: 'US Tech' },
+      { value: 'RBLX', label: '🎮 Roblox', market: 'US Tech' },
+      { value: 'U', label: '☁️ Unity Software', market: 'US Tech' },
+      { value: 'NET', label: '☁️ Cloudflare', market: 'US Tech' },
+      { value: 'SNOW', label: '❄️ Snowflake', market: 'US Tech' },
+      { value: 'MDB', label: '🗄️ MongoDB', market: 'US Tech' },
+      { value: 'DDOG', label: '🐕 Datadog', market: 'US Tech' },
+      { value: 'CRWD', label: '🛡️ CrowdStrike', market: 'US Tech' },
+      { value: 'ZS', label: '🔒 Zscaler', market: 'US Tech' },
+      { value: 'OKTA', label: '🔐 Okta', market: 'US Tech' },
+      { value: 'PLTR', label: '🔍 Palantir', market: 'US Tech' },
+      { value: 'SOFI', label: '💰 SoFi', market: 'US Fintech' },
+      { value: 'AFRM', label: '💳 Affirm', market: 'US Fintech' },
+      { value: 'HOOD', label: '🏹 Robinhood', market: 'US Fintech' },
+      { value: 'PATH', label: '💼 UiPath', market: 'US Tech' },
+      { value: 'RIVN', label: '🚙 Rivian', market: 'US Auto' },
+      { value: 'LCID', label: '🚗 Lucid Motors', market: 'US Auto' },
       
       // الأسهم الآسيوية
       { value: 'BABA', label: '🛒 Alibaba (China)', market: 'China' },
@@ -313,13 +333,23 @@ class AssetsManager {
       { value: '1120.SR', label: '🏦 الراجحي', market: 'Saudi' },
       { value: '1180.SR', label: '📞 STC السعودية', market: 'Saudi' },
       { value: '2010.SR', label: '🏭 سابك', market: 'Saudi' },
+      { value: '4001.SR', label: '🏦 البنك الأهلي السعودي', market: 'Saudi' },
+      { value: '1010.SR', label: '🏦 بنك الرياض', market: 'Saudi' },
+      { value: '1050.SR', label: '🏦 بنك الجزيرة', market: 'Saudi' },
+      { value: '1111.SR', label: '💊 الدواء', market: 'Saudi' },
+      { value: '2030.SR', label: '🏭 سابك للمغذيات', market: 'Saudi' },
+      { value: '2380.SR', label: '🏭 بتروكيماويات', market: 'Saudi' },
       { value: 'ADNOCDIST.AD', label: '🛢️ أدنوك للتوزيع', market: 'UAE' },
       { value: 'FAB.AD', label: '🏦 بنك أبوظبي الأول', market: 'UAE' },
       { value: 'ADIB.AD', label: '🏦 أبوظبي الإسلامي', market: 'UAE' },
       { value: 'DIB.DU', label: '🏦 دبي الإسلامي', market: 'UAE' },
       { value: 'EMAAR.DU', label: '🏗️ إعمار', market: 'UAE' },
+      { value: 'DFM.DU', label: '📈 سوق دبي المالي', market: 'UAE' },
+      { value: 'ADNOC.AD', label: '🛢️ أدنوك', market: 'UAE' },
       { value: 'COMI.QA', label: '🏦 QNB قطر', market: 'Qatar' },
       { value: 'ERES.QA', label: '🏗️ Ezdan قطر', market: 'Qatar' },
+      { value: 'MARK.QA', label: '🏪 Mannai قطر', market: 'Qatar' },
+      { value: 'QEWS.QA', label: '📺 الجزيرة قطر', market: 'Qatar' },
     ];
 
     console.log(`✅ قائمة الأسهم: ${this.stocks.length} سهم عالمي`);
@@ -362,6 +392,9 @@ class AssetsManager {
       { value: 'RICE', label: '🍚 Rice (الأرز)', category: 'Grains' },
       { value: 'OATS', label: '🌾 Oats (الشوفان)', category: 'Grains' },
       { value: 'BARLEY', label: '🌾 Barley (الشعير)', category: 'Grains' },
+      { value: 'SOYMEAL', label: '🍽️ Soybean Meal', category: 'Grains' },
+      { value: 'SOYOIL', label: '🛢️ Soybean Oil', category: 'Grains' },
+      { value: 'CANOLA', label: '🌻 Canola', category: 'Grains' },
       
       // المنتجات الغذائية الأخرى
       { value: 'SUGAR', label: '🍬 Sugar (السكر)', category: 'Soft Commodities' },
@@ -378,7 +411,13 @@ class AssetsManager {
       // أخرى
       { value: 'RUBBER', label: '⚫ Rubber (المطاط)', category: 'Other' },
       { value: 'PALM', label: '🌴 Palm Oil (زيت النخيل)', category: 'Other' },
-      { value: 'WOOL', label: '🐑 Wool (الصوف)', category: 'Other' }
+      { value: 'WOOL', label: '🐑 Wool (الصوف)', category: 'Other' },
+      { value: 'ETHANOL', label: '⚗️ Ethanol (الإيثانول)', category: 'Energy' },
+      { value: 'URANIUM', label: '☢️ Uranium (اليورانيوم)', category: 'Energy' },
+      { value: 'COAL', label: '⚫ Coal (الفحم)', category: 'Energy' },
+      { value: 'LITHIUM', label: '⚡ Lithium (الليثيوم)', category: 'Industrial Metals' },
+      { value: 'COBALT', label: '🔵 Cobalt (الكوبالت)', category: 'Industrial Metals' },
+      { value: 'MOLYBDENUM', label: '⚪ Molybdenum (الموليبدينوم)', category: 'Industrial Metals' }
     ];
 
     console.log(`✅ قائمة السلع: ${this.commodities.length} سلعة`);
@@ -446,7 +485,25 @@ class AssetsManager {
       { value: 'NOR25', label: '🇳🇴 OBX (Norway)', region: 'Norway' },
       { value: 'SWE30', label: '🇸🇪 OMX 30 (Sweden)', region: 'Sweden' },
       { value: 'DEN25', label: '🇩🇰 OMX Copenhagen', region: 'Denmark' },
-      { value: 'FIN25', label: '🇫🇮 OMX Helsinki', region: 'Finland' }
+      { value: 'FIN25', label: '🇫🇮 OMX Helsinki', region: 'Finland' },
+      { value: 'POL20', label: '🇵🇱 WIG20 (Poland)', region: 'Poland' },
+      { value: 'HUN', label: '🇭🇺 BUX (Hungary)', region: 'Hungary' },
+      { value: 'CZE', label: '🇨🇿 PX (Czech)', region: 'Czech Republic' },
+      { value: 'GRE20', label: '🇬🇷 Athens (Greece)', region: 'Greece' },
+      { value: 'ROM', label: '🇷🇴 BET (Romania)', region: 'Romania' },
+      { value: 'NZL50', label: '🇳🇿 NZX 50', region: 'New Zealand' },
+      { value: 'VNM', label: '🇻🇳 VN-Index (Vietnam)', region: 'Vietnam' },
+      { value: 'PAK', label: '🇵🇰 KSE 100 (Pakistan)', region: 'Pakistan' },
+      { value: 'BGD', label: '🇧🇩 DSEX (Bangladesh)', region: 'Bangladesh' },
+      { value: 'LKA', label: '🇱🇰 CSE (Sri Lanka)', region: 'Sri Lanka' },
+      { value: 'NGA', label: '🇳🇬 NGX (Nigeria)', region: 'Nigeria' },
+      { value: 'KEN', label: '🇰🇪 NSE 20 (Kenya)', region: 'Kenya' },
+      { value: 'MAR', label: '🇲🇦 MASI (Morocco)', region: 'Morocco' },
+      { value: 'JOR', label: '🇯🇴 Amman SE (Jordan)', region: 'Jordan' },
+      { value: 'LEB', label: '🇱🇧 BLOM (Lebanon)', region: 'Lebanon' },
+      { value: 'OMN', label: '🇴🇲 MSM 30 (Oman)', region: 'Oman' },
+      { value: 'BHR', label: '🇧🇭 Bahrain (Bahrain)', region: 'Bahrain' },
+      { value: 'IRQ', label: '🇮🇶 ISX (Iraq)', region: 'Iraq' }
     ];
 
     console.log(`✅ قائمة المؤشرات: ${this.indices.length} مؤشر عالمي`);
