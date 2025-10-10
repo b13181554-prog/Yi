@@ -1834,7 +1834,8 @@ app.post('/api/analyze-pump', async (req, res) => {
     const PumpAnalysis = require('./pump-analysis');
     const pumpAnalysis = new PumpAnalysis(candles, symbol);
     
-    const pumpPotential = pumpAnalysis.getPumpPotential();
+    // استخدام await لأن getPumpPotential أصبح async
+    const pumpPotential = await pumpAnalysis.getPumpPotential();
     pumpPotential.tradingType = trading_type || 'spot';
     pumpPotential.marketType = market_type;
     

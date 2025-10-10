@@ -1,4 +1,5 @@
 const TechnicalAnalysis = require('./analysis');
+const WhaleTracker = require('./whale-tracker');
 
 class PumpAnalysis {
   constructor(candles, symbol) {
@@ -13,9 +14,10 @@ class PumpAnalysis {
     this.lows = candles.map(c => parseFloat(c.low));
     this.volumes = candles.map(c => parseFloat(c.volume));
     this.analysis = new TechnicalAnalysis(candles);
+    this.whaleTracker = new WhaleTracker();
   }
 
-  getPumpPotential() {
+  async getPumpPotential() {
     const currentPrice = this.closes[this.closes.length - 1];
     
     const volumeScore = this.analyzeVolumeSpike();
@@ -24,13 +26,22 @@ class PumpAnalysis {
     const breakoutScore = this.analyzeBreakout();
     const priceActionScore = this.analyzePriceAction();
     
-    const totalScore = (
+    const technicalScore = (
       volumeScore * 0.25 +
       consolidationScore * 0.20 +
       momentumScore * 0.25 +
       breakoutScore * 0.20 +
       priceActionScore * 0.10
     );
+
+    // تحليل نشاط الحيتان
+    const whaleAnalysis = await this.whaleTracker.getComprehensiveWhaleAnalysis(
+      this.symbol, 
+      technicalScore
+    );
+    
+    // الدرجة النهائية مع تضمين نشاط الحيتان
+    const totalScore = parseFloat(whaleAnalysis.combined_score);
     
     let potential = 'منخفض';
     let potentialPercent = '0-30%';
@@ -87,68 +98,76 @@ class PumpAnalysis {
       reasons.push('📈 حركة سعرية إيجابية قوية');
     }
     
+    // إضافة إشارات الحيتان للأسباب
+    if (whaleAnalysis.whale_signals && whaleAnalysis.whale_signals.length > 0) {
+      reasons.push(...whaleAnalysis.whale_signals);
+    }
+    
     const rsi = this.analysis.calculateRSI();
-    const macd = this.analysis.calculateMACD();
-    const volume = this.analysis.calculateVolumeAnalysis();
     
-    const avgVolume = this.volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
-    const currentVolume = this.volumes[this.volumes.length - 1];
-    const volumeIncrease = ((currentVolume / avgVolume - 1) * 100).toFixed(2);
-    
-    const priceChange24h = ((currentPrice / this.closes[this.closes.length - 25] - 1) * 100).toFixed(2);
-    const priceChange7d = ((currentPrice / this.closes[this.closes.length - 50] - 1) * 100).toFixed(2);
-    
+    // تحديد سعر الدخول والهدف (بدون stop loss للبامب)
+    let entryPrice = currentPrice;
     let recommendation = 'انتظر';
     let action = '⏸️';
     
-    if (totalScore >= 70 && parseFloat(rsi.value) < 70) {
+    if (totalScore >= 80) {
+      recommendation = 'شراء فوري';
+      action = '🚀';
+      reasons.push('⭐ فرصة بامب قوية جداً - دخول فوري');
+    } else if (totalScore >= 70) {
       recommendation = 'شراء';
       action = '🟢';
-      reasons.push('⭐ فرصة دخول ممتازة الآن');
+      reasons.push('✅ فرصة بامب جيدة - دخول موصى به');
     } else if (totalScore >= 60) {
-      recommendation = 'راقب عن كثب';
+      recommendation = 'راقب';
       action = '👀';
-      reasons.push('💡 راقب للدخول عند أي إشارة إضافية');
+      reasons.push('💡 احتمال بامب - راقب للدخول');
     } else if (parseFloat(rsi.value) > 75) {
-      recommendation = 'انتظر تصحيح';
-      action = '⚠️';
-      warnings.push('السعر في منطقة تشبع شرائي');
+      recommendation = 'انتظر';
+      action = '⏸️';
+      warnings.push('⚠️ السعر في منطقة تشبع - انتظر تصحيح');
     }
     
-    const supportResistance = this.analysis.advancedAnalysis.calculateSupportResistance();
-    const nearestResistance = supportResistance.resistance;
-    const nearestSupport = supportResistance.support;
+    // حساب الهدف بناءً على قوة الإشارة
+    let targetMultiplier = 1.3; // هدف افتراضي +30%
     
-    const potentialTarget = currentPrice * (1 + (totalScore / 50));
-    let stopLoss = nearestSupport || currentPrice * 0.90;
-    
-    // التأكد من أن stopLoss رقم صحيح
-    if (isNaN(stopLoss) || stopLoss === null || stopLoss === undefined) {
-      stopLoss = currentPrice * 0.90;
+    if (totalScore >= 90) {
+      targetMultiplier = 2.5; // +150%
+    } else if (totalScore >= 80) {
+      targetMultiplier = 2.0; // +100%
+    } else if (totalScore >= 70) {
+      targetMultiplier = 1.7; // +70%
+    } else if (totalScore >= 60) {
+      targetMultiplier = 1.5; // +50%
     }
     
-    // التأكد من أن potentialTarget رقم صحيح
-    const validTarget = (isNaN(potentialTarget) || potentialTarget === null) ? currentPrice * 1.1 : potentialTarget;
-    
-    // حساب نسبة المخاطرة إلى العائد بشكل آمن
-    const riskReward = (currentPrice > stopLoss) 
-      ? ((validTarget - currentPrice) / (currentPrice - stopLoss))
-      : 0;
+    const targetPrice = currentPrice * targetMultiplier;
+    const potentialGainPercent = ((targetMultiplier - 1) * 100).toFixed(0);
     
     return {
+      // المعلومات الأساسية المبسطة للبامب
       symbol: this.symbol,
-      pump_potential: potential,
-      potential_gain: potentialPercent,
-      confidence_level: confidence,
-      total_score: totalScore.toFixed(2),
       recommendation: recommendation,
       action_emoji: action,
-      current_price: currentPrice.toFixed(8),
-      target_price: validTarget.toFixed(8),
-      stop_loss: stopLoss.toFixed(8),
-      risk_reward_ratio: riskReward.toFixed(2),
       
+      // أسعار التداول (بدون stop loss)
+      entry_price: entryPrice.toFixed(8),
+      target_price: targetPrice.toFixed(8),
+      potential_gain: `${potentialGainPercent}%`,
+      
+      // التقييم الشامل
+      pump_potential: potential,
+      confidence_level: whaleAnalysis.confidence,
+      total_score: totalScore.toFixed(2),
+      
+      // نشاط الحيتان
+      whale_activity: whaleAnalysis.whale_activity,
+      whale_score: whaleAnalysis.whale_score,
+      
+      // الدرجات التفصيلية
       scores: {
+        technical: technicalScore.toFixed(2),
+        whale: whaleAnalysis.whale_score.toFixed(2),
         volume: volumeScore.toFixed(2),
         consolidation: consolidationScore.toFixed(2),
         momentum: momentumScore.toFixed(2),
@@ -156,22 +175,10 @@ class PumpAnalysis {
         price_action: priceActionScore.toFixed(2)
       },
       
-      indicators: {
-        RSI: rsi,
-        MACD: macd,
-        VOLUME: volume,
-        volume_increase: volumeIncrease + '%',
-        price_change_24h: priceChange24h + '%',
-        price_change_7d: priceChange7d + '%'
-      },
-      
-      support_resistance: {
-        support: nearestSupport?.toFixed(8) || 'N/A',
-        resistance: nearestResistance?.toFixed(8) || 'N/A'
-      },
-      
+      // الأسباب والتحذيرات
       reasons: reasons.length > 0 ? reasons : ['تحليل معتدل - لا توجد إشارات قوية'],
       warnings: warnings,
+      whale_recommendation: whaleAnalysis.recommendation,
       
       timeframe: '1h',
       timestamp: new Date().toISOString()
