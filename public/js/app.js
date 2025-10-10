@@ -800,7 +800,38 @@ async function loadAnalysts() {
         if (data.success) {
             const container = document.getElementById('analysts-container');
             if (data.analysts && data.analysts.length > 0) {
-                container.innerHTML = data.analysts.map(analyst => `
+                container.innerHTML = data.analysts.map(analyst => {
+                    let subscriptionInfo = '';
+                    let cancelButton = '';
+                    
+                    if (analyst.is_subscribed && analyst.subscription_end_date) {
+                        const now = new Date();
+                        const endDate = new Date(analyst.subscription_end_date);
+                        const startDate = new Date(analyst.subscription_start_date);
+                        const daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+                        const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                        const percentageUsed = ((totalDays - daysRemaining) / totalDays) * 100;
+                        
+                        let refundAmount = 0;
+                        if (percentageUsed <= 90) {
+                            refundAmount = ((daysRemaining / totalDays) * analyst.subscription_amount).toFixed(2);
+                        }
+                        
+                        subscriptionInfo = `
+                            <div style="margin-top: 10px; padding: 10px; background: #e8f5e9; border-radius: 8px; font-size: 13px;">
+                                <div style="color: #2e7d32; margin-bottom: 5px;">⏳ متبقي: ${daysRemaining} يوم</div>
+                                ${refundAmount > 0 ? `<div style="color: #1976d2;">💰 استرجاع محتمل: ${refundAmount} USDT</div>` : '<div style="color: #d32f2f; font-size: 11px;">⚠️ لا يمكن استرجاع المبلغ (مر أكثر من 90%)</div>'}
+                            </div>
+                        `;
+                        
+                        cancelButton = `
+                            <button onclick="cancelAnalystSubscription('${analyst.subscription_id}', '${analyst.name}', ${refundAmount})" style="width: 100%; padding: 10px; margin-top: 10px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                                ❌ إلغاء الاشتراك
+                            </button>
+                        `;
+                    }
+                    
+                    return `
                     <div class="analyst-card ${analyst.is_subscribed ? 'subscribed' : ''}">
                         <div class="analyst-header">
                             ${analyst.profile_picture ? `<img src="${analyst.profile_picture}" alt="${analyst.name}" class="analyst-avatar" onerror="this.style.display='none'">` : '<div class="analyst-avatar-placeholder">👤</div>'}
@@ -820,19 +851,22 @@ async function loadAnalysts() {
                             <button class="rating-btn dislike-btn" onclick="rateAnalyst('${analyst.id}', false)" style="background: none; border: none; font-size: 32px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">👎</button>
                             <span style="font-size: 18px; font-weight: bold; color: #dc3545;">${analyst.dislikes || 0}</span>
                         </div>
+                        ${subscriptionInfo}
                         <div class="analyst-footer">
                             <span class="price">${analyst.monthly_price} USDT/شهر</span>
                             <button class="subscribe-analyst-btn" onclick="subscribeToAnalyst('${analyst.id}')">
                                 ${analyst.is_subscribed ? '🔄 تجديد' : '✅ اشترك'}
                             </button>
                         </div>
+                        ${cancelButton}
                         <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px;">
                             <button onclick="getAnalystPromoterLink('${analyst.id}', '${analyst.name}')" style="width: 100%; padding: 10px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
                                 🎁 رابط الإحالة (15% عمولة)
                             </button>
                         </div>
                     </div>
-                `).join('');
+                `;
+                }).join('');
             } else {
                 container.innerHTML = '<p class="empty-state">لا يوجد محللين حالياً</p>';
             }

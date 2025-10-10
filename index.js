@@ -742,11 +742,18 @@ app.post('/api/analysts', async (req, res) => {
     const analysts = await db.getAllAnalysts();
     const activeSubscriptions = await db.getActiveAnalystSubscriptions(user_id);
     
-    const analystsWithStatus = analysts.map(analyst => ({
-      ...analyst,
-      id: analyst._id.toString(),
-      is_subscribed: activeSubscriptions.some(sub => sub.analyst_id.toString() === analyst._id.toString())
-    }));
+    const analystsWithStatus = analysts.map(analyst => {
+      const subscription = activeSubscriptions.find(sub => sub.analyst_id.toString() === analyst._id.toString());
+      return {
+        ...analyst,
+        id: analyst._id.toString(),
+        is_subscribed: !!subscription,
+        subscription_id: subscription?._id?.toString(),
+        subscription_amount: subscription?.amount,
+        subscription_start_date: subscription?.start_date,
+        subscription_end_date: subscription?.end_date
+      };
+    });
     
     const subscriptionsWithIds = activeSubscriptions.map(sub => ({
       ...sub,
