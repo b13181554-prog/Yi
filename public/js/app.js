@@ -395,6 +395,7 @@ async function init() {
         setupSymbolSearch();
         loadSubscription();
         loadReferralStats();
+        loadNotificationSettings();
 
         document.getElementById('main-content').style.display = 'block';
         document.getElementById('loading').style.display = 'none';
@@ -3328,6 +3329,107 @@ async function deleteAnalyst(analystId) {
     if (!confirm('⚠️ هل أنت متأكد من حذف هذا المحلل؟ سيتم إلغاء جميع اشتراكاته.')) return;
     
     tg.showAlert('⏳ جاري الحذف...');
+}
+
+async function loadNotificationSettings() {
+    try {
+        const response = await fetch('/api/notification-settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.settings) {
+            const toggle = document.getElementById('notifications-toggle');
+            const marketsDiv = document.getElementById('notification-markets');
+            
+            toggle.checked = data.settings.enabled || false;
+            
+            if (data.settings.enabled) {
+                marketsDiv.style.display = 'block';
+            }
+
+            if (data.settings.markets && data.settings.markets.length > 0) {
+                document.querySelectorAll('.market-checkbox').forEach(checkbox => {
+                    checkbox.checked = data.settings.markets.includes(checkbox.value);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error loading notification settings:', error);
+    }
+}
+
+async function toggleNotifications() {
+    const toggle = document.getElementById('notifications-toggle');
+    const marketsDiv = document.getElementById('notification-markets');
+    const enabled = toggle.checked;
+
+    try {
+        const response = await fetch('/api/toggle-notifications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                enabled: enabled,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            marketsDiv.style.display = enabled ? 'block' : 'none';
+            tg.showAlert(enabled ? '✅ تم تفعيل الإشعارات' : '❌ تم إيقاف الإشعارات');
+        } else {
+            toggle.checked = !enabled;
+            tg.showAlert('❌ حدث خطأ: ' + (data.error || 'غير معروف'));
+        }
+    } catch (error) {
+        console.error('Error toggling notifications:', error);
+        toggle.checked = !enabled;
+        tg.showAlert('❌ حدث خطأ في تحديث الإشعارات');
+    }
+}
+
+async function saveNotificationMarkets() {
+    const selectedMarkets = [];
+    document.querySelectorAll('.market-checkbox:checked').forEach(checkbox => {
+        selectedMarkets.push(checkbox.value);
+    });
+
+    if (selectedMarkets.length === 0) {
+        tg.showAlert('⚠️ يرجى اختيار سوق واحد على الأقل');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/update-notification-markets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                markets: selectedMarkets,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            tg.showAlert('✅ تم حفظ التفضيلات بنجاح');
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'حدث خطأ'));
+        }
+    } catch (error) {
+        console.error('Error saving notification markets:', error);
+        tg.showAlert('❌ حدث خطأ في حفظ التفضيلات');
+    }
 }
 
 if (document.readyState === 'loading') {

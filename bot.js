@@ -235,6 +235,136 @@ ${statusMessage}
   }
 });
 
+bot.onText(/\/notifications/, async (msg) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  
+  try {
+    const settings = await db.getNotificationSettings(userId);
+    const isEnabled = settings.enabled || false;
+    const markets = settings.markets || ['crypto', 'forex', 'stocks', 'commodities', 'indices'];
+    
+    const marketEmojis = {
+      'crypto': '💎',
+      'forex': '💱',
+      'stocks': '📈',
+      'commodities': '🥇',
+      'indices': '📊'
+    };
+    
+    const marketNames = {
+      'crypto': 'العملات الرقمية',
+      'forex': 'الفوركس',
+      'stocks': 'الأسهم',
+      'commodities': 'السلع',
+      'indices': 'المؤشرات'
+    };
+    
+    let marketsText = markets.map(m => `${marketEmojis[m]} ${marketNames[m]}`).join('\n');
+    
+    await bot.sendMessage(chatId, `
+🔔 <b>إعدادات الإشعارات</b>
+
+📊 <b>الحالة:</b> ${isEnabled ? '✅ مفعلة' : '❌ معطلة'}
+
+${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
+
+💡 <b>ملاحظة:</b> لتعديل إعدادات الإشعارات والأسواق، افتح التطبيق واذهب إلى قسم "حسابي" ثم "إعدادات الإشعارات"
+    `, {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { 
+              text: isEnabled ? '❌ إيقاف الإشعارات' : '✅ تفعيل الإشعارات', 
+              callback_data: `toggle_notif_${!isEnabled}` 
+            }
+          ],
+          [
+            { text: '⚙️ فتح الإعدادات', web_app: { url: config.WEBAPP_URL } }
+          ]
+        ]
+      }
+    });
+  } catch (error) {
+    console.error('Error in /notifications:', error);
+    await bot.sendMessage(chatId, '❌ حدث خطأ، يرجى المحاولة مرة أخرى.');
+  }
+});
+
+bot.on('callback_query', async (query) => {
+  const chatId = query.message.chat.id;
+  const userId = query.from.id;
+  const data = query.data;
+  
+  if (data.startsWith('toggle_notif_')) {
+    const enabled = data.split('_')[2] === 'true';
+    
+    try {
+      await db.toggleNotifications(userId, enabled);
+      
+      await bot.answerCallbackQuery(query.id, {
+        text: enabled ? '✅ تم تفعيل الإشعارات' : '❌ تم إيقاف الإشعارات',
+        show_alert: true
+      });
+      
+      const settings = await db.getNotificationSettings(userId);
+      const markets = settings.markets || ['crypto', 'forex', 'stocks', 'commodities', 'indices'];
+      
+      const marketEmojis = {
+        'crypto': '💎',
+        'forex': '💱',
+        'stocks': '📈',
+        'commodities': '🥇',
+        'indices': '📊'
+      };
+      
+      const marketNames = {
+        'crypto': 'العملات الرقمية',
+        'forex': 'الفوركس',
+        'stocks': 'الأسهم',
+        'commodities': 'السلع',
+        'indices': 'المؤشرات'
+      };
+      
+      let marketsText = markets.map(m => `${marketEmojis[m]} ${marketNames[m]}`).join('\n');
+      
+      await bot.editMessageText(`
+🔔 <b>إعدادات الإشعارات</b>
+
+📊 <b>الحالة:</b> ${enabled ? '✅ مفعلة' : '❌ معطلة'}
+
+${enabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
+
+💡 <b>ملاحظة:</b> لتعديل إعدادات الإشعارات والأسواق، افتح التطبيق واذهب إلى قسم "حسابي" ثم "إعدادات الإشعارات"
+      `, {
+        chat_id: chatId,
+        message_id: query.message.message_id,
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { 
+                text: enabled ? '❌ إيقاف الإشعارات' : '✅ تفعيل الإشعارات', 
+                callback_data: `toggle_notif_${!enabled}` 
+              }
+            ],
+            [
+              { text: '⚙️ فتح الإعدادات', web_app: { url: config.WEBAPP_URL } }
+            ]
+          ]
+        }
+      });
+    } catch (error) {
+      console.error('Error toggling notifications:', error);
+      await bot.answerCallbackQuery(query.id, {
+        text: '❌ حدث خطأ',
+        show_alert: true
+      });
+    }
+  }
+});
+
 bot.on('web_app_data', async (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;

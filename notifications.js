@@ -1,8 +1,10 @@
 const cron = require('node-cron');
 const db = require('./database');
 const config = require('./config');
+const blockchainPumpScanner = require('./blockchain-pump-scanner');
 
 let bot = null;
+const sentPumpAlerts = new Map();
 
 function initNotifications(botInstance) {
   bot = botInstance;
@@ -15,6 +17,11 @@ function initNotifications(botInstance) {
   cron.schedule('*/30 * * * *', async () => {
     console.log('Running trial expiry check...');
     await checkExpiringTrials();
+  });
+  
+  cron.schedule('0 */4 * * *', async () => {
+    console.log('Running blockchain pump scan...');
+    await scanAndNotifyPumpOpportunities();
   });
   
   console.log('✅ Notification system initialized');
@@ -141,6 +148,70 @@ async function notifyWithdrawal(userId, amount, address) {
 `, { parse_mode: 'HTML' });
   } catch (error) {
     console.error('Error notifying withdrawal:', error);
+  }
+}
+
+async function scanAndNotifyPumpOpportunities() {
+  try {
+    const opportunities = await blockchainPumpScanner.getTopPumpOpportunities(5);
+    
+    if (opportunities.length === 0) {
+      console.log('No pump opportunities found');
+      return;
+    }
+    
+    const newOpportunities = opportunities.filter(opp => {
+      const key = `${opp.address}_${opp.symbol}`;
+      const lastSent = sentPumpAlerts.get(key);
+      
+      if (!lastSent || Date.now() - lastSent > 24 * 60 * 60 * 1000) {
+        return true;
+      }
+      return false;
+    });
+    
+    if (newOpportunities.length === 0) {
+      console.log('No new pump opportunities (all were sent recently)');
+      return;
+    }
+    
+    const users = await db.getAllUsers();
+    const notifiedUsers = [];
+    
+    for (const user of users) {
+      try {
+        const settings = await db.getNotificationSettings(user.user_id);
+        
+        if (!settings.enabled) continue;
+        if (!settings.markets || !settings.markets.includes('crypto')) continue;
+        
+        for (const opportunity of newOpportunities) {
+          const message = blockchainPumpScanner.formatPumpAlert(opportunity);
+          
+          await bot.sendMessage(user.user_id, message, { parse_mode: 'HTML' });
+          
+          const key = `${opportunity.address}_${opportunity.symbol}`;
+          sentPumpAlerts.set(key, Date.now());
+          
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        notifiedUsers.push(user.user_id);
+      } catch (error) {
+        console.error(`Error notifying user ${user.user_id}:`, error.message);
+      }
+    }
+    
+    if (sentPumpAlerts.size > 1000) {
+      const entries = Array.from(sentPumpAlerts.entries());
+      entries.sort((a, b) => b[1] - a[1]);
+      sentPumpAlerts.clear();
+      entries.slice(0, 500).forEach(([key, time]) => sentPumpAlerts.set(key, time));
+    }
+    
+    console.log(`✅ Notified ${notifiedUsers.length} users about ${newOpportunities.length} new pump opportunities`);
+  } catch (error) {
+    console.error('Error in scanAndNotifyPumpOpportunities:', error);
   }
 }
 

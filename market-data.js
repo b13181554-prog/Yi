@@ -814,6 +814,76 @@ class MarketDataService {
 
     throw new Error(`فشل في الحصول على بيانات العملات الأكثر حركة`);
   }
+
+  async getAllCryptoStats() {
+    try {
+      console.log('📊 جلب بيانات جميع العملات من Binance...');
+      const response = await axios.get('https://api.binance.com/api/v3/ticker/24hr', {
+        timeout: 20000
+      });
+
+      const usdtPairs = response.data
+        .filter(ticker => ticker.symbol.endsWith('USDT'))
+        .map(ticker => ({
+          symbol: ticker.symbol,
+          priceChangePercent: parseFloat(ticker.priceChangePercent),
+          volume: parseFloat(ticker.volume) * parseFloat(ticker.lastPrice),
+          lastPrice: parseFloat(ticker.lastPrice),
+          highPrice: parseFloat(ticker.highPrice),
+          lowPrice: parseFloat(ticker.lowPrice),
+          trades: parseInt(ticker.count)
+        }));
+
+      console.log(`✅ تم جلب بيانات ${usdtPairs.length} عملة من Binance`);
+      return usdtPairs;
+    } catch (error) {
+      console.error('❌ خطأ في جلب بيانات جميع العملات:', error.message);
+      return [];
+    }
+  }
+
+  getSmartCryptoSelection(allStats, limit = 50) {
+    if (!allStats || allStats.length === 0) return [];
+
+    const minVolume = 1000000;
+    const minPrice = 0.0001;
+
+    const filtered = allStats.filter(coin => 
+      coin.volume >= minVolume && 
+      coin.lastPrice >= minPrice &&
+      coin.trades >= 1000
+    );
+
+    const scored = filtered.map(coin => {
+      const volatility = ((coin.highPrice - coin.lowPrice) / coin.lastPrice) * 100;
+      const absChangePercent = Math.abs(coin.priceChangePercent);
+      
+      const volumeScore = Math.min(coin.volume / 10000000, 10);
+      const volatilityScore = Math.min(volatility, 10);
+      const momentumScore = Math.min(absChangePercent, 10);
+      const tradeScore = Math.min(coin.trades / 10000, 10);
+      
+      const totalScore = (volumeScore * 0.4) + (volatilityScore * 0.25) + (momentumScore * 0.25) + (tradeScore * 0.1);
+      
+      return {
+        ...coin,
+        volatility,
+        score: totalScore
+      };
+    });
+
+    scored.sort((a, b) => b.score - a.score);
+    
+    const topCoins = scored.slice(0, limit);
+    
+    console.log(`✅ تم اختيار أفضل ${topCoins.length} عملة بناءً على:
+      - حجم التداول: ${topCoins[0]?.volume.toFixed(0)}$ (الأعلى)
+      - التقلب: ${topCoins[0]?.volatility.toFixed(2)}% (الأعلى)
+      - التغير: ${topCoins[0]?.priceChangePercent.toFixed(2)}% (الأعلى)
+    `);
+    
+    return topCoins.map(coin => coin.symbol);
+  }
 }
 
 module.exports = new MarketDataService();

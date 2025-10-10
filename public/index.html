@@ -580,6 +580,49 @@
                     </div>
                 </div>
 
+                <div class="notification-settings" style="background: white; padding: 20px; border-radius: 12px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h3 style="margin-bottom: 15px;">🔔 إعدادات الإشعارات</h3>
+                    <p class="info-text" style="color: #666; font-size: 14px; margin-bottom: 15px;">احصل على إشعارات فورية عند اكتشاف صفقات قوية</p>
+                    
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px;">
+                        <div>
+                            <strong style="display: block; margin-bottom: 5px;">تفعيل الإشعارات</strong>
+                            <span style="color: #666; font-size: 13px;">تلقي إشعارات الصفقات القوية</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="notifications-toggle" onchange="toggleNotifications()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div id="notification-markets" style="display: none;">
+                        <p style="font-weight: bold; margin-bottom: 10px;">اختر الأسواق:</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="market-checkbox" value="crypto" style="margin-left: 10px;" checked>
+                                <span>💎 عملات رقمية</span>
+                            </label>
+                            <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="market-checkbox" value="forex" style="margin-left: 10px;" checked>
+                                <span>💱 فوركس</span>
+                            </label>
+                            <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="market-checkbox" value="stocks" style="margin-left: 10px;" checked>
+                                <span>📈 أسهم</span>
+                            </label>
+                            <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="market-checkbox" value="commodities" style="margin-left: 10px;" checked>
+                                <span>🥇 سلع</span>
+                            </label>
+                            <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="market-checkbox" value="indices" style="margin-left: 10px;" checked>
+                                <span>📊 مؤشرات</span>
+                            </label>
+                        </div>
+                        <button onclick="saveNotificationMarkets()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; font-weight: bold;">حفظ التفضيلات</button>
+                    </div>
+                </div>
+
             </div>
 
             <!-- قسم الإدارة (للمالك فقط) -->
