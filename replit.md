@@ -1,7 +1,7 @@
 # OBENTCHI Trading Bot
 
 ## Overview
-OBENTCHI is a Telegram-based cryptocurrency trading bot designed to provide comprehensive technical analysis, real-time data, and automated functionalities for both cryptocurrency and forex markets. It features a full-fledged Telegram Web App, automated withdrawal and deposit systems, and multi-language support. The project aims to be a robust, accessible trading assistant, empowering users with advanced analytical capabilities and a seamless trading workflow, with a business vision to capture a significant share of the automated trading market.
+OBENTCHI is a Telegram-based cryptocurrency trading bot offering comprehensive technical analysis, real-time data, and automated functionalities across cryptocurrency and forex markets. It features a Telegram Web App, automated withdrawal and deposit systems, and multi-language support. The project aims to be a robust, accessible trading assistant, empowering users with advanced analytical capabilities and a seamless trading workflow, with a business vision to capture a significant share of the automated trading market.
 
 ## User Preferences
 - Default Language: Arabic (ar)
@@ -20,74 +20,12 @@ The core logic is built on an Express server handling Telegram Bot interactions,
 -   **Regular Analysis**: Requires 65%+ indicator agreement.
 -   **Ultra Analysis**: Comprehensive analysis across 10+ indicators/patterns, 75%+ (or 85%+ with ADX>30) indicator agreement, high trading volume, and confidence rating.
 -   **Zero Reversal Analysis**: The strictest system, requiring 93%+ criteria (38/41 points), ADX >= 45, R/R >= 1:4, massive volume, 100% clear trend, and multiple confirmations for "100% guaranteed trade" signals.
-
 All analysis systems include risk assessment (very low, low, medium, high), precise Stop Loss & Take Profit, and balanced Risk/Reward ratios. The system also incorporates an Analyst Protection System with an escrow for earnings, daily activity monitoring, and automatic suspension for inactivity. Referral systems are implemented for users, analysts, and analyst promoters. Automated pump analysis for cryptocurrencies identifies potential 100%+ price surges.
+The customer support feature uses the Groq API with the Llama 3.3 70B Versatile model for free and fast responses, supporting all 7 languages.
 
 ### Feature Specifications
 The platform offers a comprehensive Web App with technical analysis tools, top movers, a wallet for USDT TRC20 deposits/withdrawals, analyst subscriptions, and account management. Trading features include technical analysis for crypto, forex, stocks, indices, and commodities, along with trading recommendations and trending cryptocurrency tracking. Financial functionalities include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management includes an analyst subscription system and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, withdrawal processing, transaction viewing, referral tracking, and mass messaging. Automated trade signal monitoring checks all markets every 15 minutes for strong opportunities (70%+ indicator agreement) and sends instant notifications based on user preferences.
-
-**Recent Updates (October 11, 2025):**
--   **Professional API Integration (NEW)**: Removed all demo/placeholder API keys and made all external services use proper API keys from environment variables:
-    -   Alpha Vantage: Now requires `ALPHA_VANTAGE_API_KEY` environment variable (no longer uses demo key)
-    -   Whale Alert: Now requires `WHALE_ALERT_API_KEY` for whale tracking (removed commented/disabled code)
-    -   Blockchain Explorers: Added support for `ETHERSCAN_API_KEY` and `BSCSCAN_API_KEY` for blockchain tracking
-    -   All services now fallback gracefully when API keys are not available, ensuring production-ready reliability
--   **Code Quality Enhancement**: Cleaned up whale-tracker.js by removing all commented/disabled code blocks and implementing proper API key checking
-
-**Previous Updates (October 10, 2025):**
--   **Withdrawal System Security Fix (CRITICAL)**: Fixed critical phantom withdrawal bug where analysts could withdraw funds without proper balance deduction from `available_balance` in bot.js. Now properly deducts balance on withdrawal initiation and refunds on failure/rejection.
--   **Enhanced Rejection System with Transaction Safety**: Implemented intelligent `rejectWithdrawal` function with two-path approach:
-    -   **Transaction Path**: Uses MongoDB transactions (when available in replica set) for atomic refund operations with complete data integrity
-    -   **Fallback Path**: Best-effort reentrant approach with `refunded` flag to prevent double refunds in standalone MongoDB environments
-    -   Clear warnings when fallback is used, with strong recommendation to use MongoDB replica set in production
--   **Admin Panel Withdrawal Rejection**: Added proper withdrawal rejection functionality in admin panel with automatic refund calculation and balance restoration
--   **Enhanced Analysis System (NEW)**: Completely overhauled the analysis system to eliminate random/weak trade signals. The system now only provides entry/exit points when ALL strict conditions are met (strong volume, high ADX, confirmed RSI/MACD signals, good risk/reward ratio). Weak signals now show "لا تتداول" (Don't Trade) with null entry/exit points, ensuring users only see genuine trading opportunities.
--   **ADX Validation Bug Fix (CRITICAL)**: Fixed critical bug where ADX strength check was incorrectly using ATR value instead of ADX value (`hasStrongADX = atrValue >= 35` changed to `hasStrongADX = adxValue >= 35`). This bug was preventing all trade signals from passing strict validation criteria. Now properly validates trend strength using the correct ADX indicator value.
--   **Enhanced Pump Scanner (NEW)**: Created advanced blockchain-based pump detection system that scans ANY cryptocurrency from multiple sources (DexScreener, GeckoTerminal all networks, Birdeye Solana). No longer limited to predefined coins - tracks all tokens across ETH, BSC, Polygon, Arbitrum, Optimism, Avalanche, Base, and Solana networks.
--   **New Pump Detection APIs (NEW)**: Added `/api/enhanced-pump-scan` for comprehensive blockchain scanning and `/api/search-pump-token` for searching specific tokens. These APIs provide pump analysis for the analysis system only, not as separate pump subscriptions.
--   **Smart Analysis System**: Replaced random coin selection with intelligent analysis that prioritizes coins based on trading volume, volatility, and momentum. The system now analyzes the most active and promising assets first, resulting in higher quality trading signals.
--   **Notification Settings UI**: Added complete notification settings interface in the Web App profile section. Users can now toggle notifications on/off and select which markets (crypto, forex, stocks, commodities, indices) they want to receive alerts for.
--   **Notifications Bot Command**: Added `/notifications` command in the bot for quick notification management without opening the Web App. Users can toggle notifications on/off with inline buttons.
--   **Blockchain Pump Scanner (NEW)**: Created dedicated blockchain-based pump detection system using open blockchain APIs (DexScreener, GeckoTerminal). Scans for trending tokens, new pairs, and high-potential pump opportunities directly from blockchain data, independent of centralized exchange listings.
--   **Whale Tracking Integration**: Implemented comprehensive whale tracking system using public APIs (DexScreener, blockchain explorers) to monitor large transactions and whale activity. Integrated whale signals into pump analysis scoring for better predictions.
--   **Simplified Pump Analysis Output**: Streamlined pump analysis to show only essential information - coin name, entry price, and target (removed stop-loss as pumps are quick movements). Smart target calculation based on signal strength (50%-150% gains).
--   **Massive Asset Expansion to 1455+ Assets**:
-    -   **Stocks**: Expanded from 152 to 375 global stocks, adding quantum computing (IonQ, Rigetti), clean energy (Enphase, Plug Power), biotech (Moderna, CRISPR), gaming (EA, Roblox), travel (Booking, Marriott), and extensive Canadian, European, and Asian stocks
-    -   **Commodities**: Expanded from 46 to 123 commodities, adding rare metals (Neodymium, Gallium, Germanium, Tellurium), energy products (Propane, Methanol, Jet Fuel, Diesel), agricultural products (spices like Saffron, Cardamom), and animal products (Honey, Silk, Leather, Dairy)
--   **Enhanced Pump Analysis System**: Now combines technical analysis (60%) with whale activity tracking (40%) for more accurate pump predictions and recommendations.
--   **Pump Analysis Bug Fix**: Fixed critical `stopLoss.toFixed is not a function` error in pump analysis by adding proper validation for stopLoss and target values before formatting.
--   **Comprehensive Asset Coverage - ALL Available Assets**: Implemented complete asset management system that automatically fetches ALL available trading assets from multiple APIs:
-    -   **Cryptocurrencies**: Dynamic fetching from OKX, Binance, and Bybit APIs - supports ALL USDT pairs (1000+ assets)
-    -   **Forex**: Expanded to ALL major and minor currency pairs (400+ pairs including EUR, GBP, USD, JPY, AUD, CAD, NZD, CHF, NOK, SEK, DKK, PLN, HUF, CZK, TRY, ZAR, MXN, SGD, HKD, THB, INR, CNY, KRW, BRL, RUB)
-    -   **Stocks**: Comprehensive global coverage (140+ stocks):
-        * US Tech: AAPL, MSFT, GOOGL, AMZN, META, NVDA, TSLA, AMD, INTC, NFLX, ADBE, CRM, ORCL, CSCO, AVGO, QCOM, TXN, IBM
-        * US Finance: JPM, BAC, WFC, C, GS, MS, V, MA, PYPL, BLK, SCHW, AXP
-        * US Healthcare: JNJ, UNH, PFE, ABBV, TMO, MRK, ABT, LLY, BMY, AMGN
-        * US Consumer: WMT, HD, MCD, NKE, SBUX, TGT, LOW, KO, PEP, PG, DIS, CMCSA
-        * US Energy/Industrial: XOM, CVX, COP, SLB, BA, CAT, GE, MMM, HON, UPS, FDX
-        * Asian: BABA, TSM, Tencent, JD, BIDU, NIO, XPEV, LI, PDD, Sony, Toyota, SoftBank, Samsung
-        * European: ASML, SAP, Nestle, Novartis, Roche, LVMH, L'Oreal, Sanofi, VW, Siemens, Shell, BP, HSBC
-        * Middle East: Aramco, Al Rajhi, STC, SABIC, ADNOC, FAB, ADIB, DIB, Emaar, QNB
-    -   **Commodities**: Complete coverage (40+ commodities):
-        * Precious Metals: Gold, Silver, Platinum, Palladium, Rhodium
-        * Energy: WTI Oil, Brent Oil, Natural Gas, Heating Oil, Gasoline
-        * Industrial Metals: Copper, Zinc, Nickel, Aluminum, Lead, Tin, Iron Ore, Steel
-        * Grains: Wheat, Corn, Soybean, Rice, Oats, Barley
-        * Soft: Sugar, Coffee, Cocoa, Cotton, Orange Juice, Lumber
-        * Livestock: Cattle, Hogs
-        * Other: Rubber, Palm Oil, Wool
-    -   **Indices**: Global coverage (50+ indices):
-        * Americas: US30, SPX500, NAS100, Russell 2000, VIX, Bovespa, IPC Mexico, MERVAL, IPSA, COLCAP
-        * Europe: UK100, GER40, FRA40, ESP35, ITA40, SWI20, NLD25, Euro Stoxx 50, BEL20, ATX, PSI20
-        * Asia-Pacific: JPN225, HK50, CHN50, AUS200, IND50, KOR200, STI, TAIEX, SET50, IDX, KLCI, PSEi
-        * MENA: FTSE/JSE, EGX30, TA-35, TASI, ADX, QE Index, Kuwait
-        * Other: MOEX Russia, BIST30, OBX, OMX30, OMX Copenhagen, OMX Helsinki
--   **New API Endpoint**: `/api/all-assets` - Returns all available assets with real-time fetching and caching
--   **Enhanced Trade Signals Monitor**: Now scans random samples from ALL available assets (50 crypto, 30 forex, 40 stocks, 20 commodities, 20 indices per cycle)
--   **Pump Analysis Integration**: Pump analysis is now integrated as a standard analysis type in the Analysis section alongside other analysis options (Complete, Ultra, Zero Reversal, Fibonacci, etc.). The separate pump subscription system has been completely removed. Pump analysis is now available to all users without subscription requirement, restricted to cryptocurrency market only.
--   **Analyst Subscription Cancellation**: Users can now cancel analyst subscriptions directly from the UI with automatic refund calculation based on remaining days (refunds available up to 90% usage).
--   **Analyst Subscription UI Fix**: Fixed unsubscribe button not appearing in subscriptions tab by ensuring `loadAnalysts()` is called when switching to subscriptions view, refreshing the DOM with current subscription data.
--   **Multi-Language Support for Pump Analysis**: Full translation support added for Pump analysis in all 7 supported languages (Arabic, English, French, Spanish, German, Russian, Chinese).
+The withdrawal system includes robust security features with transaction-safe refunding using MongoDB transactions or a fallback mechanism. The analysis system has been enhanced to provide only high-quality trade signals, and includes an advanced blockchain-based pump detection system for cryptocurrencies. Notification settings are fully customizable via the Web App and bot commands. The system provides comprehensive asset coverage, including 1000+ cryptocurrencies, 400+ forex pairs, 140+ global stocks, 40+ commodities, and 50+ global indices. Pump analysis is integrated as a standard analysis type for cryptocurrencies, and analyst subscription cancellations are handled with prorated refunds.
 
 ### System Design Choices
 The project utilizes MongoDB Atlas for its database and is configured for 24/7 operation. It features improved error processing and logging, and employs multiple APIs for data redundancy and fallback.
@@ -101,6 +39,7 @@ The project utilizes MongoDB Atlas for its database and is configured for 24/7 o
     -   Bybit (Secondary)
     -   Binance (Fallback)
     -   CoinGecko, Gate.io, Kraken, Coinbase, CoinPaprika, Huobi, Crypto.com, Bitfinex (Alternative sources)
+    -   DexScreener, GeckoTerminal, Birdeye (for blockchain-based pump detection and whale tracking)
 -   **Forex Market Data APIs**:
     -   TwelveData API (Primary)
     -   Yahoo Finance (Secondary)
@@ -108,8 +47,13 @@ The project utilizes MongoDB Atlas for its database and is configured for 24/7 o
     -   ExchangeRate-API, Frankfurter (ECB), FloatRates, VATComply
 -   **Blockchain Integration**:
     -   TRON Network (for USDT TRC20 deposits)
+    -   Etherscan, BscScan (for blockchain tracking)
 -   **Withdrawal Integration**:
     -   OKX API (USDT TRC20 instant automated withdrawals)
 -   **Telegram**:
     -   Telegram Bot API
     -   Telegram Web App
+-   **AI/Customer Support**:
+    -   Groq API (using Llama 3.3 70B Versatile model)
+-   **Whale Tracking**:
+    -   Whale Alert (API key based)
