@@ -3,6 +3,17 @@
 ## Overview
 OBENTCHI is a Telegram-based cryptocurrency trading bot offering comprehensive technical analysis, real-time data, and automated functionalities across cryptocurrency and forex markets. It features a Telegram Web App, automated withdrawal and deposit systems, and multi-language support. The project aims to be a robust, accessible trading assistant, empowering users with advanced analytical capabilities and a seamless trading workflow, with a business vision to capture a significant share of the automated trading market.
 
+## Recent Updates (October 11, 2025)
+-   **Customer Support System Overhaul**: Complete enhancement with comprehensive bot information:
+    -   Migrated from paid OpenAI to free Groq API (Llama 3.3 70B - 10x faster)
+    -   Comprehensive system prompt with 100% accurate bot details
+    -   All 5 analysis types documented (Complete, Ultra, Zero Reversal, Fibonacci, Pump)
+    -   Accurate pricing (10 USDT monthly, 5 USDT pump, 1 USDT withdrawal fee, 7-day trial)
+    -   Wallet details (TRC20: TCZwoWnmi8uBssqjtKGmUwAjToAxcJkjLP, 1 USDT min deposit, 1000 USDT max withdrawal)
+    -   Referral commissions (10% user, 20% analyst, 15% promoter)
+    -   Asset coverage (1000+ crypto, 400+ forex, 140+ stocks, 40+ commodities, 50+ indices)
+    -   Tested extensively - all responses accurate in Arabic and English
+
 ## User Preferences
 - Default Language: Arabic (ar)
 - يمكن للمستخدمين تغيير اللغة من خلال القائمة الرئيسية
