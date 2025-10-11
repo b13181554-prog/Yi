@@ -44,31 +44,49 @@ class WhaleTracker {
     }
   }
 
-  // Whale Alert API (محدود مجاناً)
   async getFromWhaleAlert(symbol) {
     try {
+      const config = require('./config');
+      if (!config.WHALE_ALERT_API_KEY) {
+        return [];
+      }
+      
       const baseCurrency = symbol.replace('USDT', '').replace('BUSD', '');
       const url = `https://api.whale-alert.io/v1/transactions`;
       
-      // ملاحظة: يحتاج API key للإنتاج
-      // const response = await axios.get(url, {
-      //   params: { currency: baseCurrency.toLowerCase(), min_value: this.whaleThreshold }
-      // });
+      const response = await axios.get(url, {
+        params: { 
+          currency: baseCurrency.toLowerCase(), 
+          min_value: this.whaleThreshold,
+          api_key: config.WHALE_ALERT_API_KEY
+        },
+        timeout: 5000
+      });
       
-      // بدلاً من ذلك، سنستخدم بيانات عامة
+      if (response.data && response.data.transactions) {
+        return response.data.transactions.map(tx => ({
+          volume: parseFloat(tx.amount_usd || 0),
+          liquidity: 0,
+          priceChange: 0,
+          source: 'whale-alert'
+        }));
+      }
+      
       return [];
     } catch (error) {
       return [];
     }
   }
 
-  // الحصول من blockchain explorers (Etherscan, BSCScan)
   async getFromBlockchainExplorer(symbol) {
     try {
-      // استخدام APIs مجانية من explorers
+      const config = require('./config');
+      if (!config.ETHERSCAN_API_KEY && !config.BSCSCAN_API_KEY) {
+        return [];
+      }
+      
       const baseCurrency = symbol.replace('USDT', '');
       
-      // يمكن إضافة استدعاءات لـ Etherscan أو BSCScan هنا
       return [];
     } catch (error) {
       return [];

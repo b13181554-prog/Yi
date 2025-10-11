@@ -264,6 +264,11 @@ class ForexService {
 
   async get24hrStatsFromAlphaVantage(pair) {
     try {
+      const config = require('./config');
+      if (!config.ALPHA_VANTAGE_API_KEY) {
+        return null;
+      }
+      
       const fromCurrency = pair.slice(0, 3);
       const toCurrency = pair.slice(3, 6);
       
@@ -272,7 +277,7 @@ class ForexService {
           function: 'CURRENCY_EXCHANGE_RATE',
           from_currency: fromCurrency,
           to_currency: toCurrency,
-          apikey: 'demo'
+          apikey: config.ALPHA_VANTAGE_API_KEY
         },
         timeout: 10000
       });
@@ -303,10 +308,12 @@ class ForexService {
       
       const currentPrice = await this.getCurrentPrice(pair);
       
-      const stats = await this.get24hrStatsFromAlphaVantage(pair);
-      
-      if (stats) {
-        return stats;
+      const config = require('./config');
+      if (config.ALPHA_VANTAGE_API_KEY) {
+        const stats = await this.get24hrStatsFromAlphaVantage(pair);
+        if (stats) {
+          return stats;
+        }
       }
 
       return {
@@ -441,6 +448,11 @@ class ForexService {
 
   async getCandlesFromAlphaVantage(pair, interval, limit = 100) {
     try {
+      const config = require('./config');
+      if (!config.ALPHA_VANTAGE_API_KEY) {
+        return null;
+      }
+      
       const fromCurrency = pair.slice(0, 3);
       const toCurrency = pair.slice(3, 6);
       
@@ -463,7 +475,7 @@ class ForexService {
         function: functionType,
         from_symbol: fromCurrency,
         to_symbol: toCurrency,
-        apikey: 'demo',
+        apikey: config.ALPHA_VANTAGE_API_KEY,
         outputsize: 'full'
       };
       
@@ -605,11 +617,14 @@ class ForexService {
         return candles;
       }
 
-      console.log(`⚠️ Yahoo Finance failed, trying Alpha Vantage for ${pair}...`);
-      candles = await this.getCandlesFromAlphaVantage(pair, interval, limit);
-      
-      if (candles && candles.length > 0) {
-        return candles;
+      const config = require('./config');
+      if (config.ALPHA_VANTAGE_API_KEY) {
+        console.log(`⚠️ Yahoo Finance failed, trying Alpha Vantage for ${pair}...`);
+        candles = await this.getCandlesFromAlphaVantage(pair, interval, limit);
+        
+        if (candles && candles.length > 0) {
+          return candles;
+        }
       }
 
       throw new Error(`فشل في الحصول على بيانات الشموع الحقيقية لـ ${pair} من جميع المصادر`);

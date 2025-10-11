@@ -33,6 +33,10 @@ module.exports = {
   FOREX_API_KEY: process.env.FOREX_API_KEY || null,
   CURRENCY_API_KEY: process.env.CURRENCY_API_KEY || null,
   CURRENCY_FREAKS_API_KEY: process.env.CURRENCY_FREAKS_API_KEY || null,
+  ALPHA_VANTAGE_API_KEY: process.env.ALPHA_VANTAGE_API_KEY || null,
+  WHALE_ALERT_API_KEY: process.env.WHALE_ALERT_API_KEY || null,
+  ETHERSCAN_API_KEY: process.env.ETHERSCAN_API_KEY || null,
+  BSCSCAN_API_KEY: process.env.BSCSCAN_API_KEY || null,
   
   OKX_API_KEY: process.env.OKX_API_KEY || null,
   OKX_SECRET_KEY: process.env.OKX_SECRET_KEY || null,

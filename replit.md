@@ -26,7 +26,15 @@ All analysis systems include risk assessment (very low, low, medium, high), prec
 ### Feature Specifications
 The platform offers a comprehensive Web App with technical analysis tools, top movers, a wallet for USDT TRC20 deposits/withdrawals, analyst subscriptions, and account management. Trading features include technical analysis for crypto, forex, stocks, indices, and commodities, along with trading recommendations and trending cryptocurrency tracking. Financial functionalities include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management includes an analyst subscription system and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, withdrawal processing, transaction viewing, referral tracking, and mass messaging. Automated trade signal monitoring checks all markets every 15 minutes for strong opportunities (70%+ indicator agreement) and sends instant notifications based on user preferences.
 
-**Recent Updates (October 10, 2025):**
+**Recent Updates (October 11, 2025):**
+-   **Professional API Integration (NEW)**: Removed all demo/placeholder API keys and made all external services use proper API keys from environment variables:
+    -   Alpha Vantage: Now requires `ALPHA_VANTAGE_API_KEY` environment variable (no longer uses demo key)
+    -   Whale Alert: Now requires `WHALE_ALERT_API_KEY` for whale tracking (removed commented/disabled code)
+    -   Blockchain Explorers: Added support for `ETHERSCAN_API_KEY` and `BSCSCAN_API_KEY` for blockchain tracking
+    -   All services now fallback gracefully when API keys are not available, ensuring production-ready reliability
+-   **Code Quality Enhancement**: Cleaned up whale-tracker.js by removing all commented/disabled code blocks and implementing proper API key checking
+
+**Previous Updates (October 10, 2025):**
 -   **Withdrawal System Security Fix (CRITICAL)**: Fixed critical phantom withdrawal bug where analysts could withdraw funds without proper balance deduction from `available_balance` in bot.js. Now properly deducts balance on withdrawal initiation and refunds on failure/rejection.
 -   **Enhanced Rejection System with Transaction Safety**: Implemented intelligent `rejectWithdrawal` function with two-path approach:
     -   **Transaction Path**: Uses MongoDB transactions (when available in replica set) for atomic refund operations with complete data integrity
