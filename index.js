@@ -16,15 +16,15 @@ const { authenticateAPI, apiRateLimit, validateRequestSize } = require('./api-se
 const { initAnalystMonitor } = require('./analyst-monitor');
 const { getTelegramProfilePhoto } = require('./telegram-helpers');
 const { initTradeSignalsMonitor } = require('./trade-signals-monitor');
-const OpenAI = require('openai');
+const Groq = require('groq-sdk');
 
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-let openai = null;
-if (process.env.OPENAI_API_KEY) {
-  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  console.log('✅ OpenAI client initialized successfully');
+// Groq AI - Free and fast alternative to OpenAI
+let groq = null;
+if (process.env.GROQ_API_KEY) {
+  groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+  console.log('✅ Groq client initialized successfully');
 } else {
-  console.warn('⚠️  OPENAI_API_KEY not found. Customer support feature will not work until API key is added.');
+  console.warn('⚠️  GROQ_API_KEY not found. Customer support feature will not work until API key is added.');
 }
 
 const app = express();
@@ -2668,10 +2668,10 @@ app.post('/api/admin/search', async (req, res) => {
   }
 });
 
-// Customer Support API - OpenAI Integration
+// Customer Support API - Groq Integration (Free AI)
 app.post('/api/customer-support', async (req, res) => {
   try {
-    if (!openai) {
+    if (!groq) {
       return res.status(503).json({ 
         error: 'خدمة العملاء غير متاحة حالياً. يرجى المحاولة لاحقاً.',
         error_en: 'Customer support is currently unavailable. Please try again later.' 
@@ -2708,13 +2708,14 @@ app.post('/api/customer-support', async (req, res) => {
 - كن مفيداً ومهذباً دائماً
 - إجابات دقيقة ومختصرة`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-5",
+    const response = await groq.chat.completions.create({
+      model: "llama-3.1-70b-versatile",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: message }
       ],
-      max_completion_tokens: 500
+      max_tokens: 500,
+      temperature: 0.7
     });
 
     const reply = response.choices[0].message.content;
