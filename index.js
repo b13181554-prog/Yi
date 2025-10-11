@@ -2670,14 +2670,14 @@ app.post('/api/admin/search', async (req, res) => {
 
 // Customer Support API - Groq Integration (Free AI)
 app.post('/api/customer-support', async (req, res) => {
-  try {
-    if (!groq) {
-      return res.status(503).json({ 
-        error: 'خدمة العملاء غير متاحة حالياً. يرجى المحاولة لاحقاً.',
-        error_en: 'Customer support is currently unavailable. Please try again later.' 
-      });
-    }
+  if (!groq) {
+    return res.status(503).json({ 
+      error: 'خدمة العملاء غير متاحة حالياً. يرجى المحاولة لاحقاً.',
+      error_en: 'Customer support is currently unavailable. Please try again later.' 
+    });
+  }
 
+  try {
     const { message, language = 'ar' } = req.body;
 
     if (!message) {
@@ -2709,7 +2709,7 @@ app.post('/api/customer-support', async (req, res) => {
 - إجابات دقيقة ومختصرة`;
 
     const response = await groq.chat.completions.create({
-      model: "llama-3.1-70b-versatile",
+      model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: message }
