@@ -378,54 +378,31 @@ bot.on('web_app_data', async (msg) => {
 
     if (data.action === 'deposit') {
       await db.updateUser(userId, { temp_withdrawal_address: 'deposit_pending' });
-      await bot.sendMessage(chatId, `
-📥 <b>طلب إيداع</b>
+      
+      const { addPaymentVerification } = require('./payment-queue');
+      
+      try {
+        await addPaymentVerification(data.tx_id, userId, data.amount);
+        
+        await bot.sendMessage(chatId, `
+📥 <b>طلب إيداع مستلم</b>
 
-تم استلام طلبك لتأكيد الإيداع.
 معرف المعاملة: <code>${data.tx_id}</code>
 
-⏳ جاري التحقق من المعاملة...
-سيتم إضافة الرصيد تلقائياً عند تأكيد المعاملة.
+⏳ تمت إضافة طلبك للمعالجة
+سيتم التحقق من المعاملة وإضافة الرصيد خلال دقائق
+
+سنرسل لك إشعار فور اكتمال العملية ✅
 `, { parse_mode: 'HTML' });
-      
-      const tron = require('./tron');
-      const result = await tron.verifyUSDTTransaction(data.tx_id, config.BOT_WALLET_ADDRESS);
-      
-      if (result.success) {
-        const existingTx = await db.getTransactionByTxId(data.tx_id);
         
-        if (!existingTx) {
-          await db.createTransaction({
-            user_id: userId,
-            type: 'deposit',
-            amount: result.data.amount,
-            status: 'completed',
-            tx_id: data.tx_id,
-            address: result.data.from
-          });
-          
-          await db.updateUserBalance(userId, result.data.amount);
-          
-          await bot.sendMessage(chatId, `
-✅ <b>تم تأكيد الإيداع!</b>
+      } catch (error) {
+        console.error('Error adding payment to queue:', error);
+        await bot.sendMessage(chatId, `
+❌ <b>حدث خطأ</b>
 
-المبلغ: ${result.data.amount} USDT
-تم إضافته لرصيدك بنجاح 🎉
-`, { parse_mode: 'HTML' });
-          
-          await bot.sendMessage(config.OWNER_ID, `
-💵 <b>إيداع جديد</b>
-
-المستخدم: ${user.first_name} (@${user.username})
-ID: ${userId}
-المبلغ: ${result.data.amount} USDT
-TxID: <code>${data.tx_id}</code>
-`, { parse_mode: 'HTML' });
-        } else {
-          await bot.sendMessage(chatId, '⚠️ هذه المعاملة مسجلة مسبقاً!');
-        }
-      } else {
-        await bot.sendMessage(chatId, `❌ فشل التحقق: ${result.error}`);
+لم نتمكن من إضافة طلبك للمعالجة.
+يرجى المحاولة مرة أخرى أو التواصل مع الدعم.
+        `, { parse_mode: 'HTML' });
       }
       
       await db.updateUser(userId, { temp_withdrawal_address: null });

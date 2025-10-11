@@ -16,6 +16,9 @@ const { authenticateAPI, apiRateLimit, validateRequestSize } = require('./api-se
 const { initAnalystMonitor } = require('./analyst-monitor');
 const { getTelegramProfilePhoto } = require('./telegram-helpers');
 const { initTradeSignalsMonitor } = require('./trade-signals-monitor');
+const { initWorker } = require('./payment-worker');
+const monitor = require('./monitoring');
+const { getQueueStats } = require('./payment-queue');
 const Groq = require('groq-sdk');
 
 // Groq AI - Free and fast alternative to OpenAI
@@ -93,6 +96,9 @@ async function main() {
     initTradeSignalsMonitor(bot);
     admin.initAdminCommands(bot);
     rankingScheduler.start();
+    initWorker(bot);
+    
+    console.log('✅ Payment queue workers initialized');
     
     bot.startBot();
     
@@ -360,14 +366,6 @@ ${description}
     process.exit(1);
   }
 }
-
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime()
-  });
-});
 
 app.get('/ping', (req, res) => {
   res.send('pong');
@@ -2820,9 +2818,41 @@ app.post('/api/customer-support', async (req, res) => {
   }
 });
 
+// ========== Enhanced Monitoring Endpoints ==========
+app.get('/health', async (req, res) => {
+  try {
+    monitor.incrementRequest();
+    const health = await monitor.getSystemHealth();
+    res.json(health);
+  } catch (error) {
+    monitor.incrementError();
+    res.status(500).json({ status: 'error', error: error.message });
+  }
+});
+
+app.get('/metrics', async (req, res) => {
+  try {
+    monitor.incrementRequest();
+    const metrics = await monitor.getDetailedMetrics();
+    res.json(metrics);
+  } catch (error) {
+    monitor.incrementError();
+    res.status(500).json({ status: 'error', error: error.message });
+  }
+});
+
+app.get('/queue-stats', async (req, res) => {
+  try {
+    const stats = await getQueueStats();
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // SPA fallback - يخدم index.html لجميع المسارات غير API
 app.use((req, res, next) => {
-  if (!req.path.startsWith('/api/') && !req.path.startsWith('/health') && !req.path.startsWith('/ping')) {
+  if (!req.path.startsWith('/api/') && !req.path.startsWith('/health') && !req.path.startsWith('/ping') && !req.path.startsWith('/metrics') && !req.path.startsWith('/queue-stats')) {
     res.sendFile(__dirname + '/public/index.html');
   } else {
     next();
