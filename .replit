@@ -7,6 +7,7 @@ requiredFiles = [".replit", "replit.nix", "package.json", "package-lock.json"]
 
 [nix]
 channel = "stable-24_11"
+packages = ["redis"]
 
 [deployment]
 run = ["node", "index.js"]
@@ -28,6 +29,10 @@ externalPort = 5000
 [[ports]]
 localPort = 36153
 externalPort = 3002
+
+[[ports]]
+localPort = 37225
+externalPort = 5173
 
 [[ports]]
 localPort = 38363
@@ -66,5 +71,5 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node index.js"
+args = "./start.sh"
 waitForPort = 5000

@@ -24,36 +24,48 @@ async function initDatabase() {
     
     console.log('📊 Creating optimized database indexes...');
     
+    const createIndexSafely = async (collection, indexSpec, options = {}) => {
+      try {
+        await db.collection(collection).createIndex(indexSpec, options);
+      } catch (error) {
+        if (error.code === 85 || error.code === 86) {
+          console.log(`ℹ️ Index already exists: ${collection} - ${JSON.stringify(indexSpec)}`);
+        } else {
+          throw error;
+        }
+      }
+    };
+
     await Promise.all([
-      db.collection('users').createIndex({ user_id: 1 }, { unique: true }),
-      db.collection('users').createIndex({ referred_by: 1 }),
-      db.collection('users').createIndex({ subscription_expires: 1 }),
-      db.collection('users').createIndex({ created_at: -1 }),
-      db.collection('users').createIndex({ is_active: 1, subscription_expires: 1 }),
+      createIndexSafely('users', { user_id: 1 }, { unique: true }),
+      createIndexSafely('users', { referred_by: 1 }),
+      createIndexSafely('users', { subscription_expires: 1 }),
+      createIndexSafely('users', { created_at: -1 }),
+      createIndexSafely('users', { is_active: 1, subscription_expires: 1 }),
       
-      db.collection('transactions').createIndex({ user_id: 1, created_at: -1 }),
-      db.collection('transactions').createIndex({ tx_id: 1 }, { unique: true, sparse: true }),
-      db.collection('transactions').createIndex({ status: 1, created_at: -1 }),
-      db.collection('transactions').createIndex({ type: 1, status: 1 }),
+      createIndexSafely('transactions', { user_id: 1, created_at: -1 }),
+      createIndexSafely('transactions', { tx_id: 1 }, { unique: true, sparse: true }),
+      createIndexSafely('transactions', { status: 1, created_at: -1 }),
+      createIndexSafely('transactions', { type: 1, status: 1 }),
       
-      db.collection('withdrawal_requests').createIndex({ user_id: 1, created_at: -1 }),
-      db.collection('withdrawal_requests').createIndex({ status: 1, created_at: 1 }),
+      createIndexSafely('withdrawal_requests', { user_id: 1, created_at: -1 }),
+      createIndexSafely('withdrawal_requests', { status: 1, created_at: 1 }),
       
-      db.collection('subscriptions').createIndex({ user_id: 1, end_date: -1 }),
-      db.collection('subscriptions').createIndex({ end_date: 1 }),
+      createIndexSafely('subscriptions', { user_id: 1, end_date: -1 }),
+      createIndexSafely('subscriptions', { end_date: 1 }),
       
-      db.collection('analysts').createIndex({ user_id: 1 }),
-      db.collection('analysts').createIndex({ is_active: 1, created_at: -1 }),
+      createIndexSafely('analysts', { user_id: 1 }),
+      createIndexSafely('analysts', { is_active: 1, created_at: -1 }),
       
-      db.collection('analyst_subscriptions').createIndex({ user_id: 1, analyst_id: 1 }, { unique: true }),
-      db.collection('analyst_subscriptions').createIndex({ analyst_id: 1, expires_at: -1 }),
-      db.collection('analyst_subscriptions').createIndex({ expires_at: 1 }),
+      createIndexSafely('analyst_subscriptions', { user_id: 1, analyst_id: 1 }, { unique: true }),
+      createIndexSafely('analyst_subscriptions', { analyst_id: 1, expires_at: -1 }),
+      createIndexSafely('analyst_subscriptions', { expires_at: 1 }),
       
-      db.collection('referral_earnings').createIndex({ referrer_id: 1, created_at: -1 }),
-      db.collection('referral_earnings').createIndex({ earned_from: 1 }),
+      createIndexSafely('referral_earnings', { referrer_id: 1, created_at: -1 }),
+      createIndexSafely('referral_earnings', { earned_from: 1 }),
       
-      db.collection('trade_signals').createIndex({ analyst_id: 1, created_at: -1 }),
-      db.collection('trade_signals').createIndex({ symbol: 1, created_at: -1 })
+      createIndexSafely('trade_signals', { analyst_id: 1, created_at: -1 }),
+      createIndexSafely('trade_signals', { symbol: 1, created_at: -1 })
     ]);
     
     await db.collection('analysts').deleteMany({ 
