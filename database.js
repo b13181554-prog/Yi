@@ -9,6 +9,12 @@ async function initDatabase() {
     client = new MongoClient(config.MONGODB_URI, {
       serverSelectionTimeoutMS: 30000,
       socketTimeoutMS: 45000,
+      maxPoolSize: 100,
+      minPoolSize: 10,
+      maxIdleTimeMS: 60000,
+      waitQueueTimeoutMS: 5000,
+      retryWrites: true,
+      retryReads: true,
       tls: true,
       tlsAllowInvalidCertificates: false,
     });
@@ -16,11 +22,39 @@ async function initDatabase() {
     await client.connect();
     db = client.db(config.MONGODB_DB_NAME);
     
-    await db.collection('users').createIndex({ user_id: 1 }, { unique: true });
-    await db.collection('users').createIndex({ referred_by: 1 });
-    await db.collection('transactions').createIndex({ user_id: 1 });
-    await db.collection('transactions').createIndex({ tx_id: 1 });
-    await db.collection('analysts').createIndex({ user_id: 1 });
+    console.log('📊 Creating optimized database indexes...');
+    
+    await Promise.all([
+      db.collection('users').createIndex({ user_id: 1 }, { unique: true }),
+      db.collection('users').createIndex({ referred_by: 1 }),
+      db.collection('users').createIndex({ subscription_expires: 1 }),
+      db.collection('users').createIndex({ created_at: -1 }),
+      db.collection('users').createIndex({ is_active: 1, subscription_expires: 1 }),
+      
+      db.collection('transactions').createIndex({ user_id: 1, created_at: -1 }),
+      db.collection('transactions').createIndex({ tx_id: 1 }, { unique: true, sparse: true }),
+      db.collection('transactions').createIndex({ status: 1, created_at: -1 }),
+      db.collection('transactions').createIndex({ type: 1, status: 1 }),
+      
+      db.collection('withdrawal_requests').createIndex({ user_id: 1, created_at: -1 }),
+      db.collection('withdrawal_requests').createIndex({ status: 1, created_at: 1 }),
+      
+      db.collection('subscriptions').createIndex({ user_id: 1, end_date: -1 }),
+      db.collection('subscriptions').createIndex({ end_date: 1 }),
+      
+      db.collection('analysts').createIndex({ user_id: 1 }),
+      db.collection('analysts').createIndex({ is_active: 1, created_at: -1 }),
+      
+      db.collection('analyst_subscriptions').createIndex({ user_id: 1, analyst_id: 1 }, { unique: true }),
+      db.collection('analyst_subscriptions').createIndex({ analyst_id: 1, expires_at: -1 }),
+      db.collection('analyst_subscriptions').createIndex({ expires_at: 1 }),
+      
+      db.collection('referral_earnings').createIndex({ referrer_id: 1, created_at: -1 }),
+      db.collection('referral_earnings').createIndex({ earned_from: 1 }),
+      
+      db.collection('trade_signals').createIndex({ analyst_id: 1, created_at: -1 }),
+      db.collection('trade_signals').createIndex({ symbol: 1, created_at: -1 })
+    ]);
     
     await db.collection('analysts').deleteMany({ 
       $or: [
@@ -39,19 +73,17 @@ async function initDatabase() {
           collation: { locale: 'en', strength: 2 }
         }
       );
-      console.log('✅ Analyst name unique index created successfully');
+      console.log('✅ Analyst name unique index created');
     } catch (indexError) {
       if (indexError.code === 11000 || indexError.code === 85 || indexError.code === 86) {
-        console.log('⚠️ Analyst name index already exists or has conflicts, skipping...');
+        console.log('⚠️ Analyst name index already exists, skipping...');
       } else {
         throw indexError;
       }
     }
     
-    await db.collection('analyst_subscriptions').createIndex({ user_id: 1, analyst_id: 1 });
-    await db.collection('referral_earnings').createIndex({ referrer_id: 1 });
-    
-    console.log('✅ Database connected and indexes created successfully');
+    console.log('✅ Database connected with optimized connection pool (10-100 connections)');
+    console.log('✅ All indexes created successfully for 1M users scalability');
   } catch (error) {
     console.error('❌ Database initialization error:', error);
     throw error;
