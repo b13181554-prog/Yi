@@ -3390,6 +3390,71 @@ async function saveNotificationMarkets() {
     }
 }
 
+function openSupportChat() {
+    document.getElementById('support-modal').style.display = 'flex';
+    document.getElementById('support-messages').innerHTML = `
+        <div class="message bot">
+            مرحباً! 👋 أنا مساعدك الذكي لمشروع OBENTCHI. كيف يمكنني مساعدتك؟
+        </div>
+    `;
+}
+
+function closeSupportChat() {
+    document.getElementById('support-modal').style.display = 'none';
+}
+
+async function sendSupportMessage() {
+    const input = document.getElementById('support-message-input');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    const messagesDiv = document.getElementById('support-messages');
+    
+    messagesDiv.innerHTML += `<div class="message user">${message}</div>`;
+    input.value = '';
+    
+    messagesDiv.innerHTML += `<div class="message loading">جاري الكتابة...</div>`;
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    
+    try {
+        const response = await fetch('/api/customer-support', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                message, 
+                language: localStorage.getItem('language') || 'ar' 
+            })
+        });
+        
+        const data = await response.json();
+        
+        const loadingMsg = messagesDiv.querySelector('.loading');
+        if (loadingMsg) loadingMsg.remove();
+        
+        if (data.reply) {
+            messagesDiv.innerHTML += `<div class="message bot">${data.reply}</div>`;
+        } else {
+            messagesDiv.innerHTML += `<div class="message bot">عذراً، حدث خطأ. حاول مرة أخرى.</div>`;
+        }
+        
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    } catch (error) {
+        const loadingMsg = messagesDiv.querySelector('.loading');
+        if (loadingMsg) loadingMsg.remove();
+        messagesDiv.innerHTML += `<div class="message bot">عذراً، فشل الاتصال. حاول مرة أخرى.</div>`;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const supportInput = document.getElementById('support-message-input');
+    if (supportInput) {
+        supportInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendSupportMessage();
+        });
+    }
+});
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {

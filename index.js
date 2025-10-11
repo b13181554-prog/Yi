@@ -16,6 +16,16 @@ const { authenticateAPI, apiRateLimit, validateRequestSize } = require('./api-se
 const { initAnalystMonitor } = require('./analyst-monitor');
 const { getTelegramProfilePhoto } = require('./telegram-helpers');
 const { initTradeSignalsMonitor } = require('./trade-signals-monitor');
+const OpenAI = require('openai');
+
+// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+let openai = null;
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  console.log('✅ OpenAI client initialized successfully');
+} else {
+  console.warn('⚠️  OPENAI_API_KEY not found. Customer support feature will not work until API key is added.');
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -2655,6 +2665,64 @@ app.post('/api/admin/search', async (req, res) => {
   } catch (error) {
     console.error('Admin Search API Error:', error);
     res.json({ success: false, error: error.message });
+  }
+});
+
+// Customer Support API - OpenAI Integration
+app.post('/api/customer-support', async (req, res) => {
+  try {
+    if (!openai) {
+      return res.status(503).json({ 
+        error: 'خدمة العملاء غير متاحة حالياً. يرجى المحاولة لاحقاً.',
+        error_en: 'Customer support is currently unavailable. Please try again later.' 
+      });
+    }
+
+    const { message, language = 'ar' } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    const systemPrompt = `أنت مساعد خدمة العملاء الذكي لمشروع OBENTCHI Trading Bot. 
+
+مهمتك:
+- الرد فقط على الأسئلة عن مشروع OBENTCHI
+- شرح الميزات والخدمات بشكل احترافي وواضح
+- حل المشاكل التقنية للمستخدمين
+- الرد بلغة ${language === 'ar' ? 'عربية' : language === 'en' ? 'English' : language === 'fr' ? 'français' : language === 'es' ? 'español' : language === 'de' ? 'Deutsch' : language === 'ru' ? 'русский' : '中文'}
+
+معلومات OBENTCHI:
+- بوت تداول احترافي على Telegram
+- تحليل فني للعملات الرقمية، الفوركس، الأسهم، السلع، المؤشرات
+- أنواع التحليل: Complete, Ultra Analysis (دقة عالية جداً), Zero Reversal (انعكاس 0%), Fibonacci, Pump Analysis
+- نظام محفظة USDT TRC20 للإيداع والسحب الفوري عبر OKX
+- نظام اشتراكات محللين مع نظام أرباح وإحالات
+- إشعارات تلقائية لإشارات التداول القوية كل 15 دقيقة
+- دعم 7 لغات (عربي، إنجليزي، فرنسي، إسباني، ألماني، روسي، صيني)
+- 1455+ أصل (291 عملة رقمية، 600 فوركس، 375 سهم، 123 سلعة، 66 مؤشر)
+- لوحة تحكم للمشرفين لإدارة النظام
+
+القواعد:
+- إذا سأل عن شيء خارج OBENTCHI، اعتذر بأدب ووجهه للسؤال عن المشروع
+- كن مفيداً ومهذباً دائماً
+- إجابات دقيقة ومختصرة`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-5",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: message }
+      ],
+      max_completion_tokens: 500
+    });
+
+    const reply = response.choices[0].message.content;
+    res.json({ reply });
+
+  } catch (error) {
+    console.error('Customer support error:', error);
+    res.status(500).json({ error: 'فشل في الحصول على رد' });
   }
 });
 

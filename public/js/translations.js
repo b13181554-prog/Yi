@@ -172,7 +172,13 @@ const translations = {
     // Common/Shared
     empty_state_loading: 'جاري التحميل...',
     error: 'خطأ',
-    success: 'نجح'
+    success: 'نجح',
+    
+    // Customer Support
+    support_btn: 'خدمة العملاء',
+    support_title: 'خدمة العملاء',
+    support_placeholder: 'اكتب رسالتك...',
+    send: 'إرسال'
   },
   
   en: {
@@ -345,7 +351,13 @@ const translations = {
     // Common/Shared
     empty_state_loading: 'Loading...',
     error: 'Error',
-    success: 'Success'
+    success: 'Success',
+    
+    // Customer Support
+    support_btn: 'Customer Support',
+    support_title: 'Customer Support',
+    support_placeholder: 'Type your message...',
+    send: 'Send'
   },
   
   fr: {
@@ -518,7 +530,13 @@ const translations = {
     // Common/Shared
     empty_state_loading: 'Chargement...',
     error: 'Erreur',
-    success: 'Succès'
+    success: 'Succès',
+    
+    // Customer Support
+    support_btn: 'Service Client',
+    support_title: 'Service Client',
+    support_placeholder: 'Tapez votre message...',
+    send: 'Envoyer'
   },
   
   es: {
@@ -691,7 +709,13 @@ const translations = {
     // Common/Shared
     empty_state_loading: 'Cargando...',
     error: 'Error',
-    success: 'Éxito'
+    success: 'Éxito',
+    
+    // Customer Support
+    support_btn: 'Atención al Cliente',
+    support_title: 'Atención al Cliente',
+    support_placeholder: 'Escribe tu mensaje...',
+    send: 'Enviar'
   },
   
   de: {
@@ -864,7 +888,13 @@ const translations = {
     // Common/Shared
     empty_state_loading: 'Lädt...',
     error: 'Fehler',
-    success: 'Erfolg'
+    success: 'Erfolg',
+    
+    // Customer Support
+    support_btn: 'Kundendienst',
+    support_title: 'Kundendienst',
+    support_placeholder: 'Geben Sie Ihre Nachricht ein...',
+    send: 'Senden'
   },
   
   ru: {
@@ -1037,7 +1067,13 @@ const translations = {
     // Common/Shared
     empty_state_loading: 'Загрузка...',
     error: 'Ошибка',
-    success: 'Успех'
+    success: 'Успех',
+    
+    // Customer Support
+    support_btn: 'Служба поддержки',
+    support_title: 'Служба поддержки',
+    support_placeholder: 'Введите ваше сообщение...',
+    send: 'Отправить'
   },
   
   zh: {
@@ -1210,7 +1246,13 @@ const translations = {
     // Common/Shared
     empty_state_loading: '加载中...',
     error: '错误',
-    success: '成功'
+    success: '成功',
+    
+    // Customer Support
+    support_btn: '客户服务',
+    support_title: '客户服务',
+    support_placeholder: '输入您的消息...',
+    send: '发送'
   }
 };
 

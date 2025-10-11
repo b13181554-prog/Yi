@@ -21,6 +21,7 @@
                     <option value="zh">🇨🇳</option>
                 </select>
             </div>
+            <button class="support-btn" onclick="openSupportChat()">💬 <span data-i18n="support_btn">خدمة العملاء</span></button>
             <h1>🤖 OBENTCHI</h1>
             <p class="subtitle" data-i18n="app_title">بوت التداول الاحترافي</p>
         </header>
@@ -759,6 +760,21 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- نافذة خدمة العملاء -->
+    <div id="support-modal" class="modal" style="display: none;">
+        <div class="modal-content support-chat">
+            <div class="modal-header">
+                <h3>💬 <span data-i18n="support_title">خدمة العملاء</span></h3>
+                <button class="close-btn" onclick="closeSupportChat()">×</button>
+            </div>
+            <div id="support-messages" class="support-messages"></div>
+            <div class="support-input-area">
+                <input type="text" id="support-message-input" placeholder="اكتب رسالتك..." data-i18n="support_placeholder">
+                <button onclick="sendSupportMessage()" data-i18n="send">إرسال</button>
+            </div>
+        </div>
     </div>
 
     <script src="js/translations.js"></script>
