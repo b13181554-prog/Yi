@@ -69,7 +69,8 @@ async function initDatabase() {
       
       createIndexSafely('cryptapi_payments', { payment_address: 1 }, { unique: true }),
       createIndexSafely('cryptapi_payments', { user_id: 1, created_at: -1 }),
-      createIndexSafely('cryptapi_payments', { status: 1, created_at: -1 })
+      createIndexSafely('cryptapi_payments', { status: 1, created_at: -1 }),
+      createIndexSafely('cryptapi_payments', { idempotency_key: 1 }, { sparse: true })
     ]);
     
     await db.collection('analysts').deleteMany({ 
