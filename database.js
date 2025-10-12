@@ -65,7 +65,11 @@ async function initDatabase() {
       createIndexSafely('referral_earnings', { earned_from: 1 }),
       
       createIndexSafely('trade_signals', { analyst_id: 1, created_at: -1 }),
-      createIndexSafely('trade_signals', { symbol: 1, created_at: -1 })
+      createIndexSafely('trade_signals', { symbol: 1, created_at: -1 }),
+      
+      createIndexSafely('cryptapi_payments', { payment_address: 1 }, { unique: true }),
+      createIndexSafely('cryptapi_payments', { user_id: 1, created_at: -1 }),
+      createIndexSafely('cryptapi_payments', { status: 1, created_at: -1 })
     ]);
     
     await db.collection('analysts').deleteMany({ 
@@ -1676,6 +1680,61 @@ async function cancelPumpSubscription(userId) {
   };
 }
 
+async function createCryptAPIPayment(userId, paymentAddress, amount, qrCodeUrl, callbackUrl) {
+  const payment = {
+    user_id: userId,
+    payment_address: paymentAddress,
+    amount: amount,
+    qr_code_url: qrCodeUrl,
+    callback_url: callbackUrl,
+    status: 'pending',
+    created_at: new Date(),
+    tx_id: null,
+    confirmations: 0,
+    completed_at: null
+  };
+  
+  const result = await db.collection('cryptapi_payments').insertOne(payment);
+  return { ...payment, _id: result.insertedId };
+}
+
+async function getCryptAPIPayment(paymentAddress) {
+  return await db.collection('cryptapi_payments').findOne({ payment_address: paymentAddress });
+}
+
+async function getCryptAPIPaymentByUser(userId, status = 'pending') {
+  return await db.collection('cryptapi_payments').findOne({
+    user_id: userId,
+    status: status
+  });
+}
+
+async function updateCryptAPIPaymentStatus(paymentAddress, status, txId = null, confirmations = 0) {
+  const update = {
+    status: status,
+    confirmations: confirmations
+  };
+  
+  if (txId) {
+    update.tx_id = txId;
+  }
+  
+  if (status === 'completed') {
+    update.completed_at = new Date();
+  }
+  
+  await db.collection('cryptapi_payments').updateOne(
+    { payment_address: paymentAddress },
+    { $set: update }
+  );
+}
+
+async function getPendingCryptAPIPayments() {
+  return await db.collection('cryptapi_payments').find({
+    status: 'pending'
+  }).sort({ created_at: -1 }).toArray();
+}
+
 function getDB() {
   return db;
 }
@@ -1772,5 +1831,10 @@ module.exports = {
   getNotificationSettings,
   subscribeToPumpAnalysis,
   getPumpSubscription,
-  cancelPumpSubscription
+  cancelPumpSubscription,
+  createCryptAPIPayment,
+  getCryptAPIPayment,
+  getCryptAPIPaymentByUser,
+  updateCryptAPIPaymentStatus,
+  getPendingCryptAPIPayments
 };
