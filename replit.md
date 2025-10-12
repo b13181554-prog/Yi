@@ -3,7 +3,25 @@
 ## Overview
 OBENTCHI is a Telegram-based cryptocurrency trading bot offering comprehensive technical analysis, real-time data, and automated functionalities across cryptocurrency and forex markets. It features a Telegram Web App, automated withdrawal and deposit systems, and multi-language support. The project aims to be a robust, accessible trading assistant, empowering users with advanced analytical capabilities and a seamless trading workflow, with a business vision to capture a significant share of the automated trading market.
 
-## Recent Updates (October 11, 2025)
+## Recent Updates
+
+### October 12, 2025 - CryptAPI Payment Gateway Integration
+-   **Replaced Manual Payment System with CryptAPI**: Complete migration from manual TRON TxID submission to automated payment gateway:
+    -   **Multi-Chain Support**: USDT support across TRC-20, ERC-20, and BEP-20 networks
+    -   **Auto Address Generation**: Unique payment addresses created per transaction
+    -   **QR Code Integration**: Automatic QR code generation for easy mobile payments
+    -   **Callback System**: Real-time payment notifications with RSA-SHA256 signature verification
+    -   **Security Hardening**: 
+        -   Signature verification on all callbacks to prevent payment fraud
+        -   Conditional middleware bypassing for raw body capture
+        -   Telegram WebApp init_data verification on payment creation
+        -   Public key caching (24h) for efficient verification
+    -   **Database Schema**: New `cryptapi_payments` collection with comprehensive payment tracking
+    -   **API Integration**: @cryptapi/api NPM package with axios for HTTP requests
+    -   **Comprehensive Docs**: Full setup guide in CRYPTAPI_INTEGRATION.md
+    -   Architect-verified for security and production readiness
+
+### October 11, 2025
 -   **Enterprise-Grade Payment Infrastructure (1M User Ready)**: Complete system overhaul for massive scalability:
     -   **Queue System**: Bull + Redis for asynchronous payment processing with bounded concurrency
     -   **Rate Limiting**: Bottleneck library protecting TronGrid APIs (5 req/sec per API)
