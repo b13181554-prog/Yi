@@ -1,6 +1,7 @@
 const CryptAPI = require('@cryptapi/api');
 const config = require('./config');
 const axios = require('axios');
+const crypto = require('crypto');
 const pino = require('pino');
 
 const logger = pino({
@@ -20,6 +21,54 @@ class CryptAPIService {
     this.coin = 'trc20_usdt';
     this.walletAddress = config.BOT_WALLET_ADDRESS;
     this.baseUrl = 'https://api.cryptapi.io';
+    this.publicKey = null;
+    this.publicKeyExpiry = null;
+  }
+
+  async getPublicKey() {
+    if (this.publicKey && this.publicKeyExpiry && Date.now() < this.publicKeyExpiry) {
+      return this.publicKey;
+    }
+
+    try {
+      const response = await axios.get(`${this.baseUrl}/public_key/`, {
+        timeout: 10000
+      });
+      
+      this.publicKey = response.data;
+      this.publicKeyExpiry = Date.now() + (24 * 60 * 60 * 1000);
+      
+      logger.info('✅ CryptAPI public key fetched and cached');
+      return this.publicKey;
+    } catch (error) {
+      logger.error(`❌ Failed to fetch CryptAPI public key: ${error.message}`);
+      throw new Error('Failed to fetch CryptAPI public key');
+    }
+  }
+
+  async verifySignature(rawBody, signature) {
+    try {
+      const publicKey = await this.getPublicKey();
+      
+      const signatureBuffer = Buffer.from(signature, 'base64');
+      
+      const verify = crypto.createVerify('RSA-SHA256');
+      verify.update(rawBody);
+      verify.end();
+      
+      const isValid = verify.verify(publicKey, signatureBuffer);
+      
+      if (isValid) {
+        logger.info('✅ CryptAPI signature verified successfully');
+      } else {
+        logger.error('❌ Invalid CryptAPI signature');
+      }
+      
+      return isValid;
+    } catch (error) {
+      logger.error(`❌ Signature verification error: ${error.message}`);
+      return false;
+    }
   }
 
   getCallbackUrl() {

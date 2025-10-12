@@ -59,7 +59,12 @@ app.use((req, res, next) => {
 });
 
 // الحد الأقصى لحجم الطلب
-app.use(express.json({ limit: '10mb' }));
+app.use((req, res, next) => {
+  if (req.path === '/api/cryptapi/callback') {
+    return next();
+  }
+  express.json({ limit: '10mb' })(req, res, next);
+});
 app.use(validateRequestSize);
 
 // تطبيق Rate Limiting على جميع API endpoints
@@ -639,11 +644,25 @@ app.post('/api/cryptapi/create-payment', async (req, res) => {
   }
 });
 
-app.post('/api/cryptapi/callback', async (req, res) => {
+app.post('/api/cryptapi/callback', express.raw({ type: 'application/json' }), async (req, res) => {
   try {
-    console.log('🔔 CryptAPI Callback received:', JSON.stringify(req.body, null, 2));
+    const signature = req.headers['x-ca-signature'];
+    const rawBody = req.body;
     
-    const callbackData = req.body;
+    if (!signature) {
+      console.error('❌ Missing x-ca-signature header');
+      return res.status(401).send('*ok*');
+    }
+
+    const isValidSignature = await cryptapi.verifySignature(rawBody, signature);
+    
+    if (!isValidSignature) {
+      console.error('❌ Invalid CryptAPI signature - possible attack attempt');
+      return res.status(403).send('*ok*');
+    }
+
+    const callbackData = JSON.parse(rawBody.toString());
+    console.log('🔔 CryptAPI Callback received (signature verified):', JSON.stringify(callbackData, null, 2));
     
     const validation = cryptapi.validateCallback(callbackData);
     if (!validation.valid) {
