@@ -66,24 +66,7 @@ app.use((req, res, next) => {
 });
 app.use(validateRequestSize);
 
-// تطبيق Rate Limiting على جميع API endpoints
-app.use('/api', apiRateLimit);
-
-// معالج الملفات الثابتة
-app.use(express.static('public', {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-    }
-    if (path.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css; charset=utf-8');
-    }
-    if (path.endsWith('.html')) {
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    }
-  }
-}));
-
+// Health and monitoring endpoints (no rate limiting)
 app.get('/api/health', async (req, res) => {
   try {
     const health = await monitoringService.checkHealth();
@@ -142,6 +125,24 @@ app.get('/api/system/status', async (req, res) => {
     });
   }
 });
+
+// تطبيق Rate Limiting على جميع API endpoints
+app.use('/api', apiRateLimit);
+
+// معالج الملفات الثابتة
+app.use(express.static('public', {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    }
+    if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css; charset=utf-8');
+    }
+    if (path.endsWith('.html')) {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    }
+  }
+}));
 
 async function main() {
   try {
