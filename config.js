@@ -15,6 +15,8 @@ module.exports = {
   
   BOT_WALLET_ADDRESS: process.env.BOT_WALLET_ADDRESS || 'TCZwoWnmi8uBssqjtKGmUwAjToAxcJkjLP',
   
+  CRYPTAPI_CALLBACK_URL: process.env.CRYPTAPI_CALLBACK_URL || null,
+  
   SUBSCRIPTION_PRICE: parseInt(process.env.SUBSCRIPTION_PRICE) || 10,
   PUMP_SUBSCRIPTION_PRICE: parseInt(process.env.PUMP_SUBSCRIPTION_PRICE) || 5,
   WITHDRAWAL_FEE: parseInt(process.env.WITHDRAWAL_FEE) || 1,
