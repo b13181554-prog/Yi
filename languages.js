@@ -1,6 +1,7 @@
 const translations = {
   ar: {
     // رسائل عامة
+    palestine_free: 'فلسطين حرة',
     welcome: '👋 مرحباً بك في بوت التحليل الفني لـ OBENTCHI!',
     subscription_required: '❌ يجب الاشتراك في القناة أولاً!',
     subscribe_channel: 'للاستمرار، اشترك في قناتنا:',
@@ -77,6 +78,7 @@ const translations = {
   
   en: {
     // General messages
+    palestine_free: 'Free Palestine',
     welcome: '👋 Welcome to OBENTCHI Technical Analysis Bot!',
     subscription_required: '❌ You must subscribe to the channel first!',
     subscribe_channel: 'To continue, subscribe to our channel:',
@@ -153,6 +155,7 @@ const translations = {
   
   fr: {
     // Messages généraux
+    palestine_free: 'Palestine Libre',
     welcome: '👋 Bienvenue sur OBENTCHI Bot d\'Analyse Technique!',
     subscription_required: '❌ Vous devez d\'abord vous abonner à la chaîne!',
     subscribe_channel: 'Pour continuer, abonnez-vous à notre chaîne:',
@@ -229,6 +232,7 @@ const translations = {
   
   es: {
     // Mensajes generales
+    palestine_free: 'Palestina Libre',
     welcome: '👋 ¡Bienvenido al Bot de Análisis Técnico de OBENTCHI!',
     subscription_required: '❌ ¡Debes suscribirte al canal primero!',
     subscribe_channel: 'Para continuar, suscríbete a nuestro canal:',
@@ -305,6 +309,7 @@ const translations = {
   
   de: {
     // Allgemeine Nachrichten
+    palestine_free: 'Freies Palästina',
     welcome: '👋 Willkommen beim OBENTCHI Technical Analysis Bot!',
     subscription_required: '❌ Sie müssen zuerst den Kanal abonnieren!',
     subscribe_channel: 'Um fortzufahren, abonnieren Sie unseren Kanal:',
@@ -381,6 +386,7 @@ const translations = {
   
   ru: {
     // Общие сообщения
+    palestine_free: 'Свободная Палестина',
     welcome: '👋 Добро пожаловать в бот технического анализа OBENTCHI!',
     subscription_required: '❌ Сначала необходимо подписаться на канал!',
     subscribe_channel: 'Чтобы продолжить, подпишитесь на наш канал:',
@@ -457,6 +463,7 @@ const translations = {
   
   zh: {
     // 通用消息
+    palestine_free: '自由巴勒斯坦',
     welcome: '👋 欢迎使用 OBENTCHI 技术分析机器人！',
     subscription_required: '❌ 您必须先订阅频道！',
     subscribe_channel: '要继续，请订阅我们的频道：',
