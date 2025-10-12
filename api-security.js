@@ -51,7 +51,7 @@ function authenticateAPI(req, res, next) {
 const requestCounts = new Map();
 
 function apiRateLimit(req, res, next) {
-  const { user_id } = req.body;
+  const user_id = req.body?.user_id || req.query?.user_id || req.headers['x-user-id'] || 'anonymous';
   const now = Date.now();
   const userKey = `api_${user_id}`;
   
@@ -66,7 +66,9 @@ function apiRateLimit(req, res, next) {
     } else {
       userLimit.count++;
       
-      if (userLimit.count > 60) { // 60 طلب في الدقيقة
+      const maxRequests = user_id === 'anonymous' ? 30 : 60;
+      
+      if (userLimit.count > maxRequests) {
         return res.status(429).json({ 
           success: false, 
           error: 'Too many requests. Please try again later.' 
