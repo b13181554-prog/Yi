@@ -104,21 +104,23 @@ class CryptAPIService {
         }
       );
 
-      const paymentInfo = await cryptapi.getAddress();
+      const paymentAddress = await cryptapi.getAddress();
       
-      if (!paymentInfo || !paymentInfo.address_in) {
-        throw new Error('فشل إنشاء عنوان الدفع من CryptAPI');
+      logger.info(`📦 CryptAPI Response: ${paymentAddress}`);
+      
+      if (!paymentAddress || typeof paymentAddress !== 'string') {
+        throw new Error(`فشل إنشاء عنوان الدفع من CryptAPI: ${paymentAddress}`);
       }
 
-      logger.info(`✅ Payment address created: ${paymentInfo.address_in}`);
+      logger.info(`✅ Payment address created: ${paymentAddress}`);
 
       return {
         success: true,
         data: {
-          payment_address: paymentInfo.address_in,
-          callback_url: paymentInfo.callback_url,
+          payment_address: paymentAddress,
+          callback_url: callbackUrl,
           wallet_address: this.walletAddress,
-          qr_code_url: `${this.baseUrl}/${this.coin}/qrcode/?address=${paymentInfo.address_in}&value=${amount}&size=512`,
+          qr_code_url: `${this.baseUrl}/${this.coin}/qrcode/?address=${paymentAddress}&value=${amount}&size=512`,
           amount: amount,
           coin: this.coin
         }
