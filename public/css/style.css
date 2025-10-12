@@ -58,18 +58,18 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin: 12px auto 0 auto;
+    margin: 12px 0 0 0;
+    margin-right: 70px;
     padding: 6px 16px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 20px;
     backdrop-filter: blur(10px);
     animation: pulse 2s infinite;
     max-width: fit-content;
-    margin-right: 70px;
 }
 
 [dir="ltr"] .palestine-banner {
-    margin-right: 0;
+    margin-right: auto;
     margin-left: 70px;
 }
 
