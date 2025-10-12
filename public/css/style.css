@@ -45,6 +45,12 @@ body {
 .subtitle {
     font-size: 14px;
     opacity: 0.9;
+    margin-right: 70px;
+}
+
+[dir="ltr"] .subtitle {
+    margin-right: 0;
+    margin-left: 70px;
 }
 
 .palestine-banner {
@@ -59,6 +65,12 @@ body {
     backdrop-filter: blur(10px);
     animation: pulse 2s infinite;
     max-width: fit-content;
+    margin-right: 70px;
+}
+
+[dir="ltr"] .palestine-banner {
+    margin-right: 0;
+    margin-left: 70px;
 }
 
 .palestine-flag {
