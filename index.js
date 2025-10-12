@@ -577,6 +577,68 @@ app.post('/api/referral-stats', async (req, res) => {
   }
 });
 
+app.post('/api/cryptapi/create-payment', async (req, res) => {
+  try {
+    const { user_id, amount, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+
+    if (!amount || amount < config.MIN_DEPOSIT_AMOUNT) {
+      return res.json({ 
+        success: false, 
+        error: `الحد الأدنى للإيداع هو ${config.MIN_DEPOSIT_AMOUNT} USDT` 
+      });
+    }
+
+    const user = await db.getUser(user_id);
+    if (!user) {
+      return res.json({ success: false, error: 'User not found' });
+    }
+
+    const existingPayment = await db.getCryptAPIPaymentByUser(user_id, 'pending');
+    if (existingPayment) {
+      return res.json({
+        success: true,
+        payment: {
+          payment_address: existingPayment.payment_address,
+          qr_code_url: existingPayment.qr_code_url,
+          amount: existingPayment.amount,
+          created_at: existingPayment.created_at
+        }
+      });
+    }
+
+    const paymentResult = await cryptapi.createPaymentAddress(user_id, amount);
+    
+    if (!paymentResult.success) {
+      return res.json({ success: false, error: paymentResult.error });
+    }
+
+    await db.createCryptAPIPayment(
+      user_id,
+      paymentResult.data.payment_address,
+      amount,
+      paymentResult.data.qr_code_url,
+      paymentResult.data.callback_url
+    );
+
+    res.json({
+      success: true,
+      payment: {
+        payment_address: paymentResult.data.payment_address,
+        qr_code_url: paymentResult.data.qr_code_url,
+        amount: amount,
+        coin: paymentResult.data.coin
+      }
+    });
+  } catch (error) {
+    console.error('Create Payment API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/cryptapi/callback', async (req, res) => {
   try {
     console.log('🔔 CryptAPI Callback received:', JSON.stringify(req.body, null, 2));
