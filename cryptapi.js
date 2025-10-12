@@ -3,6 +3,7 @@ const config = require('./config');
 const axios = require('axios');
 const crypto = require('crypto');
 const pino = require('pino');
+const CircuitBreaker = require('./circuit-breaker');
 
 const logger = pino({
   level: 'info',
@@ -23,6 +24,28 @@ class CryptAPIService {
     this.baseUrl = 'https://api.cryptapi.io';
     this.publicKey = null;
     this.publicKeyExpiry = null;
+    
+    this.circuitBreaker = new CircuitBreaker({
+      name: 'CryptAPI',
+      failureThreshold: 5,
+      successThreshold: 2,
+      timeout: 15000,
+      resetTimeout: 60000
+    });
+  }
+
+  async retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        return await fn();
+      } catch (error) {
+        if (i === maxRetries - 1) throw error;
+        
+        const delay = baseDelay * Math.pow(2, i);
+        logger.warn(`⚠️ Retry ${i + 1}/${maxRetries} after ${delay}ms: ${error.message}`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
   }
 
   async getPublicKey() {
@@ -30,20 +53,25 @@ class CryptAPIService {
       return this.publicKey;
     }
 
-    try {
-      const response = await axios.get(`${this.baseUrl}/public_key/`, {
-        timeout: 10000
-      });
-      
-      this.publicKey = response.data;
-      this.publicKeyExpiry = Date.now() + (24 * 60 * 60 * 1000);
-      
-      logger.info('✅ CryptAPI public key fetched and cached');
-      return this.publicKey;
-    } catch (error) {
-      logger.error(`❌ Failed to fetch CryptAPI public key: ${error.message}`);
-      throw new Error('Failed to fetch CryptAPI public key');
-    }
+    return this.circuitBreaker.execute(async () => {
+      return this.retryWithBackoff(async () => {
+        const response = await axios.get(`${this.baseUrl}/public_key/`, {
+          timeout: 10000
+        });
+        
+        this.publicKey = response.data;
+        this.publicKeyExpiry = Date.now() + (24 * 60 * 60 * 1000);
+        
+        logger.info('✅ CryptAPI public key fetched and cached');
+        return this.publicKey;
+      }, 3, 1000);
+    }, () => {
+      if (this.publicKey) {
+        logger.warn('⚠️ Using cached public key due to circuit breaker');
+        return this.publicKey;
+      }
+      throw new Error('Public key not available and circuit is open');
+    });
   }
 
   async verifySignature(rawBody, signature) {
@@ -90,28 +118,32 @@ class CryptAPIService {
       logger.info(`🔗 Creating CryptAPI payment address for user ${userId}, amount: ${amount} USDT`);
       logger.info(`📞 Callback URL: ${callbackUrl}`);
 
-      const cryptapi = new CryptAPI(
-        this.coin,
-        this.walletAddress,
-        callbackUrl,
-        {
-          user_id: userId,
-          amount: amount
-        },
-        {
-          post: 1,
-          confirmations: 1
-        }
-      );
+      const paymentAddress = await this.circuitBreaker.execute(async () => {
+        return this.retryWithBackoff(async () => {
+          const cryptapi = new CryptAPI(
+            this.coin,
+            this.walletAddress,
+            callbackUrl,
+            {
+              user_id: userId,
+              amount: amount
+            },
+            {
+              post: 1,
+              confirmations: 1
+            }
+          );
 
-      const paymentAddress = await cryptapi.getAddress();
-      
-      logger.info(`📦 CryptAPI Response: ${paymentAddress}`);
-      
-      if (!paymentAddress || typeof paymentAddress !== 'string') {
-        throw new Error(`فشل إنشاء عنوان الدفع من CryptAPI: ${paymentAddress}`);
-      }
+          const address = await cryptapi.getAddress();
+          
+          if (!address || typeof address !== 'string') {
+            throw new Error(`فشل إنشاء عنوان الدفع من CryptAPI: ${address}`);
+          }
 
+          return address;
+        }, 3, 2000);
+      });
+      
       logger.info(`✅ Payment address created: ${paymentAddress}`);
 
       return {
@@ -132,6 +164,15 @@ class CryptAPIService {
         error: error.message || 'حدث خطأ في إنشاء عنوان الدفع'
       };
     }
+  }
+
+  getCircuitBreakerStatus() {
+    return this.circuitBreaker.getState();
+  }
+
+  resetCircuitBreaker() {
+    this.circuitBreaker.reset();
+    logger.info('🔄 CryptAPI circuit breaker reset');
   }
 
   async convertToUSDT(amountUSD) {
