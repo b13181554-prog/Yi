@@ -516,59 +516,133 @@ function showSection(sectionId, event) {
     }
 }
 
+let searchTimeout = null;
+let selectedAssetSymbol = null;
+
 function setupSymbolSearch() {
     const searchInput = document.getElementById('symbol-search');
     const select = document.getElementById('symbol-select');
 
     if (searchInput) {
+        let autocompleteContainer = document.getElementById('autocomplete-results');
+        
+        if (!autocompleteContainer) {
+            autocompleteContainer = document.createElement('div');
+            autocompleteContainer.id = 'autocomplete-results';
+            autocompleteContainer.className = 'autocomplete-dropdown';
+            searchInput.parentElement.style.position = 'relative';
+            searchInput.parentElement.appendChild(autocompleteContainer);
+        }
+
         searchInput.addEventListener('input', async function() {
-            const searchTerm = this.value.toLowerCase().trim();
+            const searchTerm = this.value.trim();
             const marketType = document.getElementById('market-type').value;
 
-            let allSymbols = [];
-            
-            if (marketType === 'crypto') {
-                if (CRYPTO_SYMBOLS.length === 0) {
-                    await loadAllCryptoSymbols();
-                }
-                allSymbols = CRYPTO_SYMBOLS;
-            } else if (marketType === 'forex') {
-                if (FOREX_PAIRS.length === 0) {
-                    generateAllForexPairs();
-                }
-                allSymbols = FOREX_PAIRS;
-            } else if (marketType === 'stocks') {
-                if (STOCKS.length < 50) {
-                    await loadAllStocks();
-                }
-                allSymbols = STOCKS;
-            } else if (marketType === 'commodities') {
-                allSymbols = COMMODITIES;
-            } else if (marketType === 'indices') {
-                allSymbols = INDICES;
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
             }
 
-            if (searchTerm === '') {
-                select.innerHTML = allSymbols.map(s => 
-                    `<option value="${s.value}">${s.label}</option>`
-                ).join('');
+            if (searchTerm.length < 1) {
+                autocompleteContainer.innerHTML = '';
+                autocompleteContainer.style.display = 'none';
+                select.innerHTML = '<option>🔍 ابدأ بكتابة اسم الأصل...</option>';
                 return;
             }
 
-            const filtered = allSymbols.filter(s => 
-                s.value.toLowerCase().includes(searchTerm) || 
-                s.label.toLowerCase().includes(searchTerm)
-            );
+            autocompleteContainer.innerHTML = '<div class="autocomplete-item loading">⏳ جاري البحث...</div>';
+            autocompleteContainer.style.display = 'block';
 
-            if (filtered.length === 0) {
-                select.innerHTML = '<option>❌ لا توجد نتائج</option>';
-            } else {
-                select.innerHTML = filtered.map(s => 
-                    `<option value="${s.value}">${s.label}</option>`
-                ).join('');
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch('/api/search-assets', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            query: searchTerm,
+                            market_type: marketType,
+                            init_data: tg.initData,
+                            limit: 20
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        autocompleteContainer.innerHTML = `<div class="autocomplete-item error">❌ ${data.error}</div>`;
+                        return;
+                    }
+
+                    if (data.results.length === 0) {
+                        autocompleteContainer.innerHTML = '<div class="autocomplete-item no-results">❌ لا توجد نتائج</div>';
+                        select.innerHTML = '<option>❌ لا توجد نتائج</option>';
+                        return;
+                    }
+
+                    autocompleteContainer.innerHTML = data.results.map(asset => {
+                        const symbol = asset.symbol || asset.value;
+                        const label = asset.label;
+                        const marketBadge = getMarketBadge(asset.market_type);
+                        
+                        return `
+                            <div class="autocomplete-item" data-symbol="${symbol}" data-label="${label}">
+                                <span class="asset-label">${label}</span>
+                                <span class="market-badge">${marketBadge}</span>
+                            </div>
+                        `;
+                    }).join('');
+
+                    select.innerHTML = data.results.map(asset => {
+                        const symbol = asset.symbol || asset.value;
+                        const label = asset.label;
+                        return `<option value="${symbol}">${label}</option>`;
+                    }).join('');
+
+                    const autocompleteItems = autocompleteContainer.querySelectorAll('.autocomplete-item');
+                    autocompleteItems.forEach(item => {
+                        item.addEventListener('click', function() {
+                            const symbol = this.getAttribute('data-symbol');
+                            const label = this.getAttribute('data-label');
+                            
+                            searchInput.value = label;
+                            selectedAssetSymbol = symbol;
+                            
+                            select.innerHTML = `<option value="${symbol}" selected>${label}</option>`;
+                            
+                            autocompleteContainer.innerHTML = '';
+                            autocompleteContainer.style.display = 'none';
+                        });
+                    });
+
+                } catch (error) {
+                    console.error('Search error:', error);
+                    autocompleteContainer.innerHTML = '<div class="autocomplete-item error">❌ حدث خطأ في البحث</div>';
+                }
+            }, 300);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !autocompleteContainer.contains(e.target)) {
+                autocompleteContainer.style.display = 'none';
+            }
+        });
+
+        searchInput.addEventListener('focus', function() {
+            if (autocompleteContainer.innerHTML && this.value.length >= 1) {
+                autocompleteContainer.style.display = 'block';
             }
         });
     }
+}
+
+function getMarketBadge(marketType) {
+    const badges = {
+        'crypto': '💰 كريبتو',
+        'forex': '💱 فوركس',
+        'stocks': '📈 أسهم',
+        'commodities': '🛢️ سلع',
+        'indices': '📊 مؤشرات'
+    };
+    return badges[marketType] || marketType;
 }
 
 // استدعاء وظيفة البحث عند تحديث القائمة
