@@ -5,6 +5,7 @@ const db = require('./database');
 const bot = require('./bot');
 const notifications = require('./notifications');
 const tron = require('./tron');
+const cryptapi = require('./cryptapi');
 const config = require('./config');
 const admin = require('./admin');
 const rateLimiter = require('./rate-limiter');
@@ -573,6 +574,104 @@ app.post('/api/referral-stats', async (req, res) => {
   } catch (error) {
     console.error('Referral Stats API Error:', error);
     res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/cryptapi/callback', async (req, res) => {
+  try {
+    console.log('🔔 CryptAPI Callback received:', JSON.stringify(req.body, null, 2));
+    
+    const callbackData = req.body;
+    
+    const validation = cryptapi.validateCallback(callbackData);
+    if (!validation.valid) {
+      console.error('❌ Invalid callback data:', validation.error);
+      return res.status(400).send('*ok*');
+    }
+
+    const paymentAddress = callbackData.address_in;
+    const payment = await db.getCryptAPIPayment(paymentAddress);
+    
+    if (!payment) {
+      console.error('❌ Payment not found for address:', paymentAddress);
+      return res.status(404).send('*ok*');
+    }
+
+    if (payment.status === 'completed') {
+      console.log('ℹ️ Payment already processed:', paymentAddress);
+      return res.send('*ok*');
+    }
+
+    const confirmations = parseInt(callbackData.confirmations);
+    const isPending = callbackData.pending === '1';
+    
+    await db.updateCryptAPIPaymentStatus(
+      paymentAddress,
+      isPending ? 'pending' : 'confirmed',
+      callbackData.txid_in,
+      confirmations
+    );
+
+    if (!isPending && cryptapi.isPaymentConfirmed(callbackData)) {
+      const amount = parseFloat(callbackData.value_coin);
+      const userId = payment.user_id;
+
+      if (amount < config.MIN_DEPOSIT_AMOUNT) {
+        console.warn(`⚠️ Amount ${amount} is below minimum deposit ${config.MIN_DEPOSIT_AMOUNT}`);
+        return res.send('*ok*');
+      }
+
+      const user = await db.getUser(userId);
+      const oldBalance = parseFloat(user.balance || 0);
+      const newBalance = oldBalance + amount;
+
+      await db.updateUser(userId, { balance: newBalance });
+
+      await db.createTransaction(
+        userId,
+        'deposit',
+        amount,
+        callbackData.txid_in,
+        paymentAddress,
+        'completed'
+      );
+
+      await db.updateCryptAPIPaymentStatus(paymentAddress, 'completed', callbackData.txid_in, confirmations);
+
+      try {
+        await bot.sendMessage(userId, `
+✅ <b>تم تأكيد الإيداع!</b>
+
+💵 المبلغ المضاف: ${amount} USDT
+💰 الرصيد السابق: ${oldBalance.toFixed(2)} USDT
+💰 الرصيد الجديد: ${newBalance.toFixed(2)} USDT
+
+🔗 معرف المعاملة: <code>${callbackData.txid_in}</code>
+⏰ الوقت: ${new Date().toLocaleString('ar')}
+
+يمكنك الآن استخدام رصيدك للاشتراك أو طلب التوصيات! 🎉
+        `, { parse_mode: 'HTML' });
+
+        await bot.sendMessage(config.OWNER_ID, `
+💵 <b>إيداع جديد عبر CryptAPI</b>
+
+المستخدم: ${user.first_name} (@${user.username})
+ID: ${userId}
+المبلغ: ${amount} USDT
+TxID: <code>${callbackData.txid_in}</code>
+التأكيدات: ${confirmations}
+        `, { parse_mode: 'HTML' });
+      } catch (msgError) {
+        console.error('❌ Failed to send notification:', msgError.message);
+      }
+
+      console.log(`✅ Payment completed: ${amount} USDT for user ${userId}`);
+    }
+
+    res.send('*ok*');
+  } catch (error) {
+    console.error('❌ CryptAPI Callback Error:', error);
+    res.status(500).send('*ok*');
   }
 });
 
