@@ -18,6 +18,8 @@ const { getTelegramProfilePhoto } = require('./telegram-helpers');
 const { initTradeSignalsMonitor } = require('./trade-signals-monitor');
 const monitor = require('./monitoring');
 const Groq = require('groq-sdk');
+const { addPaymentCallback, getQueueStats } = require('./payment-callback-queue');
+const monitoringService = require('./monitoring-service');
 
 // Groq AI - Free and fast alternative to OpenAI
 let groq = null;
@@ -82,17 +84,81 @@ app.use(express.static('public', {
   }
 }));
 
+app.get('/api/health', async (req, res) => {
+  try {
+    const health = await monitoringService.checkHealth();
+    const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 207 : 503;
+    res.status(statusCode).json(health);
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
+app.get('/api/metrics', async (req, res) => {
+  try {
+    const metrics = await monitoringService.collectMetrics();
+    res.json({
+      success: true,
+      metrics
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.get('/api/queue/stats', async (req, res) => {
+  try {
+    const stats = await getQueueStats();
+    res.json({
+      success: true,
+      queue: stats,
+      cryptapi: cryptapi.getCircuitBreakerStatus()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.get('/api/system/status', async (req, res) => {
+  try {
+    const status = await monitoringService.getSystemStatus();
+    res.json({
+      success: true,
+      ...status
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 async function main() {
   try {
     console.log('🚀 Starting OBENTCHI Bot...');
     
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🌐 HTTP Server is running on port ${PORT}`);
-      console.log(`📡 Health endpoint: http://localhost:${PORT}/`);
+      console.log(`📡 Health endpoint: http://localhost:${PORT}/api/health`);
+      console.log(`📊 Metrics endpoint: http://localhost:${PORT}/api/metrics`);
+      console.log(`📈 Queue stats: http://localhost:${PORT}/api/queue/stats`);
       console.log(`🔗 Public URL will be available at your Replit domain`);
     });
     
     await db.initDatabase();
+    
+    monitoringService.startMonitoring(60000);
+    console.log('📊 Monitoring service started');
     
     notifications.initNotifications(bot);
     initAnalystMonitor(bot);
@@ -618,77 +684,12 @@ app.post('/api/cryptapi/callback', express.raw({ type: 'application/json' }), as
       return res.status(404).send('*ok*');
     }
 
-    if (payment.status === 'completed') {
-      console.log('ℹ️ Payment already processed:', paymentAddress);
-      return res.send('*ok*');
-    }
-
-    const confirmations = parseInt(callbackData.confirmations);
-    const isPending = callbackData.pending === '1';
+    const idempotencyKey = `${callbackData.txid_in}-${callbackData.confirmations}-${Date.now()}`;
     
-    await db.updateCryptAPIPaymentStatus(
-      paymentAddress,
-      isPending ? 'pending' : 'confirmed',
-      callbackData.txid_in,
-      confirmations
-    );
-
-    if (!isPending && cryptapi.isPaymentConfirmed(callbackData)) {
-      const amount = parseFloat(callbackData.value_coin);
-      const userId = payment.user_id;
-
-      if (amount < config.MIN_DEPOSIT_AMOUNT) {
-        console.warn(`⚠️ Amount ${amount} is below minimum deposit ${config.MIN_DEPOSIT_AMOUNT}`);
-        return res.send('*ok*');
-      }
-
-      const user = await db.getUser(userId);
-      const oldBalance = parseFloat(user.balance || 0);
-      const newBalance = oldBalance + amount;
-
-      await db.updateUser(userId, { balance: newBalance });
-
-      await db.createTransaction(
-        userId,
-        'deposit',
-        amount,
-        callbackData.txid_in,
-        paymentAddress,
-        'completed'
-      );
-
-      await db.updateCryptAPIPaymentStatus(paymentAddress, 'completed', callbackData.txid_in, confirmations);
-
-      try {
-        await bot.sendMessage(userId, `
-✅ <b>تم تأكيد الإيداع!</b>
-
-💵 المبلغ المضاف: ${amount} USDT
-💰 الرصيد السابق: ${oldBalance.toFixed(2)} USDT
-💰 الرصيد الجديد: ${newBalance.toFixed(2)} USDT
-
-🔗 معرف المعاملة: <code>${callbackData.txid_in}</code>
-⏰ الوقت: ${new Date().toLocaleString('ar')}
-
-يمكنك الآن استخدام رصيدك للاشتراك أو طلب التوصيات! 🎉
-        `, { parse_mode: 'HTML' });
-
-        await bot.sendMessage(config.OWNER_ID, `
-💵 <b>إيداع جديد عبر CryptAPI</b>
-
-المستخدم: ${user.first_name} (@${user.username})
-ID: ${userId}
-المبلغ: ${amount} USDT
-TxID: <code>${callbackData.txid_in}</code>
-التأكيدات: ${confirmations}
-        `, { parse_mode: 'HTML' });
-      } catch (msgError) {
-        console.error('❌ Failed to send notification:', msgError.message);
-      }
-
-      console.log(`✅ Payment completed: ${amount} USDT for user ${userId}`);
-    }
-
+    await addPaymentCallback(callbackData, idempotencyKey);
+    
+    console.log(`✅ Payment callback queued for processing: ${paymentAddress}`);
+    
     res.send('*ok*');
   } catch (error) {
     console.error('❌ CryptAPI Callback Error:', error);

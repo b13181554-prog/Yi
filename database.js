@@ -1735,6 +1735,41 @@ async function getPendingCryptAPIPayments() {
   }).sort({ created_at: -1 }).toArray();
 }
 
+async function getCryptAPIPaymentsByStatus(status) {
+  return await db.collection('cryptapi_payments').find({
+    status: status
+  }).sort({ created_at: -1 }).toArray();
+}
+
+async function updateCryptAPIPayment(paymentAddress, updates) {
+  const updateData = { ...updates };
+  
+  if (updates.status === 'completed' && !updates.completed_at) {
+    updateData.completed_at = new Date();
+  }
+  
+  await db.collection('cryptapi_payments').updateOne(
+    { payment_address: paymentAddress },
+    { $set: updateData }
+  );
+}
+
+async function addTransaction(transactionData) {
+  const transaction = {
+    user_id: transactionData.user_id,
+    type: transactionData.type,
+    amount: transactionData.amount,
+    status: transactionData.status || 'completed',
+    tx_id: transactionData.tx_id || null,
+    payment_method: transactionData.payment_method || 'unknown',
+    created_at: transactionData.created_at || new Date(),
+    details: transactionData.details || null
+  };
+  
+  const result = await db.collection('transactions').insertOne(transaction);
+  return { ...transaction, _id: result.insertedId };
+}
+
 function getDB() {
   return db;
 }
@@ -1836,5 +1871,8 @@ module.exports = {
   getCryptAPIPayment,
   getCryptAPIPaymentByUser,
   updateCryptAPIPaymentStatus,
-  getPendingCryptAPIPayments
+  getPendingCryptAPIPayments,
+  getCryptAPIPaymentsByStatus,
+  updateCryptAPIPayment,
+  addTransaction
 };
