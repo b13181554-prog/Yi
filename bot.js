@@ -376,39 +376,7 @@ bot.on('web_app_data', async (msg) => {
       return bot.sendMessage(chatId, 'يرجى البدء بالضغط على /start');
     }
 
-    if (data.action === 'deposit') {
-      await db.updateUser(userId, { temp_withdrawal_address: 'deposit_pending' });
-      
-      const { addPaymentVerification } = require('./payment-queue');
-      
-      try {
-        await addPaymentVerification(data.tx_id, userId, data.amount);
-        
-        await bot.sendMessage(chatId, `
-📥 <b>طلب إيداع مستلم</b>
-
-معرف المعاملة: <code>${data.tx_id}</code>
-
-⏳ تمت إضافة طلبك للمعالجة
-سيتم التحقق من المعاملة وإضافة الرصيد خلال دقائق
-
-سنرسل لك إشعار فور اكتمال العملية ✅
-`, { parse_mode: 'HTML' });
-        
-      } catch (error) {
-        console.error('Error adding payment to queue:', error);
-        await bot.sendMessage(chatId, `
-❌ <b>حدث خطأ</b>
-
-لم نتمكن من إضافة طلبك للمعالجة.
-يرجى المحاولة مرة أخرى أو التواصل مع الدعم.
-        `, { parse_mode: 'HTML' });
-      }
-      
-      await db.updateUser(userId, { temp_withdrawal_address: null });
-    }
-    
-    else if (data.action === 'withdraw') {
+    if (data.action === 'withdraw') {
       const okx = require('./okx');
       const amount = parseFloat(data.amount);
       const address = data.address;

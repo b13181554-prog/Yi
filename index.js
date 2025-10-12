@@ -4,7 +4,6 @@ const { ObjectId } = require('mongodb');
 const db = require('./database');
 const bot = require('./bot');
 const notifications = require('./notifications');
-const tron = require('./tron');
 const cryptapi = require('./cryptapi');
 const config = require('./config');
 const admin = require('./admin');
@@ -17,9 +16,7 @@ const { authenticateAPI, apiRateLimit, validateRequestSize } = require('./api-se
 const { initAnalystMonitor } = require('./analyst-monitor');
 const { getTelegramProfilePhoto } = require('./telegram-helpers');
 const { initTradeSignalsMonitor } = require('./trade-signals-monitor');
-const { initWorker } = require('./payment-worker');
 const monitor = require('./monitoring');
-const { getQueueStats } = require('./payment-queue');
 const Groq = require('groq-sdk');
 
 // Groq AI - Free and fast alternative to OpenAI
@@ -102,9 +99,6 @@ async function main() {
     initTradeSignalsMonitor(bot);
     admin.initAdminCommands(bot);
     rankingScheduler.start();
-    initWorker(bot);
-    
-    console.log('✅ Payment queue workers initialized');
     
     bot.startBot();
     
@@ -252,114 +246,24 @@ ${description}
       }
       
       if (text.length === 64 && /^[a-fA-F0-9]{64}$/.test(text)) {
-        const txId = text;
-        
-        // التحقق من عدم استخدام المعاملة سابقاً
-        const existingTx = await db.getTransactionByTxId(txId);
-        if (existingTx) {
-          return bot.sendMessage(chatId, `
-❌ <b>معاملة مكررة!</b>
+        await bot.sendMessage(chatId, `
+⏳ <b>لإجراء عمليات الإيداع</b>
 
-هذه المعاملة تم استخدامها من قبل.
-معرف المعاملة: <code>${txId}</code>
+يرجى استخدام نظام الدفع الآلي الجديد عبر تطبيق الويب:
+1. اضغط على زر "🚀 فتح التطبيق"
+2. اختر "💰 المحفظة"
+3. اختر "📥 إيداع"
+4. سيتم إنشاء عنوان دفع خاص بك تلقائياً
+5. أرسل USDT إلى العنوان المُنشأ
 
-⚠️ كل معاملة يمكن استخدامها مرة واحدة فقط.
+✨ <b>المميزات الجديدة:</b>
+• عنوان دفع فريد لكل عملية
+• تأكيد فوري وتلقائي عند استلام الدفع
+• لا حاجة لإرسال TxID يدوياً
+• رسوم منخفضة جداً (1%)
+
+📝 ملاحظة: نظام الدفع اليدوي تم استبداله بنظام CryptAPI الآلي الأكثر أماناً وسرعة
 `, { parse_mode: 'HTML' });
-        }
-        
-        const waitMsg = await bot.sendMessage(chatId, '⏳ جاري التحقق من المعاملة على شبكة TRON...');
-        
-        try {
-          // التحقق من المعاملة على البلوكشين
-          const verification = await tron.verifyUSDTTransaction(txId, config.BOT_WALLET_ADDRESS, null);
-          
-          if (!verification.success) {
-            await bot.deleteMessage(chatId, waitMsg.message_id);
-            return bot.sendMessage(chatId, `
-❌ <b>فشل التحقق من المعاملة</b>
-
-السبب: ${verification.error}
-
-تأكد من:
-• استخدام شبكة TRC20
-• إرسال USDT إلى العنوان الصحيح
-• اكتمال المعاملة على البلوكشين
-
-معرف المعاملة: <code>${txId}</code>
-`, { parse_mode: 'HTML' });
-          }
-          
-          const amount = verification.data.amount;
-          const fromAddress = verification.data.from;
-          
-          // التحقق من الحد الأدنى للإيداع
-          if (amount < config.MIN_DEPOSIT_AMOUNT) {
-            await bot.deleteMessage(chatId, waitMsg.message_id);
-            return bot.sendMessage(chatId, `
-❌ <b>المبلغ أقل من الحد الأدنى!</b>
-
-الحد الأدنى للإيداع: ${config.MIN_DEPOSIT_AMOUNT} USDT
-المبلغ المرسل: ${amount} USDT
-
-يرجى إرسال ${config.MIN_DEPOSIT_AMOUNT} USDT على الأقل.
-`, { parse_mode: 'HTML' });
-          }
-          
-          // حساب الرصيد الجديد
-          const oldBalance = parseFloat(user.balance);
-          const newBalance = oldBalance + amount;
-          
-          // تحديث الرصيد في قاعدة البيانات
-          await db.updateUser(userId, { balance: newBalance });
-          
-          // إنشاء سجل المعاملة
-          await db.createTransaction(userId, 'deposit', amount, txId, fromAddress, 'completed');
-          
-          await bot.deleteMessage(chatId, waitMsg.message_id);
-          
-          // إرسال إشعار للمستخدم
-          await notifications.notifyDeposit(userId, amount, txId);
-          
-          // إرسال إشعار للمالك
-          await bot.sendMessage(config.OWNER_ID, `
-💰 <b>إيداع جديد!</b>
-
-👤 المستخدم: ${user.first_name} (${userId})
-💵 المبلغ: ${amount} USDT
-🔗 TxID: <code>${txId}</code>
-📍 من: <code>${fromAddress}</code>
-
-💰 الرصيد: ${oldBalance} → ${newBalance.toFixed(2)} USDT
-`, { parse_mode: 'HTML' });
-          
-          // إرسال رسالة تأكيد للمستخدم
-          await bot.sendMessage(chatId, `
-✅ <b>تم الإيداع بنجاح!</b>
-
-💵 المبلغ المضاف: ${amount} USDT
-💰 الرصيد السابق: ${oldBalance.toFixed(2)} USDT
-💰 الرصيد الجديد: ${newBalance.toFixed(2)} USDT
-
-🔗 معرف المعاملة: <code>${txId}</code>
-📍 من العنوان: <code>${fromAddress}</code>
-⏰ الوقت: ${new Date().toLocaleString('ar')}
-
-يمكنك الآن استخدام رصيدك للاشتراك أو طلب التوصيات! 🎉
-`, { parse_mode: 'HTML' });
-          
-        } catch (error) {
-          await bot.deleteMessage(chatId, waitMsg.message_id);
-          console.error('خطأ في معالجة الإيداع:', error);
-          await bot.sendMessage(chatId, `
-❌ <b>حدث خطأ في معالجة الإيداع</b>
-
-الخطأ: ${error.message}
-
-يرجى المحاولة مرة أخرى أو التواصل مع الدعم.
-معرف المعاملة: <code>${txId}</code>
-`, { parse_mode: 'HTML' });
-        }
-        
         return;
       }
     });
@@ -640,6 +544,42 @@ app.post('/api/cryptapi/create-payment', async (req, res) => {
     });
   } catch (error) {
     console.error('Create Payment API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.get('/api/wallet/payment-status', async (req, res) => {
+  try {
+    const { paymentAddress, userId, initData } = req.query;
+    
+    if (!verifyTelegramWebAppData(initData)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+
+    if (!paymentAddress || !userId) {
+      return res.json({ success: false, error: 'Missing required parameters' });
+    }
+
+    const payment = await db.getCryptAPIPayment(paymentAddress);
+    
+    if (!payment) {
+      return res.json({ success: false, error: 'Payment not found' });
+    }
+
+    if (payment.user_id !== parseInt(userId)) {
+      return res.json({ success: false, error: 'Unauthorized: Payment does not belong to user' });
+    }
+
+    const user = await db.getUser(parseInt(userId));
+    
+    res.json({
+      success: true,
+      status: payment.status,
+      balance: user?.balance || 0,
+      confirmations: payment.confirmations || 0
+    });
+  } catch (error) {
+    console.error('Payment Status API Error:', error);
     res.json({ success: false, error: error.message });
   }
 });
@@ -3021,18 +2961,9 @@ app.get('/metrics', async (req, res) => {
   }
 });
 
-app.get('/queue-stats', async (req, res) => {
-  try {
-    const stats = await getQueueStats();
-    res.json(stats);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // SPA fallback - يخدم index.html لجميع المسارات غير API
 app.use((req, res, next) => {
-  if (!req.path.startsWith('/api/') && !req.path.startsWith('/health') && !req.path.startsWith('/ping') && !req.path.startsWith('/metrics') && !req.path.startsWith('/queue-stats')) {
+  if (!req.path.startsWith('/api/') && !req.path.startsWith('/health') && !req.path.startsWith('/ping') && !req.path.startsWith('/metrics')) {
     res.sendFile(__dirname + '/public/index.html');
   } else {
     next();

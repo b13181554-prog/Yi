@@ -1,6 +1,4 @@
-const { getQueueStats } = require('./payment-queue');
 const cache = require('./cache-manager');
-const tronEnhanced = require('./tron-enhanced');
 const db = require('./database');
 const pino = require('pino');
 
@@ -34,11 +32,7 @@ class SystemMonitor {
 
   async getSystemHealth() {
     try {
-      const [queueStats, cacheStats, apiStatus] = await Promise.all([
-        getQueueStats(),
-        cache.getStats(),
-        Promise.resolve(tronEnhanced.getApiStatus())
-      ]);
+      const cacheStats = await cache.getStats();
 
       let dbHealthy = true;
       try {
@@ -67,9 +61,7 @@ class SystemMonitor {
             ? ((this.errorCount / this.requestCount) * 100).toFixed(2) + '%'
             : '0%'
         },
-        queues: queueStats,
         cache: cacheStats,
-        tronApis: apiStatus,
         database: {
           connected: dbHealthy,
           status: dbHealthy ? 'healthy' : 'unhealthy'
@@ -126,10 +118,6 @@ const monitor = new SystemMonitor();
 setInterval(async () => {
   const health = await monitor.getSystemHealth();
   logger.info(`📊 System Health: ${health.status}`);
-  
-  if (health.queues) {
-    logger.info(`📬 Queue Stats - Payment: ${health.queues.payment.waiting} waiting, ${health.queues.payment.active} active`);
-  }
 }, 60000);
 
 module.exports = monitor;

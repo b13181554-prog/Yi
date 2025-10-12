@@ -37,6 +37,9 @@ let userBalance = 0;
 let userId = null;
 let botUsername = null;
 
+let currentPaymentAddress = null;
+let paymentPollingInterval = null;
+
 function formatPrice(price) {
     if (price === null || price === undefined || isNaN(price)) return 'N/A';
     
@@ -1341,11 +1344,27 @@ async function submitTrade() {
 function showDeposit() {
     document.getElementById('deposit-form').style.display = 'block';
     document.getElementById('withdraw-form').style.display = 'none';
+    
+    document.getElementById('deposit-amount-section').style.display = 'block';
+    document.getElementById('deposit-loading-section').style.display = 'none';
+    document.getElementById('deposit-payment-section').style.display = 'none';
+    
+    document.getElementById('deposit-amount').value = '10';
 }
 
 function hideDeposit() {
+    if (paymentPollingInterval) {
+        clearInterval(paymentPollingInterval);
+        paymentPollingInterval = null;
+    }
+    
+    currentPaymentAddress = null;
+    
     document.getElementById('deposit-form').style.display = 'none';
-    document.getElementById('tx-id').value = '';
+    document.getElementById('deposit-amount-section').style.display = 'block';
+    document.getElementById('deposit-loading-section').style.display = 'none';
+    document.getElementById('deposit-payment-section').style.display = 'none';
+    document.getElementById('deposit-amount').value = '10';
 }
 
 function showWithdraw() {
@@ -1360,23 +1379,52 @@ function hideWithdraw() {
 }
 
 async function submitDeposit() {
-    const txId = document.getElementById('tx-id').value.trim();
+    const amount = parseFloat(document.getElementById('deposit-amount').value);
 
-    if (!txId || txId.length !== 64) {
-        tg.showAlert('يرجى إدخال معرف معاملة صحيح (64 حرف)');
+    if (!amount || amount < 5) {
+        tg.showAlert('الحد الأدنى للإيداع هو 5 USDT');
         return;
     }
 
-    tg.showConfirm('هل أنت متأكد من معرف المعاملة؟', async (confirmed) => {
-        if (confirmed) {
-            tg.sendData(JSON.stringify({
-                action: 'deposit',
-                tx_id: txId
-            }));
-            tg.showAlert('تم إرسال طلب الإيداع! سيتم التحقق منه قريباً.');
-            hideDeposit();
+    document.getElementById('deposit-amount-section').style.display = 'none';
+    document.getElementById('deposit-loading-section').style.display = 'block';
+
+    try {
+        const response = await fetch('/api/cryptapi/create-payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user_id: userId,
+                amount: amount,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.payment) {
+            currentPaymentAddress = data.payment.payment_address;
+            
+            document.getElementById('payment-address-text').textContent = data.payment.payment_address;
+            document.getElementById('qr-code-image').src = data.payment.qr_code_url;
+            
+            document.getElementById('deposit-loading-section').style.display = 'none';
+            document.getElementById('deposit-payment-section').style.display = 'block';
+            
+            startPaymentPolling(data.payment.payment_address);
+        } else {
+            document.getElementById('deposit-loading-section').style.display = 'none';
+            document.getElementById('deposit-amount-section').style.display = 'block';
+            tg.showAlert('❌ ' + (data.error || 'فشل إنشاء عنوان الدفع'));
         }
-    });
+    } catch (error) {
+        console.error('Error creating payment:', error);
+        document.getElementById('deposit-loading-section').style.display = 'none';
+        document.getElementById('deposit-amount-section').style.display = 'block';
+        tg.showAlert('❌ حدث خطأ في إنشاء عنوان الدفع');
+    }
 }
 
 async function submitWithdraw() {
@@ -1609,12 +1657,17 @@ async function changeLanguage() {
     }
 }
 
-function copyAddress() {
-    const address = 'TCZwoWnmi8uBssqjtKGmUwAjToAxcJkjLP';
+function copyPaymentAddress() {
+    const address = currentPaymentAddress;
+    
+    if (!address) {
+        tg.showAlert('❌ لا يوجد عنوان للنسخ');
+        return;
+    }
 
     if (navigator.clipboard) {
         navigator.clipboard.writeText(address).then(() => {
-            tg.showAlert('تم نسخ العنوان!');
+            tg.showAlert('✅ تم نسخ عنوان الدفع!');
         });
     } else {
         const input = document.createElement('input');
@@ -1623,7 +1676,53 @@ function copyAddress() {
         input.select();
         document.execCommand('copy');
         document.body.removeChild(input);
-        tg.showAlert('تم نسخ العنوان!');
+        tg.showAlert('✅ تم نسخ عنوان الدفع!');
+    }
+}
+
+function startPaymentPolling(paymentAddress) {
+    if (paymentPollingInterval) {
+        clearInterval(paymentPollingInterval);
+    }
+    
+    paymentPollingInterval = setInterval(async () => {
+        await checkPaymentStatus(paymentAddress);
+    }, 12000);
+}
+
+async function checkPaymentStatus(paymentAddress) {
+    try {
+        const response = await fetch(`/api/wallet/payment-status?paymentAddress=${encodeURIComponent(paymentAddress)}&userId=${userId}&initData=${encodeURIComponent(tg.initData)}`);
+        const data = await response.json();
+
+        if (data.success) {
+            if (data.status === 'completed') {
+                if (paymentPollingInterval) {
+                    clearInterval(paymentPollingInterval);
+                    paymentPollingInterval = null;
+                }
+
+                const statusIndicator = document.getElementById('payment-status-indicator');
+                statusIndicator.style.background = '#d4edda';
+                statusIndicator.style.borderColor = '#28a745';
+                statusIndicator.querySelector('p').innerHTML = '✅ <span data-i18n="payment_status_confirmed">تم تأكيد الدفع بنجاح!</span>';
+                statusIndicator.querySelector('p').style.color = '#155724';
+                
+                userBalance = parseFloat(data.balance || userBalance);
+                const balanceElements = document.querySelectorAll('#balance, #user-balance');
+                balanceElements.forEach(el => {
+                    if (el) el.textContent = `${userBalance.toFixed(2)} USDT`;
+                });
+
+                tg.showAlert('✅ تم تأكيد الإيداع بنجاح! تم تحديث رصيدك.');
+                
+                setTimeout(() => {
+                    hideDeposit();
+                }, 3000);
+            }
+        }
+    } catch (error) {
+        console.error('Error checking payment status:', error);
     }
 }
 
