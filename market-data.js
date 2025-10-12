@@ -360,7 +360,11 @@ class MarketDataService {
 
     let price;
     
-    if (marketType === 'stocks' || marketType === 'indices' || marketType === 'commodities') {
+    if (marketType === 'forex') {
+      const ForexService = require('./forex-service');
+      const forexService = new ForexService();
+      price = await forexService.getCurrentPrice(symbol);
+    } else if (marketType === 'stocks' || marketType === 'indices' || marketType === 'commodities') {
       price = await this.getPriceFromYahooFinance(symbol, marketType);
     } else {
       price = await this.getPriceFromOKX(symbol) ||
@@ -443,8 +447,27 @@ class MarketDataService {
   async get24hrStats(symbol, marketType = 'spot') {
     console.log(`📊 Fetching 24hr stats for ${symbol}...`);
 
-    const stats = await this.get24hrStatsFromCoinGecko(symbol) ||
-                  await this.get24hrStatsFromBinance(symbol);
+    let stats;
+    
+    if (marketType === 'forex') {
+      const ForexService = require('./forex-service');
+      const forexService = new ForexService();
+      stats = await forexService.get24hrStats(symbol);
+    } else if (marketType === 'stocks' || marketType === 'indices' || marketType === 'commodities') {
+      const currentPrice = await this.getCurrentPrice(symbol, marketType);
+      stats = {
+        symbol: symbol,
+        priceChange: 0,
+        priceChangePercent: 0,
+        lastPrice: currentPrice.toString(),
+        highPrice: currentPrice.toString(),
+        lowPrice: currentPrice.toString(),
+        volume: '0'
+      };
+    } else {
+      stats = await this.get24hrStatsFromCoinGecko(symbol) ||
+              await this.get24hrStatsFromBinance(symbol);
+    }
 
     if (stats) {
       console.log(`✅ Got 24hr stats for ${symbol}`);
@@ -706,7 +729,11 @@ class MarketDataService {
 
     let candles;
     
-    if (marketType === 'stocks' || marketType === 'indices' || marketType === 'commodities') {
+    if (marketType === 'forex') {
+      const ForexService = require('./forex-service');
+      const forexService = new ForexService();
+      candles = await forexService.getCandles(symbol, interval, limit);
+    } else if (marketType === 'stocks' || marketType === 'indices' || marketType === 'commodities') {
       candles = await this.getCandlesFromYahooFinance(symbol, interval, limit, marketType);
     } else {
       candles = await this.getCandlesFromOKX(symbol, interval, limit) ||

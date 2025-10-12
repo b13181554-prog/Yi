@@ -5,6 +5,26 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot offering comprehensive t
 
 ## Recent Updates
 
+### October 12, 2025 - Market Data Fetching System Fix (COMPLETE)
+-   **✅ Fixed Multi-Market Data Fetching**: Resolved critical issue where forex, stocks, commodities, and indices data fetching was failing:
+    -   **Root Cause**: `market-data.js` was attempting to use crypto APIs (OKX, Bybit, Binance) for all market types
+    -   **Solution Implemented**:
+        -   **getCandles()**: Now properly routes forex to `ForexService`, stocks/indices/commodities to Yahoo Finance
+        -   **getCurrentPrice()**: Added forex routing to `ForexService.getCurrentPrice()`
+        -   **get24hrStats()**: Added proper market type detection with forex support
+    -   **Data Sources Verified**:
+        -   ✅ Forex: TwelveData → Yahoo Finance → Alpha Vantage (fallback chain working)
+        -   ✅ Stocks: Yahoo Finance API (confirmed working)
+        -   ✅ Indices: Yahoo Finance API (US30, NAS100, SPX500 working)
+        -   ✅ Commodities: Yahoo Finance API (partial support - some exotic commodities not available)
+        -   ✅ Crypto: OKX → Bybit → Binance (working as before)
+    -   **Test Results**: Verified in logs:
+        -   Forex pairs (EURUSD, GBPUSD, AUDJPY, etc.) fetching successfully
+        -   Stock symbols (AAPL, NVDA, JPM, etc.) working correctly
+        -   Index data (US500, NAS100, DJ30) retrieving properly
+        -   Note: Some exotic forex pairs (MXNRUB, DKKCNY) may fail due to unavailability in all data sources
+    -   **User Impact**: All markets now work correctly - users can analyze forex, stocks, and indices without errors
+
 ### October 12, 2025 - Dynamic Asset Search System (COMPLETE)
 -   **✅ Unlimited Asset Search with Autocomplete**: Complete transition from static asset lists to dynamic search system:
     -   **Backend Search API** (`/api/search-assets`):
