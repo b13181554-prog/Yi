@@ -45,22 +45,23 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    margin: 10px 0 15px 0;
-    padding: 8px 20px;
+    gap: 8px;
+    margin: 12px auto 0 auto;
+    padding: 6px 16px;
     background: rgba(255, 255, 255, 0.2);
-    border-radius: 25px;
+    border-radius: 20px;
     backdrop-filter: blur(10px);
     animation: pulse 2s infinite;
+    max-width: fit-content;
 }
 
 .palestine-flag {
-    font-size: 24px;
+    font-size: 18px;
     animation: wave 1.5s ease-in-out infinite;
 }
 
 .palestine-text {
-    font-size: 16px;
+    font-size: 13px;
     font-weight: bold;
     color: white;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
