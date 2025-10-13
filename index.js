@@ -1994,6 +1994,71 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
   }
 });
 
+app.post('/api/analyze-v1-pro', async (req, res) => {
+  try {
+    const { user_id, symbol, timeframe, market_type, trading_type, balance, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    let candles;
+    
+    if (market_type === 'forex') {
+      candles = await forexService.getCandles(symbol, timeframe, 100);
+    } else {
+      candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
+    }
+    
+    // V1 PRO يحتاج 100 شمعة على الأقل للتحليل الدقيق
+    const minCandles = 100;
+    
+    if (!candles || candles.length < minCandles) {
+      let errorMessage = `بيانات غير كافية لنظام V1 PRO - متوفر ${candles?.length || 0} شمعة فقط`;
+      errorMessage += `\nيجب توفر ${minCandles} شمعة على الأقل`;
+      
+      if (market_type === 'commodities' || market_type === 'stocks') {
+        errorMessage += `\n💡 نصيحة: استخدم إطار زمني أطول (4h أو 1d) للحصول على بيانات أكثر`;
+      }
+      
+      return res.json({ success: false, error: errorMessage });
+    }
+    
+    // الحصول على رصيد المستخدم أو استخدام القيمة الافتراضية
+    let userBalance = balance || 10000;
+    
+    if (user_id) {
+      try {
+        const user = await db.getUser(user_id);
+        if (user && user.balance) {
+          userBalance = user.balance;
+        }
+      } catch (err) {
+        console.log('⚠️ لم يتم جلب رصيد المستخدم، استخدام القيمة الافتراضية');
+      }
+    }
+    
+    const OBENTCHIV1ProAnalysis = require('./v1-pro-analysis');
+    const v1ProAnalysis = new OBENTCHIV1ProAnalysis(candles, userBalance, symbol);
+    
+    // استخدام await لأن getCompleteAnalysis أصبح async
+    const v1ProResult = await v1ProAnalysis.getCompleteAnalysis();
+    
+    // إضافة معلومات إضافية
+    v1ProResult.tradingType = trading_type || 'spot';
+    v1ProResult.marketType = market_type;
+    v1ProResult.timeframe = timeframe;
+    
+    res.json({
+      success: true,
+      analysis: v1ProResult
+    });
+  } catch (error) {
+    console.error('V1 PRO Analysis API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/analyze-pump', async (req, res) => {
   try {
     const { symbol, market_type, timeframe, trading_type, init_data } = req.body;

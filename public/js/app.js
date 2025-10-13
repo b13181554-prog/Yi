@@ -1976,21 +1976,28 @@ async function analyzeMarketAdvanced() {
         const apiEndpoint = analysisType === 'ultra' ? '/api/analyze-ultra' : 
                             analysisType === 'zero-reversal' ? '/api/analyze-zero-reversal' : 
                             analysisType === 'pump' ? '/api/analyze-pump' :
+                            analysisType === 'v1-pro' ? '/api/analyze-v1-pro' :
                             '/api/analyze-advanced';
+
+        const requestBody = {
+            user_id: getCurrentUserId(),
+            symbol: symbol,
+            timeframe: timeframe,
+            market_type: marketType,
+            trading_type: tradingType,
+            analysis_type: analysisType,
+            indicators,
+            init_data: tg.initData
+        };
+
+        if (analysisType === 'v1-pro') {
+            requestBody.balance = userData?.balance || 10000;
+        }
 
         const response = await fetch(apiEndpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                user_id: getCurrentUserId(),
-                symbol: symbol,
-                timeframe: timeframe,
-                market_type: marketType,
-                trading_type: tradingType,
-                analysis_type: analysisType,
-                indicators,
-                init_data: tg.initData
-            })
+            body: JSON.stringify(requestBody)
         });
 
         const data = await response.json();
@@ -2003,6 +2010,8 @@ async function analyzeMarketAdvanced() {
                 displayZeroReversalResult(data.analysis, symbol, timeframe);
             } else if (analysisType === 'pump') {
                 displayPumpAnalysisResult(data.analysis, symbol, timeframe);
+            } else if (analysisType === 'v1-pro') {
+                displayV1ProAnalysisResult(data.analysis, symbol, timeframe);
             } else {
                 displayAdvancedAnalysisResult(data.analysis, symbol, timeframe, analysisType);
             }
@@ -2475,6 +2484,178 @@ function displayPumpAnalysisResult(analysis, symbol, timeframe) {
     resultDiv.style.display = 'block';
 }
 
+function displayV1ProAnalysisResult(analysis, symbol, timeframe) {
+    const resultDiv = document.getElementById('analysis-result');
+    const recCard = document.getElementById('recommendation-card');
+    const indDetails = document.getElementById('indicators-details');
+
+    const finalAction = analysis.finalSignal?.action || 'WAIT';
+    const actionEmoji = analysis.finalSignal?.emoji || (finalAction === 'BUY' ? '🟢' : finalAction === 'SELL' ? '🔴' : '🟡');
+    const actionText = finalAction === 'BUY' ? 'شراء' : finalAction === 'SELL' ? 'بيع' : 'انتظار';
+    const confidencePercent = (parseFloat(analysis.finalSignal?.confidence || 0) * 100).toFixed(0);
+
+    const tradingTypeText = analysis.tradingType === 'futures' ? 'فيوتشر ⚡' : 'سبوت 📊';
+    const marketTypeText = analysis.marketType === 'forex' ? 'فوركس 💱' : 
+                          analysis.marketType === 'stocks' ? 'أسهم 📈' :
+                          analysis.marketType === 'commodities' ? 'سلع 🛢️' :
+                          analysis.marketType === 'indices' ? 'مؤشرات 📊' : 'عملات رقمية 💎';
+
+    recCard.innerHTML = `
+        <div style="text-align: center; padding: 25px; background: linear-gradient(135deg, #00FF00 0%, #00CC00 100%); border-radius: 16px; color: white; margin-bottom: 20px; border: 3px solid #00FF00; box-shadow: 0 8px 24px rgba(0, 255, 0, 0.3);">
+            <h1 style="font-size: 56px; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">${actionEmoji}</h1>
+            <h2 style="margin: 10px 0; font-size: 24px;">🤖 V1 PRO AI ANALYSIS</h2>
+            <h3 style="margin: 10px 0; font-size: 28px; font-weight: bold;">${actionText}</h3>
+            <div style="background: rgba(255,255,255,0.25); padding: 15px; border-radius: 10px; margin-top: 15px; font-size: 18px;">
+                <strong>درجة الثقة:</strong> ${confidencePercent}%
+            </div>
+            <div style="background: rgba(255,255,255,0.15); padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 14px;">
+                ذكاء اصطناعي + تحليل مشاعر + إدارة مخاطر
+            </div>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
+            <h3 style="color: #00AA00; margin-bottom: 15px;">📊 معلومات الصفقة</h3>
+            <div style="display: grid; gap: 10px;">
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                    <strong style="color: #000;">💎 الرمز:</strong> ${symbol}
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                    <strong style="color: #000;">📊 النوع:</strong> ${tradingTypeText} | ${marketTypeText}
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                    <strong style="color: #000;">⏰ الإطار الزمني:</strong> ${timeframe}
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                    <strong style="color: #000;">💰 السعر الحالي:</strong> $${analysis.currentPrice || '-'}
+                </div>
+            </div>
+        </div>
+
+        ${analysis.trend ? `
+        <div style="background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333; border: 2px solid #667eea;">
+            <h3 style="color: #667eea; margin-bottom: 15px;">📈 تحليل الاتجاه</h3>
+            <div style="display: grid; gap: 10px;">
+                <div style="padding: 10px; background: white; border-radius: 8px;">
+                    <strong style="color: #000;">${analysis.trend.emoji} الاتجاه:</strong> ${analysis.trend.direction}
+                </div>
+                <div style="padding: 10px; background: white; border-radius: 8px;">
+                    <strong style="color: #000;">📊 القوة:</strong> ${analysis.trend.strength}
+                </div>
+                <div style="padding: 10px; background: white; border-radius: 8px;">
+                    <strong style="color: #000;">🎯 النقاط:</strong> ${analysis.trend.score}
+                </div>
+            </div>
+        </div>
+        ` : ''}
+
+        ${analysis.sentiment ? `
+        <div style="background: linear-gradient(135deg, #FFD70020 0%, #FFA50020 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333; border: 2px solid #FFD700;">
+            <h3 style="color: #FF8C00; margin-bottom: 15px;">💭 تحليل المشاعر (AI)</h3>
+            <div style="display: grid; gap: 10px;">
+                <div style="padding: 12px; background: white; border-radius: 8px;">
+                    <strong style="color: #000;">📊 التصنيف:</strong> ${analysis.sentiment.classification}
+                </div>
+                <div style="padding: 12px; background: white; border-radius: 8px;">
+                    <strong style="color: #000;">🎯 درجة الثقة:</strong> ${(parseFloat(analysis.sentiment.confidence) * 100).toFixed(0)}%
+                </div>
+                <div style="padding: 12px; background: white; border-radius: 8px;">
+                    <strong style="color: #000;">📰 عدد الأخبار:</strong> ${analysis.sentiment.newsCount}
+                </div>
+                <div style="padding: 12px; background: white; border-radius: 8px; color: #666;">
+                    <strong style="color: #000;">📝 الملخص:</strong> ${analysis.sentiment.summary}
+                </div>
+            </div>
+        </div>
+        ` : ''}
+
+        ${analysis.riskManagement ? `
+        <div style="background: linear-gradient(135deg, #00FF0020 0%, #00CC0020 100%); padding: 20px; border-radius: 12px; color: #333; margin-bottom: 20px; border: 2px solid #00FF00;">
+            <h3 style="margin: 0 0 15px 0; font-size: 20px; color: #00AA00;">💼 إدارة المخاطر</h3>
+            <div style="display: grid; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; padding: 12px; background: white; border-radius: 8px;">
+                    <span><strong>🎯 سعر الدخول:</strong></span>
+                    <strong style="color: #00AA00;">$${analysis.currentPrice || '-'}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px; background: white; border-radius: 8px;">
+                    <span><strong>🛑 وقف الخسارة:</strong></span>
+                    <strong style="color: #FF0000;">$${analysis.riskManagement.stopLoss}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px; background: white; border-radius: 8px;">
+                    <span><strong>🎁 جني الأرباح:</strong></span>
+                    <strong style="color: #00FF00;">$${analysis.riskManagement.takeProfit}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px; background: white; border-radius: 8px;">
+                    <span><strong>📊 حجم المركز:</strong></span>
+                    <strong>${analysis.riskManagement.positionSize}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px; background: white; border-radius: 8px;">
+                    <span><strong>💵 قيمة المركز:</strong></span>
+                    <strong>$${analysis.riskManagement.positionValue}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px; background: white; border-radius: 8px;">
+                    <span><strong>⚠️ مبلغ المخاطرة:</strong></span>
+                    <strong style="color: #FF6B00;">$${analysis.riskManagement.riskAmount}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px; background: white; border-radius: 8px;">
+                    <span><strong>📈 نسبة R/R:</strong></span>
+                    <strong style="color: #667eea;">1:${analysis.riskManagement.riskRewardRatio}</strong>
+                </div>
+            </div>
+        </div>
+        ` : ''}
+
+        ${analysis.finalSignal?.reasons && analysis.finalSignal.reasons.length > 0 ? `
+            <div style="background: #e8f5e9; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #2e7d32;">
+                <h3 style="color: #388e3c; margin-bottom: 15px;">✅ أسباب الإشارة</h3>
+                <ul style="margin: 0; padding-right: 20px; color: #2e7d32;">
+                    ${analysis.finalSignal.reasons.map(r => `<li style="margin-bottom: 8px; color: #2e7d32;">${r}</li>`).join('')}
+                </ul>
+            </div>
+        ` : ''}
+
+        ${analysis.momentum ? `
+        <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
+            <h3 style="color: #764ba2; margin-bottom: 15px;">⚡ تحليل الزخم</h3>
+            <div style="display: grid; gap: 10px;">
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                    <strong style="color: #000;">✅ الحالة:</strong> ${analysis.momentum.isConfirmed ? 'مؤكد' : 'غير مؤكد'}
+                </div>
+                <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                    <strong style="color: #000;">📊 النقاط:</strong> ${analysis.momentum.score}
+                </div>
+                ${analysis.momentum.reasons && analysis.momentum.reasons.length > 0 ? `
+                    <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <strong style="color: #000;">💡 الأسباب:</strong>
+                        <ul style="margin: 5px 0 0 0; padding-right: 20px;">
+                            ${analysis.momentum.reasons.map(r => `<li style="font-size: 13px; color: #666;">${r}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+            </div>
+        </div>
+        ` : ''}
+
+        ${analysis.indicators ? `
+        <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
+            <h3 style="color: #667eea; margin-bottom: 15px;">📊 المؤشرات الفنية</h3>
+            <div style="display: grid; gap: 8px; font-size: 14px;">
+                ${analysis.indicators.rsi ? `<div style="padding: 8px; background: #f8f9fa; border-radius: 6px;"><strong>RSI:</strong> ${analysis.indicators.rsi}</div>` : ''}
+                ${analysis.indicators.macd ? `<div style="padding: 8px; background: #f8f9fa; border-radius: 6px;"><strong>MACD:</strong> ${analysis.indicators.macd}</div>` : ''}
+                ${analysis.indicators.adx ? `<div style="padding: 8px; background: #f8f9fa; border-radius: 6px;"><strong>ADX:</strong> ${analysis.indicators.adx}</div>` : ''}
+                ${analysis.indicators.atr ? `<div style="padding: 8px; background: #f8f9fa; border-radius: 6px;"><strong>ATR:</strong> ${analysis.indicators.atr}</div>` : ''}
+                ${analysis.indicators.volume ? `<div style="padding: 8px; background: #f8f9fa; border-radius: 6px;"><strong>Volume:</strong> ${analysis.indicators.volume}</div>` : ''}
+            </div>
+        </div>
+        ` : ''}
+
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 12px; color: white; text-align: center; margin-top: 20px;">
+            <p style="margin: 0; font-size: 14px; opacity: 0.9;">🤖 تحليل V1 PRO يستخدم الذكاء الاصطناعي وتحليل المشاعر وإدارة المخاطر المتقدمة</p>
+        </div>
+    `;
+
+    indDetails.innerHTML = '';
+    resultDiv.style.display = 'block';
+}
 
 function switchAnalystTab(tab, event) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
