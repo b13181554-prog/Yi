@@ -1,6 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const config = require('./config');
 const db = require('./database');
+const { t, getLanguageKeyboard } = require('./languages');
 
 const bot = new TelegramBot(config.BOT_TOKEN, { 
   polling: {
@@ -49,16 +50,20 @@ async function checkChannelMembership(userId) {
   }
 }
 
-async function requireChannelMembership(userId, chatId) {
+async function requireChannelMembership(userId, chatId, msg) {
   const isMember = await checkChannelMembership(userId);
   if (!isMember) {
+    const detectedLang = msg.from.language_code || 'ar';
+    const supportedLangs = ['ar', 'en', 'fr', 'es', 'de', 'ru', 'zh'];
+    const lang = supportedLangs.includes(detectedLang) ? detectedLang : 'ar';
+    
     await bot.sendMessage(chatId, `
-❌ <b>يجب الاشتراك في القناة أولاً!</b>
+❌ <b>${t(lang, 'subscription_required')}</b>
 
-للاستمرار في استخدام البوت، اشترك في قناتنا:
+${t(lang, 'subscribe_channel')}
 👉 ${config.CHANNEL_USERNAME}
 
-بعد الاشتراك، اضغط /start للبدء
+${t(lang, 'after_subscribe')} /start
 `, {
       parse_mode: 'HTML'
     });
@@ -100,7 +105,7 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
   const params = match[1].trim();
   
   try {
-    if (!(await requireChannelMembership(userId, chatId))) return;
+    if (!(await requireChannelMembership(userId, chatId, msg))) return;
     
     let user = await db.getUser(userId);
     let referrerId = null;
@@ -132,7 +137,13 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
     }
     
     if (!user) {
+      const detectedLang = msg.from.language_code || 'ar';
+      const supportedLangs = ['ar', 'en', 'fr', 'es', 'de', 'ru', 'zh'];
+      const initialLang = supportedLangs.includes(detectedLang) ? detectedLang : 'ar';
+      
       await db.createUser(userId, username, firstName, lastName, referrerId, analystReferrerId);
+      await db.updateUser(userId, { language: initialLang });
+      user = await db.getUser(userId);
       
       // حفظ معلومات الإحالة الخاصة بمحلل معين
       if (promoterAnalystId && promoterReferrerId) {
@@ -143,57 +154,69 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
       }
       
       if (referrerId) {
+        const referrerUser = await db.getUser(referrerId);
+        const referrerLang = referrerUser ? (referrerUser.language || 'ar') : 'ar';
+        
         await bot.sendMessage(referrerId, `
-🎉 <b>إحالة جديدة!</b>
+<b>${t(referrerLang, 'new_referral')}</b>
 
-أحد أصدقائك انضم عبر رابط الإحالة الخاص بك!
-ستحصل على 10% من جميع مدفوعاته 💰
+${t(referrerLang, 'friend_joined')}
+${t(referrerLang, 'you_will_get_commission')}
         `, { parse_mode: 'HTML' });
       }
       
       if (analystReferrerId) {
+        const analystReferrerUser = await db.getUser(analystReferrerId);
+        const analystReferrerLang = analystReferrerUser ? (analystReferrerUser.language || 'ar') : 'ar';
+        
         await bot.sendMessage(analystReferrerId, `
-🎉 <b>إحالة جديدة من محلل!</b>
+<b>${t(analystReferrerLang, 'new_analyst_referral')}</b>
 
-أحد أصدقائك انضم عبر رابط الإحالة الخاص بك!
-ستحصل على 20% من جميع مدفوعاته 💰
+${t(analystReferrerLang, 'friend_joined')}
+${t(analystReferrerLang, 'analyst_commission')}
         `, { parse_mode: 'HTML' });
       }
       
       if (promoterReferrerId) {
+        const promoterReferrerUser = await db.getUser(promoterReferrerId);
+        const promoterReferrerLang = promoterReferrerUser ? (promoterReferrerUser.language || 'ar') : 'ar';
+        
         await bot.sendMessage(promoterReferrerId, `
-🎉 <b>إحالة جديدة لمحلل!</b>
+<b>${t(promoterReferrerLang, 'new_analyst_specific_referral')}</b>
 
-أحد أصدقائك انضم عبر رابط الإحالة الخاص بك لمحلل معين!
-ستحصل على 15% من اشتراكه في هذا المحلل 💰
+${t(promoterReferrerLang, 'friend_joined')}
+${t(promoterReferrerLang, 'analyst_specific_commission')}
         `, { parse_mode: 'HTML' });
       }
       
+      const userLang = user ? (user.language || 'ar') : 'ar';
+      
       const welcomeMessage = `
-🎉 <b>مرحباً بك في OBENTCHI 🚀</b>
+<b>${t(userLang, 'welcome_to_obentchi')}</b>
 
-أهلاً ${firstName}! تم إنشاء حسابك بنجاح.
+${t(userLang, 'welcome_back')} ${firstName}! ${t(userLang, 'account_created')}.
 
-🎁 <b>هدية الانضمام:</b>
-لقد حصلت على <b>${config.FREE_TRIAL_DAYS} أيام تجريبية مجانية</b>!
+<b>${t(userLang, 'joining_gift')}</b>
+${t(userLang, 'free_trial_received')} <b>${config.FREE_TRIAL_DAYS} ${t(userLang, 'free_trial_days')}</b>!
 
-<b>✨ ما يمكنك فعله:</b>
-📊 تحليل فني شامل للعملات الرقمية والفوركس
-🎯 توصيات دقيقة مع نقاط الدخول والخروج
-🔥 متابعة أكثر العملات حركة
-💰 محفظة داخلية لإدارة رصيدك
-👨‍💼 الاشتراك مع محللين محترفين
-🎁 نظام إحالات بعمولة 10%
+<b>${t(userLang, 'what_you_can_do')}</b>
+${t(userLang, 'feature_technical_analysis')}
+${t(userLang, 'feature_recommendations')}
+${t(userLang, 'feature_top_movers')}
+${t(userLang, 'feature_wallet')}
+${t(userLang, 'feature_analysts')}
+${t(userLang, 'feature_referrals')}
 
-<b>📱 افتح التطبيق الآن:</b>
-اضغط على الزر أدناه للوصول إلى جميع الميزات 👇
+<b>${t(userLang, 'open_app_now')}</b>
+${t(userLang, 'press_button_below')}
 `;
       
       await bot.sendMessage(chatId, welcomeMessage, {
         parse_mode: 'HTML',
         reply_markup: {
           keyboard: [
-            [{ text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }]
+            [{ text: t(userLang, 'open_app'), web_app: { url: config.WEBAPP_URL } }],
+            [{ text: t(userLang, 'settings_menu') }]
           ],
           resize_keyboard: true
         }
@@ -212,18 +235,31 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
         statusMessage = `❌ لا يوجد اشتراك نشط`;
       }
       
+      const userLang = user.language || 'ar';
+      
+      if (subscription.active) {
+        if (subscription.type === 'trial') {
+          statusMessage = `🎁 ${t(userLang, 'trial_period')}: ${subscription.daysLeft} ${t(userLang, 'days_remaining')}`;
+        } else {
+          statusMessage = `✅ ${t(userLang, 'subscription_active_until')}: ${new Date(subscription.expiresAt).toLocaleDateString(userLang === 'ar' ? 'ar' : 'en')}`;
+        }
+      } else {
+        statusMessage = `❌ ${t(userLang, 'no_active_subscription')}`;
+      }
+      
       await bot.sendMessage(chatId, `
-👋 <b>مرحباً بعودتك ${firstName}!</b>
+👋 <b>${t(userLang, 'welcome_back')} ${firstName}!</b>
 
 ${statusMessage}
-💰 <b>رصيدك:</b> ${user.balance} USDT
+💰 <b>${t(userLang, 'your_balance')}</b> ${user.balance} USDT
 
-اضغط على الزر لفتح التطبيق 👇
+${t(userLang, 'open_app')} 👇
 `, {
         parse_mode: 'HTML',
         reply_markup: {
           keyboard: [
-            [{ text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }]
+            [{ text: t(userLang, 'open_app'), web_app: { url: config.WEBAPP_URL } }],
+            [{ text: t(userLang, 'settings_menu') }]
           ],
           resize_keyboard: true
         }
@@ -231,7 +267,10 @@ ${statusMessage}
     }
   } catch (error) {
     console.error('Error in /start:', error);
-    await bot.sendMessage(chatId, '❌ حدث خطأ، يرجى المحاولة مرة أخرى.');
+    const errorLang = msg.from.language_code || 'ar';
+    const supportedLangs = ['ar', 'en', 'fr', 'es', 'de', 'ru', 'zh'];
+    const lang = supportedLangs.includes(errorLang) ? errorLang : 'ar';
+    await bot.sendMessage(chatId, t(lang, 'error_occurred'));
   }
 });
 
@@ -292,12 +331,206 @@ ${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
   }
 });
 
+bot.on('message', async (msg) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const text = msg.text;
+  
+  if (!text || text.startsWith('/')) return;
+  
+  try {
+    const user = await db.getUser(userId);
+    if (!user) return;
+    
+    const lang = user.language || 'ar';
+    
+    if (text === '⚙️ الإعدادات' || text === '⚙️ Settings' || text === '⚙️ Paramètres' || text === '⚙️ Configuración' || text === '⚙️ Einstellungen' || text === '⚙️ Настройки' || text === '⚙️ 设置') {
+      await bot.sendMessage(chatId, `
+<b>${t(lang, 'settings_menu')}</b>
+
+${t(lang, 'choose_from_menu')}
+      `, {
+        parse_mode: 'HTML',
+        reply_markup: {
+          keyboard: [
+            [{ text: t(lang, 'language_settings_btn') }],
+            [{ text: t(lang, 'customer_service_btn') }],
+            [{ text: t(lang, 'notifications_btn') }],
+            [{ text: t(lang, 'back_to_main') }]
+          ],
+          resize_keyboard: true
+        }
+      });
+    } else if (text === '🔙 العودة للقائمة الرئيسية' || text === '🔙 Back to Main Menu' || text === '🔙 Retour au menu principal' || text === '🔙 Volver al menú principal' || text === '🔙 Zurück zum Hauptmenü' || text === '🔙 Вернуться в главное меню' || text === '🔙 返回主菜单') {
+      const firstName = msg.from.first_name;
+      const subscription = await checkSubscription(userId);
+      let statusMessage = '';
+      
+      if (subscription.active) {
+        if (subscription.type === 'trial') {
+          statusMessage = `🎁 ${t(lang, 'trial_period')}: ${subscription.daysLeft} ${t(lang, 'days_remaining')}`;
+        } else {
+          statusMessage = `✅ ${t(lang, 'subscription_active_until')}: ${new Date(subscription.expiresAt).toLocaleDateString(lang === 'ar' ? 'ar' : 'en')}`;
+        }
+      } else {
+        statusMessage = `❌ ${t(lang, 'no_active_subscription')}`;
+      }
+      
+      await bot.sendMessage(chatId, `
+👋 <b>${t(lang, 'welcome_back')} ${firstName}!</b>
+
+${statusMessage}
+💰 <b>${t(lang, 'your_balance')}</b> ${user.balance} USDT
+      `, {
+        parse_mode: 'HTML',
+        reply_markup: {
+          keyboard: [
+            [{ text: t(lang, 'open_app'), web_app: { url: config.WEBAPP_URL } }],
+            [{ text: t(lang, 'settings_menu') }]
+          ],
+          resize_keyboard: true
+        }
+      });
+    } else if (text === '🌐 إعدادات اللغة' || text === '🌐 Language Settings' || text === '🌐 Paramètres de langue' || text === '🌐 Configuración de idioma' || text === '🌐 Spracheinstellungen' || text === '🌐 Настройки языка' || text === '🌐 语言设置') {
+      await bot.sendMessage(chatId, `
+<b>${t(lang, 'language_settings')}</b>
+
+${t(lang, 'select_language')}
+      `, {
+        parse_mode: 'HTML',
+        reply_markup: getLanguageKeyboard()
+      });
+    } else if (text === '📞 خدمة العملاء' || text === '📞 Customer Service' || text === '📞 Service client' || text === '📞 Servicio al cliente' || text === '📞 Kundendienst' || text === '📞 Служба поддержки' || text === '📞 客户服务') {
+      await bot.sendMessage(chatId, t(lang, 'customer_service_msg'), {
+        parse_mode: 'HTML',
+        reply_markup: {
+          force_reply: true
+        }
+      });
+      
+      user.awaitingCustomerServiceMessage = true;
+      await db.updateUser(userId, { awaitingCustomerServiceMessage: true });
+    } else if (text === '🔔 الإشعارات' || text === '🔔 Notifications' || text === '🔔 Notificaciones' || text === '🔔 Benachrichtigungen' || text === '🔔 Уведомления' || text === '🔔 通知') {
+      const settings = await db.getNotificationSettings(userId);
+      const isEnabled = settings.enabled || false;
+      const markets = settings.markets || ['crypto', 'forex', 'stocks', 'commodities', 'indices'];
+      
+      const marketEmojis = {
+        'crypto': '💎',
+        'forex': '💱',
+        'stocks': '📈',
+        'commodities': '🥇',
+        'indices': '📊'
+      };
+      
+      const marketNames = {
+        'crypto': 'العملات الرقمية',
+        'forex': 'الفوركس',
+        'stocks': 'الأسهم',
+        'commodities': 'السلع',
+        'indices': 'المؤشرات'
+      };
+      
+      let marketsText = markets.map(m => `${marketEmojis[m]} ${marketNames[m]}`).join('\n');
+      
+      await bot.sendMessage(chatId, `
+🔔 <b>${t(lang, 'notifications_settings')}</b>
+
+📊 <b>الحالة:</b> ${isEnabled ? t(lang, 'notifications_enabled') : t(lang, 'notifications_disabled')}
+
+${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
+
+💡 <b>ملاحظة:</b> لتعديل إعدادات الإشعارات والأسواق، افتح التطبيق واذهب إلى قسم "حسابي" ثم "إعدادات الإشعارات"
+      `, {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { 
+                text: isEnabled ? '❌ إيقاف الإشعارات' : '✅ تفعيل الإشعارات', 
+                callback_data: `toggle_notif_${!isEnabled}` 
+              }
+            ],
+            [
+              { text: '⚙️ فتح الإعدادات', web_app: { url: config.WEBAPP_URL } }
+            ]
+          ]
+        }
+      });
+    } else if (user.awaitingCustomerServiceMessage) {
+      const config = require('./config');
+      await bot.sendMessage(config.OWNER_ID, `
+📞 <b>رسالة جديدة من خدمة العملاء</b>
+
+👤 <b>المستخدم:</b> ${msg.from.first_name} ${msg.from.last_name || ''}
+🆔 <b>ID:</b> <code>${userId}</code>
+📝 <b>الرسالة:</b>
+
+${text}
+      `, { parse_mode: 'HTML' });
+      
+      await bot.sendMessage(chatId, t(lang, 'message_sent'), { parse_mode: 'HTML' });
+      await db.updateUser(userId, { awaitingCustomerServiceMessage: false });
+    }
+  } catch (error) {
+    console.error('Error in message handler:', error);
+  }
+});
+
 bot.on('callback_query', async (query) => {
   const chatId = query.message.chat.id;
   const userId = query.from.id;
   const data = query.data;
   
-  if (data.startsWith('toggle_notif_')) {
+  if (data.startsWith('lang_')) {
+    const selectedLang = data.split('_')[1];
+    
+    try {
+      await db.updateUser(userId, { language: selectedLang });
+      
+      await bot.answerCallbackQuery(query.id, {
+        text: t(selectedLang, 'language_changed'),
+        show_alert: true
+      });
+      
+      const user = await db.getUser(userId);
+      const firstName = query.from.first_name;
+      const subscription = await checkSubscription(userId);
+      let statusMessage = '';
+      
+      if (subscription.active) {
+        if (subscription.type === 'trial') {
+          statusMessage = `🎁 ${t(selectedLang, 'trial_period')}: ${subscription.daysLeft} ${t(selectedLang, 'days_remaining')}`;
+        } else {
+          statusMessage = `✅ ${t(selectedLang, 'subscription_active_until')}: ${new Date(subscription.expiresAt).toLocaleDateString(selectedLang === 'ar' ? 'ar' : 'en')}`;
+        }
+      } else {
+        statusMessage = `❌ ${t(selectedLang, 'no_active_subscription')}`;
+      }
+      
+      await bot.sendMessage(chatId, `
+👋 <b>${t(selectedLang, 'welcome_back')} ${firstName}!</b>
+
+${statusMessage}
+💰 <b>${t(selectedLang, 'your_balance')}</b> ${user.balance} USDT
+      `, {
+        parse_mode: 'HTML',
+        reply_markup: {
+          keyboard: [
+            [{ text: t(lang, 'open_app'), web_app: { url: config.WEBAPP_URL } }],
+            [{ text: t(lang, 'settings_menu') }]
+          ],
+          resize_keyboard: true
+        }
+      });
+    } catch (error) {
+      console.error('Error changing language:', error);
+      await bot.answerCallbackQuery(query.id, {
+        text: '❌ حدث خطأ',
+        show_alert: true
+      });
+    }
+  } else if (data.startsWith('toggle_notif_')) {
     const enabled = data.split('_')[2] === 'true';
     
     try {

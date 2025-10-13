@@ -8,9 +8,39 @@ const translations = {
     after_subscribe: 'بعد الاشتراك، اضغط الزر أدناه للتحقق:',
     verify_subscription: '✅ تم الاشتراك - تحقق الآن',
     open_channel: '📢 فتح القناة',
+    error_occurred: '❌ حدث خطأ، يرجى المحاولة مرة أخرى.',
+    welcome_to_obentchi: '🎉 مرحباً بك في OBENTCHI 🚀',
+    account_created: 'تم إنشاء حسابك بنجاح',
+    joining_gift: '🎁 هدية الانضمام:',
+    free_trial_received: 'لقد حصلت على',
+    free_trial_days: 'أيام تجريبية مجانية',
+    what_you_can_do: '✨ ما يمكنك فعله:',
+    feature_technical_analysis: '📊 تحليل فني شامل للعملات الرقمية والفوركس',
+    feature_recommendations: '🎯 توصيات دقيقة مع نقاط الدخول والخروج',
+    feature_top_movers: '🔥 متابعة أكثر العملات حركة',
+    feature_wallet: '💰 محفظة داخلية لإدارة رصيدك',
+    feature_analysts: '👨‍💼 الاشتراك مع محللين محترفين',
+    feature_referrals: '🎁 نظام إحالات بعمولة 10%',
+    open_app_now: '📱 افتح التطبيق الآن:',
+    press_button_below: 'اضغط على الزر أدناه للوصول إلى جميع الميزات 👇',
+    new_referral: '🎉 إحالة جديدة!',
+    friend_joined: 'أحد أصدقائك انضم عبر رابط الإحالة الخاص بك!',
+    you_will_get_commission: 'ستحصل على 10% من جميع مدفوعاته 💰',
+    new_analyst_referral: '🎉 إحالة جديدة من محلل!',
+    analyst_commission: 'ستحصل على 20% من جميع مدفوعاته 💰',
+    new_analyst_specific_referral: '🎉 إحالة جديدة لمحلل!',
+    analyst_specific_commission: 'ستحصل على 15% من اشتراكه في هذا المحلل 💰',
     
     // القائمة الرئيسية - الأزرار
     open_app: '🚀 فتح التطبيق',
+    settings_menu: '⚙️ الإعدادات',
+    choose_from_menu: 'اختر من القائمة أدناه:',
+    welcome_back: 'مرحباً',
+    your_balance: 'رصيدك:',
+    trial_period: 'الفترة التجريبية',
+    days_remaining: 'يوم متبقي',
+    subscription_active_until: 'الاشتراك نشط حتى',
+    no_active_subscription: 'لا يوجد اشتراك نشط',
     select_currency: '📊 اختيار العملة',
     timeframe: '⏰ التايم فريم',
     indicators: '📈 المؤشرات',
@@ -24,6 +54,9 @@ const translations = {
     my_account: '👤 حسابي',
     reset: '🔄 إعادة ضبط',
     language_settings_btn: '🌐 إعدادات اللغة',
+    customer_service_btn: '📞 خدمة العملاء',
+    notifications_btn: '🔔 الإشعارات',
+    back_to_main: '🔙 العودة للقائمة الرئيسية',
     
     // تحليل فني
     technical_analysis: '📊 تحليل فني شامل',
@@ -57,6 +90,16 @@ const translations = {
     select_language: 'اختر اللغة المفضلة:',
     language_changed: '✅ تم تغيير اللغة بنجاح!',
     
+    // خدمة العملاء
+    customer_service: '📞 خدمة العملاء',
+    customer_service_msg: 'مرحباً بك في خدمة العملاء! 👋\n\nكيف يمكننا مساعدتك؟ اكتب رسالتك وسنرد عليك في أقرب وقت.',
+    message_sent: '✅ تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.',
+    
+    // الإشعارات
+    notifications_settings: '🔔 إعدادات الإشعارات',
+    notifications_enabled: '✅ الإشعارات مفعلة',
+    notifications_disabled: '❌ الإشعارات معطلة',
+    
     // توصية التداول
     trade_recommendation: '🎯 توصية التداول',
     entry_points: '📍 نقاط الدخول والخروج:',
@@ -85,9 +128,39 @@ const translations = {
     after_subscribe: 'After subscribing, press the button below to verify:',
     verify_subscription: '✅ Subscribed - Verify Now',
     open_channel: '📢 Open Channel',
+    error_occurred: '❌ An error occurred, please try again.',
+    welcome_to_obentchi: '🎉 Welcome to OBENTCHI 🚀',
+    account_created: 'Your account has been created successfully',
+    joining_gift: '🎁 Joining Gift:',
+    free_trial_received: 'You have received',
+    free_trial_days: 'free trial days',
+    what_you_can_do: '✨ What you can do:',
+    feature_technical_analysis: '📊 Comprehensive technical analysis for crypto and forex',
+    feature_recommendations: '🎯 Accurate recommendations with entry and exit points',
+    feature_top_movers: '🔥 Track the most moving currencies',
+    feature_wallet: '💰 Internal wallet to manage your balance',
+    feature_analysts: '👨‍💼 Subscribe with professional analysts',
+    feature_referrals: '🎁 Referral system with 10% commission',
+    open_app_now: '📱 Open the app now:',
+    press_button_below: 'Press the button below to access all features 👇',
+    new_referral: '🎉 New Referral!',
+    friend_joined: 'One of your friends joined via your referral link!',
+    you_will_get_commission: 'You will get 10% from all their payments 💰',
+    new_analyst_referral: '🎉 New Analyst Referral!',
+    analyst_commission: 'You will get 20% from all their payments 💰',
+    new_analyst_specific_referral: '🎉 New Analyst-Specific Referral!',
+    analyst_specific_commission: 'You will get 15% from their subscription to this analyst 💰',
     
     // Main menu - Buttons
     open_app: '🚀 Open App',
+    settings_menu: '⚙️ Settings',
+    choose_from_menu: 'Choose from the menu below:',
+    welcome_back: 'Welcome back',
+    your_balance: 'Your balance:',
+    trial_period: 'Trial period',
+    days_remaining: 'days remaining',
+    subscription_active_until: 'Subscription active until',
+    no_active_subscription: 'No active subscription',
     select_currency: '📊 Select Currency',
     timeframe: '⏰ Timeframe',
     indicators: '📈 Indicators',
@@ -101,6 +174,9 @@ const translations = {
     my_account: '👤 My Account',
     reset: '🔄 Reset',
     language_settings_btn: '🌐 Language Settings',
+    customer_service_btn: '📞 Customer Service',
+    notifications_btn: '🔔 Notifications',
+    back_to_main: '🔙 Back to Main Menu',
     
     // Technical analysis
     technical_analysis: '📊 Comprehensive Technical Analysis',
@@ -134,6 +210,16 @@ const translations = {
     select_language: 'Select your preferred language:',
     language_changed: '✅ Language changed successfully!',
     
+    // Customer Service
+    customer_service: '📞 Customer Service',
+    customer_service_msg: 'Welcome to Customer Service! 👋\n\nHow can we help you? Write your message and we will respond as soon as possible.',
+    message_sent: '✅ Your message has been sent successfully! We will contact you soon.',
+    
+    // Notifications
+    notifications_settings: '🔔 Notification Settings',
+    notifications_enabled: '✅ Notifications enabled',
+    notifications_disabled: '❌ Notifications disabled',
+    
     // Trade Recommendation
     trade_recommendation: '🎯 Trade Recommendation',
     entry_points: '📍 Entry and Exit Points:',
@@ -165,6 +251,14 @@ const translations = {
     
     // Menu principal - Boutons
     open_app: '🚀 Ouvrir l\'application',
+    settings_menu: '⚙️ Paramètres',
+    choose_from_menu: 'Choisissez dans le menu ci-dessous:',
+    welcome_back: 'Bienvenue',
+    your_balance: 'Votre solde:',
+    trial_period: 'Période d\'essai',
+    days_remaining: 'jours restants',
+    subscription_active_until: 'Abonnement actif jusqu\'au',
+    no_active_subscription: 'Aucun abonnement actif',
     select_currency: '📊 Sélectionner la devise',
     timeframe: '⏰ Période',
     indicators: '📈 Indicateurs',
@@ -178,6 +272,9 @@ const translations = {
     my_account: '👤 Mon compte',
     reset: '🔄 Réinitialiser',
     language_settings_btn: '🌐 Paramètres de langue',
+    customer_service_btn: '📞 Service client',
+    notifications_btn: '🔔 Notifications',
+    back_to_main: '🔙 Retour au menu principal',
     
     // Analyse technique
     technical_analysis: '📊 Analyse technique complète',
@@ -211,6 +308,16 @@ const translations = {
     select_language: 'Sélectionnez votre langue préférée:',
     language_changed: '✅ Langue changée avec succès!',
     
+    // Service client
+    customer_service: '📞 Service client',
+    customer_service_msg: 'Bienvenue au service client! 👋\n\nComment pouvons-nous vous aider? Écrivez votre message et nous vous répondrons dès que possible.',
+    message_sent: '✅ Votre message a été envoyé avec succès! Nous vous contacterons bientôt.',
+    
+    // Notifications
+    notifications_settings: '🔔 Paramètres de notification',
+    notifications_enabled: '✅ Notifications activées',
+    notifications_disabled: '❌ Notifications désactivées',
+    
     // Recommandation de trading
     trade_recommendation: '🎯 Recommandation de trading',
     entry_points: '📍 Points d\'entrée et de sortie:',
@@ -242,6 +349,14 @@ const translations = {
     
     // Menú principal - Botones
     open_app: '🚀 Abrir aplicación',
+    settings_menu: '⚙️ Configuración',
+    choose_from_menu: 'Elige del menú a continuación:',
+    welcome_back: 'Bienvenido',
+    your_balance: 'Tu saldo:',
+    trial_period: 'Período de prueba',
+    days_remaining: 'días restantes',
+    subscription_active_until: 'Suscripción activa hasta',
+    no_active_subscription: 'Sin suscripción activa',
     select_currency: '📊 Seleccionar moneda',
     timeframe: '⏰ Marco temporal',
     indicators: '📈 Indicadores',
@@ -255,6 +370,9 @@ const translations = {
     my_account: '👤 Mi cuenta',
     reset: '🔄 Restablecer',
     language_settings_btn: '🌐 Configuración de idioma',
+    customer_service_btn: '📞 Servicio al cliente',
+    notifications_btn: '🔔 Notificaciones',
+    back_to_main: '🔙 Volver al menú principal',
     
     // Análisis técnico
     technical_analysis: '📊 Análisis técnico completo',
@@ -288,6 +406,16 @@ const translations = {
     select_language: 'Selecciona tu idioma preferido:',
     language_changed: '✅ ¡Idioma cambiado con éxito!',
     
+    // Servicio al cliente
+    customer_service: '📞 Servicio al cliente',
+    customer_service_msg: '¡Bienvenido al servicio al cliente! 👋\n\n¿Cómo podemos ayudarte? Escribe tu mensaje y te responderemos lo antes posible.',
+    message_sent: '✅ ¡Tu mensaje ha sido enviado con éxito! Nos pondremos en contacto contigo pronto.',
+    
+    // Notificaciones
+    notifications_settings: '🔔 Configuración de notificaciones',
+    notifications_enabled: '✅ Notificaciones activadas',
+    notifications_disabled: '❌ Notificaciones desactivadas',
+    
     // Recomendación de trading
     trade_recommendation: '🎯 Recomendación de trading',
     entry_points: '📍 Puntos de entrada y salida:',
@@ -319,6 +447,14 @@ const translations = {
     
     // Hauptmenü - Schaltflächen
     open_app: '🚀 App öffnen',
+    settings_menu: '⚙️ Einstellungen',
+    choose_from_menu: 'Wählen Sie aus dem Menü unten:',
+    welcome_back: 'Willkommen zurück',
+    your_balance: 'Ihr Guthaben:',
+    trial_period: 'Testzeitraum',
+    days_remaining: 'Tage verbleibend',
+    subscription_active_until: 'Abonnement aktiv bis',
+    no_active_subscription: 'Kein aktives Abonnement',
     select_currency: '📊 Währung auswählen',
     timeframe: '⏰ Zeitrahmen',
     indicators: '📈 Indikatoren',
@@ -332,6 +468,9 @@ const translations = {
     my_account: '👤 Mein Konto',
     reset: '🔄 Zurücksetzen',
     language_settings_btn: '🌐 Spracheinstellungen',
+    customer_service_btn: '📞 Kundendienst',
+    notifications_btn: '🔔 Benachrichtigungen',
+    back_to_main: '🔙 Zurück zum Hauptmenü',
     
     // Technische Analyse
     technical_analysis: '📊 Umfassende technische Analyse',
@@ -365,6 +504,16 @@ const translations = {
     select_language: 'Wählen Sie Ihre bevorzugte Sprache:',
     language_changed: '✅ Sprache erfolgreich geändert!',
     
+    // Kundendienst
+    customer_service: '📞 Kundendienst',
+    customer_service_msg: 'Willkommen beim Kundendienst! 👋\n\nWie können wir Ihnen helfen? Schreiben Sie Ihre Nachricht und wir werden uns so schnell wie möglich bei Ihnen melden.',
+    message_sent: '✅ Ihre Nachricht wurde erfolgreich gesendet! Wir werden Sie bald kontaktieren.',
+    
+    // Benachrichtigungen
+    notifications_settings: '🔔 Benachrichtigungseinstellungen',
+    notifications_enabled: '✅ Benachrichtigungen aktiviert',
+    notifications_disabled: '❌ Benachrichtigungen deaktiviert',
+    
     // Handelsempfehlung
     trade_recommendation: '🎯 Handelsempfehlung',
     entry_points: '📍 Ein- und Ausstiegspunkte:',
@@ -396,6 +545,14 @@ const translations = {
     
     // Главное меню - Кнопки
     open_app: '🚀 Открыть приложение',
+    settings_menu: '⚙️ Настройки',
+    choose_from_menu: 'Выберите из меню ниже:',
+    welcome_back: 'Добро пожаловать',
+    your_balance: 'Ваш баланс:',
+    trial_period: 'Пробный период',
+    days_remaining: 'дней осталось',
+    subscription_active_until: 'Подписка активна до',
+    no_active_subscription: 'Нет активной подписки',
     select_currency: '📊 Выбрать валюту',
     timeframe: '⏰ Таймфрейм',
     indicators: '📈 Индикаторы',
@@ -409,6 +566,9 @@ const translations = {
     my_account: '👤 Мой аккаунт',
     reset: '🔄 Сброс',
     language_settings_btn: '🌐 Настройки языка',
+    customer_service_btn: '📞 Служба поддержки',
+    notifications_btn: '🔔 Уведомления',
+    back_to_main: '🔙 Вернуться в главное меню',
     
     // Технический анализ
     technical_analysis: '📊 Комплексный технический анализ',
@@ -442,6 +602,16 @@ const translations = {
     select_language: 'Выберите предпочитаемый язык:',
     language_changed: '✅ Язык успешно изменен!',
     
+    // Служба поддержки
+    customer_service: '📞 Служба поддержки',
+    customer_service_msg: 'Добро пожаловать в службу поддержки! 👋\n\nКак мы можем вам помочь? Напишите ваше сообщение, и мы ответим как можно скорее.',
+    message_sent: '✅ Ваше сообщение успешно отправлено! Мы свяжемся с вами в ближайшее время.',
+    
+    // Уведомления
+    notifications_settings: '🔔 Настройки уведомлений',
+    notifications_enabled: '✅ Уведомления включены',
+    notifications_disabled: '❌ Уведомления отключены',
+    
     // Торговая рекомендация
     trade_recommendation: '🎯 Торговая рекомендация',
     entry_points: '📍 Точки входа и выхода:',
@@ -473,6 +643,14 @@ const translations = {
     
     // 主菜单 - 按钮
     open_app: '🚀 打开应用',
+    settings_menu: '⚙️ 设置',
+    choose_from_menu: '从下面的菜单中选择：',
+    welcome_back: '欢迎回来',
+    your_balance: '您的余额：',
+    trial_period: '试用期',
+    days_remaining: '天剩余',
+    subscription_active_until: '订阅有效期至',
+    no_active_subscription: '无有效订阅',
     select_currency: '📊 选择货币',
     timeframe: '⏰ 时间框架',
     indicators: '📈 指标',
@@ -486,6 +664,9 @@ const translations = {
     my_account: '👤 我的账户',
     reset: '🔄 重置',
     language_settings_btn: '🌐 语言设置',
+    customer_service_btn: '📞 客户服务',
+    notifications_btn: '🔔 通知',
+    back_to_main: '🔙 返回主菜单',
     
     // 技术分析
     technical_analysis: '📊 综合技术分析',
@@ -518,6 +699,16 @@ const translations = {
     language_settings: '🌐 语言设置',
     select_language: '选择您的首选语言：',
     language_changed: '✅ 语言已成功更改！',
+    
+    // 客户服务
+    customer_service: '📞 客户服务',
+    customer_service_msg: '欢迎来到客户服务！👋\n\n我们如何帮助您？写下您的消息，我们会尽快回复。',
+    message_sent: '✅ 您的消息已成功发送！我们会尽快与您联系。',
+    
+    // 通知
+    notifications_settings: '🔔 通知设置',
+    notifications_enabled: '✅ 通知已启用',
+    notifications_disabled: '❌ 通知已禁用',
     
     // 交易建议
     trade_recommendation: '🎯 交易建议',
