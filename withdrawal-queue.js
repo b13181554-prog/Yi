@@ -3,6 +3,8 @@ const pino = require('pino');
 const db = require('./database');
 const okx = require('./okx');
 const config = require('./config');
+const bot = require('./bot');
+const { notifyUserSuccess, notifyOwnerSuccess, notifyOwnerFailedWithdrawal } = require('./withdrawal-notifier');
 
 const logger = pino({
   level: 'info',
@@ -118,7 +120,14 @@ withdrawalQueue.process(5, async (job) => {
 
     logger.info(`✅ Withdrawal completed successfully for user ${userId}: ${amount} USDT`);
 
-    // إرسال إشعار للمستخدم (سيتم في ملف منفصل)
+    // إرسال إشعار للمستخدم والمالك
+    try {
+      await notifyUserSuccess(userId, amount, walletAddress, withdrawalResult.data.withdrawId);
+      await notifyOwnerSuccess(userId, userName, amount, walletAddress, withdrawalResult.data.withdrawId);
+    } catch (notifError) {
+      logger.error(`Failed to send notifications: ${notifError.message}`);
+    }
+
     return {
       success: true,
       withdrawId: withdrawalResult.data.withdrawId,
@@ -133,6 +142,21 @@ withdrawalQueue.process(5, async (job) => {
     // إذا وصلنا للمحاولة الأخيرة، نحتاج إشعار المالك
     if (job.attemptsMade >= job.opts.attempts - 1) {
       logger.error(`🚨 FINAL ATTEMPT FAILED for withdrawal ${requestId}. Needs manual intervention.`);
+      
+      // إرسال إشعار للمالك
+      try {
+        await notifyOwnerFailedWithdrawal(
+          requestId,
+          userId,
+          userName,
+          amount,
+          walletAddress,
+          error.message,
+          job.attemptsMade + 1
+        );
+      } catch (notifError) {
+        logger.error(`Failed to send failure notification: ${notifError.message}`);
+      }
     }
     
     throw error; // للـ retry

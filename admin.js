@@ -2,6 +2,8 @@
 const db = require('./database');
 const config = require('./config');
 const okx = require('./okx');
+const { addWithdrawalToQueue } = require('./withdrawal-queue');
+const { notifyUserSuccess, notifyOwnerSuccess } = require('./withdrawal-notifier');
 
 async function initAdminCommands(bot) {
   
@@ -403,7 +405,7 @@ async function initAdminCommands(bot) {
         await db.updateUser(userId, { temp_withdrawal_address: 'admin_broadcast' });
       }
       
-      // الموافقة على السحب
+      // الموافقة على السحب (يضيف للـ Queue للمعالجة التلقائية)
       else if (data.startsWith('approve_withdrawal_')) {
         const withdrawalId = data.replace('approve_withdrawal_', '');
         
@@ -429,88 +431,122 @@ async function initAdminCommands(bot) {
               show_alert: true 
             });
           }
-          
-          await db.deductFromAnalystAvailableBalance(analyst._id, totalWithFee);
         }
         
-        const processingMsg = await bot.sendMessage(chatId, '⏳ جاري معالجة السحب عبر OKX...');
-        
-        if (okx.isConfigured()) {
-          const result = await okx.withdrawUSDT(withdrawal.wallet_address, withdrawal.amount);
-          
-          if (result.success) {
-            await db.approveWithdrawal(withdrawalId);
-            await db.createTransaction(
-              withdrawal.user_id, 
-              'withdrawal', 
-              withdrawal.amount, 
-              result.data.withdrawId, 
-              withdrawal.wallet_address, 
-              'completed'
-            );
-            
-            await bot.deleteMessage(chatId, processingMsg.message_id);
-            
-            await bot.sendMessage(withdrawal.user_id, `
-✅ <b>تم إتمام السحب بنجاح!</b>
-
-💸 المبلغ: ${withdrawal.amount} USDT
-📍 العنوان: <code>${withdrawal.wallet_address}</code>
-🆔 معرف السحب: <code>${result.data.withdrawId}</code>
-
-تم تحويل المبلغ عبر OKX
-`, { parse_mode: 'HTML' });
-            
-            await bot.answerCallbackQuery(query.id, { 
-              text: '✅ تم السحب بنجاح عبر OKX', 
-              show_alert: true 
-            });
-          } else {
-            if (analyst) {
-              const totalWithFee = withdrawal.amount + config.WITHDRAWAL_FEE;
-              await db.deductFromAnalystAvailableBalance(analyst._id, -totalWithFee);
-            }
-            
-            await bot.deleteMessage(chatId, processingMsg.message_id);
-            await bot.sendMessage(chatId, `
-❌ <b>فشل السحب عبر OKX</b>
-
-السبب: ${result.error}
-
-المستخدم: ${withdrawal.first_name}
-المبلغ: ${withdrawal.amount} USDT
-العنوان: <code>${withdrawal.wallet_address}</code>
-
-يرجى المعالجة يدوياً أو التحقق من إعدادات OKX
-`, { parse_mode: 'HTML' });
-            
-            return bot.answerCallbackQuery(query.id, { 
-              text: '❌ فشل السحب: ' + result.error, 
-              show_alert: true 
-            });
-          }
-        } else {
-          await db.approveWithdrawal(withdrawalId);
-          await bot.deleteMessage(chatId, processingMsg.message_id);
+        try {
+          // إضافة السحب إلى Queue للمعالجة التلقائية
+          await addWithdrawalToQueue(
+            withdrawalId,
+            withdrawal.user_id,
+            withdrawal.amount,
+            withdrawal.wallet_address,
+            withdrawal.first_name || withdrawal.username || 'Unknown'
+          );
           
           await bot.sendMessage(chatId, `
-⚠️ <b>OKX API غير مكوّن</b>
+✅ <b>تم إضافة السحب إلى قائمة المعالجة التلقائية</b>
 
-تمت الموافقة على الطلب ولكن يجب المعالجة يدوياً:
-
-المستخدم: ${withdrawal.first_name}
+المستخدم: ${withdrawal.first_name || withdrawal.username}
 المبلغ: ${withdrawal.amount} USDT
 العنوان: <code>${withdrawal.wallet_address}</code>
+
+🔄 سيتم معالجة السحب تلقائياً خلال دقائق قليلة
+📨 سيتم إشعارك فوراً عند النجاح أو الفشل
+♻️ النظام سيحاول 10 مرات قبل طلب التدخل اليدوي
 `, { parse_mode: 'HTML' });
           
           await bot.answerCallbackQuery(query.id, { 
-            text: '✅ تمت الموافقة - يرجى المعالجة يدوياً', 
+            text: '✅ تمت إضافة السحب للمعالجة التلقائية', 
+            show_alert: true 
+          });
+          
+        } catch (error) {
+          console.error('Error adding withdrawal to queue:', error);
+          await bot.answerCallbackQuery(query.id, { 
+            text: '❌ حدث خطأ: ' + error.message, 
             show_alert: true 
           });
         }
         
         // إعادة تحميل قائمة السحوبات
         bot.emit('callback_query', { ...query, data: 'admin_withdrawals' });
+      }
+      
+      // معالجة يدوية للسحب الفاشل
+      else if (data.startsWith('manual_approve_')) {
+        const withdrawalId = data.replace('manual_approve_', '');
+        
+        try {
+          const withdrawal = await db.getWithdrawalRequest(withdrawalId);
+          
+          if (!withdrawal) {
+            return bot.answerCallbackQuery(query.id, { 
+              text: '❌ طلب السحب غير موجود', 
+              show_alert: true 
+            });
+          }
+          
+          // تحديث الحالة إلى approved
+          await db.approveWithdrawal(withdrawalId);
+          
+          await bot.answerCallbackQuery(query.id, { 
+            text: '✅ تم تأكيد المعالجة اليدوية', 
+            show_alert: true 
+          });
+          
+          await bot.sendMessage(withdrawal.user_id, `
+✅ <b>تم إتمام السحب بنجاح!</b>
+
+💸 المبلغ: ${withdrawal.amount} USDT
+📍 العنوان: <code>${withdrawal.wallet_address}</code>
+
+تمت المعالجة يدوياً من قبل الإدارة
+`, { parse_mode: 'HTML' });
+          
+        } catch (error) {
+          console.error('Error manual approving withdrawal:', error);
+          await bot.answerCallbackQuery(query.id, { 
+            text: '❌ حدث خطأ: ' + error.message, 
+            show_alert: true 
+          });
+        }
+      }
+      
+      // إعادة محاولة السحب الفاشل
+      else if (data.startsWith('retry_withdrawal_')) {
+        const withdrawalId = data.replace('retry_withdrawal_', '');
+        
+        try {
+          const withdrawal = await db.getWithdrawalRequest(withdrawalId);
+          
+          if (!withdrawal) {
+            return bot.answerCallbackQuery(query.id, { 
+              text: '❌ طلب السحب غير موجود', 
+              show_alert: true 
+            });
+          }
+          
+          // إعادة إضافة للـ Queue
+          await addWithdrawalToQueue(
+            withdrawalId,
+            withdrawal.user_id,
+            withdrawal.amount,
+            withdrawal.wallet_address,
+            'Retry'
+          );
+          
+          await bot.answerCallbackQuery(query.id, { 
+            text: '♻️ تمت إعادة المحاولة', 
+            show_alert: true 
+          });
+          
+        } catch (error) {
+          console.error('Error retrying withdrawal:', error);
+          await bot.answerCallbackQuery(query.id, { 
+            text: '❌ حدث خطأ: ' + error.message, 
+            show_alert: true 
+          });
+        }
       }
       
       // رفض السحب

@@ -20,6 +20,7 @@ const monitor = require('./monitoring');
 const Groq = require('groq-sdk');
 const { addPaymentCallback, getQueueStats } = require('./payment-callback-queue');
 const monitoringService = require('./monitoring-service');
+const { startWithdrawalScheduler } = require('./withdrawal-scheduler');
 
 // Groq AI - Free and fast alternative to OpenAI
 let groq = null;
@@ -166,6 +167,8 @@ async function main() {
     initTradeSignalsMonitor(bot);
     admin.initAdminCommands(bot);
     rankingScheduler.start();
+    startWithdrawalScheduler();
+    console.log('✅ Withdrawal scheduler started');
     
     bot.startBot();
     
