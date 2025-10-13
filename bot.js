@@ -214,11 +214,9 @@ ${t(userLang, 'press_button_below')}
       await bot.sendMessage(chatId, welcomeMessage, {
         parse_mode: 'HTML',
         reply_markup: {
-          keyboard: [
-            [{ text: t(userLang, 'open_app'), web_app: { url: config.WEBAPP_URL } }],
-            [{ text: t(userLang, 'settings_menu') }]
-          ],
-          resize_keyboard: true
+          inline_keyboard: [
+            [{ text: '/start', callback_data: 'start_action' }]
+          ]
         }
       });
     } else {
@@ -257,11 +255,9 @@ ${t(userLang, 'open_app')} 👇
 `, {
         parse_mode: 'HTML',
         reply_markup: {
-          keyboard: [
-            [{ text: t(userLang, 'open_app'), web_app: { url: config.WEBAPP_URL } }],
-            [{ text: t(userLang, 'settings_menu') }]
-          ],
-          resize_keyboard: true
+          inline_keyboard: [
+            [{ text: '/start', callback_data: 'start_action' }]
+          ]
         }
       });
     }
@@ -378,11 +374,9 @@ ${statusMessage}
       `, {
         parse_mode: 'HTML',
         reply_markup: {
-          keyboard: [
-            [{ text: t(lang, 'open_app'), web_app: { url: config.WEBAPP_URL } }],
-            [{ text: t(lang, 'settings_menu') }]
-          ],
-          resize_keyboard: true
+          inline_keyboard: [
+            [{ text: '/start', callback_data: 'start_action' }]
+          ]
         }
       });
     } else if (text === '🌐 إعدادات اللغة' || text === '🌐 Language Settings' || text === '🌐 Paramètres de langue' || text === '🌐 Configuración de idioma' || text === '🌐 Spracheinstellungen' || text === '🌐 Настройки языка' || text === '🌐 语言设置') {
@@ -504,11 +498,9 @@ ${statusMessage}
       `, {
         parse_mode: 'HTML',
         reply_markup: {
-          keyboard: [
-            [{ text: t(lang, 'open_app'), web_app: { url: config.WEBAPP_URL } }],
-            [{ text: t(lang, 'settings_menu') }]
-          ],
-          resize_keyboard: true
+          inline_keyboard: [
+            [{ text: '/start', callback_data: 'start_action' }]
+          ]
         }
       });
     } catch (error) {
@@ -548,11 +540,9 @@ ${t(lang, 'open_app')} 👇
       `, {
         parse_mode: 'HTML',
         reply_markup: {
-          keyboard: [
-            [{ text: t(lang, 'open_app'), web_app: { url: config.WEBAPP_URL } }],
-            [{ text: t(lang, 'settings_menu') }]
-          ],
-          resize_keyboard: true
+          inline_keyboard: [
+            [{ text: '/start', callback_data: 'start_action' }]
+          ]
         }
       });
     } catch (error) {
