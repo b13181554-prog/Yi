@@ -3809,6 +3809,166 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// دوال قسم "المزيد"
+async function changeLanguageFromMore() {
+    const lang = document.getElementById('more-language-select').value;
+    
+    if (!userId) {
+        tg.showAlert('❌ خطأ: لا يمكن تغيير اللغة');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/change-language', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                language: lang,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            localStorage.setItem('user_language', lang);
+            
+            const isRTL = lang === 'ar' || lang === 'fa' || lang === 'he';
+            document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+            document.documentElement.setAttribute('lang', lang);
+            
+            if (typeof applyTranslations === 'function') {
+                applyTranslations();
+            }
+            
+            tg.showAlert('✅ تم تغيير اللغة بنجاح!');
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } else {
+            tg.showAlert('❌ فشل تغيير اللغة: ' + (data.error || 'خطأ غير معروف'));
+        }
+    } catch (error) {
+        console.error('Error changing language:', error);
+        tg.showAlert('❌ حدث خطأ أثناء تغيير اللغة');
+    }
+}
+
+async function toggleNotificationsFromMore() {
+    const toggle = document.getElementById('more-notifications-toggle');
+    const marketsDiv = document.getElementById('more-notification-markets');
+    const enabled = toggle.checked;
+
+    try {
+        const response = await fetch('/api/toggle-notifications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                enabled: enabled,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            marketsDiv.style.display = enabled ? 'block' : 'none';
+            tg.showAlert(enabled ? '✅ تم تفعيل الإشعارات' : '❌ تم إيقاف الإشعارات');
+        } else {
+            toggle.checked = !enabled;
+            tg.showAlert('❌ حدث خطأ: ' + (data.error || 'غير معروف'));
+        }
+    } catch (error) {
+        console.error('Error toggling notifications:', error);
+        toggle.checked = !enabled;
+        tg.showAlert('❌ حدث خطأ في تحديث الإشعارات');
+    }
+}
+
+async function saveNotificationMarketsFromMore() {
+    const selectedMarkets = [];
+    document.querySelectorAll('.more-market-checkbox:checked').forEach(checkbox => {
+        selectedMarkets.push(checkbox.value);
+    });
+
+    if (selectedMarkets.length === 0) {
+        tg.showAlert('⚠️ يرجى اختيار سوق واحد على الأقل');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/update-notification-markets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                markets: selectedMarkets,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            tg.showAlert('✅ تم حفظ التفضيلات بنجاح');
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'حدث خطأ'));
+        }
+    } catch (error) {
+        console.error('Error saving notification markets:', error);
+        tg.showAlert('❌ حدث خطأ في حفظ التفضيلات');
+    }
+}
+
+async function loadMoreSectionSettings() {
+    // تحديث قائمة اللغة
+    const currentLang = localStorage.getItem('user_language') || 'ar';
+    const moreLangSelect = document.getElementById('more-language-select');
+    if (moreLangSelect) {
+        moreLangSelect.value = currentLang;
+    }
+
+    // تحميل إعدادات الإشعارات
+    if (!userId) return;
+
+    try {
+        const response = await fetch('/api/notification-settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.settings) {
+            const toggle = document.getElementById('more-notifications-toggle');
+            const marketsDiv = document.getElementById('more-notification-markets');
+            
+            if (toggle) {
+                toggle.checked = data.settings.enabled || false;
+            }
+            
+            if (data.settings.enabled && marketsDiv) {
+                marketsDiv.style.display = 'block';
+            }
+
+            if (data.settings.markets && data.settings.markets.length > 0) {
+                document.querySelectorAll('.more-market-checkbox').forEach(checkbox => {
+                    checkbox.checked = data.settings.markets.includes(checkbox.value);
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error loading notification settings:', error);
+    }
+}
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {

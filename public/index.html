@@ -57,6 +57,10 @@
                     <span class="icon">👤</span>
                     <span data-i18n="nav_profile">حسابي</span>
                 </button>
+                <button class="nav-btn" onclick="showSection('more-section', event)">
+                    <span class="icon">⚙️</span>
+                    <span data-i18n="nav_more">المزيد</span>
+                </button>
                 <button class="nav-btn" id="admin-nav-btn" onclick="showSection('admin-section', event)" style="display: none;">
                     <span class="icon">👑</span>
                     <span data-i18n="nav_admin">إدارة</span>
@@ -651,6 +655,81 @@
                     </div>
                 </div>
 
+            </div>
+
+            <!-- قسم المزيد -->
+            <div id="more-section" class="section">
+                <div class="section-header">
+                    <h2 data-i18n="more_menu_title">⚙️ المزيد</h2>
+                </div>
+
+                <!-- خدمة العملاء -->
+                <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h3 data-i18n="customer_service_title">💬 خدمة العملاء</h3>
+                    <p class="info-text" style="color: #666; font-size: 14px; margin: 10px 0;" data-i18n="support_chat_desc">تواصل مع فريق الدعم الفني</p>
+                    <button class="submit-btn" onclick="openSupportChat()" style="width: 100%; margin-top: 10px;">
+                        💬 <span data-i18n="support_btn">خدمة العملاء</span>
+                    </button>
+                </div>
+
+                <!-- إعدادات اللغة -->
+                <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h3 data-i18n="language_settings_title">🌐 إعدادات اللغة</h3>
+                    <p class="info-text" style="color: #666; font-size: 14px; margin: 10px 0;" data-i18n="select_language">اختر اللغة:</p>
+                    <select id="more-language-select" onchange="changeLanguageFromMore()" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; margin-top: 10px; font-size: 16px;">
+                        <option value="ar">🇸🇦 العربية</option>
+                        <option value="en">🇺🇸 English</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                        <option value="ru">🇷🇺 Русский</option>
+                        <option value="zh">🇨🇳 中文</option>
+                    </select>
+                </div>
+
+                <!-- إعدادات الإشعارات -->
+                <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <h3 data-i18n="notifications_settings_title">🔔 إعدادات الإشعارات</h3>
+                    <p class="info-text" style="color: #666; font-size: 14px; margin: 10px 0;" data-i18n="notifications_desc">احصل على إشعارات فورية عند اكتشاف صفقات قوية</p>
+                    
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: #f8f9fa; border-radius: 8px; margin: 15px 0;">
+                        <div>
+                            <strong style="display: block; margin-bottom: 5px;" data-i18n="enable_notifications">تفعيل الإشعارات</strong>
+                            <span style="color: #666; font-size: 13px;">تلقي إشعارات الصفقات القوية</span>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="more-notifications-toggle" onchange="toggleNotificationsFromMore()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div id="more-notification-markets" style="display: none;">
+                        <p style="font-weight: bold; margin-bottom: 10px;" data-i18n="select_markets">اختر الأسواق:</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="more-market-checkbox" value="crypto" style="margin-left: 10px;" checked>
+                                <span>💎 عملات رقمية</span>
+                            </label>
+                            <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="more-market-checkbox" value="forex" style="margin-left: 10px;" checked>
+                                <span>💱 فوركس</span>
+                            </label>
+                            <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="more-market-checkbox" value="stocks" style="margin-left: 10px;" checked>
+                                <span>📈 أسهم</span>
+                            </label>
+                            <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="more-market-checkbox" value="commodities" style="margin-left: 10px;" checked>
+                                <span>🥇 سلع</span>
+                            </label>
+                            <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
+                                <input type="checkbox" class="more-market-checkbox" value="indices" style="margin-left: 10px;" checked>
+                                <span>📊 مؤشرات</span>
+                            </label>
+                        </div>
+                        <button onclick="saveNotificationMarketsFromMore()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; font-weight: bold;" data-i18n="save_preferences">حفظ التفضيلات</button>
+                    </div>
+                </div>
             </div>
 
             <!-- قسم الإدارة (للمالك فقط) -->

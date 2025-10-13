@@ -16,6 +16,7 @@ const translations = {
     nav_wallet: 'المحفظة',
     nav_analysts: 'محللين',
     nav_profile: 'حسابي',
+    nav_more: 'المزيد',
     nav_admin: 'إدارة',
     
     // Analysis Section
@@ -169,6 +170,16 @@ const translations = {
     referrals_stat: 'الإحالات',
     earnings_stat: 'الأرباح',
     settings_title: '⚙️ الإعدادات',
+    more_menu_title: '⚙️ المزيد',
+    customer_service_title: '💬 خدمة العملاء',
+    language_settings_title: '🌐 إعدادات اللغة',
+    notifications_settings_title: '🔔 إعدادات الإشعارات',
+    select_language: 'اختر اللغة:',
+    support_chat_desc: 'تواصل مع فريق الدعم الفني',
+    notifications_desc: 'احصل على إشعارات فورية عند اكتشاف صفقات قوية',
+    enable_notifications: 'تفعيل الإشعارات',
+    select_markets: 'اختر الأسواق:',
+    save_preferences: 'حفظ التفضيلات',
     language_label: '🌐 اللغة:',
     
     // Admin Section
@@ -204,6 +215,7 @@ const translations = {
     nav_wallet: 'Wallet',
     nav_analysts: 'Analysts',
     nav_profile: 'My Account',
+    nav_more: 'More',
     nav_admin: 'Admin',
     
     // Analysis Section
@@ -357,6 +369,16 @@ const translations = {
     referrals_stat: 'Referrals',
     earnings_stat: 'Earnings',
     settings_title: '⚙️ Settings',
+    more_menu_title: '⚙️ More',
+    customer_service_title: '💬 Customer Support',
+    language_settings_title: '🌐 Language Settings',
+    notifications_settings_title: '🔔 Notification Settings',
+    select_language: 'Select Language:',
+    support_chat_desc: 'Contact technical support team',
+    notifications_desc: 'Get instant notifications when strong trades are discovered',
+    enable_notifications: 'Enable Notifications',
+    select_markets: 'Select Markets:',
+    save_preferences: 'Save Preferences',
     language_label: '🌐 Language:',
     
     // Admin Section
@@ -392,6 +414,7 @@ const translations = {
     nav_wallet: 'Portefeuille',
     nav_analysts: 'Analystes',
     nav_profile: 'Mon Compte',
+    nav_more: 'Plus',
     nav_admin: 'Admin',
     
     // Analysis Section
