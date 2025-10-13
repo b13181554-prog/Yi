@@ -314,7 +314,7 @@ ${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
       reply_markup: {
         inline_keyboard: [
           [
-            { text: 'ستارت', callback_data: 'start_action' }
+            { text: '/start', callback_data: 'start_action' }
           ]
         ]
       }
@@ -440,7 +440,7 @@ ${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
         reply_markup: {
           inline_keyboard: [
             [
-              { text: 'ستارت', callback_data: 'start_action' }
+              { text: '/start', callback_data: 'start_action' }
             ]
           ]
         }
@@ -611,7 +611,7 @@ ${enabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
         reply_markup: {
           inline_keyboard: [
             [
-              { text: 'ستارت', callback_data: 'start_action' }
+              { text: '/start', callback_data: 'start_action' }
             ]
           ]
         }
