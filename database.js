@@ -1771,6 +1771,23 @@ async function addTransaction(transactionData) {
   return { ...transaction, _id: result.insertedId };
 }
 
+async function getWithdrawalRequest(requestId) {
+  return await db.collection('withdrawal_requests').findOne({ _id: new ObjectId(requestId) });
+}
+
+async function updateWithdrawalStatus(requestId, status, additionalData = {}) {
+  const updateData = {
+    status: status,
+    processed_at: new Date(),
+    ...additionalData
+  };
+  
+  await db.collection('withdrawal_requests').updateOne(
+    { _id: new ObjectId(requestId) },
+    { $set: updateData }
+  );
+}
+
 function getDB() {
   return db;
 }
@@ -1875,5 +1892,7 @@ module.exports = {
   getPendingCryptAPIPayments,
   getCryptAPIPaymentsByStatus,
   updateCryptAPIPayment,
-  addTransaction
+  addTransaction,
+  getWithdrawalRequest,
+  updateWithdrawalStatus
 };
