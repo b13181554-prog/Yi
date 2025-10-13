@@ -2759,6 +2759,103 @@ app.post('/api/admin/advanced-stats', async (req, res) => {
   }
 });
 
+// تنظيف قاعدة البيانات
+app.post('/api/admin/db-cleanup', async (req, res) => {
+  try {
+    const { init_data, action } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    const database = db.getDB();
+    const results = {};
+    
+    if (action === 'stats') {
+      // عرض إحصائيات قاعدة البيانات
+      const collections = ['users', 'transactions', 'withdrawal_requests', 'analysts', 'analyst_subscriptions', 'referrals'];
+      const stats = {};
+      
+      for (const collName of collections) {
+        const count = await database.collection(collName).countDocuments();
+        const collStats = await database.collection(collName).stats();
+        stats[collName] = {
+          count,
+          size: (collStats.size / 1024 / 1024).toFixed(2) + ' MB'
+        };
+      }
+      
+      // تفاصيل إضافية
+      const testUsers = await database.collection('users').countDocuments({ 
+        balance: 0, 
+        $or: [
+          { premium_until: { $exists: false } },
+          { premium_until: null },
+          { premium_until: { $lt: new Date() } }
+        ]
+      });
+      
+      const oldTransactions = await database.collection('transactions').countDocuments({ 
+        created_at: { $lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } 
+      });
+      
+      const oldCompletedWithdrawals = await database.collection('withdrawal_requests').countDocuments({ 
+        status: 'completed',
+        updated_at: { $lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+      });
+      
+      results.stats = stats;
+      results.details = {
+        test_users: testUsers,
+        old_transactions: oldTransactions,
+        old_completed_withdrawals: oldCompletedWithdrawals
+      };
+    }
+    
+    if (action === 'delete_test_data') {
+      // حذف المستخدمين الفارغين (اختبار)
+      const deleteUsers = await database.collection('users').deleteMany({ 
+        balance: 0,
+        $or: [
+          { premium_until: { $exists: false } },
+          { premium_until: null },
+          { premium_until: { $lt: new Date() } }
+        ]
+      });
+      
+      // حذف المعاملات القديمة (+30 يوم)
+      const deleteTransactions = await database.collection('transactions').deleteMany({ 
+        created_at: { $lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } 
+      });
+      
+      results.deleted = {
+        users: deleteUsers.deletedCount,
+        transactions: deleteTransactions.deletedCount
+      };
+    }
+    
+    if (action === 'delete_old_withdrawals') {
+      // حذف السحوبات المكتملة القديمة (+30 يوم)
+      const deleteWithdrawals = await database.collection('withdrawal_requests').deleteMany({ 
+        status: 'completed',
+        updated_at: { $lt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+      });
+      
+      results.deleted_withdrawals = deleteWithdrawals.deletedCount;
+    }
+    
+    res.json({ success: true, results });
+  } catch (error) {
+    console.error('DB Cleanup Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 // إدارة المحللين
 app.post('/api/admin/analysts', async (req, res) => {
   try {
