@@ -59,7 +59,7 @@ body {
     justify-content: center;
     gap: 8px;
     margin: 12px 0 0 0;
-    margin-right: 70px;
+    margin-right: 120px;
     padding: 6px 16px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 20px;
@@ -70,7 +70,7 @@ body {
 
 [dir="ltr"] .palestine-banner {
     margin-right: auto;
-    margin-left: 70px;
+    margin-left: 120px;
 }
 
 .palestine-flag {
