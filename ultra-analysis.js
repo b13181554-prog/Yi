@@ -232,24 +232,24 @@ class UltraAnalysis {
     let shouldTrade = false;
 
     const strictConditions = {
-      minAgreement: 88,
-      minADX: 35,
-      requiredVolume: ['ضخم'],
-      minConfirmations: 9
+      minAgreement: 75,
+      minADX: 25,
+      requiredVolume: ['ضخم', 'عالي'],
+      minConfirmations: 7
     };
 
     const confirmations = (buyScore > sellScore ? buyScore : sellScore) / 2;
     
-    // التحقق من الحجم الضخم
-    const hasStrongVolume = volume.signal.includes('ضخم');
+    // التحقق من الحجم القوي أو الضخم
+    const hasStrongVolume = volume.signal.includes('ضخم') || volume.signal.includes('عالي');
     
-    // التحقق من نسبة Risk/Reward جيدة (1:3 على الأقل)
+    // التحقق من نسبة Risk/Reward جيدة (1:2 على الأقل)
     const riskRewardRatio = takeProfitDistance / stopLossDistance;
-    const hasGoodRiskReward = riskRewardRatio >= 3;
+    const hasGoodRiskReward = riskRewardRatio >= 2;
     
-    // التحقق من توافق المؤشرات الرئيسية (RSI, MACD, ADX)
-    const hasRSIConfirmation = (buyScore > sellScore && parseFloat(rsi.value) < 40) || 
-                               (sellScore > buyScore && parseFloat(rsi.value) > 60);
+    // التحقق من توافق المؤشرات الرئيسية (RSI, MACD, ADX) - نطاق أوسع
+    const hasRSIConfirmation = (buyScore > sellScore && parseFloat(rsi.value) < 50) || 
+                               (sellScore > buyScore && parseFloat(rsi.value) > 50);
     const hasMACDConfirmation = (buyScore > sellScore && macd.signal.includes('صاعد')) || 
                                 (sellScore > buyScore && macd.signal.includes('هابط'));
 
@@ -260,26 +260,26 @@ class UltraAnalysis {
       stopLoss = currentPriceFloat - stopLossDistance;
       takeProfit = currentPriceFloat + takeProfitDistance;
       
-      // شروط صارمة جداً: 90%+ توافق، ADX قوي جداً، 10+ تأكيدات، حجم ضخم، نسبة R/R ممتازة
-      if (agreementPercentage >= 90 && adxValue >= 40 && confirmations >= 10 && 
+      // شروط متوازنة: 82%+ توافق، ADX قوي، 8+ تأكيدات، حجم جيد، نسبة R/R جيدة
+      if (agreementPercentage >= 82 && adxValue >= 30 && confirmations >= 8 && 
           hasStrongVolume && hasGoodRiskReward && hasRSIConfirmation && hasMACDConfirmation) {
-        confidenceLevel = 'مضمونة 100% (Ultra High)';
+        confidenceLevel = 'عالية جداً (Ultra High)';
         emoji = '💚';
-        riskLevel = 'منخفض جداً';
+        riskLevel = 'منخفض';
         shouldTrade = true;
-        reasons.push('✅ جميع الشروط الصارمة محققة - صفقة مضمونة');
-      } else if (agreementPercentage >= 88 && adxValue >= 35 && confirmations >= 9 && 
+        reasons.push('✅ جميع الشروط محققة - صفقة قوية جداً');
+      } else if (agreementPercentage >= 75 && adxValue >= 25 && confirmations >= 7 && 
                  hasStrongVolume && hasRSIConfirmation && hasMACDConfirmation) {
-        confidenceLevel = 'عالية جداً';
+        confidenceLevel = 'عالية';
         emoji = '💚';
-        riskLevel = 'منخفض جداً';
+        riskLevel = 'منخفض';
         shouldTrade = true;
-        reasons.push('✅ الشروط الصارمة محققة - صفقة قوية');
+        reasons.push('✅ الشروط محققة - صفقة جيدة');
       } else {
         confidenceLevel = 'منخفضة - لا تتداول';
         riskLevel = 'مرتفع جداً';
         shouldTrade = false;
-        warnings.push('❌ الإشارة لا تحقق المعايير الصارمة - يُنصح بالانتظار');
+        warnings.push('❌ الإشارة لا تحقق المعايير - يُنصح بالانتظار');
       }
     } else if (sellScore > buyScore) {
       recommendation = 'بيع';
@@ -288,26 +288,26 @@ class UltraAnalysis {
       stopLoss = currentPriceFloat + stopLossDistance;
       takeProfit = currentPriceFloat - takeProfitDistance;
       
-      // شروط صارمة جداً: 90%+ توافق، ADX قوي جداً، 10+ تأكيدات، حجم ضخم، نسبة R/R ممتازة
-      if (agreementPercentage >= 90 && adxValue >= 40 && confirmations >= 10 && 
+      // شروط متوازنة: 82%+ توافق، ADX قوي، 8+ تأكيدات، حجم جيد، نسبة R/R جيدة
+      if (agreementPercentage >= 82 && adxValue >= 30 && confirmations >= 8 && 
           hasStrongVolume && hasGoodRiskReward && hasRSIConfirmation && hasMACDConfirmation) {
-        confidenceLevel = 'مضمونة 100% (Ultra High)';
+        confidenceLevel = 'عالية جداً (Ultra High)';
         emoji = '❤️';
-        riskLevel = 'منخفض جداً';
+        riskLevel = 'منخفض';
         shouldTrade = true;
-        reasons.push('✅ جميع الشروط الصارمة محققة - صفقة مضمونة');
-      } else if (agreementPercentage >= 88 && adxValue >= 35 && confirmations >= 9 && 
+        reasons.push('✅ جميع الشروط محققة - صفقة قوية جداً');
+      } else if (agreementPercentage >= 75 && adxValue >= 25 && confirmations >= 7 && 
                  hasStrongVolume && hasRSIConfirmation && hasMACDConfirmation) {
-        confidenceLevel = 'عالية جداً';
+        confidenceLevel = 'عالية';
         emoji = '❤️';
-        riskLevel = 'منخفض جداً';
+        riskLevel = 'منخفض';
         shouldTrade = true;
-        reasons.push('✅ الشروط الصارمة محققة - صفقة قوية');
+        reasons.push('✅ الشروط محققة - صفقة جيدة');
       } else {
         confidenceLevel = 'منخفضة - لا تتداول';
         riskLevel = 'مرتفع جداً';
         shouldTrade = false;
-        warnings.push('❌ الإشارة لا تحقق المعايير الصارمة - يُنصح بالانتظار');
+        warnings.push('❌ الإشارة لا تحقق المعايير - يُنصح بالانتظار');
       }
     } else {
       riskLevel = 'مرتفع جداً';
@@ -367,10 +367,10 @@ class UltraAnalysis {
       },
       conditions: {
         meetsStrictCriteria: shouldTrade,
-        adxStrength: adxValue >= 40 ? '✅ قوي جداً' : adxValue >= 35 ? '✅ قوي' : '❌ ضعيف',
-        agreementLevel: agreementPercentage >= 90 ? '✅ ممتاز' : agreementPercentage >= 88 ? '✅ عالي جداً' : agreementPercentage >= 75 ? 'متوسط' : '❌ منخفض',
-        volumeConfirmation: volume.signal.includes('ضخم') ? '✅ ممتاز' : volume.signal.includes('عالي') ? 'متوسط' : '❌ ضعيف',
-        riskRewardRatio: riskRewardRatio >= 3 ? '✅ ممتاز (1:' + riskRewardRatio.toFixed(1) + ')' : '❌ ضعيف (1:' + riskRewardRatio.toFixed(1) + ')'
+        adxStrength: adxValue >= 30 ? '✅ قوي' : adxValue >= 25 ? '✅ جيد' : '❌ ضعيف',
+        agreementLevel: agreementPercentage >= 82 ? '✅ ممتاز' : agreementPercentage >= 75 ? '✅ عالي' : agreementPercentage >= 65 ? 'متوسط' : '❌ منخفض',
+        volumeConfirmation: volume.signal.includes('ضخم') ? '✅ ممتاز' : volume.signal.includes('عالي') ? '✅ جيد' : '❌ ضعيف',
+        riskRewardRatio: riskRewardRatio >= 2 ? '✅ جيد (1:' + riskRewardRatio.toFixed(1) + ')' : '❌ ضعيف (1:' + riskRewardRatio.toFixed(1) + ')'
       },
       reasons,
       warnings,

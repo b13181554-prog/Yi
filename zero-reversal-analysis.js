@@ -81,10 +81,10 @@ class ZeroReversalAnalysis {
       return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType);
     }
 
-    // 2. قوة الاتجاه ADX - يجب أن تكون عالية جداً
+    // 2. قوة الاتجاه ADX - يجب أن تكون قوية
     const adxValue = parseFloat(adx.value);
-    if (adxValue < 45) {
-      warnings.push(`❌ ADX ضعيف (${adxValue.toFixed(0)}) - يجب أن يكون 45+ للتأكد من عدم الانعكاس`);
+    if (adxValue < 30) {
+      warnings.push(`❌ ADX ضعيف (${adxValue.toFixed(0)}) - يجب أن يكون 30+ للتأكد من قوة الاتجاه`);
       return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType);
     }
     
@@ -95,42 +95,43 @@ class ZeroReversalAnalysis {
     }
     
     strengthScore += 5;
-    reasons.push(`💪 ADX قوي جداً (${adxValue.toFixed(0)}) - اتجاه قوي ومستمر`);
+    reasons.push(`💪 ADX قوي (${adxValue.toFixed(0)}) - اتجاه قوي ومستمر`);
 
-    // 3. RSI - يجب أن يكون في المنطقة المناسبة وليس في التشبع
+    // 3. RSI - يجب أن يكون في المنطقة المناسبة وليس في التشبع الشديد
     const rsiValue = parseFloat(rsi.value);
     if (direction === 'BUY') {
-      if (rsiValue < 25 || rsiValue > 55) {
-        warnings.push(`❌ RSI غير مناسب للشراء (${rsiValue.toFixed(0)}) - يجب أن يكون بين 25-55`);
+      if (rsiValue < 20 || rsiValue > 65) {
+        warnings.push(`❌ RSI غير مناسب للشراء (${rsiValue.toFixed(0)}) - يجب أن يكون بين 20-65`);
         return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType);
       }
       strengthScore += 3;
-      reasons.push(`✅ RSI مثالي للشراء (${rsiValue.toFixed(0)}) - في منطقة آمنة`);
+      reasons.push(`✅ RSI جيد للشراء (${rsiValue.toFixed(0)}) - في منطقة مناسبة`);
     } else {
-      if (rsiValue < 45 || rsiValue > 75) {
-        warnings.push(`❌ RSI غير مناسب للبيع (${rsiValue.toFixed(0)}) - يجب أن يكون بين 45-75`);
+      if (rsiValue < 35 || rsiValue > 80) {
+        warnings.push(`❌ RSI غير مناسب للبيع (${rsiValue.toFixed(0)}) - يجب أن يكون بين 35-80`);
         return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType);
       }
       strengthScore += 3;
-      reasons.push(`✅ RSI مثالي للبيع (${rsiValue.toFixed(0)}) - في منطقة آمنة`);
+      reasons.push(`✅ RSI جيد للبيع (${rsiValue.toFixed(0)}) - في منطقة مناسبة`);
     }
 
-    // 4. MACD - يجب أن يتوافق مع الاتجاه ويكون قوي
+    // 4. MACD - يجب أن يتوافق مع الاتجاه
     const macdDirection = macd.signal.includes('صاعد') ? 'BUY' : 'SELL';
-    if (macdDirection !== direction || !macd.signal.includes('قوي')) {
-      warnings.push('❌ MACD لا يعطي إشارة قوية متوافقة مع الاتجاه');
+    if (macdDirection !== direction) {
+      warnings.push('❌ MACD لا يتوافق مع الاتجاه');
       return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType);
     }
     strengthScore += 4;
-    reasons.push(`✅ MACD ${direction === 'BUY' ? 'صعودي' : 'هبوطي'} قوي - يؤكد الاتجاه`);
+    reasons.push(`✅ MACD ${direction === 'BUY' ? 'صعودي' : 'هبوطي'} - يؤكد الاتجاه`);
 
-    // 5. الحجم - يجب أن يكون ضخم جداً
-    if (!volume.signal.includes('ضخم')) {
-      warnings.push(`❌ الحجم غير كافٍ (${volume.signal}) - يجب أن يكون ضخم`);
+    // 5. الحجم - يجب أن يكون قوي أو ضخم
+    if (!volume.signal.includes('ضخم') && !volume.signal.includes('عالي')) {
+      warnings.push(`❌ الحجم غير كافٍ (${volume.signal}) - يجب أن يكون عالي أو ضخم`);
       return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType);
     }
     strengthScore += 4;
-    reasons.push('🔥 حجم التداول ضخم - يدعم الاتجاه بقوة');
+    const volumeText = volume.signal.includes('ضخم') ? 'ضخم' : 'عالي';
+    reasons.push(`🔥 حجم التداول ${volumeText} - يدعم الاتجاه`);
 
     // 6. Stochastic - يجب أن يكون في المنطقة المناسبة
     const stochK = parseFloat(stoch.value.split('K: ')[1]?.split(' /')[0]);
@@ -201,7 +202,7 @@ class ZeroReversalAnalysis {
     strengthScore += 4;
     reasons.push(`✅ أنماط شموع قوية: ${strongPatterns.map(p => p.name).join(', ')}`);
 
-    // 11. التحقق من آخر 5 شموع - يجب أن تكون في نفس الاتجاه
+    // 11. التحقق من آخر 5 شموع - يجب أن يكون معظمها في نفس الاتجاه
     const last5Candles = this.candles.slice(-5);
     let bullishCandles = 0;
     let bearishCandles = 0;
@@ -214,11 +215,11 @@ class ZeroReversalAnalysis {
       }
     });
     
-    if (direction === 'BUY' && bullishCandles < 4) {
+    if (direction === 'BUY' && bullishCandles < 3) {
       warnings.push(`❌ آخر 5 شموع ليست صعودية بما يكفي (${bullishCandles}/5)`);
       return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType);
     }
-    if (direction === 'SELL' && bearishCandles < 4) {
+    if (direction === 'SELL' && bearishCandles < 3) {
       warnings.push(`❌ آخر 5 شموع ليست هبوطية بما يكفي (${bearishCandles}/5)`);
       return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType);
     }
@@ -254,17 +255,17 @@ class ZeroReversalAnalysis {
     const takeProfitDistance = (currentPriceFloat * takeProfitPercent) / 100;
     const riskRewardRatio = takeProfitDistance / stopLossDistance;
 
-    // نسبة المخاطرة/العائد يجب أن تكون 4:1 على الأقل
-    if (riskRewardRatio < 4) {
-      warnings.push(`❌ نسبة المخاطرة/العائد غير كافية (1:${riskRewardRatio.toFixed(1)}) - يجب أن تكون 1:4 على الأقل`);
+    // نسبة المخاطرة/العائد يجب أن تكون 2.5:1 على الأقل
+    if (riskRewardRatio < 2.5) {
+      warnings.push(`❌ نسبة المخاطرة/العائد غير كافية (1:${riskRewardRatio.toFixed(1)}) - يجب أن تكون 1:2.5 على الأقل`);
       return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType);
     }
     strengthScore += 3;
-    reasons.push(`✅ نسبة ممتازة للمخاطرة/العائد (1:${riskRewardRatio.toFixed(1)})`);
+    reasons.push(`✅ نسبة جيدة للمخاطرة/العائد (1:${riskRewardRatio.toFixed(1)})`);
 
-    // التحقق النهائي: يجب أن تكون نقاط القوة 35+ من 41
-    if (strengthScore < 38) {
-      warnings.push(`❌ نقاط القوة غير كافية (${strengthScore}/41) - يجب 38+ للتأكد من عدم الانعكاس`);
+    // التحقق النهائي: يجب أن تكون نقاط القوة 30+ من 41
+    if (strengthScore < 30) {
+      warnings.push(`❌ نقاط القوة غير كافية (${strengthScore}/41) - يجب 30+ للتأكد من قوة الاتجاه`);
       return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType);
     }
 
@@ -313,7 +314,7 @@ class ZeroReversalAnalysis {
       recommendation,
       action,
       emoji,
-      confidence: 'مضمونة 100% - احتمال الانعكاس صفر',
+      confidence: 'عالية - اتجاه قوي',
       shouldTrade: true,
       riskLevel: 'منخفض جداً',
       reversalProbability: '0%',
