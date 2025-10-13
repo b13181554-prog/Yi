@@ -725,14 +725,14 @@
                 </div>
 
                 <div class="admin-tabs" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto;">
-                    <button class="admin-tab-btn active" onclick="switchAdminTab('stats')" style="padding: 10px 20px; border: none; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; white-space: nowrap;">📊 الإحصائيات</button>
+                    <button class="admin-tab-btn active" onclick="switchAdminTab('stats')" style="padding: 10px 20px; border: none; border-radius: 8px; background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%); color: white; cursor: pointer; white-space: nowrap;">📊 الإحصائيات</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('revenue')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">💰 الأرباح</button>
                     <button class="admin-tab-btn" onclick="switchAdminTab('users')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_users_tab">👥 المستخدمين</button>
                     <button class="admin-tab-btn" onclick="switchAdminTab('analysts')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">👨‍💼 المحللين</button>
                     <button class="admin-tab-btn" onclick="switchAdminTab('withdrawals')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">💸 طلبات السحب</button>
                     <button class="admin-tab-btn" onclick="switchAdminTab('transactions')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">💰 المعاملات</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('referrals')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">🎁 الإحالات</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('broadcast')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">📢 رسالة جماعية</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('search')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">🔍 بحث متقدم</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('system')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">🖥️ النظام</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('broadcast')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">📢 رسالة</button>
                 </div>
 
                 <!-- الإحصائيات -->
@@ -773,6 +773,61 @@
                         <div class="stat-card" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333; padding: 20px; border-radius: 12px; text-align: center;">
                             <div style="font-size: 28px; font-weight: bold; margin-bottom: 5px;" id="stat-referral-earnings">- USDT</div>
                             <div style="font-size: 14px; opacity: 0.8;">أرباح الإحالات</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الأرباح -->
+                <div id="admin-revenue-tab" class="admin-tab-content" style="display: none;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);">
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💰 أرباح الاشتراكات</div>
+                            <div style="font-size: 32px; font-weight: bold;" id="revenue-subscriptions">- USDT</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0, 217, 255, 0.3);">
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">📊 عمولات المحللين</div>
+                            <div style="font-size: 32px; font-weight: bold;" id="revenue-analysts">- USDT</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);">
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💵 إجمالي الإيداعات</div>
+                            <div style="font-size: 32px; font-weight: bold;" id="revenue-deposits">- USDT</div>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(250, 112, 154, 0.3);">
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💎 إجمالي الأرباح</div>
+                            <div style="font-size: 36px; font-weight: bold;" id="revenue-total">- USDT</div>
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin: 25px 0 15px;">🏆 أفضل 10 محللين (الأكثر ربحية)</h3>
+                    <div id="top-analysts-list" style="display: flex; flex-direction: column; gap: 10px;">
+                        <p class="empty-state">جاري التحميل...</p>
+                    </div>
+
+                    <h3 style="margin: 25px 0 15px;">💸 إحصائيات طلبات السحب</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 10px; border-right: 4px solid #ffc107; text-align: center;">
+                            <div style="font-size: 11px; color: #856404; margin-bottom: 5px;">⏳ معلقة</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #856404;" id="withdrawal-pending">-</div>
+                        </div>
+                        <div style="background: #d1ecf1; padding: 15px; border-radius: 10px; border-right: 4px solid #17a2b8; text-align: center;">
+                            <div style="font-size: 11px; color: #0c5460; margin-bottom: 5px;">✅ مكتملة</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #0c5460;" id="withdrawal-completed">-</div>
+                        </div>
+                        <div style="background: #f8d7da; padding: 15px; border-radius: 10px; border-right: 4px solid #dc3545; text-align: center;">
+                            <div style="font-size: 11px; color: #721c24; margin-bottom: 5px;">❌ مرفوضة</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #721c24;" id="withdrawal-rejected">-</div>
+                        </div>
+                        <div style="background: #f8d7da; padding: 15px; border-radius: 10px; border-right: 4px solid #dc3545; text-align: center;">
+                            <div style="font-size: 11px; color: #721c24; margin-bottom: 5px;">⚠️ فاشلة</div>
+                            <div style="font-size: 24px; font-weight: bold; color: #721c24;" id="withdrawal-failed">-</div>
+                        </div>
+                        <div style="background: #e7f3ff; padding: 15px; border-radius: 10px; border-right: 4px solid #004085; text-align: center;">
+                            <div style="font-size: 11px; color: #004085; margin-bottom: 5px;">💰 مبلغ معلق</div>
+                            <div style="font-size: 20px; font-weight: bold; color: #004085;" id="withdrawal-pending-amount">- USDT</div>
+                        </div>
+                        <div style="background: #d4edda; padding: 15px; border-radius: 10px; border-right: 4px solid #28a745; text-align: center;">
+                            <div style="font-size: 11px; color: #155724; margin-bottom: 5px;">💸 مبلغ مكتمل</div>
+                            <div style="font-size: 20px; font-weight: bold; color: #155724;" id="withdrawal-completed-amount">- USDT</div>
                         </div>
                     </div>
                 </div>
@@ -821,6 +876,59 @@
                 <div id="admin-referrals-tab" class="admin-tab-content" style="display: none;">
                     <div id="referrals-list" style="display: flex; flex-direction: column; gap: 10px;">
                         <p class="empty-state">جاري التحميل...</p>
+                    </div>
+                </div>
+
+                <!-- النظام وقاعدة البيانات -->
+                <div id="admin-system-tab" class="admin-tab-content" style="display: none;">
+                    <h3 style="margin: 0 0 20px;">🗄️ حالة قاعدة البيانات</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 30px;">
+                        <div style="background: #e3f2fd; padding: 18px; border-radius: 10px; border-right: 4px solid #1976d2;">
+                            <div style="font-size: 12px; color: #1565c0; margin-bottom: 5px;">👥 المستخدمين</div>
+                            <div style="font-size: 28px; font-weight: bold; color: #0d47a1;" id="db-total-users">-</div>
+                        </div>
+                        <div style="background: #f3e5f5; padding: 18px; border-radius: 10px; border-right: 4px solid #7b1fa2;">
+                            <div style="font-size: 12px; color: #6a1b9a; margin-bottom: 5px;">👨‍💼 المحللين</div>
+                            <div style="font-size: 28px; font-weight: bold; color: #4a148c;" id="db-total-analysts">-</div>
+                        </div>
+                        <div style="background: #e8f5e9; padding: 18px; border-radius: 10px; border-right: 4px solid #388e3c;">
+                            <div style="font-size: 12px; color: #2e7d32; margin-bottom: 5px;">💰 المعاملات</div>
+                            <div style="font-size: 28px; font-weight: bold; color: #1b5e20;" id="db-total-transactions">-</div>
+                        </div>
+                        <div style="background: #fff3e0; padding: 18px; border-radius: 10px; border-right: 4px solid #f57c00;">
+                            <div style="font-size: 12px; color: #e65100; margin-bottom: 5px;">💸 السحوبات</div>
+                            <div style="font-size: 28px; font-weight: bold; color: #bf360c;" id="db-total-withdrawals">-</div>
+                        </div>
+                        <div style="background: #fce4ec; padding: 18px; border-radius: 10px; border-right: 4px solid #c2185b;">
+                            <div style="font-size: 12px; color: #ad1457; margin-bottom: 5px;">📊 اشتراكات محللين</div>
+                            <div style="font-size: 28px; font-weight: bold; color: #880e4f;" id="db-analyst-subs">-</div>
+                        </div>
+                        <div style="background: #e0f2f1; padding: 18px; border-radius: 10px; border-right: 4px solid #00796b;">
+                            <div style="font-size: 12px; color: #00695c; margin-bottom: 5px;">✅ نشطة</div>
+                            <div style="font-size: 28px; font-weight: bold; color: #004d40;" id="db-active-analyst-subs">-</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin: 25px 0 20px;">🖥️ معلومات النظام</h3>
+                    <div style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <div style="font-size: 13px; color: #666; margin-bottom: 5px;">⏱️ وقت التشغيل</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #333;" id="system-uptime">-</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 13px; color: #666; margin-bottom: 5px;">💾 استخدام الذاكرة</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #333;" id="system-memory">-</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 13px; color: #666; margin-bottom: 5px;">🔢 إصدار Node.js</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #333;" id="system-node-version">-</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 13px; color: #666; margin-bottom: 5px;">🖥️ المنصة</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #333;" id="system-platform">-</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

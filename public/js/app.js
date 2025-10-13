@@ -2997,13 +2997,13 @@ async function loadAdminPanel() {
 function switchAdminTab(tab) {
     const tabs = {
         'stats': { element: 'admin-stats-tab', load: loadAdminStats },
+        'revenue': { element: 'admin-revenue-tab', load: loadAdvancedStats },
         'users': { element: 'admin-users-tab', load: loadAllUsers },
         'analysts': { element: 'admin-analysts-tab', load: loadAdminAnalysts },
         'withdrawals': { element: 'admin-withdrawals-tab', load: loadAdminWithdrawals },
         'transactions': { element: 'admin-transactions-tab', load: loadAdminTransactions },
-        'referrals': { element: 'admin-referrals-tab', load: loadAdminReferrals },
-        'broadcast': { element: 'admin-broadcast-tab', load: null },
-        'search': { element: 'admin-search-tab', load: null }
+        'system': { element: 'admin-system-tab', load: loadAdvancedStats },
+        'broadcast': { element: 'admin-broadcast-tab', load: null }
     };
     
     document.querySelectorAll('.admin-tab-btn').forEach(btn => {
@@ -3020,7 +3020,7 @@ function switchAdminTab(tab) {
     const activeBtn = event?.target.closest('.admin-tab-btn');
     if (activeBtn) {
         activeBtn.classList.add('active');
-        activeBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        activeBtn.style.background = 'linear-gradient(135deg, #00D9FF 0%, #A855F7 100%)';
         activeBtn.style.color = 'white';
         activeBtn.style.border = 'none';
     }
@@ -3241,6 +3241,85 @@ async function loadAdminStats() {
         }
     } catch (error) {
         console.error('Error loading admin stats:', error);
+    }
+}
+
+async function loadAdvancedStats() {
+    try {
+        const response = await fetch('/api/admin/advanced-stats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                admin_id: userId,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.stats) {
+            const stats = data.stats;
+            
+            // الأرباح
+            if (stats.revenue) {
+                document.getElementById('revenue-subscriptions').textContent = stats.revenue.bot_subscriptions + ' USDT';
+                document.getElementById('revenue-analysts').textContent = stats.revenue.analyst_commissions + ' USDT';
+                document.getElementById('revenue-deposits').textContent = stats.revenue.total_deposits + ' USDT';
+                document.getElementById('revenue-total').textContent = stats.revenue.total_revenue + ' USDT';
+            }
+            
+            // السحوبات
+            if (stats.withdrawals) {
+                document.getElementById('withdrawal-pending').textContent = stats.withdrawals.pending;
+                document.getElementById('withdrawal-completed').textContent = stats.withdrawals.completed;
+                document.getElementById('withdrawal-rejected').textContent = stats.withdrawals.rejected;
+                document.getElementById('withdrawal-failed').textContent = stats.withdrawals.failed;
+                document.getElementById('withdrawal-pending-amount').textContent = stats.withdrawals.total_pending_amount.toFixed(2) + ' USDT';
+                document.getElementById('withdrawal-completed-amount').textContent = stats.withdrawals.total_completed_amount.toFixed(2) + ' USDT';
+            }
+            
+            // قاعدة البيانات
+            if (stats.database) {
+                document.getElementById('db-total-users').textContent = stats.database.total_users;
+                document.getElementById('db-total-analysts').textContent = stats.database.total_analysts;
+                document.getElementById('db-total-transactions').textContent = stats.database.total_transactions;
+                document.getElementById('db-total-withdrawals').textContent = stats.database.total_withdrawals;
+                document.getElementById('db-analyst-subs').textContent = stats.database.total_analyst_subscriptions;
+                document.getElementById('db-active-analyst-subs').textContent = stats.database.active_analyst_subscriptions;
+            }
+            
+            // النظام
+            if (stats.system) {
+                const uptimeHours = Math.floor(stats.system.uptime / 3600);
+                const uptimeMinutes = Math.floor((stats.system.uptime % 3600) / 60);
+                document.getElementById('system-uptime').textContent = `${uptimeHours}س ${uptimeMinutes}د`;
+                
+                const memoryMB = (stats.system.memory_usage.heapUsed / 1024 / 1024).toFixed(0);
+                const memoryTotalMB = (stats.system.memory_usage.heapTotal / 1024 / 1024).toFixed(0);
+                document.getElementById('system-memory').textContent = `${memoryMB} / ${memoryTotalMB} MB`;
+                
+                document.getElementById('system-node-version').textContent = stats.system.node_version;
+                document.getElementById('system-platform').textContent = stats.system.platform;
+            }
+            
+            // أفضل المحللين
+            if (stats.top_analysts && stats.top_analysts.length > 0) {
+                const container = document.getElementById('top-analysts-list');
+                container.innerHTML = stats.top_analysts.map((analyst, index) => `
+                    <div style="background: ${index === 0 ? 'linear-gradient(135deg, #ffd700 0%, #ffed4e 100%)' : index === 1 ? 'linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%)' : index === 2 ? 'linear-gradient(135deg, #cd7f32 0%, #e4a672 100%)' : 'white'}; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 18px; font-weight: bold; color: ${index < 3 ? 'white' : '#333'};">${index + 1}. ${analyst.analyst_name}</div>
+                            <div style="font-size: 12px; color: ${index < 3 ? 'rgba(255,255,255,0.9)' : '#666'};">المشتركين: ${analyst.total_subscribers}</div>
+                        </div>
+                        <div style="text-align: left; font-size: 20px; font-weight: bold; color: ${index < 3 ? 'white' : '#00D9FF'};">
+                            ${analyst.total_revenue.toFixed(2)} USDT
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading advanced stats:', error);
     }
 }
 

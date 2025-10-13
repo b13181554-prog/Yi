@@ -2618,6 +2618,147 @@ app.post('/api/admin/stats', async (req, res) => {
   }
 });
 
+// إحصائيات متقدمة شاملة للإدارة
+app.post('/api/admin/advanced-stats', async (req, res) => {
+  try {
+    const { init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const authenticatedUserId = getUserIdFromInitData(init_data);
+    if (!authenticatedUserId || authenticatedUserId !== config.OWNER_ID) {
+      return res.json({ success: false, error: 'Unauthorized: Admin only' });
+    }
+    
+    const users = await db.getAllUsers();
+    const analysts = await db.getAllAnalysts();
+    const allTransactions = await db.getAllTransactions(10000);
+    const allWithdrawals = await db.getDB().collection('withdrawal_requests').find({}).toArray();
+    const analystSubscriptions = await db.getDB().collection('analyst_subscriptions').find({}).toArray();
+    
+    // حساب الأرباح من اشتراكات البوت
+    const botSubscriptionRevenue = allTransactions
+      .filter(t => t.type === 'subscription' && t.status === 'completed')
+      .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+    
+    // حساب الأرباح من المحللين (نسبة المالك من اشتراكات المحللين)
+    const analystRevenue = analystSubscriptions
+      .filter(s => s.payment_distribution && s.payment_distribution.owner_share)
+      .reduce((sum, s) => sum + (parseFloat(s.payment_distribution.owner_share) || 0), 0);
+    
+    // إجمالي الإيداعات
+    const totalDeposits = allTransactions
+      .filter(t => t.type === 'deposit' && t.status === 'completed')
+      .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+    
+    // طلبات السحب بحسب الحالة
+    const withdrawalStats = {
+      pending: allWithdrawals.filter(w => w.status === 'pending').length,
+      approved: allWithdrawals.filter(w => w.status === 'approved').length,
+      completed: allWithdrawals.filter(w => w.status === 'completed').length,
+      rejected: allWithdrawals.filter(w => w.status === 'rejected').length,
+      failed: allWithdrawals.filter(w => w.status === 'failed').length,
+      total_pending_amount: allWithdrawals
+        .filter(w => w.status === 'pending')
+        .reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0),
+      total_completed_amount: allWithdrawals
+        .filter(w => w.status === 'completed')
+        .reduce((sum, w) => sum + (parseFloat(w.amount) || 0), 0)
+    };
+    
+    // حالة قاعدة البيانات
+    const dbStats = {
+      total_users: users.length,
+      total_analysts: analysts.length,
+      total_transactions: allTransactions.length,
+      total_withdrawals: allWithdrawals.length,
+      total_analyst_subscriptions: analystSubscriptions.length,
+      active_analyst_subscriptions: analystSubscriptions.filter(s => 
+        s.status === 'active' && new Date(s.end_date) > new Date()
+      ).length
+    };
+    
+    // معلومات النظام
+    const systemInfo = {
+      uptime: process.uptime(),
+      memory_usage: process.memoryUsage(),
+      node_version: process.version,
+      platform: process.platform
+    };
+    
+    // المحللين الأكثر ربحية
+    const analystEarnings = await db.getDB().collection('analyst_subscriptions').aggregate([
+      {
+        $match: {
+          status: 'active'
+        }
+      },
+      {
+        $group: {
+          _id: '$analyst_id',
+          total_revenue: { $sum: '$amount' },
+          total_subscribers: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'analysts',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'analyst'
+        }
+      },
+      { $unwind: '$analyst' },
+      {
+        $project: {
+          analyst_name: '$analyst.name',
+          total_revenue: 1,
+          total_subscribers: 1
+        }
+      },
+      { $sort: { total_revenue: -1 } },
+      { $limit: 10 }
+    ]).toArray();
+    
+    // إحصائيات الإحالات
+    const referralStats = {
+      total_referral_earnings: users.reduce((sum, u) => sum + (parseFloat(u.referral_earnings) || 0), 0),
+      total_users_with_referrals: users.filter(u => u.referred_by).length,
+      top_referrers: users
+        .map(u => ({
+          user_id: u.user_id,
+          name: u.first_name,
+          earnings: u.referral_earnings || 0,
+          referrals_count: users.filter(r => r.referred_by === u.user_id).length
+        }))
+        .filter(u => u.referrals_count > 0)
+        .sort((a, b) => b.earnings - a.earnings)
+        .slice(0, 10)
+    };
+    
+    const advancedStats = {
+      revenue: {
+        bot_subscriptions: botSubscriptionRevenue.toFixed(2),
+        analyst_commissions: analystRevenue.toFixed(2),
+        total_revenue: (botSubscriptionRevenue + analystRevenue).toFixed(2),
+        total_deposits: totalDeposits.toFixed(2)
+      },
+      withdrawals: withdrawalStats,
+      database: dbStats,
+      system: systemInfo,
+      top_analysts: analystEarnings,
+      referrals: referralStats
+    };
+    
+    res.json({ success: true, stats: advancedStats });
+  } catch (error) {
+    console.error('Advanced Admin Stats API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 // إدارة المحللين
 app.post('/api/admin/analysts', async (req, res) => {
   try {
