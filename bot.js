@@ -314,13 +314,7 @@ ${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
       reply_markup: {
         inline_keyboard: [
           [
-            { 
-              text: isEnabled ? '❌ إيقاف الإشعارات' : '✅ تفعيل الإشعارات', 
-              callback_data: `toggle_notif_${!isEnabled}` 
-            }
-          ],
-          [
-            { text: '⚙️ فتح الإعدادات', web_app: { url: config.WEBAPP_URL } }
+            { text: 'ستارت', callback_data: 'start_action' }
           ]
         ]
       }
@@ -446,13 +440,7 @@ ${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
         reply_markup: {
           inline_keyboard: [
             [
-              { 
-                text: isEnabled ? '❌ إيقاف الإشعارات' : '✅ تفعيل الإشعارات', 
-                callback_data: `toggle_notif_${!isEnabled}` 
-              }
-            ],
-            [
-              { text: '⚙️ فتح الإعدادات', web_app: { url: config.WEBAPP_URL } }
+              { text: 'ستارت', callback_data: 'start_action' }
             ]
           ]
         }
@@ -530,6 +518,50 @@ ${statusMessage}
         show_alert: true
       });
     }
+  } else if (data === 'start_action') {
+    try {
+      await bot.answerCallbackQuery(query.id);
+      
+      const user = await db.getUser(userId);
+      const lang = user ? (user.language || 'ar') : 'ar';
+      const firstName = query.from.first_name;
+      const subscription = await checkSubscription(userId);
+      let statusMessage = '';
+      
+      if (subscription.active) {
+        if (subscription.type === 'trial') {
+          statusMessage = `🎁 ${t(lang, 'trial_period')}: ${subscription.daysLeft} ${t(lang, 'days_remaining')}`;
+        } else {
+          statusMessage = `✅ ${t(lang, 'subscription_active_until')}: ${new Date(subscription.expiresAt).toLocaleDateString(lang === 'ar' ? 'ar' : 'en')}`;
+        }
+      } else {
+        statusMessage = `❌ ${t(lang, 'no_active_subscription')}`;
+      }
+      
+      await bot.sendMessage(chatId, `
+👋 <b>${t(lang, 'welcome_back')} ${firstName}!</b>
+
+${statusMessage}
+💰 <b>${t(lang, 'your_balance')}</b> ${user.balance} USDT
+
+${t(lang, 'open_app')} 👇
+      `, {
+        parse_mode: 'HTML',
+        reply_markup: {
+          keyboard: [
+            [{ text: t(lang, 'open_app'), web_app: { url: config.WEBAPP_URL } }],
+            [{ text: t(lang, 'settings_menu') }]
+          ],
+          resize_keyboard: true
+        }
+      });
+    } catch (error) {
+      console.error('Error in start_action:', error);
+      await bot.answerCallbackQuery(query.id, {
+        text: '❌ حدث خطأ',
+        show_alert: true
+      });
+    }
   } else if (data.startsWith('toggle_notif_')) {
     const enabled = data.split('_')[2] === 'true';
     
@@ -541,6 +573,8 @@ ${statusMessage}
         show_alert: true
       });
       
+      const user = await db.getUser(userId);
+      const lang = user ? (user.language || 'ar') : 'ar';
       const settings = await db.getNotificationSettings(userId);
       const markets = settings.markets || ['crypto', 'forex', 'stocks', 'commodities', 'indices'];
       
@@ -563,9 +597,9 @@ ${statusMessage}
       let marketsText = markets.map(m => `${marketEmojis[m]} ${marketNames[m]}`).join('\n');
       
       await bot.editMessageText(`
-🔔 <b>إعدادات الإشعارات</b>
+🔔 <b>${t(lang, 'notifications_settings')}</b>
 
-📊 <b>الحالة:</b> ${enabled ? '✅ مفعلة' : '❌ معطلة'}
+📊 <b>الحالة:</b> ${enabled ? t(lang, 'notifications_enabled') : t(lang, 'notifications_disabled')}
 
 ${enabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
 
@@ -577,13 +611,7 @@ ${enabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
         reply_markup: {
           inline_keyboard: [
             [
-              { 
-                text: enabled ? '❌ إيقاف الإشعارات' : '✅ تفعيل الإشعارات', 
-                callback_data: `toggle_notif_${!enabled}` 
-              }
-            ],
-            [
-              { text: '⚙️ فتح الإعدادات', web_app: { url: config.WEBAPP_URL } }
+              { text: 'ستارت', callback_data: 'start_action' }
             ]
           ]
         }
