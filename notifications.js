@@ -24,7 +24,116 @@ function initNotifications(botInstance) {
     await scanAndNotifyPumpOpportunities();
   });
   
+  // فحص دوري كل 15 دقيقة لفرص التداول القوية
+  cron.schedule('*/15 * * * *', async () => {
+    console.log('🔍 Running market opportunities scan...');
+    await scanAndNotifyMarketOpportunities();
+  });
+  
   console.log('✅ Notification system initialized');
+}
+
+// فحص ومعالجة فرص التداول القوية في جميع الأسواق
+async function scanAndNotifyMarketOpportunities() {
+  try {
+    const users = await db.getAllUsers();
+    const TechnicalAnalysis = require('./analysis');
+    const marketData = require('./market-data');
+    const forexService = require('./forex-service');
+    
+    const notifiedUsers = new Map();
+    
+    for (const user of users) {
+      try {
+        const settings = await db.getNotificationSettings(user.user_id);
+        
+        if (!settings.enabled || !settings.markets || settings.markets.length === 0) {
+          continue;
+        }
+        
+        const opportunities = [];
+        
+        // فحص الأسواق حسب تفضيلات المستخدم
+        for (const market of settings.markets) {
+          let symbols = [];
+          
+          if (market === 'crypto') {
+            symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'ADAUSDT'];
+          } else if (market === 'forex') {
+            symbols = ['EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', 'USDCAD'];
+          } else if (market === 'stocks') {
+            symbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA'];
+          } else if (market === 'commodities') {
+            symbols = ['XAUUSD', 'XAGUSD', 'WTIUSD'];
+          } else if (market === 'indices') {
+            symbols = ['US30', 'SPX500', 'NAS100'];
+          }
+          
+          for (const symbol of symbols) {
+            try {
+              let candles;
+              
+              if (market === 'forex') {
+                candles = await forexService.getCandles(symbol, '1h', 100);
+              } else {
+                candles = await marketData.getCandles(symbol, '1h', 100, market);
+              }
+              
+              if (!candles || candles.length < 50) continue;
+              
+              const analysis = new TechnicalAnalysis(candles);
+              const recommendation = analysis.getTradeRecommendation();
+              
+              // فقط الفرص القوية (70%+)
+              if (recommendation.confidence >= 70) {
+                opportunities.push({
+                  symbol,
+                  market,
+                  recommendation: recommendation.action,
+                  confidence: recommendation.confidence,
+                  price: candles[candles.length - 1].close,
+                  stopLoss: recommendation.stopLoss,
+                  takeProfit: recommendation.takeProfit
+                });
+              }
+            } catch (error) {
+              console.error(`Error analyzing ${symbol}:`, error.message);
+            }
+          }
+        }
+        
+        // إرسال التنبيهات
+        if (opportunities.length > 0) {
+          let message = '🔔 <b>فرص تداول قوية جديدة!</b>\n\n';
+          
+          for (const opp of opportunities.slice(0, 5)) {
+            const action = opp.recommendation === 'buy' ? '🟢 شراء' : opp.recommendation === 'sell' ? '🔴 بيع' : '⚪ محايد';
+            message += `${action} <b>${opp.symbol}</b> (${opp.market})\n`;
+            message += `💪 الثقة: ${opp.confidence}%\n`;
+            message += `💵 السعر: ${opp.price}\n`;
+            if (opp.stopLoss) message += `🛑 وقف الخسارة: ${opp.stopLoss}\n`;
+            if (opp.takeProfit) message += `🎯 جني الأرباح: ${opp.takeProfit}\n`;
+            message += '\n';
+          }
+          
+          message += '💡 افتح البوت للمزيد من التفاصيل';
+          
+          await bot.sendMessage(user.user_id, message, { parse_mode: 'HTML' });
+          notifiedUsers.set(user.user_id, opportunities.length);
+          
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      } catch (error) {
+        console.error(`Error notifying user ${user.user_id}:`, error.message);
+      }
+    }
+    
+    if (notifiedUsers.size > 0) {
+      console.log(`✅ Notified ${notifiedUsers.size} users about market opportunities`);
+    }
+  } catch (error) {
+    console.error('Error in scanAndNotifyMarketOpportunities:', error);
+  }
 }
 
 async function checkExpiringSubscriptions() {
