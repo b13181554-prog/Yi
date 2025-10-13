@@ -26,6 +26,15 @@ All analysis systems include risk assessment, precise Stop Loss & Take Profit, a
 ### Feature Specifications
 The platform offers a comprehensive Web App for technical analysis, top movers, a wallet for USDT TRC20 deposits/withdrawals, analyst subscriptions, and account management. Trading features include technical analysis for crypto, forex, stocks, indices, and commodities, alongside recommendations and trending cryptocurrency tracking. Financial functionalities include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management encompasses an analyst subscription system and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, withdrawal processing, transaction viewing, referral tracking, and mass messaging. Automated trade signal monitoring checks markets every 15 minutes for strong opportunities (70%+ indicator agreement) and sends instant notifications. The withdrawal system features robust security with transaction-safe refunding. The analysis system provides high-quality trade signals, including an advanced blockchain-based pump detection system. Notification settings are customizable. The system provides comprehensive asset coverage, including 1000+ cryptocurrencies, 400+ forex pairs, 140+ global stocks, 40+ commodities, and 50+ global indices. Pump analysis is integrated, and prorated refunds are handled for subscription cancellations.
 
+**Advanced Admin Dashboard** (October 2025):
+- **Revenue Tracking**: Comprehensive revenue analytics tracking bot subscriptions, analyst commissions (owner's 30% share), total deposits, and aggregate revenue with detailed breakdowns.
+- **Withdrawal Monitoring**: Real-time tracking of all withdrawal statuses (pending, completed, rejected, failed) with total amount calculations for pending and completed withdrawals.
+- **Database Health**: Live database metrics showing total users, analysts, transactions, withdrawals, analyst subscriptions, and active subscriptions.
+- **System Information**: Server monitoring displaying uptime, memory usage (heap used/total), Node.js version, and platform information.
+- **Top Analysts Leaderboard**: Dynamic ranking of top 10 analysts by revenue with gold/silver/bronze styling for top 3 positions, showing subscriber count and total revenue per analyst.
+- **Color Scheme**: Matches new branding with cyan (#00D9FF) and purple (#A855F7) gradient themes throughout admin interface.
+- **Security**: Owner-only access (OWNER_ID: 7594466342) with Telegram init_data verification for all admin endpoints.
+
 ### System Design Choices
 The project uses MongoDB Atlas for its database and is configured for 24/7 operation. It incorporates improved error processing and logging, and employs multiple APIs for data redundancy and fallback. The payment system is designed for enterprise scalability, utilizing a queue-based processing with Bull and Redis, circuit breaker patterns for resilience, comprehensive monitoring, and enhanced security features such as rate limiting and transaction-safe processing with MongoDB transactions.
 
