@@ -23,19 +23,37 @@ body {
 }
 
 .app-header {
-    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0a0e27 100%);
+    background: #000000;
     color: white;
     padding: 0;
     text-align: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 40px rgba(0, 255, 255, 0.3);
     position: relative;
     overflow: hidden;
+}
+
+.app-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(0, 255, 255, 0.05) 25%,
+        rgba(0, 255, 255, 0.1) 50%,
+        rgba(0, 255, 255, 0.05) 75%,
+        transparent 100%
+    );
+    animation: shimmer 4s infinite;
+    z-index: 1;
 }
 
 .logo-container {
     position: relative;
     width: 100%;
-    height: 200px;
+    height: 220px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -43,13 +61,23 @@ body {
 }
 
 .main-logo {
-    width: 90%;
-    max-width: 500px;
+    width: 95%;
+    max-width: 550px;
     height: auto;
     position: relative;
-    z-index: 2;
-    animation: logoFloat 4s ease-in-out infinite, logoPulse 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.5)) drop-shadow(0 0 40px rgba(102, 126, 234, 0.3));
+    z-index: 5;
+    animation: logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 25px rgba(0, 255, 255, 0.7)) 
+            drop-shadow(0 0 50px rgba(138, 43, 226, 0.5))
+            drop-shadow(0 0 75px rgba(0, 255, 255, 0.3));
+    transition: all 0.3s ease;
+}
+
+.main-logo:hover {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 35px rgba(0, 255, 255, 0.9)) 
+            drop-shadow(0 0 70px rgba(138, 43, 226, 0.7))
+            drop-shadow(0 0 100px rgba(0, 255, 255, 0.5));
 }
 
 .logo-overlay {
@@ -59,33 +87,40 @@ body {
     right: 0;
     bottom: 0;
     background: 
-        linear-gradient(90deg, transparent 0%, rgba(0, 255, 255, 0.1) 50%, transparent 100%),
-        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 255, 0.03) 2px, rgba(0, 255, 255, 0.03) 4px);
-    animation: scanline 3s linear infinite;
+        linear-gradient(90deg, transparent 0%, rgba(0, 255, 255, 0.15) 50%, transparent 100%),
+        repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 255, 255, 0.05) 3px, rgba(0, 255, 255, 0.05) 6px);
+    animation: scanline 2.5s linear infinite;
     pointer-events: none;
-    z-index: 3;
+    z-index: 6;
 }
 
 .logo-container::before {
-    content: "📈";
+    content: '';
     position: absolute;
-    font-size: 40px;
-    top: 20%;
-    left: 10%;
-    animation: floatUp 3s ease-in-out infinite;
-    opacity: 0.6;
-    z-index: 1;
+    top: 50%;
+    left: 50%;
+    width: 150%;
+    height: 150%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.15) 0%, transparent 70%);
+    animation: pulseRing 3s ease-out infinite;
+    z-index: 2;
 }
 
 .logo-container::after {
-    content: "📊";
+    content: '';
     position: absolute;
-    font-size: 40px;
-    top: 60%;
-    right: 10%;
-    animation: floatUp 3s ease-in-out infinite 1.5s;
-    opacity: 0.6;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(45deg, transparent 45%, rgba(0, 255, 255, 0.02) 50%, transparent 55%),
+        linear-gradient(-45deg, transparent 45%, rgba(138, 43, 226, 0.02) 50%, transparent 55%);
+    background-size: 30px 30px;
+    animation: gridMove 20s linear infinite;
     z-index: 1;
+    opacity: 0.5;
 }
 
 @keyframes logoFloat {
@@ -93,16 +128,21 @@ body {
         transform: translateY(0px) scale(1);
     }
     50% {
-        transform: translateY(-10px) scale(1.02);
+        transform: translateY(-8px) scale(1.01);
     }
 }
 
-@keyframes logoPulse {
+@keyframes logoGlow {
     0%, 100% {
-        filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.5)) drop-shadow(0 0 40px rgba(102, 126, 234, 0.3));
+        filter: drop-shadow(0 0 25px rgba(0, 255, 255, 0.7)) 
+                drop-shadow(0 0 50px rgba(138, 43, 226, 0.5))
+                drop-shadow(0 0 75px rgba(0, 255, 255, 0.3));
     }
     50% {
-        filter: drop-shadow(0 0 30px rgba(0, 255, 255, 0.8)) drop-shadow(0 0 60px rgba(102, 126, 234, 0.5)) drop-shadow(0 0 80px rgba(255, 255, 255, 0.2));
+        filter: drop-shadow(0 0 40px rgba(0, 255, 255, 1)) 
+                drop-shadow(0 0 80px rgba(138, 43, 226, 0.8))
+                drop-shadow(0 0 120px rgba(0, 255, 255, 0.5))
+                drop-shadow(0 0 160px rgba(255, 255, 255, 0.2));
     }
 }
 
@@ -115,18 +155,35 @@ body {
     }
 }
 
-@keyframes floatUp {
+@keyframes shimmer {
     0% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 0.6;
-    }
-    50% {
-        transform: translateY(-30px) rotate(180deg);
-        opacity: 0.3;
+        transform: translateX(0);
     }
     100% {
-        transform: translateY(-60px) rotate(360deg);
+        transform: translateX(50%);
+    }
+}
+
+@keyframes pulseRing {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
         opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 0;
+    }
+}
+
+@keyframes gridMove {
+    0% {
+        background-position: 0 0, 0 0;
+    }
+    100% {
+        background-position: 30px 30px, -30px -30px;
     }
 }
 
