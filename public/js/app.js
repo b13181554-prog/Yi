@@ -514,6 +514,10 @@ function showSection(sectionId, event) {
     if (sectionId === 'wallet-section') {
         loadTransactions();
     }
+
+    if (sectionId === 'more-section') {
+        loadMoreSectionSettings();
+    }
 }
 
 let searchTimeout = null;
