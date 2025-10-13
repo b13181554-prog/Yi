@@ -6,7 +6,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     background-attachment: fixed;
     color: #333;
     min-height: 100vh;
@@ -66,45 +66,6 @@ body {
     height: auto;
     position: relative;
     z-index: 5;
-    animation: logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite;
-    filter: drop-shadow(0 0 25px rgba(0, 255, 255, 0.7)) 
-            drop-shadow(0 0 50px rgba(138, 43, 226, 0.5))
-            drop-shadow(0 0 75px rgba(0, 255, 255, 0.3));
-    transition: all 0.3s ease;
-}
-
-.main-logo:hover {
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 35px rgba(0, 255, 255, 0.9)) 
-            drop-shadow(0 0 70px rgba(138, 43, 226, 0.7))
-            drop-shadow(0 0 100px rgba(0, 255, 255, 0.5));
-}
-
-.logo-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        linear-gradient(90deg, transparent 0%, rgba(0, 255, 255, 0.15) 50%, transparent 100%),
-        repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 255, 255, 0.05) 3px, rgba(0, 255, 255, 0.05) 6px);
-    animation: scanline 2.5s linear infinite;
-    pointer-events: none;
-    z-index: 6;
-}
-
-.logo-container::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 150%;
-    height: 150%;
-    transform: translate(-50%, -50%);
-    background: radial-gradient(circle, rgba(0, 255, 255, 0.15) 0%, transparent 70%);
-    animation: pulseRing 3s ease-out infinite;
-    z-index: 2;
 }
 
 .logo-container::after {
@@ -282,7 +243,7 @@ body {
 }
 
 .language-selector select option {
-    background: #667eea;
+    background: #00D9FF;
     color: white;
 }
 
@@ -296,7 +257,7 @@ body {
     height: 50px;
     margin: 0 auto 20px;
     border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea;
+    border-top: 4px solid #00D9FF;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -319,7 +280,7 @@ body {
 
 .user-info {
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     color: white;
 }
 
@@ -374,7 +335,7 @@ body {
 }
 
 .nav-btn.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     color: white;
 }
 
@@ -396,7 +357,7 @@ body {
 }
 
 .section-header h2 {
-    color: #667eea;
+    color: #00D9FF;
     font-size: 24px;
 }
 
@@ -435,7 +396,7 @@ body {
 }
 
 .recommendation-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     color: white;
     padding: 20px;
     border-radius: 15px;
@@ -480,7 +441,7 @@ body {
 }
 
 .indicator-card h4 {
-    color: #667eea;
+    color: #00D9FF;
     margin-bottom: 8px;
     font-size: 14px;
 }
@@ -509,7 +470,7 @@ body {
 }
 
 .filter-btn.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     color: white;
 }
 
@@ -598,7 +559,7 @@ body {
 }
 
 .form-container h3 {
-    color: #667eea;
+    color: #00D9FF;
     margin-bottom: 15px;
 }
 
@@ -626,7 +587,7 @@ body {
 }
 
 .copy-btn {
-    background: #667eea;
+    background: #00D9FF;
     color: white;
     border: none;
     padding: 8px 12px;
@@ -664,7 +625,7 @@ body {
 .submit-btn {
     width: 100%;
     padding: 15px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     color: white;
     border: none;
     border-radius: 10px;
@@ -685,7 +646,7 @@ body {
 }
 
 .transactions-list h3 {
-    color: #667eea;
+    color: #00D9FF;
     margin-bottom: 15px;
 }
 
@@ -733,7 +694,7 @@ body {
 }
 
 .subscription-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     color: white;
     padding: 25px;
     border-radius: 15px;
@@ -786,7 +747,7 @@ body {
     width: 100%;
     padding: 15px;
     background: white;
-    color: #667eea;
+    color: #00D9FF;
     border: none;
     border-radius: 10px;
     font-size: 18px;
@@ -801,7 +762,7 @@ body {
 }
 
 .analysts-list h3 {
-    color: #667eea;
+    color: #00D9FF;
     margin-bottom: 15px;
 }
 
@@ -824,7 +785,7 @@ body {
     height: 50px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #667eea;
+    border: 2px solid #00D9FF;
     flex-shrink: 0;
 }
 
@@ -832,7 +793,7 @@ body {
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -865,7 +826,7 @@ body {
 .analyst-footer .price {
     font-size: 16px;
     font-weight: bold;
-    color: #667eea;
+    color: #00D9FF;
     margin: 0;
 }
 
@@ -876,7 +837,7 @@ body {
 }
 
 .subscribe-analyst-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     color: white;
     border: none;
     padding: 12px 24px;
@@ -911,7 +872,7 @@ body {
 }
 
 .info-card h3 {
-    color: #667eea;
+    color: #00D9FF;
     margin-bottom: 10px;
 }
 
@@ -1012,7 +973,7 @@ body {
 }
 
 .settings-card h3 {
-    color: #667eea;
+    color: #00D9FF;
     margin-bottom: 15px;
 }
 
@@ -1042,8 +1003,8 @@ body {
 }
 
 .analysis-type-card.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-color: #667eea;
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
+    border-color: #00D9FF;
 }
 
 .analysis-type-card.active .type-icon,
@@ -1089,7 +1050,7 @@ body {
 }
 
 .tab-btn.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     color: white;
 }
 
@@ -1104,7 +1065,7 @@ body {
 .top100-header {
     text-align: center;
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     color: white;
     border-radius: 15px;
     margin-bottom: 20px;
@@ -1189,7 +1150,7 @@ body {
 }
 
 input:checked + .slider {
-    background-color: #667eea;
+    background-color: #00D9FF;
 }
 
 input:checked + .slider:before {
@@ -1198,14 +1159,14 @@ input:checked + .slider:before {
 
 .notification-settings .market-checkbox:checked + span {
     font-weight: bold;
-    color: #667eea;
+    color: #00D9FF;
 }
 
 .support-btn {
     position: absolute;
     top: 60px;
     right: 15px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     color: white;
     border: none;
     padding: 6px 12px;
@@ -1290,7 +1251,7 @@ input:checked + .slider:before {
 }
 
 .message.user {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     color: white;
     margin-left: auto;
     text-align: right;
@@ -1325,7 +1286,7 @@ input:checked + .slider:before {
 
 .support-input-area button {
     padding: 12px 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -1340,7 +1301,7 @@ input:checked + .slider:before {
     left: 0;
     right: 0;
     background: white;
-    border: 2px solid #667eea;
+    border: 2px solid #00D9FF;
     border-radius: 8px;
     margin-top: 5px;
     max-height: 300px;
@@ -1386,7 +1347,7 @@ input:checked + .slider:before {
 }
 
 .market-badge {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%);
     color: white;
     padding: 4px 10px;
     border-radius: 12px;
