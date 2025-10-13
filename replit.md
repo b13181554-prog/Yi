@@ -29,6 +29,16 @@ The platform offers a comprehensive Web App for technical analysis, top movers, 
 ### System Design Choices
 The project uses MongoDB Atlas for its database and is configured for 24/7 operation. It incorporates improved error processing and logging, and employs multiple APIs for data redundancy and fallback. The payment system is designed for enterprise scalability, utilizing a queue-based processing with Bull and Redis, circuit breaker patterns for resilience, comprehensive monitoring, and enhanced security features such as rate limiting and transaction-safe processing with MongoDB transactions.
 
+**Enhanced Withdrawal System** (October 2025):
+- Queue-based automated processing with Bull + Redis (5 parallel workers)
+- Robust retry mechanism: 10 attempts with exponential backoff (5s base delay)
+- Intelligent failure handling: auto-retry → owner notification → manual intervention
+- Multi-channel notifications: instant user alerts (success/delay) + owner notifications (success/failure/daily reports)
+- Admin integration: seamless queue management with manual approval/retry capabilities
+- Scheduled monitoring: 15-minute failed withdrawal checks + 24-hour daily summary reports
+- Transaction-safe operations: MongoDB transactions ensure balance consistency during retries
+- System files: withdrawal-queue.js (processor), withdrawal-notifier.js (alerts), withdrawal-scheduler.js (monitoring)
+
 ## External Dependencies
 
 -   **Databases**:
