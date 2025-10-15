@@ -3,6 +3,7 @@ const pino = require('pino');
 const db = require('./database');
 const bot = require('./bot');
 const config = require('./config');
+const { safeSendMessage } = require('./safe-message');
 
 const logger = pino({
   level: 'info',
@@ -127,7 +128,7 @@ paymentCallbackQueue.process(10, async (job) => {
       logger.info(`✅ Payment completed for user ${payment.user_id}: ${payment.amount} USDT`);
 
       try {
-        await bot.sendMessage(
+        await safeSendMessage(bot, 
           payment.user_id,
           `✅ تم استلام إيداعك بنجاح!\n\n💰 المبلغ: ${payment.amount} USDT\n📊 رصيدك الجديد: ${newBalance} USDT\n🔗 TX: ${txId}`
         );
@@ -136,7 +137,7 @@ paymentCallbackQueue.process(10, async (job) => {
       }
 
       try {
-        await bot.sendMessage(
+        await safeSendMessage(bot, 
           config.OWNER_ID,
           `🔔 إيداع جديد\n\n👤 المستخدم: ${payment.user_id}\n💰 المبلغ: ${payment.amount} USDT\n📊 الرصيد الجديد: ${newBalance} USDT\n🔗 TX: ${txId}`
         );

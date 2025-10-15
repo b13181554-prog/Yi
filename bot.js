@@ -2,6 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const config = require('./config');
 const db = require('./database');
 const { t, getLanguageKeyboard } = require('./languages');
+const { safeSendMessage, safeSendPhoto, safeEditMessageText, safeAnswerCallbackQuery } = require('./safe-message');
 
 const bot = new TelegramBot(config.BOT_TOKEN, { 
   polling: {
@@ -57,7 +58,7 @@ async function requireChannelMembership(userId, chatId, msg) {
     const supportedLangs = ['ar', 'en', 'fr', 'es', 'de', 'ru', 'zh'];
     const lang = supportedLangs.includes(detectedLang) ? detectedLang : 'ar';
     
-    await bot.sendMessage(chatId, `
+    await safeSendMessage(bot, chatId, `
 ❌ <b>${t(lang, 'subscription_required')}</b>
 
 ${t(lang, 'subscribe_channel')}
@@ -157,7 +158,7 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
         const referrerUser = await db.getUser(referrerId);
         const referrerLang = referrerUser ? (referrerUser.language || 'ar') : 'ar';
         
-        await bot.sendMessage(referrerId, `
+        await safeSendMessage(bot, referrerId, `
 <b>${t(referrerLang, 'new_referral')}</b>
 
 ${t(referrerLang, 'friend_joined')}
@@ -169,7 +170,7 @@ ${t(referrerLang, 'you_will_get_commission')}
         const analystReferrerUser = await db.getUser(analystReferrerId);
         const analystReferrerLang = analystReferrerUser ? (analystReferrerUser.language || 'ar') : 'ar';
         
-        await bot.sendMessage(analystReferrerId, `
+        await safeSendMessage(bot, analystReferrerId, `
 <b>${t(analystReferrerLang, 'new_analyst_referral')}</b>
 
 ${t(analystReferrerLang, 'friend_joined')}
@@ -181,7 +182,7 @@ ${t(analystReferrerLang, 'analyst_commission')}
         const promoterReferrerUser = await db.getUser(promoterReferrerId);
         const promoterReferrerLang = promoterReferrerUser ? (promoterReferrerUser.language || 'ar') : 'ar';
         
-        await bot.sendMessage(promoterReferrerId, `
+        await safeSendMessage(bot, promoterReferrerId, `
 <b>${t(promoterReferrerLang, 'new_analyst_specific_referral')}</b>
 
 ${t(promoterReferrerLang, 'friend_joined')}
@@ -211,7 +212,7 @@ ${t(userLang, 'feature_referrals')}
 ${t(userLang, 'press_button_below')}
 `;
       
-      await bot.sendMessage(chatId, welcomeMessage, {
+      await safeSendMessage(bot, chatId, welcomeMessage, {
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
@@ -245,7 +246,7 @@ ${t(userLang, 'press_button_below')}
         statusMessage = `❌ ${t(userLang, 'no_active_subscription')}`;
       }
       
-      await bot.sendMessage(chatId, `
+      await safeSendMessage(bot, chatId, `
 👋 <b>${t(userLang, 'welcome_back')} ${firstName}!</b>
 
 ${statusMessage}
@@ -266,7 +267,7 @@ ${t(userLang, 'open_app')} 👇
     const errorLang = msg.from.language_code || 'ar';
     const supportedLangs = ['ar', 'en', 'fr', 'es', 'de', 'ru', 'zh'];
     const lang = supportedLangs.includes(errorLang) ? errorLang : 'ar';
-    await bot.sendMessage(chatId, t(lang, 'error_occurred'));
+    await safeSendMessage(bot, chatId, t(lang, 'error_occurred'));
   }
 });
 
@@ -297,7 +298,7 @@ bot.onText(/\/notifications/, async (msg) => {
     
     let marketsText = markets.map(m => `${marketEmojis[m]} ${marketNames[m]}`).join('\n');
     
-    await bot.sendMessage(chatId, `
+    await safeSendMessage(bot, chatId, `
 🔔 <b>إعدادات الإشعارات</b>
 
 📊 <b>الحالة:</b> ${isEnabled ? '✅ مفعلة' : '❌ معطلة'}
@@ -317,7 +318,7 @@ ${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
     });
   } catch (error) {
     console.error('Error in /notifications:', error);
-    await bot.sendMessage(chatId, '❌ حدث خطأ، يرجى المحاولة مرة أخرى.');
+    await safeSendMessage(bot, chatId, '❌ حدث خطأ، يرجى المحاولة مرة أخرى.');
   }
 });
 
@@ -335,7 +336,7 @@ bot.on('message', async (msg) => {
     const lang = user.language || 'ar';
     
     if (text === '⚙️ الإعدادات' || text === '⚙️ Settings' || text === '⚙️ Paramètres' || text === '⚙️ Configuración' || text === '⚙️ Einstellungen' || text === '⚙️ Настройки' || text === '⚙️ 设置') {
-      await bot.sendMessage(chatId, `
+      await safeSendMessage(bot, chatId, `
 <b>${t(lang, 'settings_menu')}</b>
 
 ${t(lang, 'choose_from_menu')}
@@ -366,7 +367,7 @@ ${t(lang, 'choose_from_menu')}
         statusMessage = `❌ ${t(lang, 'no_active_subscription')}`;
       }
       
-      await bot.sendMessage(chatId, `
+      await safeSendMessage(bot, chatId, `
 👋 <b>${t(lang, 'welcome_back')} ${firstName}!</b>
 
 ${statusMessage}
@@ -380,7 +381,7 @@ ${statusMessage}
         }
       });
     } else if (text === '🌐 إعدادات اللغة' || text === '🌐 Language Settings' || text === '🌐 Paramètres de langue' || text === '🌐 Configuración de idioma' || text === '🌐 Spracheinstellungen' || text === '🌐 Настройки языка' || text === '🌐 语言设置') {
-      await bot.sendMessage(chatId, `
+      await safeSendMessage(bot, chatId, `
 <b>${t(lang, 'language_settings')}</b>
 
 ${t(lang, 'select_language')}
@@ -389,7 +390,7 @@ ${t(lang, 'select_language')}
         reply_markup: getLanguageKeyboard()
       });
     } else if (text === '📞 خدمة العملاء' || text === '📞 Customer Service' || text === '📞 Service client' || text === '📞 Servicio al cliente' || text === '📞 Kundendienst' || text === '📞 Служба поддержки' || text === '📞 客户服务') {
-      await bot.sendMessage(chatId, t(lang, 'customer_service_msg'), {
+      await safeSendMessage(bot, chatId, t(lang, 'customer_service_msg'), {
         parse_mode: 'HTML',
         reply_markup: {
           force_reply: true
@@ -421,7 +422,7 @@ ${t(lang, 'select_language')}
       
       let marketsText = markets.map(m => `${marketEmojis[m]} ${marketNames[m]}`).join('\n');
       
-      await bot.sendMessage(chatId, `
+      await safeSendMessage(bot, chatId, `
 🔔 <b>${t(lang, 'notifications_settings')}</b>
 
 📊 <b>الحالة:</b> ${isEnabled ? t(lang, 'notifications_enabled') : t(lang, 'notifications_disabled')}
@@ -441,7 +442,7 @@ ${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
       });
     } else if (user.awaitingCustomerServiceMessage) {
       const config = require('./config');
-      await bot.sendMessage(config.OWNER_ID, `
+      await safeSendMessage(bot, config.OWNER_ID, `
 📞 <b>رسالة جديدة من خدمة العملاء</b>
 
 👤 <b>المستخدم:</b> ${msg.from.first_name} ${msg.from.last_name || ''}
@@ -451,7 +452,7 @@ ${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
 ${text}
       `, { parse_mode: 'HTML' });
       
-      await bot.sendMessage(chatId, t(lang, 'message_sent'), { parse_mode: 'HTML' });
+      await safeSendMessage(bot, chatId, t(lang, 'message_sent'), { parse_mode: 'HTML' });
       await db.updateUser(userId, { awaitingCustomerServiceMessage: false });
     }
   } catch (error) {
@@ -470,7 +471,7 @@ bot.on('callback_query', async (query) => {
     try {
       await db.updateUser(userId, { language: selectedLang });
       
-      await bot.answerCallbackQuery(query.id, {
+      await safeAnswerCallbackQuery(bot, query.id, {
         text: t(selectedLang, 'language_changed'),
         show_alert: true
       });
@@ -490,7 +491,7 @@ bot.on('callback_query', async (query) => {
         statusMessage = `❌ ${t(selectedLang, 'no_active_subscription')}`;
       }
       
-      await bot.sendMessage(chatId, `
+      await safeSendMessage(bot, chatId, `
 👋 <b>${t(selectedLang, 'welcome_back')} ${firstName}!</b>
 
 ${statusMessage}
@@ -505,14 +506,14 @@ ${statusMessage}
       });
     } catch (error) {
       console.error('Error changing language:', error);
-      await bot.answerCallbackQuery(query.id, {
+      await safeAnswerCallbackQuery(bot, query.id, {
         text: '❌ حدث خطأ',
         show_alert: true
       });
     }
   } else if (data === 'start_action') {
     try {
-      await bot.answerCallbackQuery(query.id);
+      await safeAnswerCallbackQuery(bot, query.id);
       
       const user = await db.getUser(userId);
       const lang = user ? (user.language || 'ar') : 'ar';
@@ -530,7 +531,7 @@ ${statusMessage}
         statusMessage = `❌ ${t(lang, 'no_active_subscription')}`;
       }
       
-      await bot.sendMessage(chatId, `
+      await safeSendMessage(bot, chatId, `
 👋 <b>${t(lang, 'welcome_back')} ${firstName}!</b>
 
 ${statusMessage}
@@ -547,7 +548,7 @@ ${t(lang, 'open_app')} 👇
       });
     } catch (error) {
       console.error('Error in start_action:', error);
-      await bot.answerCallbackQuery(query.id, {
+      await safeAnswerCallbackQuery(bot, query.id, {
         text: '❌ حدث خطأ',
         show_alert: true
       });
@@ -558,7 +559,7 @@ ${t(lang, 'open_app')} 👇
     try {
       await db.toggleNotifications(userId, enabled);
       
-      await bot.answerCallbackQuery(query.id, {
+      await safeAnswerCallbackQuery(bot, query.id, {
         text: enabled ? '✅ تم تفعيل الإشعارات' : '❌ تم إيقاف الإشعارات',
         show_alert: true
       });
@@ -586,7 +587,7 @@ ${t(lang, 'open_app')} 👇
       
       let marketsText = markets.map(m => `${marketEmojis[m]} ${marketNames[m]}`).join('\n');
       
-      await bot.editMessageText(`
+      await safeEditMessageText(bot, `
 🔔 <b>${t(lang, 'notifications_settings')}</b>
 
 📊 <b>الحالة:</b> ${enabled ? t(lang, 'notifications_enabled') : t(lang, 'notifications_disabled')}
@@ -608,7 +609,7 @@ ${enabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
       });
     } catch (error) {
       console.error('Error toggling notifications:', error);
-      await bot.answerCallbackQuery(query.id, {
+      await safeAnswerCallbackQuery(bot, query.id, {
         text: '❌ حدث خطأ',
         show_alert: true
       });
@@ -624,7 +625,7 @@ bot.on('web_app_data', async (msg) => {
   try {
     const user = await db.getUser(userId);
     if (!user) {
-      return bot.sendMessage(chatId, 'يرجى البدء بالضغط على /start');
+      return safeSendMessage(bot, chatId, 'يرجى البدء بالضغط على /start');
     }
 
     if (data.action === 'withdraw') {
@@ -639,7 +640,7 @@ bot.on('web_app_data', async (msg) => {
         const balance = await db.getAnalystBalance(analyst._id);
         
         if (balance.available_balance < totalWithFee) {
-          return bot.sendMessage(chatId, `
+          return safeSendMessage(bot, chatId, `
 ❌ <b>الرصيد المتاح للسحب غير كافٍ!</b>
 
 💰 رصيدك المتاح للسحب: ${balance.available_balance.toFixed(2)} USDT
@@ -652,13 +653,13 @@ bot.on('web_app_data', async (msg) => {
         await db.deductFromAnalystAvailableBalance(analyst._id, totalWithFee);
       } else {
         if (user.balance < totalWithFee) {
-          return bot.sendMessage(chatId, '❌ رصيدك غير كافٍ!');
+          return safeSendMessage(bot, chatId, '❌ رصيدك غير كافٍ!');
         }
         
         await db.updateUserBalance(userId, -totalWithFee);
       }
       
-      const processingMsg = await bot.sendMessage(chatId, `
+      const processingMsg = await safeSendMessage(bot, chatId, `
 ⏳ <b>جاري معالجة السحب...</b>
 
 المبلغ: ${amount} USDT
@@ -676,7 +677,7 @@ bot.on('web_app_data', async (msg) => {
           status: 'pending'
         });
         
-        await bot.editMessageText(`
+        await safeEditMessageText(bot, `
 ⚠️ <b>السحب التلقائي غير متاح حالياً</b>
 
 تم إنشاء طلب السحب وسيتم معالجته يدوياً خلال 24 ساعة.
@@ -692,7 +693,7 @@ bot.on('web_app_data', async (msg) => {
           parse_mode: 'HTML'
         });
         
-        await bot.sendMessage(config.OWNER_ID, `
+        await safeSendMessage(bot, config.OWNER_ID, `
 💸 <b>طلب سحب جديد (يدوي)</b>
 
 المستخدم: ${user.first_name} (@${user.username})
@@ -726,7 +727,7 @@ ID: ${userId}
             'completed'
           );
           
-          await bot.editMessageText(`
+          await safeEditMessageText(bot, `
 ✅ <b>تم السحب بنجاح!</b>
 
 💸 المبلغ: ${amount} USDT
@@ -741,7 +742,7 @@ ID: ${userId}
             parse_mode: 'HTML'
           });
           
-          await bot.sendMessage(config.OWNER_ID, `
+          await safeSendMessage(bot, config.OWNER_ID, `
 ✅ <b>سحب تلقائي ناجح</b>
 
 المستخدم: ${user.first_name} (@${user.username})
@@ -765,7 +766,7 @@ ID: ${userId}
             status: 'failed'
           });
           
-          await bot.editMessageText(`
+          await safeEditMessageText(bot, `
 ❌ <b>فشل السحب</b>
 
 السبب: ${result.error}
@@ -778,7 +779,7 @@ ID: ${userId}
             parse_mode: 'HTML'
           });
           
-          await bot.sendMessage(config.OWNER_ID, `
+          await safeSendMessage(bot, config.OWNER_ID, `
 ❌ <b>فشل سحب تلقائي</b>
 
 المستخدم: ${user.first_name} (@${user.username})
@@ -800,7 +801,7 @@ ID: ${userId}
           await db.updateUserBalance(userId, totalWithFee);
         }
         
-        await bot.editMessageText(`
+        await safeEditMessageText(bot, `
 ❌ <b>خطأ في معالجة السحب</b>
 
 حدث خطأ غير متوقع. تم إرجاع المبلغ لرصيدك.
@@ -813,7 +814,7 @@ ID: ${userId}
           parse_mode: 'HTML'
         });
         
-        await bot.sendMessage(config.OWNER_ID, `
+        await safeSendMessage(bot, config.OWNER_ID, `
 ⚠️ <b>خطأ في نظام السحب</b>
 
 المستخدم: ${user.first_name}
@@ -827,7 +828,7 @@ ID: ${userId}
     
     else if (data.action === 'subscribe') {
       if (user.balance < config.SUBSCRIPTION_PRICE) {
-        return bot.sendMessage(chatId, '❌ رصيدك غير كافٍ للاشتراك!');
+        return safeSendMessage(bot, chatId, '❌ رصيدك غير كافٍ للاشتراك!');
       }
       
       await db.updateUserBalance(userId, -config.SUBSCRIPTION_PRICE);
@@ -870,7 +871,7 @@ ID: ${userId}
         await db.addReferralEarning(referrerId, userId, referralType, config.SUBSCRIPTION_PRICE, referralCommission);
       }
       
-      await bot.sendMessage(chatId, `
+      await safeSendMessage(bot, chatId, `
 ✅ <b>تم تفعيل الاشتراك!</b>
 
 صالح حتى: ${expiryDate.toLocaleDateString('ar')}
@@ -880,7 +881,7 @@ ID: ${userId}
     
     else if (data.action === 'register_analyst') {
       await db.updateUser(userId, { temp_withdrawal_address: 'analyst_registration' });
-      await bot.sendMessage(chatId, `
+      await safeSendMessage(bot, chatId, `
 📝 <b>التسجيل كمحلل</b>
 
 أرسل البيانات التالية (كل في سطر منفصل):
@@ -897,7 +898,7 @@ ID: ${userId}
     }
   } catch (error) {
     console.error('Error handling web_app_data:', error);
-    await bot.sendMessage(chatId, '❌ حدث خطأ في معالجة الطلب');
+    await safeSendMessage(bot, chatId, '❌ حدث خطأ في معالجة الطلب');
   }
 });
 
@@ -916,7 +917,7 @@ bot.on('message', async (msg) => {
       const lines = text.trim().split('\n').filter(line => line.trim());
       
       if (lines.length !== 3) {
-        return bot.sendMessage(chatId, `
+        return safeSendMessage(bot, chatId, `
 ❌ <b>بيانات غير صحيحة!</b>
 
 يجب إرسال 3 أسطر فقط:
@@ -930,7 +931,7 @@ bot.on('message', async (msg) => {
       const price = parseFloat(priceStr);
       
       if (isNaN(price) || price < 1) {
-        return bot.sendMessage(chatId, '❌ السعر يجب أن يكون رقم صحيح (1 USDT على الأقل)');
+        return safeSendMessage(bot, chatId, '❌ السعر يجب أن يكون رقم صحيح (1 USDT على الأقل)');
       }
       
       try {
@@ -938,7 +939,7 @@ bot.on('message', async (msg) => {
         
         await db.updateUser(userId, { temp_withdrawal_address: null });
         
-        await bot.sendMessage(chatId, `
+        await safeSendMessage(bot, chatId, `
 ✅ <b>تم التسجيل كمحلل بنجاح!</b>
 
 الاسم: ${analyst.name}
@@ -947,7 +948,7 @@ bot.on('message', async (msg) => {
 يمكن للمستخدمين الآن الاشتراك في خدماتك!
 `, { parse_mode: 'HTML' });
         
-        await bot.sendMessage(config.OWNER_ID, `
+        await safeSendMessage(bot, config.OWNER_ID, `
 📝 <b>محلل جديد</b>
 
 الاسم: ${analyst.name}
@@ -957,7 +958,7 @@ ID: ${userId}
 الوصف: ${analyst.description}
 `, { parse_mode: 'HTML' });
       } catch (createError) {
-        return bot.sendMessage(chatId, `❌ ${createError.message}`);
+        return safeSendMessage(bot, chatId, `❌ ${createError.message}`);
       }
     }
   } catch (error) {

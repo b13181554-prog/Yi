@@ -4,6 +4,7 @@ const config = require('./config');
 const okx = require('./okx');
 const { addWithdrawalToQueue } = require('./withdrawal-queue');
 const { notifyUserSuccess, notifyOwnerSuccess } = require('./withdrawal-notifier');
+const { safeSendMessage, safeSendPhoto, safeEditMessageText, safeAnswerCallbackQuery } = require('./safe-message');
 
 async function initAdminCommands(bot) {
   
@@ -13,7 +14,7 @@ async function initAdminCommands(bot) {
     const userId = msg.from.id;
     
     if (userId !== config.OWNER_ID) {
-      return bot.sendMessage(chatId, '❌ غير مصرح لك بالوصول لهذا الأمر');
+      return safeSendMessage(bot, chatId, '❌ غير مصرح لك بالوصول لهذا الأمر');
     }
     
     const keyboard = {
@@ -41,7 +42,7 @@ async function initAdminCommands(bot) {
       }
     };
     
-    await bot.sendMessage(chatId, `
+    await safeSendMessage(bot, chatId, `
 🎛️ <b>لوحة تحكم المالك</b>
 
 مرحباً ${msg.from.first_name}!
@@ -74,7 +75,7 @@ async function initAdminCommands(bot) {
     
     if (isAdminCallback && userId !== config.OWNER_ID) {
       console.warn(`⚠️ محاولة وصول غير مصرح من ${userId} إلى ${data}`);
-      return bot.answerCallbackQuery(query.id, { text: '❌ غير مصرح لك', show_alert: true });
+      return safeAnswerCallbackQuery(bot, query.id, { text: '❌ غير مصرح لك', show_alert: true });
     }
     
     if (!isAdminCallback) return;
@@ -82,7 +83,7 @@ async function initAdminCommands(bot) {
     try {
       // الإحصائيات العامة
       if (data === 'admin_stats') {
-        await bot.answerCallbackQuery(query.id);
+        await safeAnswerCallbackQuery(bot, query.id);
         const users = await db.getAllUsers();
         const activeSubscriptions = users.filter(u => {
           if (!u.subscription_expires) return false;
@@ -152,7 +153,7 @@ async function initAdminCommands(bot) {
 🤖 <b>حالة البوت:</b> 🟢 يعمل بشكل طبيعي
 `;
         
-        await bot.editMessageText(message, {
+        await safeEditMessageText(bot, message, {
           chat_id: chatId,
           message_id: query.message.message_id,
           parse_mode: 'HTML',
@@ -166,7 +167,7 @@ async function initAdminCommands(bot) {
       
       // إدارة المستخدمين
       else if (data === 'admin_users') {
-        await bot.answerCallbackQuery(query.id);
+        await safeAnswerCallbackQuery(bot, query.id);
         const users = await db.getAllUsers();
         const recentUsers = users.slice(0, 10);
         
@@ -186,7 +187,7 @@ async function initAdminCommands(bot) {
           ]
         };
         
-        await bot.editMessageText(message, {
+        await safeEditMessageText(bot, message, {
           chat_id: chatId,
           message_id: query.message.message_id,
           parse_mode: 'HTML',
@@ -196,7 +197,7 @@ async function initAdminCommands(bot) {
       
       // المعاملات
       else if (data === 'admin_transactions') {
-        await bot.answerCallbackQuery(query.id);
+        await safeAnswerCallbackQuery(bot, query.id);
         const transactions = await db.getAllTransactions();
         const recentTransactions = transactions.slice(0, 15);
         
@@ -240,7 +241,7 @@ async function initAdminCommands(bot) {
           });
         }
         
-        await bot.editMessageText(message, {
+        await safeEditMessageText(bot, message, {
           chat_id: chatId,
           message_id: query.message.message_id,
           parse_mode: 'HTML',
@@ -254,11 +255,11 @@ async function initAdminCommands(bot) {
       
       // طلبات السحب
       else if (data === 'admin_withdrawals') {
-        await bot.answerCallbackQuery(query.id);
+        await safeAnswerCallbackQuery(bot, query.id);
         const withdrawals = await db.getPendingWithdrawals();
         
         if (withdrawals.length === 0) {
-          await bot.editMessageText('💸 <b>لا توجد طلبات سحب معلقة</b>', {
+          await safeEditMessageText(bot, '💸 <b>لا توجد طلبات سحب معلقة</b>', {
             chat_id: chatId,
             message_id: query.message.message_id,
             parse_mode: 'HTML',
@@ -289,7 +290,7 @@ async function initAdminCommands(bot) {
         
         keyboard.push([{ text: '🔙 رجوع', callback_data: 'admin_back' }]);
         
-        await bot.editMessageText(message, {
+        await safeEditMessageText(bot, message, {
           chat_id: chatId,
           message_id: query.message.message_id,
           parse_mode: 'HTML',
@@ -299,11 +300,11 @@ async function initAdminCommands(bot) {
       
       // المحللين
       else if (data === 'admin_analysts') {
-        await bot.answerCallbackQuery(query.id);
+        await safeAnswerCallbackQuery(bot, query.id);
         const analysts = await db.getAllAnalysts();
         
         if (analysts.length === 0) {
-          await bot.editMessageText('👨‍💼 <b>لا يوجد محللين مسجلين</b>', {
+          await safeEditMessageText(bot, '👨‍💼 <b>لا يوجد محللين مسجلين</b>', {
             chat_id: chatId,
             message_id: query.message.message_id,
             parse_mode: 'HTML',
@@ -325,7 +326,7 @@ async function initAdminCommands(bot) {
           message += `   التقييم: ${analyst.rating}/5\n\n`;
         });
         
-        await bot.editMessageText(message, {
+        await safeEditMessageText(bot, message, {
           chat_id: chatId,
           message_id: query.message.message_id,
           parse_mode: 'HTML',
@@ -339,7 +340,7 @@ async function initAdminCommands(bot) {
       
       // الإحالات
       else if (data === 'admin_referrals') {
-        await bot.answerCallbackQuery(query.id);
+        await safeAnswerCallbackQuery(bot, query.id);
         const users = await db.getAllUsers();
         const topReferrers = users
           .filter(u => u.referral_earnings > 0)
@@ -347,7 +348,7 @@ async function initAdminCommands(bot) {
           .slice(0, 10);
         
         if (topReferrers.length === 0) {
-          await bot.editMessageText('🎁 <b>لا توجد إحالات بعد</b>', {
+          await safeEditMessageText(bot, '🎁 <b>لا توجد إحالات بعد</b>', {
             chat_id: chatId,
             message_id: query.message.message_id,
             parse_mode: 'HTML',
@@ -369,7 +370,7 @@ async function initAdminCommands(bot) {
           message += `  👥 الإحالات: ${stats.total_referrals}\n\n`;
         }
         
-        await bot.editMessageText(message, {
+        await safeEditMessageText(bot, message, {
           chat_id: chatId,
           message_id: query.message.message_id,
           parse_mode: 'HTML',
@@ -383,8 +384,8 @@ async function initAdminCommands(bot) {
       
       // إرسال رسالة جماعية
       else if (data === 'admin_broadcast') {
-        await bot.answerCallbackQuery(query.id);
-        await bot.editMessageText(`
+        await safeAnswerCallbackQuery(bot, query.id);
+        await safeEditMessageText(bot, `
 📢 <b>إرسال رسالة جماعية</b>
 
 أرسل الرسالة التي تريد إرسالها لجميع المستخدمين:
@@ -413,7 +414,7 @@ async function initAdminCommands(bot) {
         const withdrawal = withdrawals.find(w => w._id.toString() === withdrawalId);
         
         if (!withdrawal) {
-          return bot.answerCallbackQuery(query.id, { 
+          return safeAnswerCallbackQuery(bot, query.id, { 
             text: '❌ طلب السحب غير موجود', 
             show_alert: true 
           });
@@ -426,7 +427,7 @@ async function initAdminCommands(bot) {
           const totalWithFee = withdrawal.amount + config.WITHDRAWAL_FEE;
           
           if (balance.available_balance < totalWithFee) {
-            return bot.answerCallbackQuery(query.id, { 
+            return safeAnswerCallbackQuery(bot, query.id, { 
               text: `❌ الرصيد المتاح للسحب غير كافٍ! المتاح: ${balance.available_balance.toFixed(2)} USDT`, 
               show_alert: true 
             });
@@ -443,7 +444,7 @@ async function initAdminCommands(bot) {
             withdrawal.first_name || withdrawal.username || 'Unknown'
           );
           
-          await bot.sendMessage(chatId, `
+          await safeSendMessage(bot, chatId, `
 ✅ <b>تم إضافة السحب إلى قائمة المعالجة التلقائية</b>
 
 المستخدم: ${withdrawal.first_name || withdrawal.username}
@@ -455,14 +456,14 @@ async function initAdminCommands(bot) {
 ♻️ النظام سيحاول 10 مرات قبل طلب التدخل اليدوي
 `, { parse_mode: 'HTML' });
           
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '✅ تمت إضافة السحب للمعالجة التلقائية', 
             show_alert: true 
           });
           
         } catch (error) {
           console.error('Error adding withdrawal to queue:', error);
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '❌ حدث خطأ: ' + error.message, 
             show_alert: true 
           });
@@ -480,7 +481,7 @@ async function initAdminCommands(bot) {
           const withdrawal = await db.getWithdrawalRequest(withdrawalId);
           
           if (!withdrawal) {
-            return bot.answerCallbackQuery(query.id, { 
+            return safeAnswerCallbackQuery(bot, query.id, { 
               text: '❌ طلب السحب غير موجود', 
               show_alert: true 
             });
@@ -489,12 +490,12 @@ async function initAdminCommands(bot) {
           // تحديث الحالة إلى approved
           await db.approveWithdrawal(withdrawalId);
           
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '✅ تم تأكيد المعالجة اليدوية', 
             show_alert: true 
           });
           
-          await bot.sendMessage(withdrawal.user_id, `
+          await safeSendMessage(bot, withdrawal.user_id, `
 ✅ <b>تم إتمام السحب بنجاح!</b>
 
 💸 المبلغ: ${withdrawal.amount} USDT
@@ -505,7 +506,7 @@ async function initAdminCommands(bot) {
           
         } catch (error) {
           console.error('Error manual approving withdrawal:', error);
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '❌ حدث خطأ: ' + error.message, 
             show_alert: true 
           });
@@ -520,7 +521,7 @@ async function initAdminCommands(bot) {
           const withdrawal = await db.getWithdrawalRequest(withdrawalId);
           
           if (!withdrawal) {
-            return bot.answerCallbackQuery(query.id, { 
+            return safeAnswerCallbackQuery(bot, query.id, { 
               text: '❌ طلب السحب غير موجود', 
               show_alert: true 
             });
@@ -535,14 +536,14 @@ async function initAdminCommands(bot) {
             'Retry'
           );
           
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '♻️ تمت إعادة المحاولة', 
             show_alert: true 
           });
           
         } catch (error) {
           console.error('Error retrying withdrawal:', error);
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '❌ حدث خطأ: ' + error.message, 
             show_alert: true 
           });
@@ -558,7 +559,7 @@ async function initAdminCommands(bot) {
           
           const totalWithFee = withdrawal.amount + config.WITHDRAWAL_FEE;
           
-          await bot.sendMessage(withdrawal.user_id, `
+          await safeSendMessage(bot, withdrawal.user_id, `
 ❌ <b>تم رفض طلب السحب</b>
 
 المبلغ: ${withdrawal.amount} USDT
@@ -567,14 +568,14 @@ async function initAdminCommands(bot) {
 تم إرجاع المبلغ لرصيدك: ${totalWithFee} USDT
 `, { parse_mode: 'HTML' });
           
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '✅ تم رفض الطلب وإرجاع المبلغ للمستخدم', 
             show_alert: true 
           });
           
         } catch (error) {
           console.error('Error rejecting withdrawal:', error);
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '❌ حدث خطأ: ' + error.message, 
             show_alert: true 
           });
@@ -585,8 +586,8 @@ async function initAdminCommands(bot) {
       
       // البحث عن مستخدم
       else if (data === 'admin_search_user') {
-        await bot.answerCallbackQuery(query.id);
-        await bot.editMessageText(`
+        await safeAnswerCallbackQuery(bot, query.id);
+        await safeEditMessageText(bot, `
 🔍 <b>البحث عن مستخدم</b>
 
 أرسل معرف المستخدم (User ID) الذي تريد البحث عنه:
@@ -609,7 +610,7 @@ async function initAdminCommands(bot) {
       
       // حظر مستخدم
       else if (data.startsWith('ban_user_')) {
-        await bot.answerCallbackQuery(query.id);
+        await safeAnswerCallbackQuery(bot, query.id);
         const targetUserId = parseInt(data.replace('ban_user_', ''));
         const keyboard = [
           [
@@ -623,7 +624,7 @@ async function initAdminCommands(bot) {
           [{ text: '🔙 رجوع', callback_data: 'admin_users' }]
         ];
         
-        await bot.editMessageText(`
+        await safeEditMessageText(bot, `
 ⛔ <b>حظر المستخدم</b>
 
 اختر مدة الحظر للمستخدم ID: <code>${targetUserId}</code>
@@ -647,14 +648,14 @@ async function initAdminCommands(bot) {
           
           const durationText = duration === 'permanent' ? 'بشكل دائم' : `لمدة ${duration} ساعة`;
           
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: `✅ تم حظر المستخدم ${durationText}`, 
             show_alert: true 
           });
           
           // إرسال إشعار للمستخدم المحظور
           try {
-            await bot.sendMessage(targetUserId, `
+            await safeSendMessage(bot, targetUserId, `
 ⛔ <b>تم حظرك من استخدام البوت</b>
 
 السبب: تم الحظر من لوحة الإدارة
@@ -668,7 +669,7 @@ async function initAdminCommands(bot) {
           bot.emit('callback_query', { ...query, data: 'admin_users' });
         } catch (error) {
           console.error('Error banning user:', error);
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '❌ حدث خطأ في حظر المستخدم', 
             show_alert: true 
           });
@@ -682,14 +683,14 @@ async function initAdminCommands(bot) {
         try {
           await db.unbanUser(targetUserId);
           
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '✅ تم إلغاء حظر المستخدم', 
             show_alert: true 
           });
           
           // إرسال إشعار للمستخدم
           try {
-            await bot.sendMessage(targetUserId, `
+            await safeSendMessage(bot, targetUserId, `
 ✅ <b>تم إلغاء حظرك</b>
 
 يمكنك الآن استخدام البوت بشكل طبيعي!
@@ -702,7 +703,7 @@ async function initAdminCommands(bot) {
           bot.emit('callback_query', { ...query, data: 'admin_users' });
         } catch (error) {
           console.error('Error unbanning user:', error);
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '❌ حدث خطأ في إلغاء الحظر', 
             show_alert: true 
           });
@@ -711,7 +712,7 @@ async function initAdminCommands(bot) {
       
       // تقييد مستخدم
       else if (data.startsWith('restrict_user_')) {
-        await bot.answerCallbackQuery(query.id);
+        await safeAnswerCallbackQuery(bot, query.id);
         const targetUserId = parseInt(data.replace('restrict_user_', ''));
         const keyboard = [
           [
@@ -725,7 +726,7 @@ async function initAdminCommands(bot) {
           [{ text: '🔙 رجوع', callback_data: 'admin_users' }]
         ];
         
-        await bot.editMessageText(`
+        await safeEditMessageText(bot, `
 🚫 <b>تقييد المستخدم</b>
 
 اختر نوع التقييد للمستخدم ID: <code>${targetUserId}</code>
@@ -754,14 +755,14 @@ async function initAdminCommands(bot) {
             'no_referral': 'منع الإحالة'
           };
           
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: `✅ تم تطبيق: ${restrictionNames[restrictionType]}`, 
             show_alert: true 
           });
           
           // إرسال إشعار للمستخدم
           try {
-            await bot.sendMessage(targetUserId, `
+            await safeSendMessage(bot, targetUserId, `
 ⚠️ <b>تم تقييد حسابك</b>
 
 التقييد: ${restrictionNames[restrictionType]}
@@ -775,7 +776,7 @@ async function initAdminCommands(bot) {
           bot.emit('callback_query', { ...query, data: 'admin_users' });
         } catch (error) {
           console.error('Error restricting user:', error);
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '❌ حدث خطأ في تقييد المستخدم', 
             show_alert: true 
           });
@@ -789,7 +790,7 @@ async function initAdminCommands(bot) {
         try {
           await db.deleteUserAccount(targetUserId);
           
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '✅ تم حذف حساب المستخدم نهائياً', 
             show_alert: true 
           });
@@ -798,7 +799,7 @@ async function initAdminCommands(bot) {
           bot.emit('callback_query', { ...query, data: 'admin_users' });
         } catch (error) {
           console.error('Error deleting user:', error);
-          await bot.answerCallbackQuery(query.id, { 
+          await safeAnswerCallbackQuery(bot, query.id, { 
             text: '❌ حدث خطأ في حذف المستخدم', 
             show_alert: true 
           });
@@ -807,7 +808,7 @@ async function initAdminCommands(bot) {
       
       // تأكيد حذف المستخدم
       else if (data.startsWith('delete_user_')) {
-        await bot.answerCallbackQuery(query.id);
+        await safeAnswerCallbackQuery(bot, query.id);
         const targetUserId = parseInt(data.replace('delete_user_', ''));
         
         const keyboard = [
@@ -819,7 +820,7 @@ async function initAdminCommands(bot) {
           ]
         ];
         
-        await bot.editMessageText(`
+        await safeEditMessageText(bot, `
 ⚠️ <b>تحذير: حذف حساب مستخدم</b>
 
 هل أنت متأكد من حذف حساب المستخدم ID: <code>${targetUserId}</code>؟
@@ -839,7 +840,7 @@ async function initAdminCommands(bot) {
       
       // الرجوع للقائمة الرئيسية
       else if (data === 'admin_back' || data === 'admin_refresh') {
-        await bot.answerCallbackQuery(query.id);
+        await safeAnswerCallbackQuery(bot, query.id);
         const keyboard = {
           inline_keyboard: [
             [
@@ -863,7 +864,7 @@ async function initAdminCommands(bot) {
           ]
         };
         
-        await bot.editMessageText(`
+        await safeEditMessageText(bot, `
 🎛️ <b>لوحة تحكم المالك</b>
 
 مرحباً ${query.from.first_name}!
@@ -878,7 +879,7 @@ async function initAdminCommands(bot) {
       
     } catch (error) {
       console.error('Admin callback error:', error);
-      await bot.answerCallbackQuery(query.id, { 
+      await safeAnswerCallbackQuery(bot, query.id, { 
         text: '❌ حدث خطأ!', 
         show_alert: true 
       });
@@ -902,14 +903,14 @@ async function initAdminCommands(bot) {
       const searchUserId = parseInt(text.trim());
       
       if (isNaN(searchUserId)) {
-        return bot.sendMessage(chatId, '❌ معرف المستخدم يجب أن يكون رقماً');
+        return safeSendMessage(bot, chatId, '❌ معرف المستخدم يجب أن يكون رقماً');
       }
       
       const targetUser = await db.getUser(searchUserId);
       
       if (!targetUser) {
         await db.updateUser(userId, { temp_withdrawal_address: null });
-        return bot.sendMessage(chatId, '❌ لم يتم العثور على مستخدم بهذا المعرف');
+        return safeSendMessage(bot, chatId, '❌ لم يتم العثور على مستخدم بهذا المعرف');
       }
       
       const banStatus = await db.checkUserBanStatus(searchUserId);
@@ -973,7 +974,7 @@ ${banStatus.banned && banStatus.reason ? `• سبب الحظر: ${banStatus.rea
       keyboard.push([{ text: '🗑️ حذف الحساب', callback_data: `delete_user_${searchUserId}` }]);
       keyboard.push([{ text: '🔙 رجوع', callback_data: 'admin_users' }]);
       
-      await bot.sendMessage(chatId, message, {
+      await safeSendMessage(bot, chatId, message, {
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: keyboard
@@ -991,11 +992,11 @@ ${banStatus.banned && banStatus.reason ? `• سبب الحظر: ${banStatus.rea
       let successCount = 0;
       let failCount = 0;
       
-      const statusMsg = await bot.sendMessage(chatId, '📤 جاري إرسال الرسالة...\n\n0/' + users.length);
+      const statusMsg = await safeSendMessage(bot, chatId, '📤 جاري إرسال الرسالة...\n\n0/' + users.length);
       
       for (let i = 0; i < users.length; i++) {
         try {
-          await bot.sendMessage(users[i].user_id, text, { parse_mode: 'HTML' });
+          await safeSendMessage(bot, users[i].user_id, text, { parse_mode: 'HTML' });
           successCount++;
         } catch (error) {
           failCount++;
@@ -1003,7 +1004,7 @@ ${banStatus.banned && banStatus.reason ? `• سبب الحظر: ${banStatus.rea
         
         // تحديث كل 10 مستخدمين
         if ((i + 1) % 10 === 0 || i === users.length - 1) {
-          await bot.editMessageText(
+          await safeEditMessageText(bot, 
             `📤 جاري إرسال الرسالة...\n\n${i + 1}/${users.length}\n✅ نجح: ${successCount}\n❌ فشل: ${failCount}`,
             {
               chat_id: chatId,
@@ -1015,7 +1016,7 @@ ${banStatus.banned && banStatus.reason ? `• سبب الحظر: ${banStatus.rea
       
       await db.updateUser(userId, { temp_withdrawal_address: null });
       
-      await bot.sendMessage(chatId, `
+      await safeSendMessage(bot, chatId, `
 ✅ <b>تم إرسال الرسالة الجماعية!</b>
 
 📊 الإحصائيات:

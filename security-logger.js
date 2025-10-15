@@ -1,5 +1,6 @@
 
 const config = require('./config');
+const { safeSendMessage } = require('./safe-message');
 
 class SecurityLogger {
   static async logSuspiciousActivity(userId, activity, details) {
@@ -15,7 +16,7 @@ class SecurityLogger {
     // يمكن إرسال إشعار للمالك
     try {
       const bot = require('./bot');
-      await bot.sendMessage(config.OWNER_ID, `
+      await safeSendMessage(bot, config.OWNER_ID, `
 🚨 <b>تنبيه أمني</b>
 
 ⏰ ${timestamp}

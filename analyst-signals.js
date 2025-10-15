@@ -1,6 +1,7 @@
 
 const db = require('./database');
 const config = require('./config');
+const { safeSendMessage } = require('./safe-message');
 
 class AnalystSignalsManager {
   // إنشاء إشارة جديدة
@@ -69,7 +70,7 @@ class AnalystSignalsManager {
     for (const subscriber of subscribers) {
       const message = this.formatSignalMessage(signal);
       try {
-        await bot.sendMessage(subscriber.user_id, message, { parse_mode: 'HTML' });
+        await safeSendMessage(bot, subscriber.user_id, message, { parse_mode: 'HTML' });
       } catch (error) {
         console.error(`Failed to notify subscriber ${subscriber.user_id}:`, error.message);
       }

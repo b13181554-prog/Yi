@@ -21,6 +21,7 @@ const Groq = require('groq-sdk');
 const { addPaymentCallback, getQueueStats } = require('./payment-callback-queue');
 const monitoringService = require('./monitoring-service');
 const { startWithdrawalScheduler } = require('./withdrawal-scheduler');
+const { safeSendMessage, safeSendPhoto, safeEditMessageText } = require('./safe-message');
 
 // Groq AI - Free and fast alternative to OpenAI
 let groq = null;
@@ -181,7 +182,7 @@ async function main() {
       if (userId !== config.OWNER_ID) {
         const limitCheck = rateLimiter.checkLimit(userId);
         if (!limitCheck.allowed) {
-          return bot.sendMessage(chatId, limitCheck.message);
+          return safeSendMessage(bot, chatId, limitCheck.message);
         }
       }
       
@@ -200,7 +201,7 @@ async function main() {
         const lines = text.trim().split('\n').filter(line => line.trim());
         
         if (lines.length !== 3) {
-          return bot.sendMessage(chatId, `
+          return safeSendMessage(bot, chatId, `
 ❌ <b>خطأ في البيانات!</b>
 
 يرجى إرسال البيانات بالترتيب الصحيح:
@@ -220,7 +221,7 @@ async function main() {
         const price = parseFloat(lines[2].trim());
         
         if (!name || !description || isNaN(price) || price < 1) {
-          return bot.sendMessage(chatId, `
+          return safeSendMessage(bot, chatId, `
 ❌ <b>بيانات غير صحيحة!</b>
 
 تأكد من:
@@ -237,7 +238,7 @@ async function main() {
           await db.updateUser(userId, { temp_withdrawal_address: null });
           
           if (createError.message.includes('مستخدم بالفعل') || createError.message.includes('duplicate')) {
-            return bot.sendMessage(chatId, `
+            return safeSendMessage(bot, chatId, `
 ❌ <b>الاسم مستخدم بالفعل!</b>
 
 هذا الاسم مستخدم من قبل محلل آخر.
@@ -250,7 +251,7 @@ async function main() {
 `, { parse_mode: 'HTML' });
           }
           
-          return bot.sendMessage(chatId, `
+          return safeSendMessage(bot, chatId, `
 ❌ <b>حدث خطأ أثناء التسجيل</b>
 
 ${createError.message}
@@ -259,7 +260,7 @@ ${createError.message}
 `, { parse_mode: 'HTML' });
         }
         
-        await bot.sendMessage(chatId, `
+        await safeSendMessage(bot, chatId, `
 ✅ <b>تم تسجيلك كمحلل بنجاح!</b>
 
 📝 الاسم: ${name}
@@ -273,7 +274,7 @@ ${createError.message}
 يمكن للمستخدمين الآن الاشتراك في خدماتك! 🎉
 `, { parse_mode: 'HTML' });
         
-        await bot.sendMessage(config.OWNER_ID, `
+        await safeSendMessage(bot, config.OWNER_ID, `
 📢 <b>محلل جديد!</b>
 
 👤 ${user.first_name} (${userId})
@@ -287,7 +288,7 @@ ${description}
       }
       
       if (text.match(/^T[A-Za-z1-9]{33}$/)) {
-        await bot.sendMessage(chatId, `
+        await safeSendMessage(bot, chatId, `
 💸 <b>لإجراء عمليات السحب</b>
 
 يرجى استخدام تطبيق الويب:
@@ -302,7 +303,7 @@ ${description}
       }
       
       if (!isNaN(text) && parseFloat(text) > 0) {
-        await bot.sendMessage(chatId, `
+        await safeSendMessage(bot, chatId, `
 ⏳ <b>لإجراء المعاملات المالية</b>
 
 يرجى استخدام تطبيق الويب:
@@ -316,7 +317,7 @@ ${description}
       }
       
       if (text.length === 64 && /^[a-fA-F0-9]{64}$/.test(text)) {
-        await bot.sendMessage(chatId, `
+        await safeSendMessage(bot, chatId, `
 ⏳ <b>لإجراء عمليات الإيداع</b>
 
 يرجى استخدام نظام الدفع الآلي الجديد عبر تطبيق الويب:
@@ -1156,7 +1157,7 @@ app.post('/api/subscribe-analyst', async (req, res) => {
     });
     await db.updateAnalystSubscriberCount(analyst_id, 1);
     
-    bot.sendMessage(analyst.user_id, `
+    safeSendMessage(bot, analyst.user_id, `
 🎉 <b>مشترك جديد!</b>
 
 لديك مشترك جديد في خدمة التحليل
@@ -1259,7 +1260,7 @@ app.post('/api/cancel-analyst-subscription', async (req, res) => {
 
 ⚠️ لم يتم استرجاع أي مبلغ لأنه مر أكثر من 90% من فترة الاشتراك.`;
     
-    bot.sendMessage(user_id, userMsg, { parse_mode: 'HTML' }).catch(err => 
+    safeSendMessage(bot, user_id, userMsg, { parse_mode: 'HTML' }).catch(err => 
       console.error('Error notifying user:', err)
     );
     
@@ -1272,7 +1273,7 @@ app.post('/api/cancel-analyst-subscription', async (req, res) => {
 
 📊 إجمالي المشتركين: ${(analyst.total_subscribers || 1) - 1}`;
       
-      bot.sendMessage(analyst.user_id, analystMsg, { parse_mode: 'HTML' }).catch(err => 
+      safeSendMessage(bot, analyst.user_id, analystMsg, { parse_mode: 'HTML' }).catch(err => 
         console.error('Error notifying analyst:', err)
       );
     }
@@ -1421,7 +1422,7 @@ app.post('/api/register-analyst', async (req, res) => {
     try {
       const analyst = await db.createAnalyst(user_id, name, description, price, analystMarkets, profilePicture);
     
-    bot.sendMessage(config.OWNER_ID, `
+    safeSendMessage(bot, config.OWNER_ID, `
 📝 <b>محلل جديد</b>
 
 الاسم: ${name}
@@ -1606,7 +1607,7 @@ app.post('/api/delete-analyst', async (req, res) => {
       subscriberCount++;
       
       try {
-        await bot.sendMessage(subscription.user_id, `
+        await safeSendMessage(bot, subscription.user_id, `
 ⚠️ <b>إشعار إلغاء اشتراك</b>
 
 تم إلغاء اشتراكك في المحلل: <b>${analyst.name}</b>
@@ -1635,7 +1636,7 @@ app.post('/api/delete-analyst', async (req, res) => {
       console.log(`✅ تم حذف المحلل ${analyst.name} وإرجاع ${totalRefunded.toFixed(2)} USDT لـ ${subscriberCount} مشتركين`);
       
       try {
-        await bot.sendMessage(user_id, `
+        await safeSendMessage(bot, user_id, `
 ✅ <b>تم حذف حسابك كمحلل بنجاح</b>
 
 تم إلغاء جميع الاشتراكات وإرجاع المبالغ للمشتركين.
@@ -1652,7 +1653,7 @@ app.post('/api/delete-analyst', async (req, res) => {
       console.log(`✅ تم حذف المحلل ${analyst.name} بنجاح (بدون مشتركين)`);
       
       try {
-        await bot.sendMessage(user_id, `
+        await safeSendMessage(bot, user_id, `
 ✅ <b>تم حذف حسابك كمحلل بنجاح</b>
 
 يمكنك إنشاء حساب محلل جديد في أي وقت.
@@ -1790,7 +1791,7 @@ ${post_data.analysis ? '📝 التحليل:\n' + post_data.analysis : ''}
 `;
       
       try {
-        await bot.sendMessage(subscriber.user_id, message, { parse_mode: 'HTML' });
+        await safeSendMessage(bot, subscriber.user_id, message, { parse_mode: 'HTML' });
       } catch (error) {
         console.error(`Failed to notify subscriber ${subscriber.user_id}:`, error.message);
       }
@@ -2960,7 +2961,7 @@ app.post('/api/admin/approve-withdrawal', async (req, res) => {
       'completed'
     );
     
-    bot.sendMessage(withdrawal.user_id, `
+    safeSendMessage(bot, withdrawal.user_id, `
 ✅ <b>تم الموافقة على طلب السحب!</b>
 
 💸 المبلغ: ${withdrawal.amount} USDT
@@ -3006,7 +3007,7 @@ app.post('/api/admin/reject-withdrawal', async (req, res) => {
     
     await db.updateUserBalance(withdrawal.user_id, withdrawal.amount);
     
-    bot.sendMessage(withdrawal.user_id, `
+    safeSendMessage(bot, withdrawal.user_id, `
 ❌ <b>تم رفض طلب السحب</b>
 
 💸 المبلغ: ${withdrawal.amount} USDT
@@ -3112,7 +3113,7 @@ app.post('/api/admin/broadcast', async (req, res) => {
     
     for (const user of users) {
       try {
-        await bot.sendMessage(user.user_id, message, { parse_mode: 'HTML' });
+        await safeSendMessage(bot, user.user_id, message, { parse_mode: 'HTML' });
         successCount++;
         await new Promise(resolve => setTimeout(resolve, 100));
       } catch (error) {

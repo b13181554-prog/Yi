@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const db = require('./database');
 const config = require('./config');
 const blockchainPumpScanner = require('./blockchain-pump-scanner');
+const { safeSendMessage } = require('./safe-message');
 
 let bot = null;
 const sentPumpAlerts = new Map();
@@ -118,7 +119,7 @@ async function scanAndNotifyMarketOpportunities() {
           
           message += '💡 افتح البوت للمزيد من التفاصيل';
           
-          await bot.sendMessage(user.user_id, message, { parse_mode: 'HTML' });
+          await safeSendMessage(bot, user.user_id, message, { parse_mode: 'HTML' });
           notifiedUsers.set(user.user_id, opportunities.length);
           
           await new Promise(resolve => setTimeout(resolve, 100));
@@ -147,7 +148,7 @@ async function checkExpiringSubscriptions() {
         const daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
         
         if (daysLeft === 3) {
-          await bot.sendMessage(user.user_id, `
+          await safeSendMessage(bot, user.user_id, `
 ⚠️ <b>تنبيه اشتراك</b>
 
 اشتراكك سينتهي خلال 3 أيام!
@@ -157,7 +158,7 @@ async function checkExpiringSubscriptions() {
 جدد اشتراكك الآن لتستمر في الحصول على التحليلات والتوصيات.
 `, { parse_mode: 'HTML' });
         } else if (daysLeft === 1) {
-          await bot.sendMessage(user.user_id, `
+          await safeSendMessage(bot, user.user_id, `
 ⏰ <b>تذكير عاجل!</b>
 
 اشتراكك سينتهي غداً!
@@ -168,7 +169,7 @@ async function checkExpiringSubscriptions() {
 💰 السعر: ${config.SUBSCRIPTION_PRICE} USDT
 `, { parse_mode: 'HTML' });
         } else if (daysLeft === 0) {
-          await bot.sendMessage(user.user_id, `
+          await safeSendMessage(bot, user.user_id, `
 ❌ <b>انتهى الاشتراك</b>
 
 انتهى اشتراكك اليوم.
@@ -199,7 +200,7 @@ async function checkExpiringTrials() {
         const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
         
         if (daysLeft === 2) {
-          await bot.sendMessage(user.user_id, `
+          await safeSendMessage(bot, user.user_id, `
 🎁 <b>تنبيه الفترة التجريبية</b>
 
 فترتك التجريبية المجانية ستنتهي خلال يومين!
@@ -212,7 +213,7 @@ async function checkExpiringTrials() {
 استمتع بآخر أيام التجربة! 🚀
 `, { parse_mode: 'HTML' });
         } else if (daysLeft === 0) {
-          await bot.sendMessage(user.user_id, `
+          await safeSendMessage(bot, user.user_id, `
 ⏰ <b>آخر يوم في الفترة التجريبية!</b>
 
 فترتك التجريبية المجانية تنتهي اليوم.
@@ -232,7 +233,7 @@ async function checkExpiringTrials() {
 
 async function notifyDeposit(userId, amount, txId) {
   try {
-    await bot.sendMessage(userId, `
+    await safeSendMessage(bot, userId, `
 ✅ <b>تم الإيداع بنجاح!</b>
 
 💵 المبلغ: ${amount} USDT
@@ -247,7 +248,7 @@ async function notifyDeposit(userId, amount, txId) {
 
 async function notifyWithdrawal(userId, amount, address) {
   try {
-    await bot.sendMessage(userId, `
+    await safeSendMessage(bot, userId, `
 ✅ <b>تم السحب بنجاح!</b>
 
 💸 المبلغ: ${amount} USDT
@@ -297,7 +298,7 @@ async function scanAndNotifyPumpOpportunities() {
         for (const opportunity of newOpportunities) {
           const message = blockchainPumpScanner.formatPumpAlert(opportunity);
           
-          await bot.sendMessage(user.user_id, message, { parse_mode: 'HTML' });
+          await safeSendMessage(bot, user.user_id, message, { parse_mode: 'HTML' });
           
           const key = `${opportunity.address}_${opportunity.symbol}`;
           sentPumpAlerts.set(key, Date.now());

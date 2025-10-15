@@ -2,6 +2,7 @@ const bot = require('./bot');
 const config = require('./config');
 const pino = require('pino');
 const { getFailedWithdrawals } = require('./withdrawal-queue');
+const { safeSendMessage } = require('./safe-message');
 
 const logger = pino({
   level: 'info',
@@ -31,7 +32,7 @@ async function notifyOwnerSuccess(userId, userName, amount, address, withdrawId)
 ⏰ <b>الوقت:</b> ${new Date().toLocaleString('ar-SA')}
 `;
 
-    await bot.sendMessage(config.OWNER_ID, message, { parse_mode: 'HTML' });
+    await safeSendMessage(bot, config.OWNER_ID, message, { parse_mode: 'HTML' });
     logger.info(`✅ Success notification sent to owner for withdrawal ${withdrawId}`);
   } catch (error) {
     logger.error(`Failed to send success notification to owner: ${error.message}`);
@@ -53,7 +54,7 @@ async function notifyUserSuccess(userId, amount, address, withdrawId) {
 ⏰ سيصل المبلغ خلال دقائق قليلة
 `;
 
-    await bot.sendMessage(userId, message, { parse_mode: 'HTML' });
+    await safeSendMessage(bot, userId, message, { parse_mode: 'HTML' });
     logger.info(`✅ Success notification sent to user ${userId}`);
   } catch (error) {
     logger.error(`Failed to send success notification to user ${userId}: ${error.message}`);
@@ -106,7 +107,7 @@ async function notifyOwnerFailedWithdrawal(requestId, userId, userName, amount, 
       ]
     };
 
-    await bot.sendMessage(config.OWNER_ID, message, { 
+    await safeSendMessage(bot, config.OWNER_ID, message, { 
       parse_mode: 'HTML',
       reply_markup: keyboard
     });
@@ -135,7 +136,7 @@ async function notifyUserDelayedWithdrawal(userId, amount) {
 نعتذر عن الإزعاج! 🙏
 `;
 
-    await bot.sendMessage(userId, message, { parse_mode: 'HTML' });
+    await safeSendMessage(bot, userId, message, { parse_mode: 'HTML' });
     logger.info(`⏳ Delay notification sent to user ${userId}`);
   } catch (error) {
     logger.error(`Failed to send delay notification to user ${userId}: ${error.message}`);
@@ -211,7 +212,7 @@ async function sendDailyWithdrawalReport(stats) {
       ]
     };
 
-    await bot.sendMessage(config.OWNER_ID, message, { 
+    await safeSendMessage(bot, config.OWNER_ID, message, { 
       parse_mode: 'HTML',
       reply_markup: keyboard
     });
