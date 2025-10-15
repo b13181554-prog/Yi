@@ -93,24 +93,6 @@ class MarketDataService {
     return symbol;
   }
 
-  async getPriceFromBinance(symbol) {
-    try {
-      const response = await axios.get('https://api.binance.com/api/v3/ticker/price', {
-        params: { symbol },
-        timeout: 10000
-      });
-      
-      const price = parseFloat(response.data.price);
-      if (price && price > 0) {
-        console.log(`✅ Binance: ${symbol} = $${price}`);
-        return price;
-      }
-      return null;
-    } catch (error) {
-      console.error(`❌ Binance error for ${symbol}:`, error.message);
-      return null;
-    }
-  }
 
   async getPriceFromCoinGecko(symbol) {
     try {
@@ -198,27 +180,6 @@ class MarketDataService {
     }
   }
 
-  async getPriceFromBybit(symbol) {
-    try {
-      const response = await axios.get('https://api.bybit.com/v5/market/tickers', {
-        params: { 
-          category: 'spot',
-          symbol: symbol
-        },
-        timeout: 10000
-      });
-
-      const price = parseFloat(response.data.result?.list?.[0]?.lastPrice);
-      if (price && price > 0) {
-        console.log(`✅ Bybit: ${symbol} = $${price}`);
-        return price;
-      }
-      return null;
-    } catch (error) {
-      console.error(`❌ Bybit error for ${symbol}:`, error.message);
-      return null;
-    }
-  }
 
   async getPriceFromOKX(symbol) {
     try {
@@ -368,7 +329,6 @@ class MarketDataService {
       price = await this.getPriceFromYahooFinance(symbol, marketType);
     } else {
       price = await this.getPriceFromOKX(symbol) ||
-              await this.getPriceFromBybit(symbol) ||
               await this.getPriceFromGateIO(symbol) ||
               await this.getPriceFromCoinGecko(symbol) ||
               await this.getPriceFromKraken(symbol) ||
@@ -376,8 +336,7 @@ class MarketDataService {
               await this.getPriceFromCoinPaprika(symbol) ||
               await this.getPriceFromHuobi(symbol) ||
               await this.getPriceFromCryptoCom(symbol) ||
-              await this.getPriceFromBitfinex(symbol) ||
-              await this.getPriceFromBinance(symbol);
+              await this.getPriceFromBitfinex(symbol);
     }
 
     if (price) {
@@ -391,28 +350,6 @@ class MarketDataService {
     throw new Error(`فشل في الحصول على السعر الحقيقي لـ ${symbol} من جميع المنصات`);
   }
 
-  async get24hrStatsFromBinance(symbol) {
-    try {
-      const response = await axios.get('https://api.binance.com/api/v3/ticker/24hr', {
-        params: { symbol },
-        timeout: 10000
-      });
-
-      const data = response.data;
-      return {
-        symbol: symbol,
-        priceChange: parseFloat(data.priceChange),
-        priceChangePercent: parseFloat(data.priceChangePercent),
-        lastPrice: data.lastPrice,
-        highPrice: data.highPrice,
-        lowPrice: data.lowPrice,
-        volume: data.volume
-      };
-    } catch (error) {
-      console.error(`❌ Binance 24hr stats error for ${symbol}:`, error.message);
-      return null;
-    }
-  }
 
   async get24hrStatsFromCoinGecko(symbol) {
     try {
@@ -465,8 +402,7 @@ class MarketDataService {
         volume: '0'
       };
     } else {
-      stats = await this.get24hrStatsFromCoinGecko(symbol) ||
-              await this.get24hrStatsFromBinance(symbol);
+      stats = await this.get24hrStatsFromCoinGecko(symbol);
     }
 
     if (stats) {
@@ -477,78 +413,7 @@ class MarketDataService {
     throw new Error(`فشل في الحصول على إحصائيات 24 ساعة الحقيقية لـ ${symbol}`);
   }
 
-  async getCandlesFromBinance(symbol, interval, limit = 100) {
-    try {
-      const response = await axios.get('https://api.binance.com/api/v3/klines', {
-        params: {
-          symbol,
-          interval,
-          limit
-        },
-        timeout: 15000
-      });
 
-      const candles = response.data.map(candle => ({
-        openTime: candle[0],
-        open: candle[1],
-        high: candle[2],
-        low: candle[3],
-        close: candle[4],
-        volume: candle[5],
-        closeTime: candle[6]
-      }));
-
-      console.log(`✅ Binance: Got ${candles.length} real candles for ${symbol}`);
-      return candles;
-    } catch (error) {
-      console.error(`❌ Binance candles error for ${symbol}:`, error.message);
-      return null;
-    }
-  }
-
-  async getCandlesFromBybit(symbol, interval, limit = 100) {
-    try {
-      const intervalMap = {
-        '1m': '1',
-        '5m': '5',
-        '15m': '15',
-        '30m': '30',
-        '1h': '60',
-        '4h': '240',
-        '1d': 'D',
-        '1w': 'W'
-      };
-
-      const response = await axios.get('https://api.bybit.com/v5/market/kline', {
-        params: {
-          category: 'spot',
-          symbol: symbol,
-          interval: intervalMap[interval] || '60',
-          limit: limit
-        },
-        timeout: 15000
-      });
-
-      if (response.data && response.data.result && response.data.result.list) {
-        const candles = response.data.result.list.reverse().map(candle => ({
-          openTime: parseInt(candle[0]),
-          open: candle[1],
-          high: candle[2],
-          low: candle[3],
-          close: candle[4],
-          volume: candle[5],
-          closeTime: parseInt(candle[0]) + 60000
-        }));
-
-        console.log(`✅ Bybit: Got ${candles.length} real candles for ${symbol}`);
-        return candles;
-      }
-      return null;
-    } catch (error) {
-      console.error(`❌ Bybit candles error for ${symbol}:`, error.message);
-      return null;
-    }
-  }
 
   async getCandlesFromOKX(symbol, interval, limit = 100) {
     try {
@@ -736,9 +601,7 @@ class MarketDataService {
     } else if (marketType === 'stocks' || marketType === 'indices' || marketType === 'commodities') {
       candles = await this.getCandlesFromYahooFinance(symbol, interval, limit, marketType);
     } else {
-      candles = await this.getCandlesFromOKX(symbol, interval, limit) ||
-                await this.getCandlesFromBybit(symbol, interval, limit) ||
-                await this.getCandlesFromBinance(symbol, interval, limit);
+      candles = await this.getCandlesFromOKX(symbol, interval, limit);
     }
 
     if (candles && candles.length > 0) {
@@ -770,34 +633,6 @@ class MarketDataService {
     console.log(`✅ تم التحقق من صحة البيانات لـ ${symbol}`);
   }
 
-  async getTopMoversFromBinance(type = 'gainers') {
-    try {
-      const response = await axios.get('https://api.binance.com/api/v3/ticker/24hr', {
-        timeout: 15000
-      });
-
-      const usdtPairs = response.data
-        .filter(ticker => ticker.symbol.endsWith('USDT'))
-        .map(ticker => ({
-          symbol: ticker.symbol,
-          price: parseFloat(ticker.lastPrice),
-          priceChangePercent: parseFloat(ticker.priceChangePercent),
-          volume: parseFloat(ticker.volume)
-        }))
-        .sort((a, b) => {
-          return type === 'gainers' 
-            ? b.priceChangePercent - a.priceChangePercent
-            : a.priceChangePercent - b.priceChangePercent;
-        })
-        .slice(0, 10);
-
-      console.log(`✅ Binance: Got ${usdtPairs.length} real movers`);
-      return usdtPairs;
-    } catch (error) {
-      console.error('❌ Binance top movers error:', error.message);
-      return null;
-    }
-  }
 
   async getTopMoversFromCoinGecko(type = 'gainers') {
     try {
@@ -832,8 +667,7 @@ class MarketDataService {
   async getTopMovers(type = 'gainers') {
     console.log(`🔥 Fetching real top ${type}...`);
 
-    const movers = await this.getTopMoversFromCoinGecko(type) ||
-                   await this.getTopMoversFromBinance(type);
+    const movers = await this.getTopMoversFromCoinGecko(type);
 
     if (movers && movers.length > 0) {
       return movers;
@@ -842,32 +676,6 @@ class MarketDataService {
     throw new Error(`فشل في الحصول على بيانات العملات الأكثر حركة`);
   }
 
-  async getAllCryptoStats() {
-    try {
-      console.log('📊 جلب بيانات جميع العملات من Binance...');
-      const response = await axios.get('https://api.binance.com/api/v3/ticker/24hr', {
-        timeout: 20000
-      });
-
-      const usdtPairs = response.data
-        .filter(ticker => ticker.symbol.endsWith('USDT'))
-        .map(ticker => ({
-          symbol: ticker.symbol,
-          priceChangePercent: parseFloat(ticker.priceChangePercent),
-          volume: parseFloat(ticker.volume) * parseFloat(ticker.lastPrice),
-          lastPrice: parseFloat(ticker.lastPrice),
-          highPrice: parseFloat(ticker.highPrice),
-          lowPrice: parseFloat(ticker.lowPrice),
-          trades: parseInt(ticker.count)
-        }));
-
-      console.log(`✅ تم جلب بيانات ${usdtPairs.length} عملة من Binance`);
-      return usdtPairs;
-    } catch (error) {
-      console.error('❌ خطأ في جلب بيانات جميع العملات:', error.message);
-      return [];
-    }
-  }
 
   getSmartCryptoSelection(allStats, limit = 50) {
     if (!allStats || allStats.length === 0) return [];

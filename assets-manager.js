@@ -43,82 +43,14 @@ class AssetsManager {
     }
   }
 
-  // جلب جميع العملات الرقمية من Binance كبديل
-  async fetchAllCryptoFromBinance() {
-    try {
-      console.log('🔄 جلب جميع العملات الرقمية من Binance...');
-      const response = await axios.get('https://api.binance.com/api/v3/exchangeInfo', {
-        timeout: 15000
-      });
-
-      if (response.data && response.data.symbols) {
-        const symbols = response.data.symbols;
-        
-        // فلترة العملات التي تنتهي بـ USDT وحالتها TRADING
-        const usdtPairs = symbols
-          .filter(sym => sym.symbol.endsWith('USDT') && sym.status === 'TRADING')
-          .map(sym => ({
-            symbol: sym.symbol,
-            baseCcy: sym.baseAsset,
-            quoteCcy: sym.quoteAsset,
-            label: `${this.getCryptoEmoji(sym.baseAsset)} ${sym.baseAsset}`
-          }));
-
-        console.log(`✅ تم جلب ${usdtPairs.length} عملة رقمية من Binance`);
-        return usdtPairs;
-      }
-      
-      return [];
-    } catch (error) {
-      console.error('❌ خطأ في جلب العملات من Binance:', error.message);
-      return [];
-    }
-  }
-
-  // جلب جميع العملات الرقمية من Bybit
-  async fetchAllCryptoFromBybit() {
-    try {
-      console.log('🔄 جلب جميع العملات الرقمية من Bybit...');
-      const response = await axios.get('https://api.bybit.com/v5/market/instruments-info', {
-        params: { category: 'spot' },
-        timeout: 15000
-      });
-
-      if (response.data && response.data.result && response.data.result.list) {
-        const instruments = response.data.result.list;
-        
-        // فلترة العملات التي تنتهي بـ USDT
-        const usdtPairs = instruments
-          .filter(inst => inst.symbol && inst.symbol.endsWith('USDT') && inst.status === 'Trading')
-          .map(inst => ({
-            symbol: inst.symbol,
-            baseCcy: inst.baseCoin,
-            quoteCcy: inst.quoteCoin,
-            label: `${this.getCryptoEmoji(inst.baseCoin)} ${inst.baseCoin}`
-          }));
-
-        console.log(`✅ تم جلب ${usdtPairs.length} عملة رقمية من Bybit`);
-        return usdtPairs;
-      }
-      
-      return [];
-    } catch (error) {
-      console.error('❌ خطأ في جلب العملات من Bybit:', error.message);
-      return [];
-    }
-  }
 
   // دمج جميع العملات الرقمية من جميع المصادر
   async getAllCryptoAssets() {
     try {
-      const [okxAssets, binanceAssets, bybitAssets] = await Promise.all([
-        this.fetchAllCryptoFromOKX(),
-        this.fetchAllCryptoFromBinance(),
-        this.fetchAllCryptoFromBybit()
-      ]);
+      const okxAssets = await this.fetchAllCryptoFromOKX();
 
-      // دمج جميع الأصول وإزالة المكرر
-      const allAssets = [...okxAssets, ...binanceAssets, ...bybitAssets];
+      // استخدام أصول OKX فقط
+      const allAssets = [...okxAssets];
       const uniqueAssets = new Map();
 
       for (const asset of allAssets) {
