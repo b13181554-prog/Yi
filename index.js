@@ -2099,6 +2099,51 @@ app.post('/api/analyze-pump', async (req, res) => {
   }
 });
 
+app.post('/api/analyze-master', async (req, res) => {
+  try {
+    const { user_id, symbol, timeframe, market_type, trading_type, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    let candles;
+    
+    if (market_type === 'forex') {
+      candles = await forexService.getCandles(symbol, timeframe, 100);
+    } else {
+      candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
+    }
+    
+    const minCandles = (market_type === 'commodities' || market_type === 'stocks') ? 50 : 100;
+    
+    if (!candles || candles.length < minCandles) {
+      let errorMessage = `بيانات غير كافية للتحليل الشامل - متوفر ${candles?.length || 0} شمعة فقط`;
+      
+      if (market_type === 'commodities' || market_type === 'stocks') {
+        errorMessage += `\n💡 نصيحة: استخدم إطار زمني أطول (4h أو 1d) للحصول على بيانات أكثر`;
+      } else {
+        errorMessage += `\nيجب توفر ${minCandles} شمعة على الأقل`;
+      }
+      
+      return res.json({ success: false, error: errorMessage });
+    }
+    
+    const MasterAnalysis = require('./master-analysis');
+    const masterAnalysis = new MasterAnalysis(candles, symbol, timeframe, market_type);
+    
+    const masterResult = await masterAnalysis.getMasterAnalysis(trading_type || 'spot');
+    
+    res.json({
+      success: true,
+      analysis: masterResult
+    });
+  } catch (error) {
+    console.error('Master Analysis API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/all-assets', async (req, res) => {
   try {
     const { init_data, force_update } = req.body;
