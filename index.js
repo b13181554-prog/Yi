@@ -1844,6 +1844,109 @@ app.post('/api/delete-room-post', async (req, res) => {
   }
 });
 
+app.post('/api/analyst-performance', async (req, res) => {
+  try {
+    const { analyst_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const performanceAnalyzer = require('./analyst-performance');
+    
+    const metrics = await performanceAnalyzer.calculateAdvancedMetrics(analyst_id);
+    const tierData = await performanceAnalyzer.calculateTierAndBadges(analyst_id);
+    
+    res.json({ 
+      success: true, 
+      metrics,
+      tier: tierData.tier,
+      badges: tierData.badges,
+      achievements: tierData.achievements
+    });
+  } catch (error) {
+    console.error('Analyst Performance API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/analyst-ai-insights', async (req, res) => {
+  try {
+    const { analyst_id, init_data, generate_new } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const aiAdvisor = require('./analyst-ai-advisor');
+    
+    let insights;
+    
+    if (generate_new) {
+      insights = await aiAdvisor.analyzePerformanceAndAdvise(analyst_id);
+    } else {
+      insights = await aiAdvisor.getLatestInsights(analyst_id);
+      
+      if (!insights) {
+        insights = await aiAdvisor.analyzePerformanceAndAdvise(analyst_id);
+      }
+    }
+    
+    res.json({ success: true, insights });
+  } catch (error) {
+    console.error('Analyst AI Insights API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/analyst-ranking', async (req, res) => {
+  try {
+    const { init_data, limit, metric } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const performanceAnalyzer = require('./analyst-performance');
+    
+    let rankings;
+    
+    if (limit && metric) {
+      rankings = await performanceAnalyzer.getTopPerformers(limit, metric);
+    } else {
+      rankings = await performanceAnalyzer.getAnalystRanking();
+    }
+    
+    res.json({ success: true, rankings });
+  } catch (error) {
+    console.error('Analyst Ranking API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/compare-analysts', async (req, res) => {
+  try {
+    const { analyst_ids, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    if (!analyst_ids || analyst_ids.length < 2) {
+      return res.json({ success: false, error: 'يجب اختيار محللين على الأقل للمقارنة' });
+    }
+    
+    const performanceAnalyzer = require('./analyst-performance');
+    
+    const comparison = await performanceAnalyzer.compareAnalysts(analyst_ids);
+    
+    res.json({ success: true, comparison });
+  } catch (error) {
+    console.error('Compare Analysts API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/analyze-advanced', async (req, res) => {
   try {
     const { user_id, symbol, timeframe, market_type, trading_type, analysis_type, init_data } = req.body;

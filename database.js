@@ -1788,6 +1788,25 @@ async function updateWithdrawalStatus(requestId, status, additionalData = {}) {
   );
 }
 
+async function updateAnalystPerformance(analystId, metrics) {
+  await db.collection('analysts').updateOne(
+    { _id: new ObjectId(analystId) },
+    { $set: { performance_metrics: metrics } }
+  );
+}
+
+async function updateAnalystTierAndBadges(analystId, data) {
+  await db.collection('analysts').updateOne(
+    { _id: new ObjectId(analystId) },
+    { $set: data }
+  );
+}
+
+async function getAnalystPerformance(analystId) {
+  const analyst = await db.collection('analysts').findOne({ _id: new ObjectId(analystId) });
+  return analyst?.performance_metrics || null;
+}
+
 function getDB() {
   return db;
 }
@@ -1894,5 +1913,8 @@ module.exports = {
   updateCryptAPIPayment,
   addTransaction,
   getWithdrawalRequest,
-  updateWithdrawalStatus
+  updateWithdrawalStatus,
+  updateAnalystPerformance,
+  updateAnalystTierAndBadges,
+  getAnalystPerformance
 };

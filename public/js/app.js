@@ -4276,6 +4276,285 @@ async function loadMoreSectionSettings() {
     }
 }
 
+async function loadAnalystAdvancedPerformance(analystId) {
+    try {
+        const response = await fetch('/api/analyst-performance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                analyst_id: analystId,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            displayAdvancedPerformance(data);
+        } else {
+            console.error('Error loading performance:', data.error);
+        }
+    } catch (error) {
+        console.error('Error loading analyst performance:', error);
+    }
+}
+
+function displayAdvancedPerformance(data) {
+    const container = document.getElementById('advanced-performance-container');
+    if (!container) return;
+
+    const { metrics, tier, badges, achievements } = data;
+
+    let html = `
+        <div class="analyst-tier-badge tier-${tier}">
+            ${getTierEmoji(tier)} ${tier}
+        </div>
+
+        <div class="analyst-badges">
+            ${badges.map(badge => `
+                <span class="analyst-badge badge-${badge}">
+                    ${getBadgeEmoji(badge)} ${getBadgeLabel(badge)}
+                </span>
+            `).join('')}
+        </div>
+
+        <div class="performance-metrics-grid">
+            <div class="metric-card ${getMetricClass(metrics.win_rate, 'win_rate')}">
+                <div class="metric-label">نسبة النجاح</div>
+                <div class="metric-value">${metrics.win_rate}%</div>
+            </div>
+
+            <div class="metric-card ${getMetricClass(metrics.profit_factor, 'profit_factor')}">
+                <div class="metric-label">عامل الربح</div>
+                <div class="metric-value">${metrics.profit_factor}</div>
+            </div>
+
+            <div class="metric-card ${getMetricClass(metrics.average_rr, 'rr')}">
+                <div class="metric-label">متوسط R/R</div>
+                <div class="metric-value">${metrics.average_rr}</div>
+            </div>
+
+            <div class="metric-card ${getMetricClass(metrics.sharpe_ratio, 'sharpe')}">
+                <div class="metric-label">نسبة شارب</div>
+                <div class="metric-value">${metrics.sharpe_ratio}</div>
+            </div>
+
+            <div class="metric-card ${getMetricClass(metrics.max_drawdown, 'drawdown')}">
+                <div class="metric-label">أقصى تراجع</div>
+                <div class="metric-value">${metrics.max_drawdown}%</div>
+            </div>
+
+            <div class="metric-card ${getMetricClass(metrics.consistency_score, 'consistency')}">
+                <div class="metric-label">درجة الثبات</div>
+                <div class="metric-value">${metrics.consistency_score}</div>
+            </div>
+        </div>
+
+        ${achievements && achievements.length > 0 ? `
+            <div class="achievements-section">
+                <h3>🏆 الإنجازات</h3>
+                ${achievements.map(ach => `
+                    <div class="achievement-item">
+                        <div class="achievement-icon">${ach.icon}</div>
+                        <div class="achievement-info">
+                            <h4>${ach.title}</h4>
+                            <p>${ach.description}</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        ` : ''}
+    `;
+
+    container.innerHTML = html;
+}
+
+async function loadAnalystAIInsights(analystId, generateNew = false) {
+    try {
+        const loadingEl = document.getElementById('ai-insights-loading');
+        const container = document.getElementById('ai-insights-container');
+        
+        if (loadingEl) loadingEl.style.display = 'block';
+        if (container) container.innerHTML = '';
+
+        const response = await fetch('/api/analyst-ai-insights', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                analyst_id: analystId,
+                generate_new: generateNew,
+                init_data: tg.initData
+            })
+        });
+
+        const data = await response.json();
+
+        if (loadingEl) loadingEl.style.display = 'none';
+
+        if (data.success && data.insights) {
+            displayAIInsights(data.insights);
+        } else {
+            if (container) {
+                container.innerHTML = `<p style="text-align: center; color: #666;">${data.message || 'حدث خطأ في تحميل التحليل'}</p>`;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading AI insights:', error);
+        const container = document.getElementById('ai-insights-container');
+        if (container) {
+            container.innerHTML = '<p style="text-align: center; color: #f44336;">حدث خطأ في تحميل تحليل الذكاء الاصطناعي</p>';
+        }
+    }
+}
+
+function displayAIInsights(insights) {
+    const container = document.getElementById('ai-insights-container');
+    if (!container) return;
+
+    let html = `
+        <div class="ai-insights-section">
+            <h3>🤖 تحليل الذكاء الاصطناعي</h3>
+            <div class="insights-content">${insights.ai_analysis || ''}</div>
+        </div>
+
+        ${insights.strengths && insights.strengths.length > 0 ? `
+            <div class="strengths-weaknesses">
+                <div>
+                    <h3 style="color: #4CAF50;">💪 نقاط القوة</h3>
+                    ${insights.strengths.map(s => `
+                        <div class="strength-item">
+                            <h4>${s.title}</h4>
+                            <p>${s.description}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                ${insights.weaknesses && insights.weaknesses.length > 0 ? `
+                    <div>
+                        <h3 style="color: #f44336;">⚠️ نقاط الضعف</h3>
+                        ${insights.weaknesses.map(w => `
+                            <div class="weakness-item">
+                                <h4>${w.title}</h4>
+                                <p>${w.description}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        ` : ''}
+
+        ${insights.recommendations && insights.recommendations.length > 0 ? `
+            <div class="recommendations-list">
+                <h3>📋 التوصيات</h3>
+                ${insights.recommendations.map(rec => `
+                    <div class="recommendation-item">
+                        <span class="recommendation-priority priority-${rec.priority}">${rec.priority.toUpperCase()}</span>
+                        <h4>${rec.title}</h4>
+                        <p><strong>الإجراء:</strong> ${rec.action}</p>
+                        <p><strong>التأثير المتوقع:</strong> ${rec.expected_impact}</p>
+                    </div>
+                `).join('')}
+            </div>
+        ` : ''}
+
+        ${insights.performance_score ? `
+            <div style="text-align: center;">
+                <h3>🎯 درجة الأداء الإجمالية</h3>
+                <div class="performance-score-circle ${getScoreClass(insights.performance_score)}">
+                    ${insights.performance_score}
+                </div>
+            </div>
+        ` : ''}
+    `;
+
+    container.innerHTML = html;
+}
+
+function getTierEmoji(tier) {
+    const emojis = {
+        DIAMOND: '💎',
+        PLATINUM: '🥈',
+        GOLD: '🥇',
+        SILVER: '🥈',
+        BRONZE: '🥉'
+    };
+    return emojis[tier] || '🏅';
+}
+
+function getBadgeEmoji(badge) {
+    const emojis = {
+        EXPERT_TRADER: '🎯',
+        MASTER_TRADER: '👑',
+        PROFIT_MACHINE: '💰',
+        CONSISTENT_PERFORMER: '⭐',
+        POPULAR_ANALYST: '👥',
+        CELEBRITY_ANALYST: '🌟',
+        EXPERIENCED: '📚',
+        VETERAN: '🏅',
+        RISK_MASTER: '🛡️',
+        LOW_RISK: '✅',
+        HIGH_SHARPE: '📊',
+        HOT_STREAK: '🔥'
+    };
+    return emojis[badge] || '🏆';
+}
+
+function getBadgeLabel(badge) {
+    const labels = {
+        EXPERT_TRADER: 'متداول خبير',
+        MASTER_TRADER: 'متداول محترف',
+        PROFIT_MACHINE: 'آلة أرباح',
+        CONSISTENT_PERFORMER: 'أداء ثابت',
+        POPULAR_ANALYST: 'محلل شهير',
+        CELEBRITY_ANALYST: 'نجم التحليل',
+        EXPERIENCED: 'ذو خبرة',
+        VETERAN: 'محترف قديم',
+        RISK_MASTER: 'ماهر بالمخاطر',
+        LOW_RISK: 'مخاطر منخفضة',
+        HIGH_SHARPE: 'شارب عالي',
+        HOT_STREAK: 'سلسلة ساخنة'
+    };
+    return labels[badge] || badge;
+}
+
+function getMetricClass(value, type) {
+    switch(type) {
+        case 'win_rate':
+            if (value >= 70) return 'positive';
+            if (value >= 50) return 'neutral';
+            return 'negative';
+        case 'profit_factor':
+            if (value >= 2) return 'positive';
+            if (value >= 1.5) return 'neutral';
+            return 'negative';
+        case 'rr':
+            if (value >= 2.5) return 'positive';
+            if (value >= 2) return 'neutral';
+            return 'negative';
+        case 'sharpe':
+            if (value >= 2) return 'positive';
+            if (value >= 1) return 'neutral';
+            return 'negative';
+        case 'drawdown':
+            if (value <= 10) return 'positive';
+            if (value <= 20) return 'neutral';
+            return 'negative';
+        case 'consistency':
+            if (value >= 75) return 'positive';
+            if (value >= 60) return 'neutral';
+            return 'negative';
+        default:
+            return 'neutral';
+    }
+}
+
+function getScoreClass(score) {
+    if (score >= 80) return 'score-excellent';
+    if (score >= 60) return 'score-good';
+    if (score >= 40) return 'score-average';
+    return 'score-poor';
+}
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {

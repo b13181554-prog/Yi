@@ -21,6 +21,16 @@ The core logic is built upon an Express server, managing Telegram Bot interactio
 -   **Ultra Analysis**: Comprehensive analysis across 10+ indicators/patterns. **Balanced criteria**: 75-82% indicator agreement, ADX >= 25-30, 7-8+ confirmations, high/massive trading volume, R/R >= 2:1, RSI/MACD confirmation. Provides more trading opportunities while maintaining quality signals.
 -   **Zero Reversal Analysis**: Strong trend analysis system with **balanced criteria**: ADX >= 30, widened RSI ranges (20-65 for BUY, 35-80 for SELL), high/massive volume, 3/5 candle confirmation, R/R >= 2.5:1, strength score 30+/41. Focuses on strong trends with manageable risk.
 -   **V1 PRO AI Analysis** (NEW): Advanced AI-powered analysis system combining technical analysis with sentiment analysis and self-learning capabilities. Features: EMA 20/50/200, RSI, MACD, Stochastic, Bollinger Bands, ATR, ADX analysis + AI sentiment analysis (-1 to +1 scale) using Groq API with Llama 3.3 70B model + risk management (2% per trade, 1.5x ATR stop loss, 3x ATR take profit) + automatic position sizing + self-learning weight adjustment based on performance (3 consecutive losses = reduce weight 10%, 3 consecutive wins = increase weight 10%) + confidence scoring (0-1). Stores learning weights in MongoDB. Provides unified output with direction, technical signal, sentiment result, final signal (BUY/SELL/WAIT), SL/TP levels, position size, and confidence percentage.
+
+**Advanced Analyst Performance System** (October 2025):
+-   **Performance Analytics**: Comprehensive metrics including Win Rate, Profit Factor, Sharpe Ratio, Max Drawdown, Average R/R, Average Win/Loss, Expectancy, Consistency Score, and Monthly Performance tracking.
+-   **Tier System**: 5-tier ranking (Bronze → Silver → Gold → Platinum → Diamond) based on performance score calculated from win rate, profit factor, R/R ratio, consistency, subscriber count, and signal volume.
+-   **Badge System**: 12 achievement badges including Expert Trader, Master Trader, Profit Machine, Consistent Performer, Popular Analyst, Celebrity Analyst, Experienced, Veteran, Risk Master, Low Risk, High Sharpe, and Hot Streak.
+-   **AI Performance Advisor**: Groq-powered AI analysis using Llama 3.3 70B to analyze analyst patterns, identify strengths/weaknesses, detect trading patterns (win/loss streaks, best performing symbols/timeframes), and provide actionable recommendations with priority levels.
+-   **Pattern Detection**: Advanced pattern recognition for win streaks, loss streaks, best/worst performing symbols, optimal timeframes, and market type performance analysis.
+-   **Comparison Tool**: Side-by-side analyst comparison with detailed metrics and visualizations.
+-   **Achievements System**: Automated achievement tracking for milestones like 70% win rate, 50 subscribers, 100 signals, 2.5+ profit factor, and 80% consistency score.
+
 All analysis systems include risk assessment, precise Stop Loss & Take Profit, and balanced Risk/Reward ratios. An Analyst Protection System with escrow and daily monitoring is in place. Referral systems are implemented, and automated pump analysis for cryptocurrencies identifies potential price surges. Customer support utilizes the Groq API with the Llama 3.3 70B Versatile model for free, fast, and multi-language responses.
 
 ### Feature Specifications
