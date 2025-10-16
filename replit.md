@@ -16,11 +16,23 @@ The system utilizes a professional, modern, and responsive Telegram Web App feat
 ### Technical Implementations
 The core logic is built upon an Express server, managing Telegram Bot interactions, MongoDB operations, multi-language support (7 languages), automated withdrawals, market data fetching, technical analysis, notifications, and TRON blockchain integration. Security measures include environment variable-based API keys, robust error handling, rate limiting, and Telegram signature verification. Data quality is ensured through strict OHLC data validation, dynamic Fibonacci analysis, and advanced duplicate subscription prevention.
 
-**Analysis Systems** (Updated October 2025 for balanced trading opportunities):
+**Analysis Systems** (Updated October 16, 2025 - Major Improvements):
 -   **Regular Analysis**: Requires 65%+ indicator agreement.
--   **Ultra Analysis**: Comprehensive analysis across 10+ indicators/patterns. **Balanced criteria**: 75-82% indicator agreement, ADX >= 25-30, 7-8+ confirmations, high/massive trading volume, R/R >= 2:1, RSI/MACD confirmation. Provides more trading opportunities while maintaining quality signals.
--   **Zero Reversal Analysis**: Strong trend analysis system with **balanced criteria**: ADX >= 30, widened RSI ranges (20-65 for BUY, 35-80 for SELL), high/massive volume, 3/5 candle confirmation, R/R >= 2.5:1, strength score 30+/41. Focuses on strong trends with manageable risk.
--   **V1 PRO AI Analysis** (NEW): Advanced AI-powered analysis system combining technical analysis with sentiment analysis and self-learning capabilities. Features: EMA 20/50/200, RSI, MACD, Stochastic, Bollinger Bands, ATR, ADX analysis + AI sentiment analysis (-1 to +1 scale) using Groq API with Llama 3.3 70B model + risk management (2% per trade, 1.5x ATR stop loss, 3x ATR take profit) + automatic position sizing + self-learning weight adjustment based on performance (3 consecutive losses = reduce weight 10%, 3 consecutive wins = increase weight 10%) + confidence scoring (0-1). Stores learning weights in MongoDB. Provides unified output with direction, technical signal, sentiment result, final signal (BUY/SELL/WAIT), SL/TP levels, position size, and confidence percentage.
+-   **Ultra Analysis (IMPROVED)**: Comprehensive analysis across 11 indicators with dynamic weighting. **Flexible criteria with 3 confidence tiers**: 
+    - High Confidence (70%+ agreement, ADX >= 25, 6+ confirmations)
+    - Medium Confidence (60%+ agreement, ADX >= 20, 5+ confirmations)  
+    - Low Confidence (50%+ agreement, 4+ confirmations)
+    Features ranging market detection (rejects if ADX < 20 or tight price/EMA convergence), dynamic indicator weights (EMA/MACD/ADX have highest weights), improved SL/TP (2-6x ATR based on timeframe), and conflict detection to prevent mixed signals.
+-   **Zero Reversal Analysis (IMPROVED)**: 100-point scoring system replacing hard rejections. **Flexible criteria with 3 confidence tiers**:
+    - Very High (75%+ score, ADX >= 25)
+    - High (65%+ score, ADX >= 20)
+    - Medium (55%+ score, ADX >= 18)
+    Features flexible RSI ranges (30-60 ideal for BUY, 25-70 acceptable), graduated Stochastic scoring, dynamic R/R assessment (≥3.0 ideal, ≥2.0 good), candle pattern strength weighting, and improved SL/TP (1.2-3.5x ATR based on timeframe). Every indicator contributes points rather than causing immediate rejection.
+-   **V1 PRO AI Analysis (IMPROVED)**: Advanced AI-powered system with optional sentiment analysis. **Flexible criteria with 3 signal strength tiers**:
+    - Very High (≥5.5 strength, 70%+ confidence)
+    - High (≥4.0 strength, 55%+ confidence)
+    - Medium (≥3.0 strength, 40%+ confidence)
+    Features optional sentiment analysis (no longer blocks trades if unavailable, weighted 0.8), ranging market detection (rejects if ADX < 18 or tight ranges), relaxed entry conditions (RSI < 55 for BUY, Stochastic < 40), improved SL/TP (2.0x/4.5x ATR), enhanced indicator weights (EMA 2.0, ADX 1.8, MACD 1.5), and self-learning weight adjustment. Sentiment enhances but doesn't override technical signals.
 
 **Advanced Analyst Performance System** (October 2025):
 -   **Performance Analytics**: Comprehensive metrics including Win Rate, Profit Factor, Sharpe Ratio, Max Drawdown, Average R/R, Average Win/Loss, Expectancy, Consistency Score, and Monthly Performance tracking.
