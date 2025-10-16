@@ -10,7 +10,7 @@ channel = "stable-24_11"
 packages = ["redis"]
 
 [deployment]
-run = ["node", "index.js"]
+run = ["bash", "./start.sh"]
 deploymentTarget = "autoscale"
 ignorePorts = false
 
