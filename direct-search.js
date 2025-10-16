@@ -38,6 +38,7 @@ class DirectSearchService {
                    baseCcy.startsWith(searchLower);
           })
           .map(inst => ({
+            value: inst.instId.replace('-', ''),
             symbol: inst.instId.replace('-', ''),
             baseCcy: inst.baseCcy,
             quoteCcy: inst.quoteCcy,
@@ -156,54 +157,56 @@ class DirectSearchService {
 
   getCommoditiesList() {
     return [
-      { value: 'XAUUSD', label: '🥇 الذهب (Gold)', category: 'المعادن الثمينة' },
-      { value: 'XAGUSD', label: '🥈 الفضة (Silver)', category: 'المعادن الثمينة' },
-      { value: 'COPPER', label: '🟤 النحاس (Copper)', category: 'المعادن الصناعية' },
-      { value: 'PLATINUM', label: '⚪ البلاتين (Platinum)', category: 'المعادن الثمينة' },
-      { value: 'PALLADIUM', label: '⚫ البلاديوم (Palladium)', category: 'المعادن الثمينة' },
+      { value: 'GC=F', label: '🥇 الذهب (Gold)', category: 'المعادن الثمينة' },
+      { value: 'SI=F', label: '🥈 الفضة (Silver)', category: 'المعادن الثمينة' },
+      { value: 'HG=F', label: '🟤 النحاس (Copper)', category: 'المعادن الصناعية' },
+      { value: 'PL=F', label: '⚪ البلاتين (Platinum)', category: 'المعادن الثمينة' },
+      { value: 'PA=F', label: '⚫ البلاديوم (Palladium)', category: 'المعادن الثمينة' },
       
-      { value: 'USOIL', label: '🛢️ النفط الأمريكي (WTI)', category: 'الطاقة' },
-      { value: 'UKOIL', label: '🛢️ النفط البريطاني (Brent)', category: 'الطاقة' },
-      { value: 'NATGAS', label: '🔥 الغاز الطبيعي (Natural Gas)', category: 'الطاقة' },
-      { value: 'HEATING_OIL', label: '🔥 زيت التدفئة (Heating Oil)', category: 'الطاقة' },
+      { value: 'CL=F', label: '🛢️ النفط الأمريكي (WTI)', category: 'الطاقة' },
+      { value: 'BZ=F', label: '🛢️ النفط البريطاني (Brent)', category: 'الطاقة' },
+      { value: 'NG=F', label: '🔥 الغاز الطبيعي (Natural Gas)', category: 'الطاقة' },
+      { value: 'HO=F', label: '🔥 زيت التدفئة (Heating Oil)', category: 'الطاقة' },
+      { value: 'RB=F', label: '⛽ البنزين (Gasoline)', category: 'الطاقة' },
       
-      { value: 'CORN', label: '🌽 الذرة (Corn)', category: 'الزراعة' },
-      { value: 'WHEAT', label: '🌾 القمح (Wheat)', category: 'الزراعة' },
-      { value: 'SOYBEAN', label: '🫘 فول الصويا (Soybeans)', category: 'الزراعة' },
-      { value: 'SUGAR', label: '🍬 السكر (Sugar)', category: 'الزراعة' },
-      { value: 'COFFEE', label: '☕ القهوة (Coffee)', category: 'الزراعة' },
-      { value: 'COCOA', label: '🍫 الكاكاو (Cocoa)', category: 'الزراعة' },
-      { value: 'COTTON', label: '🧵 القطن (Cotton)', category: 'الزراعة' },
-      { value: 'RICE', label: '🍚 الأرز (Rice)', category: 'الزراعة' },
+      { value: 'ZC=F', label: '🌽 الذرة (Corn)', category: 'الزراعة' },
+      { value: 'ZW=F', label: '🌾 القمح (Wheat)', category: 'الزراعة' },
+      { value: 'ZS=F', label: '🫘 فول الصويا (Soybeans)', category: 'الزراعة' },
+      { value: 'SB=F', label: '🍬 السكر (Sugar)', category: 'الزراعة' },
+      { value: 'KC=F', label: '☕ القهوة (Coffee)', category: 'الزراعة' },
+      { value: 'CC=F', label: '🍫 الكاكاو (Cocoa)', category: 'الزراعة' },
+      { value: 'CT=F', label: '🧵 القطن (Cotton)', category: 'الزراعة' },
       
-      { value: 'LIVE_CATTLE', label: '🐄 الماشية الحية (Live Cattle)', category: 'الماشية' },
-      { value: 'LEAN_HOGS', label: '🐷 الخنازير (Lean Hogs)', category: 'الماشية' }
+      { value: 'LE=F', label: '🐄 الماشية الحية (Live Cattle)', category: 'الماشية' },
+      { value: 'HE=F', label: '🐷 الخنازير (Lean Hogs)', category: 'الماشية' }
     ].map(item => ({ ...item, market_type: 'commodities' }));
   }
 
   getIndicesList() {
     return [
-      { value: 'US30', label: '🇺🇸 داو جونز (Dow Jones)', region: 'USA' },
-      { value: 'SPX500', label: '🇺🇸 S&P 500', region: 'USA' },
-      { value: 'NAS100', label: '🇺🇸 ناسداك (Nasdaq)', region: 'USA' },
-      { value: 'US500', label: '🇺🇸 US 500', region: 'USA' },
-      { value: 'DJ30', label: '🇺🇸 DJ 30', region: 'USA' },
+      { value: '^DJI', label: '🇺🇸 داو جونز (Dow Jones)', region: 'USA' },
+      { value: '^GSPC', label: '🇺🇸 S&P 500', region: 'USA' },
+      { value: '^IXIC', label: '🇺🇸 ناسداك (Nasdaq)', region: 'USA' },
+      { value: '^RUT', label: '🇺🇸 Russell 2000', region: 'USA' },
+      { value: '^NYA', label: '🇺🇸 NYSE Composite', region: 'USA' },
       
-      { value: 'UK100', label: '🇬🇧 FTSE 100', region: 'UK' },
-      { value: 'GER40', label: '🇩🇪 DAX 40', region: 'Germany' },
-      { value: 'FRA40', label: '🇫🇷 CAC 40', region: 'France' },
-      { value: 'ESP35', label: '🇪🇸 IBEX 35', region: 'Spain' },
-      { value: 'ITA40', label: '🇮🇹 FTSE MIB', region: 'Italy' },
-      { value: 'EU50', label: '🇪🇺 Euro Stoxx 50', region: 'Europe' },
+      { value: '^FTSE', label: '🇬🇧 FTSE 100', region: 'UK' },
+      { value: '^GDAXI', label: '🇩🇪 DAX 40', region: 'Germany' },
+      { value: '^FCHI', label: '🇫🇷 CAC 40', region: 'France' },
+      { value: '^IBEX', label: '🇪🇸 IBEX 35', region: 'Spain' },
+      { value: 'FTSEMIB.MI', label: '🇮🇹 FTSE MIB', region: 'Italy' },
+      { value: '^STOXX50E', label: '🇪🇺 Euro Stoxx 50', region: 'Europe' },
       
-      { value: 'JPN225', label: '🇯🇵 Nikkei 225', region: 'Japan' },
-      { value: 'HK50', label: '🇭🇰 Hang Seng', region: 'Hong Kong' },
-      { value: 'CHINA50', label: '🇨🇳 China A50', region: 'China' },
-      { value: 'AUS200', label: '🇦🇺 ASX 200', region: 'Australia' },
-      { value: 'SING30', label: '🇸🇬 STI', region: 'Singapore' },
+      { value: '^N225', label: '🇯🇵 Nikkei 225', region: 'Japan' },
+      { value: '^HSI', label: '🇭🇰 Hang Seng', region: 'Hong Kong' },
+      { value: '000001.SS', label: '🇨🇳 Shanghai Composite', region: 'China' },
+      { value: '^AXJO', label: '🇦🇺 ASX 200', region: 'Australia' },
+      { value: '^STI', label: '🇸🇬 STI', region: 'Singapore' },
+      { value: '^KS11', label: '🇰🇷 KOSPI', region: 'South Korea' },
+      { value: '^BSESN', label: '🇮🇳 BSE Sensex', region: 'India' },
+      { value: '^NSEI', label: '🇮🇳 Nifty 50', region: 'India' },
       
-      { value: 'VIX', label: '📊 VIX (مؤشر الخوف)', region: 'Volatility' },
-      { value: 'RUSSELL2000', label: '🇺🇸 Russell 2000', region: 'USA' }
+      { value: '^VIX', label: '📊 VIX (مؤشر الخوف)', region: 'Volatility' }
     ].map(item => ({ ...item, market_type: 'indices' }));
   }
 
