@@ -53,6 +53,7 @@ const translations = {
     analysis_fibonacci: 'فيبوناتشي',
     analysis_patterns: 'أنماط الشموع',
     analysis_indicators: 'المؤشرات الفنية',
+    scan_best_signals_btn: '🔍 ابحث عن أفضل الصفقات',
     start_analysis_btn: '🎯 ابدأ التحليل المتقدم',
     analysis_result_title: 'نتيجة التحليل',
     
@@ -252,6 +253,7 @@ const translations = {
     analysis_fibonacci: 'Fibonacci',
     analysis_patterns: 'Candle Patterns',
     analysis_indicators: 'Technical Indicators',
+    scan_best_signals_btn: '🔍 Find Best Signals',
     start_analysis_btn: '🎯 Start Advanced Analysis',
     analysis_result_title: 'Analysis Result',
     
@@ -451,6 +453,7 @@ const translations = {
     analysis_fibonacci: 'Fibonacci',
     analysis_patterns: 'Motifs de Chandelles',
     analysis_indicators: 'Indicateurs Techniques',
+    scan_best_signals_btn: '🔍 Trouver les Meilleurs Signaux',
     start_analysis_btn: '🎯 Démarrer l\'Analyse Avancée',
     analysis_result_title: 'Résultat de l\'Analyse',
     
@@ -639,6 +642,7 @@ const translations = {
     analysis_fibonacci: 'Fibonacci',
     analysis_patterns: 'Patrones de Velas',
     analysis_indicators: 'Indicadores Técnicos',
+    scan_best_signals_btn: '🔍 Buscar Mejores Señales',
     start_analysis_btn: '🎯 Iniciar Análisis Avanzado',
     analysis_result_title: 'Resultado del Análisis',
     
@@ -827,6 +831,7 @@ const translations = {
     analysis_fibonacci: 'Fibonacci',
     analysis_patterns: 'Kerzenmuster',
     analysis_indicators: 'Technische Indikatoren',
+    scan_best_signals_btn: '🔍 Beste Signale Finden',
     start_analysis_btn: '🎯 Erweiterte Analyse starten',
     analysis_result_title: 'Analyseergebnis',
     
@@ -1015,6 +1020,7 @@ const translations = {
     analysis_fibonacci: 'Фибоначчи',
     analysis_patterns: 'Паттерны Свечей',
     analysis_indicators: 'Технические Индикаторы',
+    scan_best_signals_btn: '🔍 Найти Лучшие Сигналы',
     start_analysis_btn: '🎯 Начать Расширенный Анализ',
     analysis_result_title: 'Результат Анализа',
     
@@ -1203,6 +1209,7 @@ const translations = {
     analysis_fibonacci: '斐波那契',
     analysis_patterns: '蜡烛图形',
     analysis_indicators: '技术指标',
+    scan_best_signals_btn: '🔍 寻找最佳信号',
     start_analysis_btn: '🎯 开始高级分析',
     analysis_result_title: '分析结果',
     
