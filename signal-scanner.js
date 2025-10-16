@@ -95,12 +95,27 @@ class SignalScanner {
         if (isStrongSignal && (recommendation.action === 'شراء' || recommendation.action === 'بيع' || recommendation.finalSignal === 'BUY' || recommendation.finalSignal === 'SELL')) {
           const currentPrice = candles[candles.length - 1].close;
           
+          // تنسيق الثقة بشكل آمن
+          let confidenceText = recommendation.confidence;
+          if (!confidenceText && typeof recommendation.confidenceScore === 'number' && isFinite(recommendation.confidenceScore)) {
+            confidenceText = `${(recommendation.confidenceScore * 100).toFixed(0)}%`;
+          }
+          
+          // تنسيق نسبة الاتفاق بشكل آمن
+          let agreementValue = 0;
+          if (typeof recommendation.agreementPercentage === 'number') {
+            agreementValue = recommendation.agreementPercentage;
+          } else if (typeof recommendation.confidenceScore === 'number' && isFinite(recommendation.confidenceScore)) {
+            agreementValue = recommendation.confidenceScore * 100;
+          }
+          
           results.push({
             symbol,
             marketType,
             action: recommendation.action || recommendation.finalSignal,
-            confidence: recommendation.confidence || `${(recommendation.confidenceScore * 100).toFixed(0)}%`,
-            agreementPercentage: recommendation.agreementPercentage || (recommendation.confidenceScore * 100),
+            confidence: confidenceText,
+            confidenceScore: recommendation.confidenceScore,
+            agreementPercentage: agreementValue,
             entryPrice: recommendation.entryPrice || currentPrice,
             stopLoss: recommendation.stopLoss,
             takeProfit: recommendation.takeProfit,
@@ -159,12 +174,28 @@ class SignalScanner {
     let score = 0;
 
     // نقاط من نسبة الاتفاق
-    const agreement = recommendation.agreementPercentage || (recommendation.confidenceScore * 100) || 0;
+    let agreement = 0;
+    if (typeof recommendation.agreementPercentage === 'number') {
+      agreement = recommendation.agreementPercentage;
+    } else if (typeof recommendation.agreementPercentage === 'string') {
+      // إزالة علامة % إذا كانت موجودة
+      agreement = parseFloat(recommendation.agreementPercentage.replace('%', '')) || 0;
+    } else if (typeof recommendation.confidenceScore === 'number') {
+      agreement = recommendation.confidenceScore * 100;
+    }
     score += agreement;
 
     // نقاط من Risk/Reward
-    const rr = parseFloat(recommendation.riskRewardRatio || recommendation.riskReward || 0);
-    score += rr * 10;
+    let rr = 0;
+    if (recommendation.riskRewardRatio) {
+      rr = parseFloat(recommendation.riskRewardRatio);
+    } else if (recommendation.riskReward) {
+      rr = parseFloat(recommendation.riskReward);
+    }
+    // التحقق من أن القيمة صالحة
+    if (!isNaN(rr) && isFinite(rr)) {
+      score += rr * 10;
+    }
 
     // نقاط من مستوى الثقة
     const confidence = recommendation.confidence || '';
@@ -175,13 +206,17 @@ class SignalScanner {
     }
 
     // نقاط من V1 Pro confidence
-    if (recommendation.confidenceScore >= 0.8) {
-      score += 20;
-    } else if (recommendation.confidenceScore >= 0.7) {
-      score += 10;
+    const confScore = recommendation.confidenceScore;
+    if (typeof confScore === 'number' && isFinite(confScore)) {
+      if (confScore >= 0.8) {
+        score += 20;
+      } else if (confScore >= 0.7) {
+        score += 10;
+      }
     }
 
-    return score;
+    // التأكد من أن النتيجة النهائية رقم صالح
+    return isFinite(score) ? score : 0;
   }
 }
 

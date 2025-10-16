@@ -2105,6 +2105,24 @@ function displayBestSignalsResult(signals, marketType, analysisType, timeframe) 
         const actionEmoji = signal.action === 'شراء' || signal.action === 'BUY' ? '🟢' : '🔴';
         const actionText = signal.action === 'شراء' || signal.action === 'BUY' ? 'شراء' : 'بيع';
         
+        // تنسيق الثقة بشكل آمن
+        let confidenceText = '';
+        if (signal.confidence) {
+            confidenceText = signal.confidence;
+        } else if (typeof signal.confidenceScore === 'number' && isFinite(signal.confidenceScore)) {
+            confidenceText = `${(signal.confidenceScore * 100).toFixed(0)}%`;
+        } else {
+            confidenceText = 'متوسطة';
+        }
+        
+        // تنسيق نسبة الاتفاق بشكل آمن
+        let agreementText = '0%';
+        if (typeof signal.agreementPercentage === 'number' && isFinite(signal.agreementPercentage)) {
+            agreementText = `${signal.agreementPercentage.toFixed(0)}%`;
+        } else if (typeof signal.confidenceScore === 'number' && isFinite(signal.confidenceScore)) {
+            agreementText = `${(signal.confidenceScore * 100).toFixed(0)}%`;
+        }
+        
         html += `
             <div class="signal-card" style="border: 2px solid ${signal.action === 'شراء' || signal.action === 'BUY' ? '#00ff00' : '#ff0000'}; border-radius: 12px; padding: 15px; margin-bottom: 15px; background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.2) 100%);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -2116,10 +2134,10 @@ function displayBestSignalsResult(signals, marketType, analysisType, timeframe) 
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
                     <div>
-                        <strong>💪 الثقة:</strong> ${signal.confidence}
+                        <strong>💪 الثقة:</strong> ${confidenceText}
                     </div>
                     <div>
-                        <strong>📊 الاتفاق:</strong> ${signal.agreementPercentage?.toFixed(0) || 0}%
+                        <strong>📊 الاتفاق:</strong> ${agreementText}
                     </div>
                     <div>
                         <strong>💰 الدخول:</strong> $${parseFloat(signal.entryPrice).toFixed(2)}
