@@ -9,7 +9,6 @@ class UltraAnalysis {
   getUltraRecommendation(marketType = 'spot', tradingType = 'spot', timeframe = '1h') {
     const currentPrice = this.candles[this.candles.length - 1].close;
     
-    // تطبيع الإطار الزمني لضمان التوافق
     const normalizedTimeframe = timeframe?.toLowerCase().trim() || '1h';
     
     const rsi = this.analysis.calculateRSI();
@@ -29,192 +28,227 @@ class UltraAnalysis {
     const headShoulders = this.analysis.advancedAnalysis.detectHeadAndShoulders();
     const supportResistance = this.analysis.advancedAnalysis.calculateSupportResistance();
 
+    const currentPriceFloat = parseFloat(currentPrice);
+    const ema20Value = parseFloat(ema20.value);
+    const ema50Value = parseFloat(ema50.value);
+    const adxValue = parseFloat(adx.value);
+    const rsiValue = parseFloat(rsi.value);
+
     let buyScore = 0;
     let sellScore = 0;
     let totalIndicators = 0;
     const reasons = [];
     const warnings = [];
 
-    if (parseFloat(rsi.value) < 30) {
-      buyScore += 2;
+    const rangingMarket = this.detectRangingMarket(adxValue, bb, ema20Value, ema50Value, currentPriceFloat);
+    if (rangingMarket.isRanging) {
+      warnings.push('⚠️ السوق في حالة جانبية - مخاطر عالية للتداول');
+      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType, rangingMarket.reason);
+    }
+
+    const indicatorWeights = {
+      rsi: 1.5,
+      macd: 2.0,
+      ema: 2.5,
+      stochastic: 1.0,
+      bollingerBands: 1.5,
+      adx: 2.0,
+      volume: 1.8,
+      fibonacci: 1.2,
+      candlePatterns: 1.5,
+      supportResistance: 1.3
+    };
+
+    if (rsiValue < 30) {
+      buyScore += 2.5 * indicatorWeights.rsi;
       reasons.push('RSI تشبع بيعي قوي');
-    } else if (parseFloat(rsi.value) < 40) {
-      buyScore += 1;
+    } else if (rsiValue < 45) {
+      buyScore += 1.5 * indicatorWeights.rsi;
       reasons.push('RSI في منطقة الشراء');
-    } else if (parseFloat(rsi.value) > 70) {
-      sellScore += 2;
+    } else if (rsiValue > 70) {
+      sellScore += 2.5 * indicatorWeights.rsi;
       reasons.push('RSI تشبع شرائي قوي');
-    } else if (parseFloat(rsi.value) > 60) {
-      sellScore += 1;
+    } else if (rsiValue > 55) {
+      sellScore += 1.5 * indicatorWeights.rsi;
       reasons.push('RSI في منطقة البيع');
     }
     totalIndicators++;
 
     if (macd.signal.includes('صاعد قوي')) {
-      buyScore += 2;
+      buyScore += 2.5 * indicatorWeights.macd;
       reasons.push('MACD إشارة صعودية قوية');
     } else if (macd.signal.includes('صاعد')) {
-      buyScore += 1;
+      buyScore += 1.5 * indicatorWeights.macd;
       reasons.push('MACD إشارة صعودية');
     } else if (macd.signal.includes('هابط قوي')) {
-      sellScore += 2;
+      sellScore += 2.5 * indicatorWeights.macd;
       reasons.push('MACD إشارة هبوطية قوية');
     } else if (macd.signal.includes('هابط')) {
-      sellScore += 1;
+      sellScore += 1.5 * indicatorWeights.macd;
       reasons.push('MACD إشارة هبوطية');
     }
     totalIndicators++;
 
     if (bb.signal.includes('تشبع بيعي')) {
-      buyScore += 2;
+      buyScore += 2.5 * indicatorWeights.bollingerBands;
       reasons.push('Bollinger Bands - تشبع بيعي');
     } else if (bb.signal.includes('هابط')) {
-      buyScore += 1;
+      buyScore += 1.2 * indicatorWeights.bollingerBands;
     } else if (bb.signal.includes('تشبع شرائي')) {
-      sellScore += 2;
+      sellScore += 2.5 * indicatorWeights.bollingerBands;
       reasons.push('Bollinger Bands - تشبع شرائي');
     } else if (bb.signal.includes('صاعد')) {
-      sellScore += 1;
+      sellScore += 1.2 * indicatorWeights.bollingerBands;
     }
     totalIndicators++;
 
     if (stoch.signal.includes('تشبع بيعي')) {
-      buyScore += 1.5;
+      buyScore += 2.0 * indicatorWeights.stochastic;
       reasons.push('Stochastic تشبع بيعي');
     } else if (stoch.signal.includes('تشبع شرائي')) {
-      sellScore += 1.5;
+      sellScore += 2.0 * indicatorWeights.stochastic;
       reasons.push('Stochastic تشبع شرائي');
     }
     totalIndicators++;
-
-    const currentPriceFloat = parseFloat(currentPrice);
-    const ema20Value = parseFloat(ema20.value);
-    const ema50Value = parseFloat(ema50.value);
     
     if (currentPriceFloat > ema20Value && ema20Value > ema50Value) {
-      buyScore += 2;
+      buyScore += 3.0 * indicatorWeights.ema;
       reasons.push('EMA Golden Cross - اتجاه صعودي قوي');
     } else if (currentPriceFloat > ema20Value) {
-      buyScore += 1;
+      buyScore += 1.5 * indicatorWeights.ema;
     } else if (currentPriceFloat < ema20Value && ema20Value < ema50Value) {
-      sellScore += 2;
+      sellScore += 3.0 * indicatorWeights.ema;
       reasons.push('EMA Death Cross - اتجاه هبوطي قوي');
     } else if (currentPriceFloat < ema20Value) {
-      sellScore += 1;
+      sellScore += 1.5 * indicatorWeights.ema;
     }
     totalIndicators++;
 
-    const adxValue = parseFloat(adx.value);
-    if (adxValue > 25) {
+    if (adxValue > 30) {
       if (adx.signal.includes('صاعد')) {
-        buyScore += 2;
+        buyScore += 2.5 * indicatorWeights.adx;
         reasons.push(`ADX قوي (${adxValue.toFixed(0)}) - اتجاه صعودي قوي`);
       } else if (adx.signal.includes('هابط')) {
-        sellScore += 2;
+        sellScore += 2.5 * indicatorWeights.adx;
         reasons.push(`ADX قوي (${adxValue.toFixed(0)}) - اتجاه هبوطي قوي`);
+      }
+    } else if (adxValue > 25) {
+      if (adx.signal.includes('صاعد')) {
+        buyScore += 1.5 * indicatorWeights.adx;
+        reasons.push(`ADX متوسط (${adxValue.toFixed(0)}) - اتجاه صعودي`);
+      } else if (adx.signal.includes('هابط')) {
+        sellScore += 1.5 * indicatorWeights.adx;
+        reasons.push(`ADX متوسط (${adxValue.toFixed(0)}) - اتجاه هبوطي`);
       }
     }
     totalIndicators++;
 
     if (volume.signal.includes('ضخم')) {
       if (buyScore > sellScore) {
-        buyScore += 2;
+        buyScore += 2.5 * indicatorWeights.volume;
         reasons.push('حجم تداول ضخم يدعم الاتجاه الصعودي');
       } else if (sellScore > buyScore) {
-        sellScore += 2;
+        sellScore += 2.5 * indicatorWeights.volume;
         reasons.push('حجم تداول ضخم يدعم الاتجاه الهبوطي');
       }
     } else if (volume.signal.includes('عالي')) {
       if (buyScore > sellScore) {
-        buyScore += 1;
+        buyScore += 1.5 * indicatorWeights.volume;
+        reasons.push('حجم تداول عالي');
       } else if (sellScore > buyScore) {
-        sellScore += 1;
+        sellScore += 1.5 * indicatorWeights.volume;
+        reasons.push('حجم تداول عالي');
       }
     }
     totalIndicators++;
 
     if (fibonacci.signal.includes('دعم قوية')) {
-      buyScore += 2;
+      buyScore += 2.0 * indicatorWeights.fibonacci;
       reasons.push('Fibonacci - منطقة دعم قوية');
     } else if (fibonacci.signal.includes('دعم')) {
-      buyScore += 1;
+      buyScore += 1.0 * indicatorWeights.fibonacci;
     } else if (fibonacci.signal.includes('مقاومة قوية')) {
-      sellScore += 2;
+      sellScore += 2.0 * indicatorWeights.fibonacci;
       reasons.push('Fibonacci - منطقة مقاومة قوية');
     } else if (fibonacci.signal.includes('مقاومة')) {
-      sellScore += 1;
+      sellScore += 1.0 * indicatorWeights.fibonacci;
     }
     totalIndicators++;
 
     if (candlePatterns.signal === 'صعودي') {
       const strongPatterns = candlePatterns.patterns.filter(p => p.strength === 'قوي جداً' || p.strength === 'قوي');
       if (strongPatterns.length > 0) {
-        buyScore += 2;
+        buyScore += 2.5 * indicatorWeights.candlePatterns;
         reasons.push(`أنماط شموع صعودية: ${strongPatterns.map(p => p.name).join(', ')}`);
       } else {
-        buyScore += 1;
+        buyScore += 1.2 * indicatorWeights.candlePatterns;
       }
     } else if (candlePatterns.signal === 'هبوطي') {
       const strongPatterns = candlePatterns.patterns.filter(p => p.strength === 'قوي جداً' || p.strength === 'قوي');
       if (strongPatterns.length > 0) {
-        sellScore += 2;
+        sellScore += 2.5 * indicatorWeights.candlePatterns;
         reasons.push(`أنماط شموع هبوطية: ${strongPatterns.map(p => p.name).join(', ')}`);
       } else {
-        sellScore += 1;
+        sellScore += 1.2 * indicatorWeights.candlePatterns;
       }
     }
     totalIndicators++;
 
     if (headShoulders.detected) {
       if (headShoulders.type === 'bullish') {
-        buyScore += 2;
+        buyScore += 2.5 * indicatorWeights.candlePatterns;
         reasons.push('نموذج Inverse H&S - إشارة صعودية قوية');
       } else if (headShoulders.type === 'bearish') {
-        sellScore += 2;
+        sellScore += 2.5 * indicatorWeights.candlePatterns;
         reasons.push('نموذج H&S - إشارة هبوطية قوية');
       }
       totalIndicators++;
     }
 
     if (supportResistance.signal.includes('دعم')) {
-      buyScore += 1.5;
+      buyScore += 2.0 * indicatorWeights.supportResistance;
       reasons.push('السعر قريب من مستوى الدعم');
     } else if (supportResistance.signal.includes('مقاومة')) {
-      sellScore += 1.5;
+      sellScore += 2.0 * indicatorWeights.supportResistance;
       reasons.push('السعر قريب من مستوى المقاومة');
     }
     totalIndicators++;
 
-    const maxScore = totalIndicators * 2;
-    const buyPercentage = (buyScore / maxScore) * 100;
-    const sellPercentage = (sellScore / maxScore) * 100;
+    const maxPossibleScore = this.calculateMaxScore(indicatorWeights, totalIndicators);
+    const buyPercentage = (buyScore / maxPossibleScore) * 100;
+    const sellPercentage = (sellScore / maxPossibleScore) * 100;
     const agreementPercentage = Math.max(buyPercentage, sellPercentage);
+    
+    const scoreDifference = Math.abs(buyScore - sellScore);
+    const minScoreDifference = maxPossibleScore * 0.15;
+    
+    if (scoreDifference < minScoreDifference) {
+      warnings.push('❌ إشارات متعارضة - الفرق بين الشراء والبيع ضئيل جداً');
+      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType, 'إشارات متعارضة');
+    }
 
     const atrValue = parseFloat(atr.value);
     const atrPercent = (atrValue / currentPriceFloat) * 100;
     
-    // معاملات دقيقة لكل إطار زمني
     const timeframeMultipliers = {
-      '1m': { sl: 0.8, tp: 1.5 },   // صفقات سريعة جداً - أهداف قريبة
-      '5m': { sl: 1.0, tp: 2.0 },   // صفقات سكالبينج - أهداف قريبة
-      '15m': { sl: 1.2, tp: 2.5 },  // صفقات قصيرة - أهداف قريبة نسبياً
-      '30m': { sl: 1.4, tp: 2.8 },  // صفقات قصيرة إلى متوسطة
-      '1h': { sl: 1.5, tp: 3.0 },   // صفقات متوسطة - أهداف متوسطة
-      '2h': { sl: 1.6, tp: 3.2 },   // صفقات متوسطة
-      '4h': { sl: 1.8, tp: 3.5 },   // صفقات متوسطة إلى طويلة
-      '1d': { sl: 2.0, tp: 4.0 },   // صفقات طويلة - أهداف بعيدة
-      '1w': { sl: 2.5, tp: 5.0 }    // صفقات طويلة جداً - أهداف بعيدة جداً
+      '1m': { sl: 1.0, tp: 2.0 },
+      '5m': { sl: 1.2, tp: 2.5 },
+      '15m': { sl: 1.5, tp: 3.0 },
+      '30m': { sl: 1.8, tp: 3.5 },
+      '1h': { sl: 2.0, tp: 4.0 },
+      '2h': { sl: 2.2, tp: 4.5 },
+      '4h': { sl: 2.5, tp: 5.0 },
+      '1d': { sl: 3.0, tp: 6.0 },
+      '1w': { sl: 3.5, tp: 7.0 }
     };
     
-    // الحصول على المعاملات المناسبة للإطار الزمني
     const multiplier = timeframeMultipliers[normalizedTimeframe] || timeframeMultipliers['1h'];
     
-    // حساب Stop Loss و Take Profit بناءً على الإطار الزمني
-    let stopLossPercent = Math.max(atrPercent * multiplier.sl, 0.3);
-    let takeProfitPercent = stopLossPercent * multiplier.tp;
+    let stopLossPercent = Math.max(atrPercent * multiplier.sl, 0.5);
+    let takeProfitPercent = stopLossPercent * (multiplier.tp / multiplier.sl);
     
-    // تعديل إضافي للفيوتشر (مخاطر أعلى = أهداف أبعد)
     if (tradingType === 'futures') {
+      stopLossPercent = stopLossPercent * 0.9;
       takeProfitPercent = takeProfitPercent * 1.2;
     }
     
@@ -224,34 +258,25 @@ class UltraAnalysis {
     let recommendation = 'انتظار';
     let action = 'WAIT';
     let emoji = '🟡';
-    let confidenceLevel = 'منخفضة جداً';
+    let confidenceLevel = 'منخفضة';
     let stopLoss = 0;
     let takeProfit = 0;
     let entryPrice = currentPriceFloat;
     let riskLevel = 'مرتفع';
     let shouldTrade = false;
 
-    const strictConditions = {
-      minAgreement: 75,
-      minADX: 25,
-      requiredVolume: ['ضخم', 'عالي'],
-      minConfirmations: 7
-    };
-
-    const confirmations = (buyScore > sellScore ? buyScore : sellScore) / 2;
+    const confirmations = Math.max(buyScore, sellScore) / 2;
     
-    // التحقق من الحجم القوي أو الضخم
     const hasStrongVolume = volume.signal.includes('ضخم') || volume.signal.includes('عالي');
     
-    // التحقق من نسبة Risk/Reward جيدة (1:2 على الأقل)
     const riskRewardRatio = takeProfitDistance / stopLossDistance;
-    const hasGoodRiskReward = riskRewardRatio >= 2;
+    const hasGoodRiskReward = riskRewardRatio >= 2.0;
     
-    // التحقق من توافق المؤشرات الرئيسية (RSI, MACD, ADX) - نطاق أوسع
-    const hasRSIConfirmation = (buyScore > sellScore && parseFloat(rsi.value) < 50) || 
-                               (sellScore > buyScore && parseFloat(rsi.value) > 50);
+    const hasRSIConfirmation = (buyScore > sellScore && rsiValue < 60) || 
+                               (sellScore > buyScore && rsiValue > 40);
     const hasMACDConfirmation = (buyScore > sellScore && macd.signal.includes('صاعد')) || 
                                 (sellScore > buyScore && macd.signal.includes('هابط'));
+    const hasADXConfirmation = adxValue >= 20;
 
     if (buyScore > sellScore) {
       recommendation = 'شراء';
@@ -260,21 +285,26 @@ class UltraAnalysis {
       stopLoss = currentPriceFloat - stopLossDistance;
       takeProfit = currentPriceFloat + takeProfitDistance;
       
-      // شروط متوازنة: 82%+ توافق، ADX قوي، 8+ تأكيدات، حجم جيد، نسبة R/R جيدة
-      if (agreementPercentage >= 82 && adxValue >= 30 && confirmations >= 8 && 
+      if (agreementPercentage >= 70 && adxValue >= 25 && confirmations >= 6 && 
           hasStrongVolume && hasGoodRiskReward && hasRSIConfirmation && hasMACDConfirmation) {
         confidenceLevel = 'عالية جداً (Ultra High)';
         emoji = '💚';
         riskLevel = 'منخفض';
         shouldTrade = true;
         reasons.push('✅ جميع الشروط محققة - صفقة قوية جداً');
-      } else if (agreementPercentage >= 75 && adxValue >= 25 && confirmations >= 7 && 
-                 hasStrongVolume && hasRSIConfirmation && hasMACDConfirmation) {
+      } else if (agreementPercentage >= 60 && adxValue >= 20 && confirmations >= 5 && 
+                 hasADXConfirmation && hasRSIConfirmation && hasMACDConfirmation) {
         confidenceLevel = 'عالية';
         emoji = '💚';
-        riskLevel = 'منخفض';
+        riskLevel = 'متوسط';
         shouldTrade = true;
         reasons.push('✅ الشروط محققة - صفقة جيدة');
+      } else if (agreementPercentage >= 50 && confirmations >= 4 && hasRSIConfirmation) {
+        confidenceLevel = 'متوسطة';
+        emoji = '🟢';
+        riskLevel = 'متوسط';
+        shouldTrade = true;
+        warnings.push('⚠️ صفقة متوسطة القوة - تداول بحذر');
       } else {
         confidenceLevel = 'منخفضة - لا تتداول';
         riskLevel = 'مرتفع جداً';
@@ -288,21 +318,26 @@ class UltraAnalysis {
       stopLoss = currentPriceFloat + stopLossDistance;
       takeProfit = currentPriceFloat - takeProfitDistance;
       
-      // شروط متوازنة: 82%+ توافق، ADX قوي، 8+ تأكيدات، حجم جيد، نسبة R/R جيدة
-      if (agreementPercentage >= 82 && adxValue >= 30 && confirmations >= 8 && 
+      if (agreementPercentage >= 70 && adxValue >= 25 && confirmations >= 6 && 
           hasStrongVolume && hasGoodRiskReward && hasRSIConfirmation && hasMACDConfirmation) {
         confidenceLevel = 'عالية جداً (Ultra High)';
         emoji = '❤️';
         riskLevel = 'منخفض';
         shouldTrade = true;
         reasons.push('✅ جميع الشروط محققة - صفقة قوية جداً');
-      } else if (agreementPercentage >= 75 && adxValue >= 25 && confirmations >= 7 && 
-                 hasStrongVolume && hasRSIConfirmation && hasMACDConfirmation) {
+      } else if (agreementPercentage >= 60 && adxValue >= 20 && confirmations >= 5 && 
+                 hasADXConfirmation && hasRSIConfirmation && hasMACDConfirmation) {
         confidenceLevel = 'عالية';
         emoji = '❤️';
-        riskLevel = 'منخفض';
+        riskLevel = 'متوسط';
         shouldTrade = true;
         reasons.push('✅ الشروط محققة - صفقة جيدة');
+      } else if (agreementPercentage >= 50 && confirmations >= 4 && hasRSIConfirmation) {
+        confidenceLevel = 'متوسطة';
+        emoji = '🔴';
+        riskLevel = 'متوسط';
+        shouldTrade = true;
+        warnings.push('⚠️ صفقة متوسطة القوة - تداول بحذر');
       } else {
         confidenceLevel = 'منخفضة - لا تتداول';
         riskLevel = 'مرتفع جداً';
@@ -355,7 +390,7 @@ class UltraAnalysis {
       takeProfit: formatPrice(takeProfit),
       stopLossPercent: stopLossPercent.toFixed(2) + '%',
       takeProfitPercent: takeProfitPercent.toFixed(2) + '%',
-      riskRewardRatio: (takeProfitDistance / stopLossDistance).toFixed(2),
+      riskRewardRatio: riskRewardRatio.toFixed(2),
       scores: {
         buyScore: buyScore.toFixed(1),
         sellScore: sellScore.toFixed(1),
@@ -363,14 +398,16 @@ class UltraAnalysis {
         sellPercentage: sellPercentage.toFixed(1) + '%',
         agreementPercentage: agreementPercentage.toFixed(1) + '%',
         confirmations: confirmations.toFixed(0),
-        totalIndicators
+        totalIndicators,
+        scoreDifference: scoreDifference.toFixed(1)
       },
       conditions: {
         meetsStrictCriteria: shouldTrade,
-        adxStrength: adxValue >= 30 ? '✅ قوي' : adxValue >= 25 ? '✅ جيد' : '❌ ضعيف',
-        agreementLevel: agreementPercentage >= 82 ? '✅ ممتاز' : agreementPercentage >= 75 ? '✅ عالي' : agreementPercentage >= 65 ? 'متوسط' : '❌ منخفض',
+        adxStrength: adxValue >= 25 ? '✅ قوي' : adxValue >= 20 ? '✅ جيد' : '❌ ضعيف',
+        agreementLevel: agreementPercentage >= 70 ? '✅ ممتاز' : agreementPercentage >= 60 ? '✅ عالي' : agreementPercentage >= 50 ? 'متوسط' : '❌ منخفض',
         volumeConfirmation: volume.signal.includes('ضخم') ? '✅ ممتاز' : volume.signal.includes('عالي') ? '✅ جيد' : '❌ ضعيف',
-        riskRewardRatio: riskRewardRatio >= 2 ? '✅ جيد (1:' + riskRewardRatio.toFixed(1) + ')' : '❌ ضعيف (1:' + riskRewardRatio.toFixed(1) + ')'
+        riskRewardRatio: riskRewardRatio >= 2.5 ? '✅ ممتاز (1:' + riskRewardRatio.toFixed(1) + ')' : riskRewardRatio >= 2.0 ? '✅ جيد (1:' + riskRewardRatio.toFixed(1) + ')' : '⚠️ مقبول (1:' + riskRewardRatio.toFixed(1) + ')',
+        rangingMarket: rangingMarket.isRanging ? '❌ نعم' : '✅ لا'
       },
       reasons,
       warnings,
@@ -391,6 +428,102 @@ class UltraAnalysis {
         HEAD_SHOULDERS: headShoulders,
         SUPPORT_RESISTANCE: supportResistance
       }
+    };
+  }
+
+  detectRangingMarket(adxValue, bb, ema20Value, ema50Value, currentPrice) {
+    if (adxValue < 20) {
+      return {
+        isRanging: true,
+        reason: `ADX ضعيف جداً (${adxValue.toFixed(0)}) - السوق في حالة جانبية`
+      };
+    }
+
+    const priceRange = Math.abs(currentPrice - ema20Value) / currentPrice * 100;
+    const emaRange = Math.abs(ema20Value - ema50Value) / ema20Value * 100;
+    
+    if (priceRange < 0.5 && emaRange < 0.3) {
+      return {
+        isRanging: true,
+        reason: 'السعر والمتوسطات متقاربة جداً - سوق جانبي'
+      };
+    }
+
+    if (bb.signal.includes('محايد') && adxValue < 25) {
+      return {
+        isRanging: true,
+        reason: 'Bollinger Bands ضيقة و ADX ضعيف - سوق جانبي'
+      };
+    }
+
+    return {
+      isRanging: false,
+      reason: ''
+    };
+  }
+
+  calculateMaxScore(weights, totalIndicators) {
+    return (weights.rsi * 2.5 + 
+            weights.macd * 2.5 + 
+            weights.bollingerBands * 2.5 + 
+            weights.stochastic * 2.0 +
+            weights.ema * 3.0 +
+            weights.adx * 2.5 +
+            weights.volume * 2.5 +
+            weights.fibonacci * 2.0 +
+            weights.candlePatterns * 2.5 +
+            weights.candlePatterns * 2.5 +
+            weights.supportResistance * 2.0);
+  }
+
+  generateWaitResponse(warnings, currentPrice, timeframe, marketType, tradingType, reason) {
+    return {
+      mode: 'ULTRA_ANALYSIS',
+      recommendation: 'انتظار',
+      action: 'WAIT',
+      emoji: '⛔',
+      confidence: 'لا تتداول',
+      shouldTrade: false,
+      riskLevel: 'مرتفع جداً',
+      tradingType,
+      marketType,
+      timeframe,
+      analysisTime: new Date().toLocaleString('ar-SA', { 
+        timeZone: 'Asia/Riyadh',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }),
+      entryPrice: 'N/A',
+      stopLoss: 'N/A',
+      takeProfit: 'N/A',
+      stopLossPercent: 'N/A',
+      takeProfitPercent: 'N/A',
+      riskRewardRatio: 'N/A',
+      reasons: [`السبب: ${reason}`],
+      warnings,
+      scores: {
+        buyScore: '0.0',
+        sellScore: '0.0',
+        buyPercentage: '0.0%',
+        sellPercentage: '0.0%',
+        agreementPercentage: '0.0%',
+        confirmations: '0',
+        totalIndicators: 0,
+        scoreDifference: '0.0'
+      },
+      conditions: {
+        meetsStrictCriteria: false,
+        adxStrength: '❌ غير متاح',
+        agreementLevel: '❌ غير متاح',
+        volumeConfirmation: '❌ غير متاح',
+        riskRewardRatio: '❌ غير متاح',
+        rangingMarket: '✅ نعم'
+      },
+      indicators: {}
     };
   }
 }
