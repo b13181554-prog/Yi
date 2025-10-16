@@ -2301,73 +2301,10 @@ app.post('/api/search-assets', async (req, res) => {
       return res.json({ success: false, error: 'Query is required' });
     }
     
-    const assetsManager = require('./assets-manager');
+    const directSearch = require('./direct-search');
     
-    // تحديث الأصول إذا كانت فارغة
-    if (!assetsManager.lastUpdate || assetsManager.cryptoAssets.length === 0) {
-      await assetsManager.updateAllAssets();
-    }
+    const results = await directSearch.search(query.trim(), market_type);
     
-    const searchQuery = query.toLowerCase().trim();
-    let results = [];
-    
-    // دالة مساعدة للبحث في المصفوفة
-    const searchInArray = (arr, market) => {
-      return arr
-        .filter(asset => {
-          const symbol = (asset.symbol || asset.value || '').toLowerCase();
-          const label = (asset.label || '').toLowerCase();
-          const baseCcy = (asset.baseCcy || '').toLowerCase();
-          
-          return symbol.includes(searchQuery) || 
-                 label.includes(searchQuery) || 
-                 baseCcy.includes(searchQuery);
-        })
-        .map(asset => ({
-          ...asset,
-          market_type: market
-        }));
-    };
-    
-    // البحث في السوق المحدد أو في جميع الأسواق
-    if (!market_type || market_type === 'crypto') {
-      results = results.concat(searchInArray(assetsManager.cryptoAssets, 'crypto'));
-    }
-    
-    if (!market_type || market_type === 'forex') {
-      results = results.concat(searchInArray(assetsManager.forexPairs, 'forex'));
-    }
-    
-    if (!market_type || market_type === 'stocks') {
-      results = results.concat(searchInArray(assetsManager.stocks, 'stocks'));
-    }
-    
-    if (!market_type || market_type === 'commodities') {
-      results = results.concat(searchInArray(assetsManager.commodities, 'commodities'));
-    }
-    
-    if (!market_type || market_type === 'indices') {
-      results = results.concat(searchInArray(assetsManager.indices, 'indices'));
-    }
-    
-    // ترتيب النتائج حسب الأفضلية (المطابقة الكاملة أولاً)
-    results.sort((a, b) => {
-      const aSymbol = (a.symbol || a.value || '').toLowerCase();
-      const bSymbol = (b.symbol || b.value || '').toLowerCase();
-      
-      // المطابقة الكاملة في البداية
-      if (aSymbol === searchQuery && bSymbol !== searchQuery) return -1;
-      if (bSymbol === searchQuery && aSymbol !== searchQuery) return 1;
-      
-      // المطابقة من البداية
-      if (aSymbol.startsWith(searchQuery) && !bSymbol.startsWith(searchQuery)) return -1;
-      if (bSymbol.startsWith(searchQuery) && !aSymbol.startsWith(searchQuery)) return 1;
-      
-      // ترتيب أبجدي
-      return aSymbol.localeCompare(bSymbol);
-    });
-    
-    // تحديد عدد النتائج
     const limitedResults = results.slice(0, parseInt(limit));
     
     res.json({
@@ -2375,7 +2312,8 @@ app.post('/api/search-assets', async (req, res) => {
       results: limitedResults,
       total_found: results.length,
       returned: limitedResults.length,
-      query: query
+      query: query,
+      search_type: 'direct'
     });
   } catch (error) {
     console.error('Search Assets API Error:', error);

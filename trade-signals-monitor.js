@@ -13,13 +13,9 @@ function initTradeSignalsMonitor(bot) {
   botInstance = bot;
   console.log('🔍 Trade Signals Monitor initialized');
   
-  // تحديث الأصول عند بدء التشغيل
-  console.log('🔄 جلب جميع الأصول المتوفرة...');
-  assetsManager.updateAllAssets().then(() => {
-    console.log('✅ تم تحميل جميع الأصول المتوفرة للمراقبة');
-  }).catch(err => {
-    console.error('❌ خطأ في تحميل الأصول:', err.message);
-  });
+  // البحث المباشر: لا نحتاج لتحميل جميع الأصول عند البداية
+  // سيتم جلب الأصول عند الحاجة فقط لتوفير الذاكرة وتحسين الأداء
+  console.log('✅ البحث المباشر مُفعّل - الأصول تُجلب عند الطلب');
   
   cron.schedule('*/15 * * * *', async () => {
     if (!isMonitoring) {
@@ -41,6 +37,12 @@ async function scanAllMarkets() {
   console.log('🔍 Scanning all markets for strong signals...');
   
   const signals = [];
+  
+  // تحميل الأصول فقط إذا كانت فارغة (عند أول مرة)
+  if (!assetsManager.lastUpdate || assetsManager.forexPairs.length === 0) {
+    console.log('📦 تحميل الأصول للمرة الأولى...');
+    await assetsManager.updateAllAssets();
+  }
   
   // جلب العملات الرقمية بناءً على معايير ذكية (حجم تداول، تقلب، زخم)
   const allCryptoStats = await marketData.getAllCryptoStats();

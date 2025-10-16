@@ -1,0 +1,280 @@
+const axios = require('axios');
+const cacheManager = require('./cache-manager');
+
+class DirectSearchService {
+  constructor() {
+    this.searchCache = new Map();
+    this.cacheTimeout = 300000; // 5 دقائق
+  }
+
+  async searchCryptoFromOKX(query) {
+    try {
+      const cacheKey = `crypto_search:${query.toLowerCase()}`;
+      const cached = await cacheManager.get(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      console.log(`🔍 البحث في OKX عن: ${query}`);
+      
+      const response = await axios.get('https://www.okx.com/api/v5/public/instruments', {
+        params: { instType: 'SPOT' },
+        timeout: 10000
+      });
+
+      if (response.data && response.data.data) {
+        const instruments = response.data.data;
+        const searchLower = query.toLowerCase();
+        
+        const results = instruments
+          .filter(inst => {
+            if (!inst.instId || !inst.instId.endsWith('-USDT')) return false;
+            
+            const baseCcy = (inst.baseCcy || '').toLowerCase();
+            const instId = (inst.instId || '').toLowerCase();
+            
+            return baseCcy.includes(searchLower) || 
+                   instId.includes(searchLower) ||
+                   baseCcy.startsWith(searchLower);
+          })
+          .map(inst => ({
+            symbol: inst.instId.replace('-', ''),
+            baseCcy: inst.baseCcy,
+            quoteCcy: inst.quoteCcy,
+            label: `${this.getCryptoEmoji(inst.baseCcy)} ${inst.baseCcy}`,
+            market_type: 'crypto'
+          }))
+          .slice(0, 50);
+
+        await cacheManager.set(cacheKey, results, 300);
+        console.log(`✅ تم العثور على ${results.length} عملة من OKX`);
+        return results;
+      }
+      
+      return [];
+    } catch (error) {
+      console.error('❌ خطأ في البحث في OKX:', error.message);
+      return [];
+    }
+  }
+
+  async searchStocksFromYahoo(query) {
+    try {
+      const cacheKey = `stocks_search:${query.toLowerCase()}`;
+      const cached = await cacheManager.get(cacheKey);
+      if (cached) {
+        return cached;
+      }
+
+      console.log(`🔍 البحث في Yahoo Finance عن: ${query}`);
+      
+      const searchUrl = `https://query2.finance.yahoo.com/v1/finance/search`;
+      const response = await axios.get(searchUrl, {
+        params: {
+          q: query,
+          quotesCount: 20,
+          newsCount: 0,
+          enableFuzzyQuery: false,
+          quotesQueryId: 'tss_match_phrase_query',
+          lang: 'en-US',
+          region: 'US'
+        },
+        timeout: 10000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
+
+      if (response.data && response.data.quotes) {
+        const results = response.data.quotes
+          .filter(quote => 
+            quote.quoteType === 'EQUITY' && 
+            quote.symbol &&
+            quote.exchange
+          )
+          .map(quote => ({
+            value: quote.symbol,
+            label: `📈 ${quote.shortname || quote.longname || quote.symbol}`,
+            market: quote.exchange || 'Global',
+            market_type: 'stocks'
+          }))
+          .slice(0, 20);
+
+        await cacheManager.set(cacheKey, results, 300);
+        console.log(`✅ تم العثور على ${results.length} سهم من Yahoo`);
+        return results;
+      }
+      
+      return [];
+    } catch (error) {
+      console.error('❌ خطأ في البحث في Yahoo Finance:', error.message);
+      return [];
+    }
+  }
+
+  async searchForex(query) {
+    const majorCurrencies = ['EUR', 'GBP', 'USD', 'JPY', 'AUD', 'CAD', 'NZD', 'CHF'];
+    const minorCurrencies = ['NOK', 'SEK', 'DKK', 'PLN', 'TRY', 'ZAR', 'MXN', 'SGD', 'HKD', 'THB', 'INR', 'CNY', 'KRW', 'BRL', 'RUB'];
+    const allCurrencies = [...majorCurrencies, ...minorCurrencies];
+    
+    const flags = {
+      'EUR': '🇪🇺', 'GBP': '🇬🇧', 'USD': '🇺🇸', 'JPY': '🇯🇵',
+      'AUD': '🇦🇺', 'CAD': '🇨🇦', 'NZD': '🇳🇿', 'CHF': '🇨🇭',
+      'NOK': '🇳🇴', 'SEK': '🇸🇪', 'DKK': '🇩🇰', 'PLN': '🇵🇱',
+      'TRY': '🇹🇷', 'ZAR': '🇿🇦', 'MXN': '🇲🇽', 'SGD': '🇸🇬',
+      'HKD': '🇭🇰', 'THB': '🇹🇭', 'INR': '🇮🇳', 'CNY': '🇨🇳',
+      'KRW': '🇰🇷', 'BRL': '🇧🇷', 'RUB': '🇷🇺'
+    };
+
+    const searchUpper = query.toUpperCase();
+    const results = [];
+    const validPairs = new Set();
+
+    for (let i = 0; i < allCurrencies.length; i++) {
+      for (let j = 0; j < allCurrencies.length; j++) {
+        if (i !== j) {
+          const base = allCurrencies[i];
+          const quote = allCurrencies[j];
+          const pair = base + quote;
+          const reversePair = quote + base;
+          
+          if (!validPairs.has(reversePair) && 
+              (pair.includes(searchUpper) || base.includes(searchUpper) || quote.includes(searchUpper))) {
+            results.push({
+              value: pair,
+              label: `${flags[base] || '🌐'} ${base}/${quote} ${flags[quote] || '🌐'}`,
+              market_type: 'forex'
+            });
+            validPairs.add(pair);
+          }
+        }
+      }
+    }
+
+    return results.slice(0, 30);
+  }
+
+  getCommoditiesList() {
+    return [
+      { value: 'XAUUSD', label: '🥇 الذهب (Gold)', category: 'المعادن الثمينة' },
+      { value: 'XAGUSD', label: '🥈 الفضة (Silver)', category: 'المعادن الثمينة' },
+      { value: 'COPPER', label: '🟤 النحاس (Copper)', category: 'المعادن الصناعية' },
+      { value: 'PLATINUM', label: '⚪ البلاتين (Platinum)', category: 'المعادن الثمينة' },
+      { value: 'PALLADIUM', label: '⚫ البلاديوم (Palladium)', category: 'المعادن الثمينة' },
+      
+      { value: 'USOIL', label: '🛢️ النفط الأمريكي (WTI)', category: 'الطاقة' },
+      { value: 'UKOIL', label: '🛢️ النفط البريطاني (Brent)', category: 'الطاقة' },
+      { value: 'NATGAS', label: '🔥 الغاز الطبيعي (Natural Gas)', category: 'الطاقة' },
+      { value: 'HEATING_OIL', label: '🔥 زيت التدفئة (Heating Oil)', category: 'الطاقة' },
+      
+      { value: 'CORN', label: '🌽 الذرة (Corn)', category: 'الزراعة' },
+      { value: 'WHEAT', label: '🌾 القمح (Wheat)', category: 'الزراعة' },
+      { value: 'SOYBEAN', label: '🫘 فول الصويا (Soybeans)', category: 'الزراعة' },
+      { value: 'SUGAR', label: '🍬 السكر (Sugar)', category: 'الزراعة' },
+      { value: 'COFFEE', label: '☕ القهوة (Coffee)', category: 'الزراعة' },
+      { value: 'COCOA', label: '🍫 الكاكاو (Cocoa)', category: 'الزراعة' },
+      { value: 'COTTON', label: '🧵 القطن (Cotton)', category: 'الزراعة' },
+      { value: 'RICE', label: '🍚 الأرز (Rice)', category: 'الزراعة' },
+      
+      { value: 'LIVE_CATTLE', label: '🐄 الماشية الحية (Live Cattle)', category: 'الماشية' },
+      { value: 'LEAN_HOGS', label: '🐷 الخنازير (Lean Hogs)', category: 'الماشية' }
+    ].map(item => ({ ...item, market_type: 'commodities' }));
+  }
+
+  getIndicesList() {
+    return [
+      { value: 'US30', label: '🇺🇸 داو جونز (Dow Jones)', region: 'USA' },
+      { value: 'SPX500', label: '🇺🇸 S&P 500', region: 'USA' },
+      { value: 'NAS100', label: '🇺🇸 ناسداك (Nasdaq)', region: 'USA' },
+      { value: 'US500', label: '🇺🇸 US 500', region: 'USA' },
+      { value: 'DJ30', label: '🇺🇸 DJ 30', region: 'USA' },
+      
+      { value: 'UK100', label: '🇬🇧 FTSE 100', region: 'UK' },
+      { value: 'GER40', label: '🇩🇪 DAX 40', region: 'Germany' },
+      { value: 'FRA40', label: '🇫🇷 CAC 40', region: 'France' },
+      { value: 'ESP35', label: '🇪🇸 IBEX 35', region: 'Spain' },
+      { value: 'ITA40', label: '🇮🇹 FTSE MIB', region: 'Italy' },
+      { value: 'EU50', label: '🇪🇺 Euro Stoxx 50', region: 'Europe' },
+      
+      { value: 'JPN225', label: '🇯🇵 Nikkei 225', region: 'Japan' },
+      { value: 'HK50', label: '🇭🇰 Hang Seng', region: 'Hong Kong' },
+      { value: 'CHINA50', label: '🇨🇳 China A50', region: 'China' },
+      { value: 'AUS200', label: '🇦🇺 ASX 200', region: 'Australia' },
+      { value: 'SING30', label: '🇸🇬 STI', region: 'Singapore' },
+      
+      { value: 'VIX', label: '📊 VIX (مؤشر الخوف)', region: 'Volatility' },
+      { value: 'RUSSELL2000', label: '🇺🇸 Russell 2000', region: 'USA' }
+    ].map(item => ({ ...item, market_type: 'indices' }));
+  }
+
+  async search(query, marketType = null) {
+    try {
+      const searchLower = query.toLowerCase().trim();
+      let allResults = [];
+
+      if (!marketType || marketType === 'crypto') {
+        const cryptoResults = await this.searchCryptoFromOKX(searchLower);
+        allResults = allResults.concat(cryptoResults);
+      }
+
+      if (!marketType || marketType === 'stocks') {
+        const stockResults = await this.searchStocksFromYahoo(searchLower);
+        allResults = allResults.concat(stockResults);
+      }
+
+      if (!marketType || marketType === 'forex') {
+        const forexResults = this.searchForex(searchLower);
+        allResults = allResults.concat(forexResults);
+      }
+
+      if (!marketType || marketType === 'commodities') {
+        const commodities = this.getCommoditiesList();
+        const commodityResults = commodities.filter(c => 
+          c.value.toLowerCase().includes(searchLower) ||
+          c.label.toLowerCase().includes(searchLower)
+        );
+        allResults = allResults.concat(commodityResults);
+      }
+
+      if (!marketType || marketType === 'indices') {
+        const indices = this.getIndicesList();
+        const indexResults = indices.filter(i => 
+          i.value.toLowerCase().includes(searchLower) ||
+          i.label.toLowerCase().includes(searchLower)
+        );
+        allResults = allResults.concat(indexResults);
+      }
+
+      allResults.sort((a, b) => {
+        const aSymbol = (a.symbol || a.value || '').toLowerCase();
+        const bSymbol = (b.symbol || b.value || '').toLowerCase();
+        
+        if (aSymbol === searchLower && bSymbol !== searchLower) return -1;
+        if (bSymbol === searchLower && aSymbol !== searchLower) return 1;
+        
+        if (aSymbol.startsWith(searchLower) && !bSymbol.startsWith(searchLower)) return -1;
+        if (bSymbol.startsWith(searchLower) && !aSymbol.startsWith(searchLower)) return 1;
+        
+        return aSymbol.localeCompare(bSymbol);
+      });
+
+      console.log(`✅ إجمالي النتائج للبحث "${query}": ${allResults.length}`);
+      return allResults;
+    } catch (error) {
+      console.error('❌ خطأ في البحث المباشر:', error.message);
+      throw error;
+    }
+  }
+
+  getCryptoEmoji(symbol) {
+    const emojiMap = {
+      'BTC': '₿', 'ETH': 'Ξ', 'BNB': '🟡', 'XRP': '💧', 'ADA': '🔷',
+      'DOGE': '🐕', 'SOL': '☀️', 'DOT': '⚫', 'MATIC': '🟣', 'LTC': 'Ł',
+      'AVAX': '🔺', 'LINK': '🔗', 'UNI': '🦄', 'ATOM': '⚛️', 'XLM': '🚀',
+      'SHIB': '🐕', 'TRX': '🌐', 'TON': '💎', 'PEPE': '🐸', 'WIF': '🐶'
+    };
+    return emojiMap[symbol] || '💰';
+  }
+}
+
+module.exports = new DirectSearchService();
