@@ -1,4 +1,4 @@
-const requiredEnvVars = ['BOT_TOKEN', 'MONGODB_PASSWORD', 'OWNER_ID', 'MONGODB_USER'];
+const requiredEnvVars = ['BOT_TOKEN', 'MONGODB_PASSWORD', 'OWNER_ID', 'MONGODB_USER', 'MONGODB_CLUSTER', 'CHANNEL_ID'];
 
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
@@ -11,7 +11,7 @@ module.exports = {
   BOT_TOKEN: process.env.BOT_TOKEN,
   OWNER_ID: parseInt(process.env.OWNER_ID),
   CHANNEL_USERNAME: process.env.CHANNEL_USERNAME || '@ME_MAGDY_TRADING',
-  CHANNEL_ID: parseInt(process.env.CHANNEL_ID || '-1002776929451'),
+  CHANNEL_ID: parseInt(process.env.CHANNEL_ID),
   
   BOT_WALLET_ADDRESS: process.env.BOT_WALLET_ADDRESS || 'TCZwoWnmi8uBssqjtKGmUwAjToAxcJkjLP',
   
@@ -22,7 +22,7 @@ module.exports = {
   WITHDRAWAL_FEE: parseInt(process.env.WITHDRAWAL_FEE) || 1,
   FREE_TRIAL_DAYS: parseInt(process.env.FREE_TRIAL_DAYS) || 7,
   
-  MONGODB_URI: `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@cluster0.m97dto9.mongodb.net/obentchi_bot?retryWrites=true&w=majority&appName=Cluster0`,
+  MONGODB_URI: `mongodb+srv://${process.env.MONGODB_USER}:${process.env.MONGODB_PASSWORD}@${process.env.MONGODB_CLUSTER}/obentchi_bot?retryWrites=true&w=majority&appName=Cluster0`,
   MONGODB_DB_NAME: process.env.MONGODB_DB_NAME || 'obentchi_bot',
   
   PROXY_URL: process.env.PROXY_URL || null,
