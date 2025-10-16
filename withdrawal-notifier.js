@@ -1,7 +1,6 @@
 const bot = require('./bot');
 const config = require('./config');
 const pino = require('pino');
-const { getFailedWithdrawals } = require('./withdrawal-queue');
 const { safeSendMessage } = require('./safe-message');
 
 const logger = pino({
@@ -148,6 +147,7 @@ async function notifyUserDelayedWithdrawal(userId, amount) {
  */
 async function checkAndNotifyFailedWithdrawals() {
   try {
+    const { getFailedWithdrawals } = require('./withdrawal-queue');
     const failedWithdrawals = await getFailedWithdrawals();
     
     if (failedWithdrawals.length === 0) {

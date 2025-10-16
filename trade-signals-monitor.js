@@ -44,11 +44,8 @@ async function scanAllMarkets() {
     await assetsManager.updateAllAssets();
   }
   
-  // جلب العملات الرقمية بناءً على معايير ذكية (حجم تداول، تقلب، زخم)
-  const allCryptoStats = await marketData.getAllCryptoStats();
-  const cryptoSample = marketData.getSmartCryptoSelection(allCryptoStats, 50);
-  
-  // الأسواق الأخرى تبقى بعينة عشوائية (أقل أهمية)
+  // استخدام عينات عشوائية من جميع الأسواق
+  const cryptoSample = getRandomSample(assetsManager.cryptoAssets.map(a => a.symbol), 50);
   const forexSample = getRandomSample(assetsManager.forexPairs.map(a => a.value), 30);
   const stocksSample = getRandomSample(assetsManager.stocks.map(a => a.value), 40);
   const commoditiesSample = getRandomSample(assetsManager.commodities.map(a => a.value), 20);
