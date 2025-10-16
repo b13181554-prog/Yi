@@ -2247,6 +2247,37 @@ app.post('/api/analyze-master', async (req, res) => {
   }
 });
 
+app.post('/api/scan-best-signals', async (req, res) => {
+  try {
+    const { market_type, analysis_type, timeframe, max_results, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const SignalScanner = require('./signal-scanner');
+    const scanner = new SignalScanner();
+    
+    const bestSignals = await scanner.scanBestSignals(
+      market_type || 'crypto',
+      analysis_type || 'zero-reversal',
+      timeframe || '1h',
+      max_results || 10
+    );
+    
+    res.json({
+      success: true,
+      signals: bestSignals,
+      scanned_market: market_type || 'crypto',
+      analysis_type: analysis_type || 'zero-reversal',
+      timeframe: timeframe || '1h'
+    });
+  } catch (error) {
+    console.error('Signal Scanner API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/all-assets', async (req, res) => {
   try {
     const { init_data, force_update } = req.body;
