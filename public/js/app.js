@@ -2032,6 +2032,148 @@ async function analyzeMarketAdvanced() {
     }
 }
 
+async function scanBestSignals() {
+    const marketType = document.getElementById('market-type').value;
+    const timeframe = document.getElementById('timeframe').value;
+    const analysisType = selectedAnalysisType;
+    
+    const resultDiv = document.getElementById('analysis-result');
+    resultDiv.style.display = 'none';
+    
+    const loadingMsg = document.createElement('div');
+    loadingMsg.className = 'loading';
+    loadingMsg.innerHTML = '<div class="spinner"></div><p>🔍 جاري البحث عن أفضل الصفقات...</p>';
+    document.getElementById('analysis-section').appendChild(loadingMsg);
+    
+    try {
+        const response = await fetch('/api/scan-best-signals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                market_type: marketType,
+                analysis_type: analysisType,
+                timeframe: timeframe,
+                max_results: 10,
+                init_data: tg.initData
+            })
+        });
+        
+        const data = await response.json();
+        loadingMsg.remove();
+        
+        if (data.success && data.signals && data.signals.length > 0) {
+            displayBestSignalsResult(data.signals, data.scanned_market, data.analysis_type, data.timeframe);
+        } else {
+            alert('⚠️ لم يتم العثور على صفقات قوية حالياً\n\nجرب:\n• تغيير نوع السوق\n• تغيير نوع التحليل\n• تغيير الإطار الزمني');
+        }
+    } catch (error) {
+        loadingMsg.remove();
+        console.error('Error scanning signals:', error);
+        alert('❌ حدث خطأ أثناء البحث: ' + error.message);
+    }
+}
+
+function displayBestSignalsResult(signals, marketType, analysisType, timeframe) {
+    const resultDiv = document.getElementById('analysis-result');
+    const recCard = document.getElementById('recommendation-card');
+    
+    const marketEmoji = marketType === 'crypto' ? '💎' : 
+                       marketType === 'forex' ? '💱' : 
+                       marketType === 'stocks' ? '📈' : 
+                       marketType === 'commodities' ? '🛢️' : '📊';
+    
+    const marketText = marketType === 'crypto' ? 'عملات رقمية' : 
+                      marketType === 'forex' ? 'فوركس' : 
+                      marketType === 'stocks' ? 'أسهم' : 
+                      marketType === 'commodities' ? 'سلع' : 'مؤشرات';
+    
+    const analysisText = analysisType === 'ultra' ? 'Ultra' : 
+                        analysisType === 'zero-reversal' ? 'Zero Reversal' :
+                        analysisType === 'v1-pro' ? 'V1 PRO AI' : 
+                        analysisType === 'master' ? 'MASTER' : 'Regular';
+    
+    let html = `
+        <div class="rec-header" style="background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px;">
+            <h2>🔍 أفضل ${signals.length} صفقات</h2>
+            <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">
+                ${marketEmoji} ${marketText} | ${analysisText} | ⏰ ${timeframe}
+            </p>
+        </div>
+    `;
+    
+    signals.forEach((signal, index) => {
+        const actionEmoji = signal.action === 'شراء' || signal.action === 'BUY' ? '🟢' : '🔴';
+        const actionText = signal.action === 'شراء' || signal.action === 'BUY' ? 'شراء' : 'بيع';
+        
+        html += `
+            <div class="signal-card" style="border: 2px solid ${signal.action === 'شراء' || signal.action === 'BUY' ? '#00ff00' : '#ff0000'}; border-radius: 12px; padding: 15px; margin-bottom: 15px; background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.2) 100%);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="margin: 0; font-size: 18px;">${actionEmoji} #${index + 1} - ${signal.symbol}</h3>
+                    <div style="background: ${signal.action === 'شراء' || signal.action === 'BUY' ? '#00ff00' : '#ff0000'}; color: black; padding: 5px 12px; border-radius: 8px; font-weight: bold; font-size: 14px;">
+                        ${actionText}
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
+                    <div>
+                        <strong>💪 الثقة:</strong> ${signal.confidence}
+                    </div>
+                    <div>
+                        <strong>📊 الاتفاق:</strong> ${signal.agreementPercentage?.toFixed(0) || 0}%
+                    </div>
+                    <div>
+                        <strong>💰 الدخول:</strong> $${parseFloat(signal.entryPrice).toFixed(2)}
+                    </div>
+                    <div>
+                        <strong>🎯 الهدف:</strong> $${parseFloat(signal.takeProfit).toFixed(2)}
+                    </div>
+                    <div>
+                        <strong>🛑 الإيقاف:</strong> $${parseFloat(signal.stopLoss).toFixed(2)}
+                    </div>
+                    <div>
+                        <strong>⚖️ R/R:</strong> ${signal.riskReward || 'N/A'}
+                    </div>
+                </div>
+                
+                ${signal.reasons && signal.reasons.length > 0 ? `
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2);">
+                        <strong style="font-size: 13px;">📌 أسباب:</strong>
+                        <ul style="margin: 5px 0 0 0; padding-right: 20px; font-size: 12px;">
+                            ${signal.reasons.map(r => `<li>${r}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+                
+                <button onclick="copySignalToClipboard('${signal.symbol}', '${actionText}', '${signal.entryPrice}', '${signal.stopLoss}', '${signal.takeProfit}')" style="margin-top: 10px; width: 100%; padding: 10px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; cursor: pointer; font-weight: bold;">
+                    📋 نسخ الصفقة
+                </button>
+            </div>
+        `;
+    });
+    
+    recCard.innerHTML = html;
+    document.getElementById('indicators-details').innerHTML = '';
+    resultDiv.style.display = 'block';
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function copySignalToClipboard(symbol, action, entry, sl, tp) {
+    const text = `
+📊 ${symbol}
+${action === 'شراء' ? '🟢' : '🔴'} ${action}
+
+💰 الدخول: $${entry}
+🛑 الإيقاف: $${sl}
+🎯 الهدف: $${tp}
+    `.trim();
+    
+    navigator.clipboard.writeText(text).then(() => {
+        alert('✅ تم نسخ الصفقة!');
+    }).catch(() => {
+        alert('❌ فشل النسخ');
+    });
+}
+
 function displayAdvancedAnalysisResult(analysis, symbol, timeframe, analysisType) {
     const resultDiv = document.getElementById('analysis-result');
     const recCard = document.getElementById('recommendation-card');
