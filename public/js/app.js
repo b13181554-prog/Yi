@@ -4847,42 +4847,75 @@ function addScannerSignal(signal) {
                        signal.marketType === 'stocks' ? '📈' : 
                        signal.marketType === 'commodities' ? '🛢️' : '📊';
     
+    const analysisTypeText = signal.analysisType === 'zero-reversal' ? '⛔ Zero Reversal' :
+                            signal.analysisType === 'ultra' ? '💎 Ultra Analysis' :
+                            signal.analysisType === 'v1-pro' ? '🤖 V1 PRO AI' :
+                            signal.analysisType === 'master' ? '👑 Master' : '📊 عادي';
+    
     const signalCard = document.createElement('div');
     signalCard.className = 'signal-card';
     signalCard.style.cssText = `
         border: 2px solid ${actionColor};
-        border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 15px;
-        background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.2) 100%);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, #1e1e2e 0%, #2d2d3e 100%);
         animation: slideIn 0.5s ease-out;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
     `;
     
+    // تجهيز نص التوصية الكامل للنسخ
+    const copyText = `
+🔍 ${marketEmoji} ${signal.symbol} - ${analysisTypeText}
+
+${actionEmoji} التوصية: ${actionText}
+💪 الثقة: ${confidenceText}
+📊 نسبة الاتفاق: ${agreementText}
+
+💰 سعر الدخول: $${parseFloat(signal.entryPrice).toFixed(2)}
+🎯 الهدف: $${parseFloat(signal.takeProfit).toFixed(2)}
+🛑 وقف الخسارة: $${parseFloat(signal.stopLoss).toFixed(2)}
+⚖️ نسبة المخاطرة/العائد: ${signal.riskReward || 'N/A'}
+⏰ الإطار الزمني: ${signal.timeframe}
+
+${signal.reasons && signal.reasons.length > 0 ? '📌 الأسباب:\n' + signal.reasons.map((r, i) => `${i+1}. ${r}`).join('\n') : ''}
+`.trim();
+    
     signalCard.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h3 style="margin: 0; font-size: 18px;">${actionEmoji} #${signalCount} - ${marketEmoji} ${signal.symbol}</h3>
-            <div style="background: ${actionColor}; color: black; padding: 5px 12px; border-radius: 8px; font-weight: bold; font-size: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div>
+                <h3 style="margin: 0 0 5px 0; font-size: 20px; color: ${actionColor};">${actionEmoji} ${marketEmoji} ${signal.symbol}</h3>
+                <span style="font-size: 12px; color: #888;">${analysisTypeText} • ${signal.timeframe}</span>
+            </div>
+            <div style="background: ${actionColor}; color: black; padding: 8px 16px; border-radius: 10px; font-weight: bold; font-size: 16px;">
                 ${actionText}
             </div>
         </div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; color: #fff;">
-            <div><strong>💪 الثقة:</strong> ${confidenceText}</div>
-            <div><strong>📊 الاتفاق:</strong> ${agreementText}</div>
-            <div><strong>💰 الدخول:</strong> $${parseFloat(signal.entryPrice).toFixed(2)}</div>
-            <div><strong>🎯 الهدف:</strong> $${parseFloat(signal.takeProfit).toFixed(2)}</div>
-            <div><strong>🛑 الإيقاف:</strong> $${parseFloat(signal.stopLoss).toFixed(2)}</div>
-            <div><strong>⚖️ R/R:</strong> ${signal.riskReward || 'N/A'}</div>
+        <div style="background: rgba(255,255,255,0.05); border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 14px; color: #fff;">
+                <div><strong>💪 الثقة:</strong> <span style="color: #00D9FF;">${confidenceText}</span></div>
+                <div><strong>📊 الاتفاق:</strong> <span style="color: #A855F7;">${agreementText}</span></div>
+                <div><strong>💰 الدخول:</strong> <span style="color: #fff;">$${parseFloat(signal.entryPrice).toFixed(4)}</span></div>
+                <div><strong>🎯 الهدف:</strong> <span style="color: #00ff00;">$${parseFloat(signal.takeProfit).toFixed(4)}</span></div>
+                <div><strong>🛑 الإيقاف:</strong> <span style="color: #ff0000;">$${parseFloat(signal.stopLoss).toFixed(4)}</span></div>
+                <div><strong>⚖️ R/R:</strong> <span style="color: #ffd700;">${signal.riskReward || 'N/A'}</span></div>
+            </div>
         </div>
         
         ${signal.reasons && signal.reasons.length > 0 ? `
-            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2);">
-                <strong style="font-size: 13px; color: #fff;">📌 أسباب:</strong>
-                <ul style="margin: 5px 0 0 0; padding-right: 20px; font-size: 12px; color: #ddd;">
+            <div style="background: rgba(255,255,255,0.03); border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                <strong style="font-size: 14px; color: #fff;">📌 أسباب الإشارة:</strong>
+                <ul style="margin: 10px 0 0 0; padding-right: 25px; font-size: 13px; color: #ddd; line-height: 1.8;">
                     ${signal.reasons.map(r => `<li>${r}</li>`).join('')}
                 </ul>
             </div>
         ` : ''}
+        
+        <button onclick="navigator.clipboard.writeText(\`${copyText.replace(/`/g, '\\`')}\`); alert('تم نسخ التوصية! ✅')" 
+                style="width: 100%; padding: 12px; background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%); border: none; color: white; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; transition: transform 0.2s;">
+            📋 نسخ التوصية الكاملة
+        </button>
     `;
     
     container.insertBefore(signalCard, container.firstChild);

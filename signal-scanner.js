@@ -156,25 +156,55 @@ class SignalScanner {
   }
 
   isStrongSignal(recommendation, analysisType) {
+    // معايير مرنة لإعطاء نتائج أفضل
+    if (!recommendation) return false;
+    
+    const action = recommendation.action || recommendation.finalSignal;
+    if (!action || (action !== 'شراء' && action !== 'بيع' && action !== 'BUY' && action !== 'SELL')) {
+      return false;
+    }
+    
     switch (analysisType) {
       case 'ultra':
-        // Ultra: يجب أن تكون الثقة عالية جداً أو عالية
-        return recommendation.confidence === 'عالية جداً - يمكن التداول' || 
-               recommendation.confidence === 'عالية - يمكن التداول';
+        // Ultra: أي إشارة بثقة متوسطة أو أعلى
+        if (recommendation.confidence) {
+          return recommendation.confidence.includes('عالية') || 
+                 recommendation.confidence.includes('متوسطة') ||
+                 recommendation.confidence.includes('مضمونة');
+        }
+        return recommendation.agreementPercentage >= 50;
       
       case 'zero-reversal':
-        // Zero Reversal: يجب أن تكون الثقة عالية جداً
-        return recommendation.confidence === 'عالية جداً - صفقة آمنة' ||
-               recommendation.confidence === 'عالية - صفقة جيدة';
+        // Zero Reversal: أي إشارة بثقة متوسطة أو أعلى
+        if (recommendation.confidence) {
+          return recommendation.confidence.includes('عالية') || 
+                 recommendation.confidence.includes('متوسطة') ||
+                 recommendation.confidence.includes('جيدة') ||
+                 recommendation.confidence.includes('آمنة');
+        }
+        return true; // Zero Reversal يعطي فقط إشارات قوية
       
       case 'v1-pro':
-        // V1 Pro: يجب أن تكون الثقة أعلى من 70%
-        return recommendation.confidenceScore >= 0.7;
+        // V1 Pro: ثقة أعلى من 40%
+        return recommendation.confidenceScore >= 0.4;
+      
+      case 'master':
+        // Master: أي إشارة بثقة متوسطة أو أعلى
+        if (recommendation.confidence) {
+          return recommendation.confidence.includes('عالية') || 
+                 recommendation.confidence.includes('متوسطة') ||
+                 recommendation.confidence.includes('مضمونة');
+        }
+        return recommendation.agreementPercentage >= 50;
       
       default:
-        // Regular: يجب أن تكون الثقة عالية أو مضمونة
-        return recommendation.confidence === 'عالية - يمكن التداول' || 
-               recommendation.confidence === 'مضمونة - يمكن التداول';
+        // Regular: اتفاق 50% أو أعلى
+        if (recommendation.confidence) {
+          return recommendation.confidence.includes('عالية') || 
+                 recommendation.confidence.includes('متوسطة') ||
+                 recommendation.confidence.includes('مضمونة');
+        }
+        return recommendation.agreementPercentage >= 50;
     }
   }
 
@@ -377,6 +407,11 @@ class SignalScanner {
           case 'v1-pro':
             analysis = new V1ProAnalysis(candles);
             recommendation = await analysis.getCompleteAnalysis(currentMarketType, 'spot', timeframe);
+            break;
+          case 'master':
+            const MasterAnalysis = require('./master-analysis');
+            analysis = new MasterAnalysis(candles, symbol, timeframe, currentMarketType);
+            recommendation = await analysis.getMasterAnalysis('spot');
             break;
           default:
             analysis = new TechnicalAnalysis(candles);
