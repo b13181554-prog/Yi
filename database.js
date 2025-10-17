@@ -1581,18 +1581,6 @@ async function getSubscriptionById(subscriptionId) {
   return await db.collection('analyst_subscriptions').findOne({ _id: new ObjectId(subscriptionId) });
 }
 
-async function cancelSubscription(subscriptionId) {
-  await db.collection('analyst_subscriptions').updateOne(
-    { _id: new ObjectId(subscriptionId) },
-    {
-      $set: {
-        status: 'cancelled',
-        cancelled_at: new Date()
-      }
-    }
-  );
-}
-
 async function toggleNotifications(userId, enabled) {
   await db.collection('users').updateOne(
     { user_id: userId },
@@ -1641,48 +1629,6 @@ async function getPumpSubscription(userId) {
   });
 }
 
-async function cancelPumpSubscription(userId) {
-  const subscription = await db.collection('pump_subscriptions').findOne({
-    user_id: userId,
-    status: 'active'
-  });
-
-  if (!subscription) {
-    throw new Error('لا يوجد اشتراك نشط');
-  }
-
-  const now = new Date();
-  const startDate = new Date(subscription.start_date);
-  const endDate = new Date(subscription.end_date);
-  const daysLeft = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
-  const totalDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-  const refundAmount = totalDuration > 0 ? Math.round((daysLeft / totalDuration) * subscription.amount * 100) / 100 : 0;
-
-  await db.collection('pump_subscriptions').updateOne(
-    { user_id: userId, status: 'active' },
-    {
-      $set: {
-        status: 'cancelled',
-        cancelled_at: new Date(),
-        refunded_amount: refundAmount,
-        days_left_at_cancel: daysLeft
-      }
-    }
-  );
-
-  if (refundAmount > 0) {
-    await updateUserBalance(userId, refundAmount);
-    
-    const config = require('./config');
-    await updateUserBalance(config.OWNER_ID, -refundAmount);
-  }
-
-  return {
-    refunded_amount: refundAmount,
-    days_left: daysLeft
-  };
-}
-
 async function subscribeToVIPSearch(userId, amount) {
   const endDate = new Date();
   endDate.setMonth(endDate.getMonth() + 1);
@@ -1719,48 +1665,6 @@ async function getVIPSearchSubscription(userId) {
   return {
     ...subscription,
     active: true,
-    days_left: daysLeft
-  };
-}
-
-async function cancelVIPSearchSubscription(userId) {
-  const subscription = await db.collection('vip_search_subscriptions').findOne({
-    user_id: userId,
-    status: 'active'
-  });
-
-  if (!subscription) {
-    throw new Error('لا يوجد اشتراك VIP Search نشط');
-  }
-
-  const now = new Date();
-  const startDate = new Date(subscription.start_date);
-  const endDate = new Date(subscription.end_date);
-  const daysLeft = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
-  const totalDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-  const refundAmount = totalDuration > 0 ? Math.round((daysLeft / totalDuration) * subscription.amount * 100) / 100 : 0;
-
-  await db.collection('vip_search_subscriptions').updateOne(
-    { user_id: userId, status: 'active' },
-    {
-      $set: {
-        status: 'cancelled',
-        cancelled_at: new Date(),
-        refunded_amount: refundAmount,
-        days_left_at_cancel: daysLeft
-      }
-    }
-  );
-
-  if (refundAmount > 0) {
-    await updateUserBalance(userId, refundAmount);
-    
-    const config = require('./config');
-    await updateUserBalance(config.OWNER_ID, -refundAmount);
-  }
-
-  return {
-    refunded_amount: refundAmount,
     days_left: daysLeft
   };
 }
@@ -1981,16 +1885,13 @@ module.exports = {
   deductFromAnalystAvailableBalance,
   getUsersSubscribedToAnalyst,
   getSubscriptionById,
-  cancelSubscription,
   toggleNotifications,
   updateNotificationMarkets,
   getNotificationSettings,
   subscribeToPumpAnalysis,
   getPumpSubscription,
-  cancelPumpSubscription,
   subscribeToVIPSearch,
   getVIPSearchSubscription,
-  cancelVIPSearchSubscription,
   createCryptAPIPayment,
   getCryptAPIPayment,
   getCryptAPIPaymentByUser,
