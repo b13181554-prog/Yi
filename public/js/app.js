@@ -4715,6 +4715,183 @@ function getScoreClass(score) {
     return 'score-poor';
 }
 
+// ========== الماسح الذكي ==========
+let scannerRunning = false;
+let scannerAborted = false;
+
+async function startSmartScanner() {
+    const marketType = document.getElementById('scanner-market-type').value;
+    const analysisType = document.getElementById('scanner-analysis-type').value;
+    const timeframe = document.getElementById('scanner-timeframe').value;
+    
+    document.getElementById('start-scanner-btn').style.display = 'none';
+    document.getElementById('stop-scanner-btn').style.display = 'block';
+    document.getElementById('scanner-progress').style.display = 'block';
+    document.getElementById('scanner-results').style.display = 'block';
+    document.getElementById('scanner-results-container').innerHTML = '';
+    
+    scannerRunning = true;
+    scannerAborted = false;
+    
+    try {
+        const response = await fetch('/api/smart-scanner', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                market_type: marketType,
+                analysis_type: analysisType,
+                timeframe: timeframe,
+                init_data: tg.initData
+            })
+        });
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        
+        while (scannerRunning && !scannerAborted) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+            
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const data = JSON.parse(line.substring(6));
+                        handleScannerUpdate(data);
+                    } catch (e) {
+                        console.error('Failed to parse SSE data:', e);
+                    }
+                }
+            }
+        }
+        
+        if (scannerAborted) {
+            reader.cancel();
+        }
+    } catch (error) {
+        console.error('Scanner error:', error);
+        alert('❌ حدث خطأ في الماسح: ' + error.message);
+    } finally {
+        scannerRunning = false;
+        document.getElementById('start-scanner-btn').style.display = 'block';
+        document.getElementById('stop-scanner-btn').style.display = 'none';
+    }
+}
+
+function stopSmartScanner() {
+    scannerAborted = true;
+    scannerRunning = false;
+    document.getElementById('scanner-status').textContent = 'متوقف';
+    document.getElementById('start-scanner-btn').style.display = 'block';
+    document.getElementById('stop-scanner-btn').style.display = 'none';
+}
+
+function handleScannerUpdate(data) {
+    if (data.type === 'progress') {
+        document.getElementById('scanned-count').textContent = data.scanned;
+        document.getElementById('total-count').textContent = data.total;
+        document.getElementById('signals-found').textContent = data.signalsFound;
+        
+        const percentage = (data.scanned / data.total) * 100;
+        document.getElementById('scanner-progress-bar').style.width = percentage + '%';
+        
+        if (data.timeRemaining) {
+            const mins = Math.floor(data.timeRemaining / 60);
+            const secs = data.timeRemaining % 60;
+            document.getElementById('time-remaining').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        if (data.currentSymbol) {
+            document.getElementById('scanner-status').textContent = `فحص ${data.currentSymbol}...`;
+        }
+    } else if (data.type === 'signal') {
+        addScannerSignal(data.signal);
+    } else if (data.type === 'complete') {
+        document.getElementById('scanner-status').textContent = `✅ اكتمل - وجد ${data.totalSignals} إشارة`;
+        scannerRunning = false;
+        document.getElementById('start-scanner-btn').style.display = 'block';
+        document.getElementById('stop-scanner-btn').style.display = 'none';
+    } else if (data.type === 'error') {
+        document.getElementById('scanner-status').textContent = '❌ خطأ';
+        alert('❌ ' + data.message);
+        stopSmartScanner();
+    }
+}
+
+function addScannerSignal(signal) {
+    const container = document.getElementById('scanner-results-container');
+    const signalCount = container.children.length + 1;
+    
+    const actionEmoji = signal.action === 'شراء' || signal.action === 'BUY' ? '🟢' : '🔴';
+    const actionText = signal.action === 'شراء' || signal.action === 'BUY' ? 'شراء' : 'بيع';
+    const actionColor = signal.action === 'شراء' || signal.action === 'BUY' ? '#00ff00' : '#ff0000';
+    
+    let confidenceText = signal.confidence || 'متوسطة';
+    if (typeof signal.confidenceScore === 'number' && isFinite(signal.confidenceScore)) {
+        confidenceText = `${(signal.confidenceScore * 100).toFixed(0)}%`;
+    }
+    
+    let agreementText = '0%';
+    if (typeof signal.agreementPercentage === 'number' && isFinite(signal.agreementPercentage)) {
+        agreementText = `${signal.agreementPercentage.toFixed(0)}%`;
+    } else if (typeof signal.confidenceScore === 'number' && isFinite(signal.confidenceScore)) {
+        agreementText = `${(signal.confidenceScore * 100).toFixed(0)}%`;
+    }
+    
+    const marketEmoji = signal.marketType === 'crypto' ? '💎' : 
+                       signal.marketType === 'forex' ? '💱' : 
+                       signal.marketType === 'stocks' ? '📈' : 
+                       signal.marketType === 'commodities' ? '🛢️' : '📊';
+    
+    const signalCard = document.createElement('div');
+    signalCard.className = 'signal-card';
+    signalCard.style.cssText = `
+        border: 2px solid ${actionColor};
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.2) 100%);
+        animation: slideIn 0.5s ease-out;
+    `;
+    
+    signalCard.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="margin: 0; font-size: 18px;">${actionEmoji} #${signalCount} - ${marketEmoji} ${signal.symbol}</h3>
+            <div style="background: ${actionColor}; color: black; padding: 5px 12px; border-radius: 8px; font-weight: bold; font-size: 14px;">
+                ${actionText}
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; color: #fff;">
+            <div><strong>💪 الثقة:</strong> ${confidenceText}</div>
+            <div><strong>📊 الاتفاق:</strong> ${agreementText}</div>
+            <div><strong>💰 الدخول:</strong> $${parseFloat(signal.entryPrice).toFixed(2)}</div>
+            <div><strong>🎯 الهدف:</strong> $${parseFloat(signal.takeProfit).toFixed(2)}</div>
+            <div><strong>🛑 الإيقاف:</strong> $${parseFloat(signal.stopLoss).toFixed(2)}</div>
+            <div><strong>⚖️ R/R:</strong> ${signal.riskReward || 'N/A'}</div>
+        </div>
+        
+        ${signal.reasons && signal.reasons.length > 0 ? `
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2);">
+                <strong style="font-size: 13px; color: #fff;">📌 أسباب:</strong>
+                <ul style="margin: 5px 0 0 0; padding-right: 20px; font-size: 12px; color: #ddd;">
+                    ${signal.reasons.map(r => `<li>${r}</li>`).join('')}
+                </ul>
+            </div>
+        ` : ''}
+    `;
+    
+    container.insertBefore(signalCard, container.firstChild);
+    
+    if (container.children.length > 20) {
+        container.removeChild(container.lastChild);
+    }
+}
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
