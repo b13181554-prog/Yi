@@ -48,15 +48,30 @@ All analysis systems include risk assessment, precise Stop Loss & Take Profit, a
 ### Feature Specifications
 The platform offers a comprehensive Web App for technical analysis, top movers, a wallet for USDT TRC20 deposits/withdrawals, analyst subscriptions, and account management. Trading features include technical analysis for crypto, forex, stocks, indices, and commodities, alongside recommendations and trending cryptocurrency tracking. Financial functionalities include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management encompasses an analyst subscription system and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, withdrawal processing, transaction viewing, referral tracking, and mass messaging. Automated trade signal monitoring checks markets every 15 minutes for strong opportunities (70%+ indicator agreement) and sends instant notifications. The withdrawal system features robust security with transaction-safe refunding. The analysis system provides high-quality trade signals, including an advanced blockchain-based pump detection system. Notification settings are customizable. The system provides comprehensive asset coverage, including 1000+ cryptocurrencies, 400+ forex pairs, 140+ global stocks, 40+ commodities, and 50+ global indices. Pump analysis is integrated, and prorated refunds are handled for subscription cancellations.
 
-**Smart Multi-Market Scanner** (October 2025):
+**VIP Smart Search System** (October 17, 2025):
+- **Premium Subscription Service**: Monthly subscription at 10 USDT for exclusive access to advanced search capabilities
+- **Advanced Search Features**: 
+  - Parallel multi-source searching across all markets (crypto, forex, stocks, commodities, indices)
+  - Intelligent fuzzy matching for symbol discovery
+  - Smart filtering with relevance scoring (100 points for exact match, 75 for starts-with, 50 for contains, 25 for description match)
+  - VIP-only enhanced sorting and ranking algorithms
+- **Access Control**: Server-side subscription verification on all VIP endpoints (/api/search-assets, /api/smart-scanner)
+- **User Experience**: Real-time subscription status display, subscribe/cancel functionality with pro-rated refunds
+- **Multi-Language Support**: Full translation coverage across 7 languages (Arabic, English, French, Spanish, German, Russian, Chinese)
+- **Security**: Telegram WebApp data verification, user_id validation, active subscription checks before granting VIP features
+- **Database Schema**: MongoDB collection 'vip_search_subscriptions' with status tracking, dates, and automatic refund calculations
+- **Documentation**: Comprehensive VIP_SEARCH_README.md with feature details, pricing, API usage, and system architecture
+
+**Smart Multi-Market Scanner** (October 2025 - VIP Feature):
 - **Dynamic Symbol Discovery**: Automatically fetches and scans ALL available symbols from assets-manager (1000+ cryptocurrencies, 400+ forex pairs, 140+ stocks, 40+ commodities, 50+ indices)
 - **Real-Time Progress Tracking**: Server-Sent Events (SSE) stream live updates showing scan progress, current symbol being analyzed, signals found, and estimated time remaining
 - **Multi-Analysis Support**: Compatible with all analysis types (Ultra, Zero Reversal, V1 Pro, Regular, Master)
 - **Market Filtering**: Scan specific markets (crypto, forex, stocks, commodities, indices) or all markets simultaneously
 - **Live Results Display**: Signals appear instantly in UI as they're discovered, showing entry/exit points, confidence levels, R/R ratios, and signal reasons
-- **Separate Navigation**: Dedicated "الماسح الذكي" button in top navigation, completely independent from manual analysis section
+- **Separate Navigation**: Dedicated "👑 VIP البحث الذكي" button in top navigation, requires active VIP subscription
 - **Progressive Display**: Shows up to 20 most recent signals with visual indicators (🟢 BUY / 🔴 SELL), color-coded borders, and detailed metrics
 - **Scalable Architecture**: Uses streaming to handle large symbol sets efficiently without blocking or timeouts
+- **VIP Protection**: Server-side verification prevents unauthorized access, frontend blocks non-subscribers with subscription prompts
 
 **Advanced Admin Dashboard** (October 2025):
 - **Revenue Tracking**: Comprehensive revenue analytics tracking bot subscriptions, analyst commissions (owner's 30% share), total deposits, and aggregate revenue with detailed breakdowns.
