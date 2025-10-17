@@ -4967,14 +4967,9 @@ function displayVIPSearchStatus(data) {
         statusDiv.style.background = 'linear-gradient(135deg, #00ff0020 0%, #00aa0020 100%)';
         statusDiv.style.border = '2px solid #00ff00';
         statusDiv.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <div style="font-weight: bold; color: #00ff00; margin-bottom: 5px;">✅ ${t(currentLang, 'vip_search_active')}</div>
-                    <div style="font-size: 12px; color: #ddd;">${t(currentLang, 'vip_search_ends_on')}: ${new Date(data.end_date).toLocaleDateString('ar-SA')} (${data.days_left} ${t(currentLang, 'vip_search_days_left')})</div>
-                </div>
-                <button onclick="cancelVIPSearchSubscription()" style="background: #ff4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px;">
-                    إلغاء الاشتراك
-                </button>
+            <div>
+                <div style="font-weight: bold; color: #00ff00; margin-bottom: 5px;">✅ ${t(currentLang, 'vip_search_active')}</div>
+                <div style="font-size: 12px; color: #ddd;">${t(currentLang, 'vip_search_ends_on')}: ${new Date(data.end_date).toLocaleDateString('ar-SA')} (${data.days_left} ${t(currentLang, 'vip_search_days_left')})</div>
             </div>
         `;
     } else {
@@ -5016,36 +5011,6 @@ async function subscribeToVIPSearch() {
     } catch (error) {
         console.error('Error subscribing to VIP Search:', error);
         tg.showAlert('حدث خطأ في الاشتراك');
-    }
-}
-
-async function cancelVIPSearchSubscription() {
-    if (!confirm('هل أنت متأكد من إلغاء اشتراك VIP Search؟ سيتم استرجاع المبلغ المتبقي.')) {
-        return;
-    }
-
-    try {
-        const response = await fetch('/api/cancel-vip-search-subscription', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                user_id: userId,
-                init_data: tg.initData || ''
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-            tg.showAlert(`✅ تم إلغاء الاشتراك. المبلغ المسترجع: ${data.refunded_amount} USDT`);
-            checkVIPSearchSubscription();
-            loadUserData();
-        } else {
-            tg.showAlert('❌ ' + (data.error || 'فشل إلغاء الاشتراك'));
-        }
-    } catch (error) {
-        console.error('Error canceling VIP Search subscription:', error);
-        tg.showAlert('حدث خطأ في إلغاء الاشتراك');
     }
 }
 
