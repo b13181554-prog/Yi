@@ -400,7 +400,7 @@ app.post('/api/user', authenticateAPI, async (req, res) => {
     
     let user = await db.getUser(user_id);
     if (!user) {
-      user = { balance: 0, subscription_end: null };
+      user = { balance: 0, subscription_expires: null };
     }
     
     const botInfo = await bot.getMe();
@@ -519,11 +519,11 @@ app.post('/api/subscription', async (req, res) => {
       }
     }
     
-    if (!subscription.active && user.subscription_end && new Date(user.subscription_end) > new Date()) {
+    if (!subscription.active && user.subscription_expires && new Date(user.subscription_expires) > new Date()) {
       subscription = {
         active: true,
         type: 'paid',
-        expiresAt: user.subscription_end
+        expiresAt: user.subscription_expires
       };
     }
     

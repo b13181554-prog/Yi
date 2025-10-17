@@ -1652,9 +1652,11 @@ async function cancelPumpSubscription(userId) {
   }
 
   const now = new Date();
+  const startDate = new Date(subscription.start_date);
   const endDate = new Date(subscription.end_date);
   const daysLeft = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
-  const refundAmount = (daysLeft / 30) * subscription.amount;
+  const totalDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+  const refundAmount = totalDuration > 0 ? Math.round((daysLeft / totalDuration) * subscription.amount * 100) / 100 : 0;
 
   await db.collection('pump_subscriptions').updateOne(
     { user_id: userId, status: 'active' },
@@ -1732,9 +1734,11 @@ async function cancelVIPSearchSubscription(userId) {
   }
 
   const now = new Date();
+  const startDate = new Date(subscription.start_date);
   const endDate = new Date(subscription.end_date);
   const daysLeft = Math.max(0, Math.ceil((endDate - now) / (1000 * 60 * 60 * 24)));
-  const refundAmount = (daysLeft / 30) * subscription.amount;
+  const totalDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+  const refundAmount = totalDuration > 0 ? Math.round((daysLeft / totalDuration) * subscription.amount * 100) / 100 : 0;
 
   await db.collection('vip_search_subscriptions').updateOne(
     { user_id: userId, status: 'active' },
