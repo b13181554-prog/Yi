@@ -95,6 +95,12 @@ The project uses MongoDB Atlas for its database and is configured for 24/7 opera
 - Transaction-safe operations: MongoDB transactions ensure balance consistency during retries
 - System files: withdrawal-queue.js (processor), withdrawal-notifier.js (alerts), withdrawal-scheduler.js (monitoring)
 
+**Subscription System Fixes** (October 17, 2025):
+- **Fixed Critical Field Mismatch**: Corrected basic subscription check to use `subscription_expires` instead of `subscription_end`, ensuring paid subscriptions work correctly
+- **Improved Refund Calculations**: Updated VIP Search and Pump subscription cancellation to calculate prorated refunds based on actual subscription duration (start_date to end_date) instead of fixed 30-day assumption
+- **Enhanced Accuracy**: Refund amounts now precisely reflect remaining subscription time with proper currency rounding
+- **Data Integrity**: All subscription checks now consistently use `subscription_expires` field for basic/paid subscriptions
+
 ## External Dependencies
 
 -   **Databases**:
