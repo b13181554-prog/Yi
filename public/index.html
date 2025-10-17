@@ -31,8 +31,8 @@
                     <span data-i18n="nav_movers">الأفضل</span>
                 </button>
                 <button class="nav-btn" onclick="showSection('scanner-section', event)">
-                    <span class="icon">🔍</span>
-                    <span data-i18n="nav_scanner">الماسح</span>
+                    <span class="icon">👑</span>
+                    <span data-i18n="nav_vip_search">VIP</span>
                 </button>
                 <button class="nav-btn" onclick="showSection('wallet-section', event)">
                     <span class="icon">💳</span>
@@ -179,11 +179,16 @@
                 </div>
             </div>
 
-            <!-- الماسح الذكي -->
+            <!-- VIP البحث الذكي -->
             <div id="scanner-section" class="section">
                 <div class="section-header">
-                    <h2>🔍 الماسح الذكي للإشارات</h2>
-                    <p style="color: #666; font-size: 14px; margin-top: 5px;">البحث التلقائي عن أفضل الفرص في جميع الأسواق</p>
+                    <h2 data-i18n="vip_search_title">👑 VIP البحث الذكي</h2>
+                    <p style="color: #666; font-size: 14px; margin-top: 5px;" data-i18n="vip_search_desc">البحث المتقدم عن أفضل الفرص في جميع الأسواق بتقنية الذكاء الاصطناعي</p>
+                    
+                    <!-- VIP Subscription Status -->
+                    <div id="vip-search-status" style="margin-top: 15px; padding: 12px; border-radius: 8px; display: none;">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
                 </div>
 
                 <div class="analysis-controls">
@@ -223,11 +228,11 @@
                         </select>
                     </div>
 
-                    <button id="start-scanner-btn" class="submit-btn" onclick="startSmartScanner()" style="font-size: 18px; padding: 16px; margin-top: 10px; background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%); border: none; color: white; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(0, 217, 255, 0.4); transition: all 0.3s;">
-                        🚀 بدء المسح الذكي
+                    <button id="start-scanner-btn" class="submit-btn" onclick="startSmartScanner()" style="font-size: 18px; padding: 16px; margin-top: 10px; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); border: none; color: white; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5); transition: all 0.3s;" data-i18n="vip_search_start_btn">
+                        👑 بدء البحث الذكي VIP
                     </button>
-                    <button id="stop-scanner-btn" class="cancel-btn" onclick="stopSmartScanner()" style="display: none; font-size: 18px; padding: 16px; margin-top: 10px; width: 100%;">
-                        ⏸️ إيقاف المسح
+                    <button id="stop-scanner-btn" class="cancel-btn" onclick="stopSmartScanner()" style="display: none; font-size: 18px; padding: 16px; margin-top: 10px; width: 100%;" data-i18n="vip_search_stop_btn">
+                        ⏸️ إيقاف البحث
                     </button>
                 </div>
 

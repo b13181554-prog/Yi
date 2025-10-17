@@ -2280,10 +2280,23 @@ app.post('/api/scan-best-signals', async (req, res) => {
 
 app.post('/api/smart-scanner', async (req, res) => {
   try {
-    const { market_type, analysis_type, timeframe, init_data } = req.body;
+    const { market_type, analysis_type, timeframe, init_data, user_id } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    if (!user_id) {
+      return res.json({ success: false, error: 'User ID is required' });
+    }
+    
+    const vipSubscription = await db.getVIPSearchSubscription(user_id);
+    if (!vipSubscription || !vipSubscription.active) {
+      return res.json({ 
+        success: false, 
+        error: 'VIP Search subscription required',
+        requires_subscription: true
+      });
     }
     
     // إعداد SSE
@@ -2366,7 +2379,7 @@ app.post('/api/all-assets', async (req, res) => {
 
 app.post('/api/search-assets', async (req, res) => {
   try {
-    const { query, market_type, init_data, limit = 20 } = req.body;
+    const { query, market_type, init_data, user_id, limit = 20 } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
@@ -2376,9 +2389,15 @@ app.post('/api/search-assets', async (req, res) => {
       return res.json({ success: false, error: 'Query is required' });
     }
     
+    let isVIP = false;
+    if (user_id) {
+      const vipSubscription = await db.getVIPSearchSubscription(user_id);
+      isVIP = vipSubscription && vipSubscription.active;
+    }
+    
     const directSearch = require('./direct-search');
     
-    const results = await directSearch.search(query.trim(), market_type);
+    const results = await directSearch.search(query.trim(), market_type, isVIP);
     
     const limitedResults = results.slice(0, parseInt(limit));
     
@@ -2388,7 +2407,8 @@ app.post('/api/search-assets', async (req, res) => {
       total_found: results.length,
       returned: limitedResults.length,
       query: query,
-      search_type: 'direct'
+      search_type: isVIP ? 'vip' : 'direct',
+      is_vip: isVIP
     });
   } catch (error) {
     console.error('Search Assets API Error:', error);
@@ -2540,6 +2560,90 @@ app.post('/api/cancel-pump-subscription', async (req, res) => {
     });
   } catch (error) {
     console.error('Cancel Pump Subscription API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+// VIP Search Subscription APIs
+app.post('/api/vip-search-subscription', async (req, res) => {
+  try {
+    const { user_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const existingSub = await db.getVIPSearchSubscription(user_id);
+    if (existingSub) {
+      return res.json({ success: false, error: 'لديك اشتراك VIP Search نشط بالفعل' });
+    }
+    
+    const user = await db.getUser(user_id);
+    if (user.balance < config.VIP_SEARCH_SUBSCRIPTION_PRICE) {
+      return res.json({ success: false, error: 'رصيدك غير كافٍ' });
+    }
+    
+    await db.updateUser(user_id, { balance: user.balance - config.VIP_SEARCH_SUBSCRIPTION_PRICE });
+    await db.subscribeToVIPSearch(user_id, config.VIP_SEARCH_SUBSCRIPTION_PRICE);
+    
+    const ownerShare = config.VIP_SEARCH_SUBSCRIPTION_PRICE;
+    await db.updateUserBalance(config.OWNER_ID, ownerShare);
+    
+    res.json({ success: true, message: 'تم الاشتراك في VIP Search بنجاح' });
+  } catch (error) {
+    console.error('Subscribe VIP Search API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/cancel-vip-search-subscription', async (req, res) => {
+  try {
+    const { user_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const result = await db.cancelVIPSearchSubscription(user_id);
+    
+    res.json({ 
+      success: true, 
+      message: 'تم إلغاء اشتراك VIP Search بنجاح',
+      refunded_amount: result.refunded_amount,
+      days_left: result.days_left
+    });
+  } catch (error) {
+    console.error('Cancel VIP Search Subscription API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/check-vip-search-subscription', async (req, res) => {
+  try {
+    const { user_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const subscription = await db.getVIPSearchSubscription(user_id);
+    
+    if (subscription) {
+      const daysLeft = Math.ceil((new Date(subscription.end_date) - new Date()) / (1000 * 60 * 60 * 24));
+      res.json({ 
+        success: true, 
+        active: true,
+        end_date: subscription.end_date,
+        days_left: daysLeft
+      });
+    } else {
+      res.json({ 
+        success: true, 
+        active: false
+      });
+    }
+  } catch (error) {
+    console.error('Check VIP Search Subscription API Error:', error);
     res.json({ success: false, error: error.message });
   }
 });

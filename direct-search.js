@@ -210,24 +210,23 @@ class DirectSearchService {
     ].map(item => ({ ...item, market_type: 'indices' }));
   }
 
-  async search(query, marketType = null) {
+  async search(query, marketType = null, isVIP = false) {
     try {
       const searchLower = query.toLowerCase().trim();
       let allResults = [];
 
+      const searchPromises = [];
+
       if (!marketType || marketType === 'crypto') {
-        const cryptoResults = await this.searchCryptoFromOKX(searchLower);
-        allResults = allResults.concat(cryptoResults);
+        searchPromises.push(this.searchCryptoFromOKX(searchLower));
       }
 
       if (!marketType || marketType === 'stocks') {
-        const stockResults = await this.searchStocksFromYahoo(searchLower);
-        allResults = allResults.concat(stockResults);
+        searchPromises.push(this.searchStocksFromYahoo(searchLower));
       }
 
       if (!marketType || marketType === 'forex') {
-        const forexResults = this.searchForex(searchLower);
-        allResults = allResults.concat(forexResults);
+        searchPromises.push(Promise.resolve(this.searchForex(searchLower)));
       }
 
       if (!marketType || marketType === 'commodities') {
@@ -236,7 +235,7 @@ class DirectSearchService {
           c.value.toLowerCase().includes(searchLower) ||
           c.label.toLowerCase().includes(searchLower)
         );
-        allResults = allResults.concat(commodityResults);
+        searchPromises.push(Promise.resolve(commodityResults));
       }
 
       if (!marketType || marketType === 'indices') {
@@ -245,28 +244,95 @@ class DirectSearchService {
           i.value.toLowerCase().includes(searchLower) ||
           i.label.toLowerCase().includes(searchLower)
         );
-        allResults = allResults.concat(indexResults);
+        searchPromises.push(Promise.resolve(indexResults));
       }
 
-      allResults.sort((a, b) => {
-        const aSymbol = (a.symbol || a.value || '').toLowerCase();
-        const bSymbol = (b.symbol || b.value || '').toLowerCase();
-        
-        if (aSymbol === searchLower && bSymbol !== searchLower) return -1;
-        if (bSymbol === searchLower && aSymbol !== searchLower) return 1;
-        
-        if (aSymbol.startsWith(searchLower) && !bSymbol.startsWith(searchLower)) return -1;
-        if (bSymbol.startsWith(searchLower) && !aSymbol.startsWith(searchLower)) return 1;
-        
-        return aSymbol.localeCompare(bSymbol);
-      });
+      const results = await Promise.all(searchPromises);
+      allResults = results.flat();
 
-      console.log(`✅ إجمالي النتائج للبحث "${query}": ${allResults.length}`);
+      if (isVIP) {
+        allResults = this.applyVIPFiltering(allResults, searchLower);
+        allResults = this.applyVIPSorting(allResults, searchLower);
+      } else {
+        allResults.sort((a, b) => {
+          const aSymbol = (a.symbol || a.value || '').toLowerCase();
+          const bSymbol = (b.symbol || b.value || '').toLowerCase();
+          
+          if (aSymbol === searchLower && bSymbol !== searchLower) return -1;
+          if (bSymbol === searchLower && aSymbol !== searchLower) return 1;
+          
+          if (aSymbol.startsWith(searchLower) && !bSymbol.startsWith(searchLower)) return -1;
+          if (bSymbol.startsWith(searchLower) && !aSymbol.startsWith(searchLower)) return 1;
+          
+          return aSymbol.localeCompare(bSymbol);
+        });
+      }
+
+      console.log(`✅ إجمالي النتائج للبحث "${query}": ${allResults.length} (VIP: ${isVIP})`);
       return allResults;
     } catch (error) {
       console.error('❌ خطأ في البحث المباشر:', error.message);
       throw error;
     }
+  }
+
+  applyVIPFiltering(results, searchQuery) {
+    return results.map(result => {
+      const symbol = (result.symbol || result.value || '').toLowerCase();
+      const label = (result.label || '').toLowerCase();
+      
+      let relevanceScore = 0;
+      
+      if (symbol === searchQuery) relevanceScore += 100;
+      else if (symbol.startsWith(searchQuery)) relevanceScore += 75;
+      else if (symbol.includes(searchQuery)) relevanceScore += 50;
+      
+      if (label.toLowerCase().includes(searchQuery)) relevanceScore += 25;
+      
+      const fuzzyScore = this.calculateFuzzyMatch(symbol, searchQuery);
+      relevanceScore += fuzzyScore * 10;
+      
+      return { ...result, vip_relevance_score: relevanceScore };
+    }).filter(result => result.vip_relevance_score > 20);
+  }
+
+  applyVIPSorting(results, searchQuery) {
+    return results.sort((a, b) => {
+      if (b.vip_relevance_score !== a.vip_relevance_score) {
+        return b.vip_relevance_score - a.vip_relevance_score;
+      }
+      
+      const aSymbol = (a.symbol || a.value || '').toLowerCase();
+      const bSymbol = (b.symbol || b.value || '').toLowerCase();
+      
+      if (aSymbol.length !== bSymbol.length) {
+        return aSymbol.length - bSymbol.length;
+      }
+      
+      return aSymbol.localeCompare(bSymbol);
+    });
+  }
+
+  calculateFuzzyMatch(str, query) {
+    if (!str || !query) return 0;
+    
+    str = str.toLowerCase();
+    query = query.toLowerCase();
+    
+    let score = 0;
+    let queryIndex = 0;
+    
+    for (let i = 0; i < str.length && queryIndex < query.length; i++) {
+      if (str[i] === query[queryIndex]) {
+        score += 1;
+        queryIndex++;
+      }
+    }
+    
+    const matchRatio = queryIndex / query.length;
+    const lengthPenalty = Math.abs(str.length - query.length) / Math.max(str.length, query.length);
+    
+    return matchRatio * (1 - lengthPenalty * 0.5);
   }
 
   getCryptoEmoji(symbol) {

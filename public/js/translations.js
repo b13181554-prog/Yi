@@ -13,6 +13,7 @@ const translations = {
     // Navigation
     nav_analysis: 'التحليل',
     nav_movers: 'الأفضل',
+    nav_vip_search: 'VIP',
     nav_wallet: 'المحفظة',
     nav_analysts: 'محللين',
     nav_profile: 'حسابي',
@@ -66,6 +67,19 @@ const translations = {
     movers_stocks: '📈 أسهم',
     movers_commodities: '🛢️ سلع',
     movers_indices: '📊 مؤشرات',
+    
+    // VIP Search Section
+    vip_search_title: '👑 VIP البحث الذكي',
+    vip_search_desc: 'البحث المتقدم عن أفضل الفرص في جميع الأسواق بتقنية الذكاء الاصطناعي',
+    vip_search_start_btn: '👑 بدء البحث الذكي VIP',
+    vip_search_stop_btn: '⏸️ إيقاف البحث',
+    vip_search_active: '✅ اشتراك VIP نشط',
+    vip_search_inactive: '❌ اشتراك VIP غير نشط',
+    vip_search_subscribe_btn: '👑 اشترك في VIP Search - 10 USDT شهرياً',
+    vip_search_ends_on: 'ينتهي في',
+    vip_search_days_left: 'متبقي',
+    vip_search_features: 'مميزات VIP: بحث متقدم، تصفية ذكية، نتائج محسّنة',
+    vip_search_subscribe_message: 'يجب الاشتراك في VIP Search للوصول إلى هذه الميزة',
     
     // Wallet Section
     wallet_title: 'المحفظة',
@@ -213,6 +227,7 @@ const translations = {
     // Navigation
     nav_analysis: 'Analysis',
     nav_movers: 'Top Movers',
+    nav_vip_search: 'VIP',
     nav_wallet: 'Wallet',
     nav_analysts: 'Analysts',
     nav_profile: 'My Account',
@@ -266,6 +281,19 @@ const translations = {
     movers_stocks: '📈 Stocks',
     movers_commodities: '🛢️ Commodities',
     movers_indices: '📊 Indices',
+    
+    // VIP Search Section
+    vip_search_title: '👑 VIP Smart Search',
+    vip_search_desc: 'Advanced search for best opportunities across all markets with AI technology',
+    vip_search_start_btn: '👑 Start VIP Smart Search',
+    vip_search_stop_btn: '⏸️ Stop Search',
+    vip_search_active: '✅ VIP Subscription Active',
+    vip_search_inactive: '❌ VIP Subscription Inactive',
+    vip_search_subscribe_btn: '👑 Subscribe to VIP Search - 10 USDT/month',
+    vip_search_ends_on: 'Ends on',
+    vip_search_days_left: 'days left',
+    vip_search_features: 'VIP Features: Advanced search, Smart filtering, Enhanced results',
+    vip_search_subscribe_message: 'VIP Search subscription required to access this feature',
     
     // Wallet Section
     wallet_title: 'Wallet',
@@ -467,6 +495,19 @@ const translations = {
     movers_commodities: '🛢️ Matières Premières',
     movers_indices: '📊 Indices',
     
+    // VIP Search Section
+    vip_search_title: '👑 Recherche Intelligente VIP',
+    vip_search_desc: 'Recherche avancée des meilleures opportunités sur tous les marchés avec technologie IA',
+    vip_search_start_btn: '👑 Démarrer la Recherche Intelligente VIP',
+    vip_search_stop_btn: '⏸️ Arrêter la Recherche',
+    vip_search_active: '✅ Abonnement VIP Actif',
+    vip_search_inactive: '❌ Abonnement VIP Inactif',
+    vip_search_subscribe_btn: '👑 S\'abonner à VIP Search - 10 USDT/mois',
+    vip_search_ends_on: 'Se termine le',
+    vip_search_days_left: 'jours restants',
+    vip_search_features: 'Fonctionnalités VIP: Recherche avancée, Filtrage intelligent, Résultats améliorés',
+    vip_search_subscribe_message: 'Abonnement VIP Search requis pour accéder à cette fonctionnalité',
+    
     // Wallet Section
     wallet_title: 'Portefeuille',
     deposit_btn: 'Dépôt',
@@ -655,6 +696,19 @@ const translations = {
     movers_stocks: '📈 Acciones',
     movers_commodities: '🛢️ Materias Primas',
     movers_indices: '📊 Índices',
+    
+    // VIP Search Section
+    vip_search_title: '👑 Búsqueda Inteligente VIP',
+    vip_search_desc: 'Búsqueda avanzada de las mejores oportunidades en todos los mercados con tecnología IA',
+    vip_search_start_btn: '👑 Iniciar Búsqueda Inteligente VIP',
+    vip_search_stop_btn: '⏸️ Detener Búsqueda',
+    vip_search_active: '✅ Suscripción VIP Activa',
+    vip_search_inactive: '❌ Suscripción VIP Inactiva',
+    vip_search_subscribe_btn: '👑 Suscribirse a VIP Search - 10 USDT/mes',
+    vip_search_ends_on: 'Termina el',
+    vip_search_days_left: 'días restantes',
+    vip_search_features: 'Características VIP: Búsqueda avanzada, Filtrado inteligente, Resultados mejorados',
+    vip_search_subscribe_message: 'Se requiere suscripción VIP Search para acceder a esta función',
     
     // Wallet Section
     wallet_title: 'Cartera',
@@ -845,6 +899,19 @@ const translations = {
     movers_commodities: '🛢️ Rohstoffe',
     movers_indices: '📊 Indizes',
     
+    // VIP Search Section
+    vip_search_title: '👑 VIP Intelligente Suche',
+    vip_search_desc: 'Erweiterte Suche nach besten Gelegenheiten in allen Märkten mit KI-Technologie',
+    vip_search_start_btn: '👑 VIP Intelligente Suche Starten',
+    vip_search_stop_btn: '⏸️ Suche Stoppen',
+    vip_search_active: '✅ VIP-Abonnement Aktiv',
+    vip_search_inactive: '❌ VIP-Abonnement Inaktiv',
+    vip_search_subscribe_btn: '👑 VIP Search Abonnieren - 10 USDT/Monat',
+    vip_search_ends_on: 'Endet am',
+    vip_search_days_left: 'Tage übrig',
+    vip_search_features: 'VIP-Funktionen: Erweiterte Suche, Intelligente Filterung, Verbesserte Ergebnisse',
+    vip_search_subscribe_message: 'VIP Search-Abonnement erforderlich für den Zugriff auf diese Funktion',
+    
     // Wallet Section
     wallet_title: 'Wallet',
     deposit_btn: 'Einzahlung',
@@ -1034,6 +1101,19 @@ const translations = {
     movers_commodities: '🛢️ Сырьё',
     movers_indices: '📊 Индексы',
     
+    // VIP Search Section
+    vip_search_title: '👑 VIP Умный Поиск',
+    vip_search_desc: 'Расширенный поиск лучших возможностей на всех рынках с технологией ИИ',
+    vip_search_start_btn: '👑 Начать VIP Умный Поиск',
+    vip_search_stop_btn: '⏸️ Остановить Поиск',
+    vip_search_active: '✅ VIP Подписка Активна',
+    vip_search_inactive: '❌ VIP Подписка Неактивна',
+    vip_search_subscribe_btn: '👑 Подписаться на VIP Search - 10 USDT/месяц',
+    vip_search_ends_on: 'Заканчивается',
+    vip_search_days_left: 'дней осталось',
+    vip_search_features: 'VIP Функции: Расширенный поиск, Умная фильтрация, Улучшенные результаты',
+    vip_search_subscribe_message: 'Требуется подписка VIP Search для доступа к этой функции',
+    
     // Wallet Section
     wallet_title: 'Кошелек',
     deposit_btn: 'Депозит',
@@ -1222,6 +1302,19 @@ const translations = {
     movers_stocks: '📈 股票',
     movers_commodities: '🛢️ 商品',
     movers_indices: '📊 指数',
+    
+    // VIP Search Section
+    vip_search_title: '👑 VIP 智能搜索',
+    vip_search_desc: '使用AI技术在所有市场中高级搜索最佳机会',
+    vip_search_start_btn: '👑 开始 VIP 智能搜索',
+    vip_search_stop_btn: '⏸️ 停止搜索',
+    vip_search_active: '✅ VIP订阅已激活',
+    vip_search_inactive: '❌ VIP订阅未激活',
+    vip_search_subscribe_btn: '👑 订阅 VIP Search - 10 USDT/月',
+    vip_search_ends_on: '结束于',
+    vip_search_days_left: '剩余天数',
+    vip_search_features: 'VIP功能：高级搜索，智能过滤，增强结果',
+    vip_search_subscribe_message: '需要 VIP Search 订阅才能访问此功能',
     
     // Wallet Section
     wallet_title: '钱包',

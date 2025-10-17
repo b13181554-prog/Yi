@@ -518,6 +518,10 @@ function showSection(sectionId, event) {
     if (sectionId === 'more-section') {
         loadMoreSectionSettings();
     }
+
+    if (sectionId === 'scanner-section') {
+        checkVIPSearchSubscription();
+    }
 }
 
 let searchTimeout = null;
@@ -564,6 +568,7 @@ function setupSymbolSearch() {
                         body: JSON.stringify({
                             query: searchTerm,
                             market_type: marketType,
+                            user_id: userId,
                             init_data: tg.initData,
                             limit: 20
                         })
@@ -4720,6 +4725,11 @@ let scannerRunning = false;
 let scannerAborted = false;
 
 async function startSmartScanner() {
+    if (!vipSearchSubscriptionStatus || !vipSearchSubscriptionStatus.active) {
+        tg.showAlert('⚠️ ' + t(currentLang, 'vip_search_inactive') + '\n\n' + t(currentLang, 'vip_search_subscribe_message'));
+        return;
+    }
+    
     const marketType = document.getElementById('scanner-market-type').value;
     const analysisType = document.getElementById('scanner-analysis-type').value;
     const timeframe = document.getElementById('scanner-timeframe').value;
@@ -4741,6 +4751,7 @@ async function startSmartScanner() {
                 market_type: marketType,
                 analysis_type: analysisType,
                 timeframe: timeframe,
+                user_id: userId,
                 init_data: tg.initData
             })
         });
@@ -4922,6 +4933,119 @@ ${signal.reasons && signal.reasons.length > 0 ? '📌 الأسباب:\n' + signa
     
     if (container.children.length > 20) {
         container.removeChild(container.lastChild);
+    }
+}
+
+let vipSearchSubscriptionStatus = null;
+
+async function checkVIPSearchSubscription() {
+    try {
+        const response = await fetch('/api/check-vip-search-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                init_data: tg.initData || ''
+            })
+        });
+
+        const data = await response.json();
+        vipSearchSubscriptionStatus = data;
+        
+        displayVIPSearchStatus(data);
+    } catch (error) {
+        console.error('Error checking VIP Search subscription:', error);
+    }
+}
+
+function displayVIPSearchStatus(data) {
+    const statusDiv = document.getElementById('vip-search-status');
+    if (!statusDiv) return;
+
+    if (data.active) {
+        statusDiv.style.display = 'block';
+        statusDiv.style.background = 'linear-gradient(135deg, #00ff0020 0%, #00aa0020 100%)';
+        statusDiv.style.border = '2px solid #00ff00';
+        statusDiv.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-weight: bold; color: #00ff00; margin-bottom: 5px;">✅ ${t(currentLang, 'vip_search_active')}</div>
+                    <div style="font-size: 12px; color: #ddd;">${t(currentLang, 'vip_search_ends_on')}: ${new Date(data.end_date).toLocaleDateString('ar-SA')} (${data.days_left} ${t(currentLang, 'vip_search_days_left')})</div>
+                </div>
+                <button onclick="cancelVIPSearchSubscription()" style="background: #ff4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                    إلغاء الاشتراك
+                </button>
+            </div>
+        `;
+    } else {
+        statusDiv.style.display = 'block';
+        statusDiv.style.background = 'linear-gradient(135deg, #FFD70020 0%, #FFA50020 100%)';
+        statusDiv.style.border = '2px solid #FFD700';
+        statusDiv.innerHTML = `
+            <div style="text-align: center;">
+                <div style="font-weight: bold; color: #FFD700; margin-bottom: 8px;">${t(currentLang, 'vip_search_inactive')}</div>
+                <div style="font-size: 12px; color: #ddd; margin-bottom: 12px;">${t(currentLang, 'vip_search_features')}</div>
+                <button onclick="subscribeToVIPSearch()" style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%;">
+                    ${t(currentLang, 'vip_search_subscribe_btn')}
+                </button>
+            </div>
+        `;
+    }
+}
+
+async function subscribeToVIPSearch() {
+    try {
+        const response = await fetch('/api/vip-search-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                init_data: tg.initData || ''
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            tg.showAlert('✅ تم الاشتراك في VIP Search بنجاح!');
+            checkVIPSearchSubscription();
+            loadUserData();
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'فشل الاشتراك'));
+        }
+    } catch (error) {
+        console.error('Error subscribing to VIP Search:', error);
+        tg.showAlert('حدث خطأ في الاشتراك');
+    }
+}
+
+async function cancelVIPSearchSubscription() {
+    if (!confirm('هل أنت متأكد من إلغاء اشتراك VIP Search؟ سيتم استرجاع المبلغ المتبقي.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/cancel-vip-search-subscription', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: userId,
+                init_data: tg.initData || ''
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            tg.showAlert(`✅ تم إلغاء الاشتراك. المبلغ المسترجع: ${data.refunded_amount} USDT`);
+            checkVIPSearchSubscription();
+            loadUserData();
+        } else {
+            tg.showAlert('❌ ' + (data.error || 'فشل إلغاء الاشتراك'));
+        }
+    } catch (error) {
+        console.error('Error canceling VIP Search subscription:', error);
+        tg.showAlert('حدث خطأ في إلغاء الاشتراك');
     }
 }
 
