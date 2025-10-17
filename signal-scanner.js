@@ -93,6 +93,11 @@ class SignalScanner {
             analysis = new V1ProAnalysis(candles);
             recommendation = await analysis.getCompleteAnalysis(marketType, 'spot', timeframe);
             break;
+          case 'master':
+            const MasterAnalysis = require('./master-analysis');
+            analysis = new MasterAnalysis(candles, symbol, timeframe, marketType);
+            recommendation = await analysis.getMasterAnalysis('spot');
+            break;
           default:
             analysis = new TechnicalAnalysis(candles);
             recommendation = analysis.getTradeRecommendationWithMarketType(marketType, 'spot');
