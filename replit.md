@@ -46,7 +46,7 @@ The core logic is built upon an Express server, managing Telegram Bot interactio
 All analysis systems include risk assessment, precise Stop Loss & Take Profit, and balanced Risk/Reward ratios. An Analyst Protection System with escrow and daily monitoring is in place. Referral systems are implemented, and automated pump analysis for cryptocurrencies identifies potential price surges. Customer support utilizes the Groq API with the Llama 3.3 70B Versatile model for free, fast, and multi-language responses.
 
 ### Feature Specifications
-The platform offers a comprehensive Web App for technical analysis, top movers, a wallet for USDT TRC20 deposits/withdrawals, analyst subscriptions, and account management. Trading features include technical analysis for crypto, forex, stocks, indices, and commodities, alongside recommendations and trending cryptocurrency tracking. Financial functionalities include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management encompasses an analyst subscription system and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, withdrawal processing, transaction viewing, referral tracking, and mass messaging. Automated trade signal monitoring checks markets every 15 minutes for strong opportunities (70%+ indicator agreement) and sends instant notifications. The withdrawal system features robust security with transaction-safe refunding. The analysis system provides high-quality trade signals, including an advanced blockchain-based pump detection system. Notification settings are customizable. The system provides comprehensive asset coverage, including 1000+ cryptocurrencies, 400+ forex pairs, 140+ global stocks, 40+ commodities, and 50+ global indices. Pump analysis is integrated, and prorated refunds are handled for subscription cancellations.
+The platform offers a comprehensive Web App for technical analysis, top movers, a wallet for USDT TRC20 deposits/withdrawals, analyst subscriptions, and account management. Trading features include technical analysis for crypto, forex, stocks, indices, and commodities, alongside recommendations and trending cryptocurrency tracking. Financial functionalities include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management encompasses an analyst subscription system and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, withdrawal processing, transaction viewing, referral tracking, and mass messaging. Automated trade signal monitoring checks markets every 15 minutes for strong opportunities (70%+ indicator agreement) and sends instant notifications. The withdrawal system features robust security with transaction-safe processing. The analysis system provides high-quality trade signals, including an advanced blockchain-based pump detection system. Notification settings are customizable. The system provides comprehensive asset coverage, including 1000+ cryptocurrencies, 400+ forex pairs, 140+ global stocks, 40+ commodities, and 50+ global indices. Pump analysis is integrated. All subscriptions are non-refundable and non-cancellable.
 
 **VIP Smart Search System** (October 17, 2025):
 - **Premium Subscription Service**: Monthly subscription at 10 USDT for exclusive access to advanced search capabilities
@@ -56,10 +56,10 @@ The platform offers a comprehensive Web App for technical analysis, top movers, 
   - Smart filtering with relevance scoring (100 points for exact match, 75 for starts-with, 50 for contains, 25 for description match)
   - VIP-only enhanced sorting and ranking algorithms
 - **Access Control**: Server-side subscription verification on all VIP endpoints (/api/search-assets, /api/smart-scanner)
-- **User Experience**: Real-time subscription status display, subscribe/cancel functionality with pro-rated refunds
+- **User Experience**: Real-time subscription status display with subscribe functionality
 - **Multi-Language Support**: Full translation coverage across 7 languages (Arabic, English, French, Spanish, German, Russian, Chinese)
 - **Security**: Telegram WebApp data verification, user_id validation, active subscription checks before granting VIP features
-- **Database Schema**: MongoDB collection 'vip_search_subscriptions' with status tracking, dates, and automatic refund calculations
+- **Database Schema**: MongoDB collection 'vip_search_subscriptions' with status tracking and subscription dates
 - **Documentation**: Comprehensive VIP_SEARCH_README.md with feature details, pricing, API usage, and system architecture
 
 **Smart Multi-Market Scanner** (October 2025 - VIP Feature):
@@ -95,11 +95,11 @@ The project uses MongoDB Atlas for its database and is configured for 24/7 opera
 - Transaction-safe operations: MongoDB transactions ensure balance consistency during retries
 - System files: withdrawal-queue.js (processor), withdrawal-notifier.js (alerts), withdrawal-scheduler.js (monitoring)
 
-**Subscription System Fixes** (October 17, 2025):
+**Subscription System Updates** (October 17, 2025):
 - **Fixed Critical Field Mismatch**: Corrected basic subscription check to use `subscription_expires` instead of `subscription_end`, ensuring paid subscriptions work correctly
-- **Improved Refund Calculations**: Updated VIP Search and Pump subscription cancellation to calculate prorated refunds based on actual subscription duration (start_date to end_date) instead of fixed 30-day assumption
-- **Enhanced Accuracy**: Refund amounts now precisely reflect remaining subscription time with proper currency rounding
 - **Data Integrity**: All subscription checks now consistently use `subscription_expires` field for basic/paid subscriptions
+- **Policy Change**: Removed subscription cancellation feature entirely - all subscriptions (Basic, VIP Search, Pump, Analyst) are now non-refundable and non-cancellable to ensure business stability and prevent abuse
+- **System Cleanup**: Removed cancellation API endpoints (/api/cancel-analyst-subscription, /api/cancel-pump-subscription, /api/cancel-vip-search-subscription), database functions (cancelSubscription, cancelPumpSubscription, cancelVIPSearchSubscription), and UI cancellation buttons from frontend
 
 ## External Dependencies
 
