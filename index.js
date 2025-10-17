@@ -1175,120 +1175,6 @@ app.post('/api/subscribe-analyst', async (req, res) => {
   }
 });
 
-app.post('/api/cancel-analyst-subscription', async (req, res) => {
-  try {
-    const { subscription_id, user_id, init_data } = req.body;
-    
-    if (!verifyTelegramWebAppData(init_data)) {
-      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
-    }
-    
-    const { ObjectId } = require('mongodb');
-    
-    const subscription = await db.getSubscriptionById(subscription_id);
-    if (!subscription) {
-      return res.json({ success: false, error: 'الاشتراك غير موجود' });
-    }
-    
-    if (subscription.user_id !== user_id) {
-      return res.json({ success: false, error: 'غير مصرح لك بإلغاء هذا الاشتراك' });
-    }
-    
-    if (subscription.status !== 'active') {
-      return res.json({ success: false, error: 'هذا الاشتراك غير نشط' });
-    }
-    
-    const now = new Date();
-    const endDate = new Date(subscription.end_date);
-    const startDate = new Date(subscription.start_date);
-    
-    const daysRemaining = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
-    const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-    
-    if (daysRemaining <= 0) {
-      return res.json({ success: false, error: 'هذا الاشتراك منتهي بالفعل' });
-    }
-    
-    const percentageUsed = ((totalDays - daysRemaining) / totalDays) * 100;
-    
-    let refundAmount = 0;
-    if (percentageUsed <= 90) {
-      refundAmount = parseFloat(((daysRemaining / totalDays) * subscription.amount).toFixed(2));
-    }
-    
-    await db.cancelSubscription(subscription_id);
-    
-    if (refundAmount > 0) {
-      await db.updateUserBalance(user_id, refundAmount);
-      
-      const refundPercentage = refundAmount / subscription.amount;
-      const distribution = subscription.payment_distribution || {};
-      
-      const analystRefund = parseFloat((distribution.analyst_share * refundPercentage).toFixed(2));
-      const ownerRefund = parseFloat((distribution.owner_share * refundPercentage).toFixed(2));
-      const referralRefund = parseFloat((distribution.referral_commission * refundPercentage).toFixed(2));
-      
-      if (analystRefund > 0) {
-        await db.deductFromAnalystEscrow(subscription.analyst_id, analystRefund);
-      }
-      
-      if (ownerRefund > 0) {
-        await db.updateUserBalance(config.OWNER_ID, -ownerRefund);
-      }
-      
-      if (referralRefund > 0 && distribution.referrer_id) {
-        await db.updateUserBalance(distribution.referrer_id, -referralRefund);
-      }
-    }
-    
-    await db.updateAnalystSubscriberCount(subscription.analyst_id, -1);
-    
-    const analyst = await db.getAnalyst(subscription.analyst_id);
-    const user = await db.getUser(user_id);
-    
-    const userMsg = refundAmount > 0 
-      ? `✅ <b>تم إلغاء اشتراكك بنجاح</b>
-
-📊 المحلل: ${analyst?.name || 'غير معروف'}
-⏳ الأيام المتبقية: ${daysRemaining} يوم
-💰 المبلغ المسترجع: ${refundAmount} USDT
-
-تم إضافة المبلغ إلى رصيدك.`
-      : `✅ <b>تم إلغاء اشتراكك بنجاح</b>
-
-📊 المحلل: ${analyst?.name || 'غير معروف'}
-
-⚠️ لم يتم استرجاع أي مبلغ لأنه مر أكثر من 90% من فترة الاشتراك.`;
-    
-    safeSendMessage(bot, user_id, userMsg, { parse_mode: 'HTML' }).catch(err => 
-      console.error('Error notifying user:', err)
-    );
-    
-    if (analyst) {
-      const analystMsg = `❌ <b>إلغاء اشتراك</b>
-
-👤 المستخدم: @${user.username || user.first_name}
-⏳ الأيام المتبقية: ${daysRemaining} يوم
-💰 المبلغ المسترجع للمستخدم: ${refundAmount} USDT
-
-📊 إجمالي المشتركين: ${(analyst.total_subscribers || 1) - 1}`;
-      
-      safeSendMessage(bot, analyst.user_id, analystMsg, { parse_mode: 'HTML' }).catch(err => 
-        console.error('Error notifying analyst:', err)
-      );
-    }
-    
-    res.json({ 
-      success: true, 
-      refund_amount: refundAmount,
-      days_remaining: daysRemaining
-    });
-  } catch (error) {
-    console.error('Cancel Analyst Subscription API Error:', error);
-    res.json({ success: false, error: error.message });
-  }
-});
-
 app.post('/api/get-analyst-referral-link', async (req, res) => {
   try {
     const { user_id, init_data } = req.body;
@@ -2542,28 +2428,6 @@ app.post('/api/subscribe-pump', async (req, res) => {
   }
 });
 
-app.post('/api/cancel-pump-subscription', async (req, res) => {
-  try {
-    const { user_id, init_data } = req.body;
-    
-    if (!verifyTelegramWebAppData(init_data)) {
-      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
-    }
-    
-    const result = await db.cancelPumpSubscription(user_id);
-    
-    res.json({ 
-      success: true, 
-      message: 'تم إلغاء الاشتراك بنجاح',
-      refunded_amount: result.refunded_amount,
-      days_left: result.days_left
-    });
-  } catch (error) {
-    console.error('Cancel Pump Subscription API Error:', error);
-    res.json({ success: false, error: error.message });
-  }
-});
-
 // VIP Search Subscription APIs
 app.post('/api/vip-search-subscription', async (req, res) => {
   try {
@@ -2592,28 +2456,6 @@ app.post('/api/vip-search-subscription', async (req, res) => {
     res.json({ success: true, message: 'تم الاشتراك في VIP Search بنجاح' });
   } catch (error) {
     console.error('Subscribe VIP Search API Error:', error);
-    res.json({ success: false, error: error.message });
-  }
-});
-
-app.post('/api/cancel-vip-search-subscription', async (req, res) => {
-  try {
-    const { user_id, init_data } = req.body;
-    
-    if (!verifyTelegramWebAppData(init_data)) {
-      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
-    }
-    
-    const result = await db.cancelVIPSearchSubscription(user_id);
-    
-    res.json({ 
-      success: true, 
-      message: 'تم إلغاء اشتراك VIP Search بنجاح',
-      refunded_amount: result.refunded_amount,
-      days_left: result.days_left
-    });
-  } catch (error) {
-    console.error('Cancel VIP Search Subscription API Error:', error);
     res.json({ success: false, error: error.message });
   }
 });
