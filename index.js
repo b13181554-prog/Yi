@@ -2278,6 +2278,50 @@ app.post('/api/scan-best-signals', async (req, res) => {
   }
 });
 
+app.post('/api/smart-scanner', async (req, res) => {
+  try {
+    const { market_type, analysis_type, timeframe, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    // إعداد SSE
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    
+    const SignalScanner = require('./signal-scanner');
+    const scanner = new SignalScanner();
+    
+    // دالة لإرسال البيانات عبر SSE
+    const sendEvent = (data) => {
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
+    
+    // بدء المسح الذكي
+    try {
+      await scanner.smartScan(
+        market_type || 'all',
+        analysis_type || 'zero-reversal',
+        timeframe || '1h',
+        sendEvent
+      );
+      
+      res.end();
+    } catch (scanError) {
+      sendEvent({
+        type: 'error',
+        message: scanError.message
+      });
+      res.end();
+    }
+  } catch (error) {
+    console.error('Smart Scanner API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/all-assets', async (req, res) => {
   try {
     const { init_data, force_update } = req.body;
