@@ -4,10 +4,11 @@ const TechnicalAnalysis = require('./analysis');
 const UltraAnalysis = require('./ultra-analysis');
 const ZeroReversalAnalysis = require('./zero-reversal-analysis');
 const V1ProAnalysis = require('./v1-pro-analysis');
+const assetsManager = require('./assets-manager');
 
 class SignalScanner {
   constructor() {
-    // أفضل العملات للفحص
+    // أفضل العملات للفحص (للتوافقية مع الكود القديم)
     this.topCryptoSymbols = [
       'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'XRPUSDT', 'ADAUSDT',
       'DOGEUSDT', 'SOLUSDT', 'DOTUSDT', 'MATICUSDT', 'LTCUSDT',
@@ -24,6 +25,14 @@ class SignalScanner {
     this.topStocks = [
       'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA',
       'META', 'NVDA', 'NFLX', 'AMD', 'BABA'
+    ];
+    
+    this.COMMODITIES = [
+      'XAUUSD', 'XAGUSD', 'USOIL', 'UKOIL', 'COPPER', 'NATGAS'
+    ];
+    
+    this.INDICES = [
+      'US30', 'SPX500', 'NAS100', 'US500', 'DJ30'
     ];
   }
 
@@ -217,6 +226,235 @@ class SignalScanner {
 
     // التأكد من أن النتيجة النهائية رقم صالح
     return isFinite(score) ? score : 0;
+  }
+
+  // المسح الذكي - يعمل على جميع العملات المتاحة
+  async smartScan(marketType = 'all', analysisType = 'zero-reversal', timeframe = '1h', progressCallback = null) {
+    console.log(`🚀 بدء المسح الذكي - ${marketType} - ${analysisType} - ${timeframe}`);
+    
+    let allSymbols = [];
+    
+    // جلب جميع الرموز حسب نوع السوق
+    if (marketType === 'all') {
+      // مسح جميع الأسواق
+      console.log('📊 جلب جميع العملات من جميع الأسواق...');
+      
+      // العملات الرقمية
+      try {
+        const cryptoAssets = await assetsManager.getAllCryptoAssets();
+        const cryptoSymbols = cryptoAssets.map(asset => ({ 
+          symbol: asset.symbol, 
+          marketType: 'crypto' 
+        }));
+        allSymbols.push(...cryptoSymbols);
+        console.log(`✅ تم جلب ${cryptoSymbols.length} عملة رقمية`);
+      } catch (error) {
+        console.error('❌ خطأ في جلب العملات الرقمية:', error.message);
+      }
+      
+      // الفوركس
+      try {
+        const forexPairs = assetsManager.generateAllForexPairs();
+        const forexSymbols = forexPairs.map(pair => ({ 
+          symbol: pair.value, 
+          marketType: 'forex' 
+        }));
+        allSymbols.push(...forexSymbols.slice(0, 50)); // أول 50 زوج فقط لتجنب التحميل الزائد
+        console.log(`✅ تم إضافة ${forexSymbols.slice(0, 50).length} زوج فوركس`);
+      } catch (error) {
+        console.error('❌ خطأ في جلب أزواج الفوركس:', error.message);
+      }
+      
+      // الأسهم
+      try {
+        const stocks = assetsManager.getAllStocks();
+        const stockSymbols = stocks.map(stock => ({ 
+          symbol: stock.value, 
+          marketType: 'stocks' 
+        }));
+        allSymbols.push(...stockSymbols.slice(0, 50)); // أول 50 سهم
+        console.log(`✅ تم إضافة ${stockSymbols.slice(0, 50).length} سهم`);
+      } catch (error) {
+        console.error('❌ خطأ في جلب الأسهم:', error.message);
+      }
+      
+    } else if (marketType === 'crypto') {
+      const cryptoAssets = await assetsManager.getAllCryptoAssets();
+      allSymbols = cryptoAssets.map(asset => ({ 
+        symbol: asset.symbol, 
+        marketType: 'crypto' 
+      }));
+      console.log(`✅ تم جلب ${allSymbols.length} عملة رقمية`);
+      
+    } else if (marketType === 'forex') {
+      const forexPairs = assetsManager.generateAllForexPairs();
+      allSymbols = forexPairs.map(pair => ({ 
+        symbol: pair.value, 
+        marketType: 'forex' 
+      }));
+      console.log(`✅ تم جلب ${allSymbols.length} زوج فوركس`);
+      
+    } else if (marketType === 'stocks') {
+      const stocks = assetsManager.getAllStocks();
+      allSymbols = stocks.map(stock => ({ 
+        symbol: stock.value, 
+        marketType: 'stocks' 
+      }));
+      console.log(`✅ تم جلب ${allSymbols.length} سهم`);
+      
+    } else if (marketType === 'commodities') {
+      allSymbols = this.COMMODITIES.map(symbol => ({ 
+        symbol, 
+        marketType: 'commodities' 
+      }));
+      console.log(`✅ تم إضافة ${allSymbols.length} سلعة`);
+      
+    } else if (marketType === 'indices') {
+      allSymbols = this.INDICES.map(symbol => ({ 
+        symbol, 
+        marketType: 'indices' 
+      }));
+      console.log(`✅ تم إضافة ${allSymbols.length} مؤشر`);
+    }
+    
+    console.log(`📊 إجمالي الرموز للفحص: ${allSymbols.length}`);
+    
+    const results = [];
+    let scannedCount = 0;
+    let errorCount = 0;
+    const startTime = Date.now();
+    
+    for (const { symbol, marketType: mType } of allSymbols) {
+      try {
+        scannedCount++;
+        const currentMarketType = mType;
+        
+        // تحديث التقدم
+        if (progressCallback) {
+          const elapsedTime = (Date.now() - startTime) / 1000;
+          const avgTimePerSymbol = elapsedTime / scannedCount;
+          const remainingSymbols = allSymbols.length - scannedCount;
+          const estimatedTimeRemaining = Math.ceil(avgTimePerSymbol * remainingSymbols);
+          
+          progressCallback({
+            type: 'progress',
+            scanned: scannedCount,
+            total: allSymbols.length,
+            currentSymbol: symbol,
+            signalsFound: results.length,
+            timeRemaining: estimatedTimeRemaining
+          });
+        }
+        
+        console.log(`📊 [${scannedCount}/${allSymbols.length}] فحص ${symbol} (${currentMarketType})...`);
+        
+        // جلب البيانات
+        let candles;
+        if (currentMarketType === 'forex') {
+          candles = await forexService.getCandles(symbol, timeframe, 100);
+        } else {
+          candles = await marketData.getCandles(symbol, timeframe, 100, currentMarketType);
+        }
+        
+        if (!candles || candles.length < 50) {
+          console.log(`⚠️ بيانات غير كافية لـ ${symbol}`);
+          continue;
+        }
+        
+        // تحليل حسب النوع
+        let analysis;
+        let recommendation;
+        
+        switch (analysisType) {
+          case 'ultra':
+            analysis = new UltraAnalysis(candles);
+            recommendation = analysis.getUltraRecommendation(currentMarketType, 'spot', timeframe);
+            break;
+          case 'zero-reversal':
+            analysis = new ZeroReversalAnalysis(candles);
+            recommendation = analysis.getZeroReversalRecommendation(currentMarketType, 'spot', timeframe);
+            break;
+          case 'v1-pro':
+            analysis = new V1ProAnalysis(candles);
+            recommendation = await analysis.getCompleteAnalysis(currentMarketType, 'spot', timeframe);
+            break;
+          default:
+            analysis = new TechnicalAnalysis(candles);
+            recommendation = analysis.getTradeRecommendationWithMarketType(currentMarketType, 'spot');
+        }
+        
+        // التحقق من قوة الإشارة
+        const isStrongSignal = this.isStrongSignal(recommendation, analysisType);
+        
+        if (isStrongSignal && (recommendation.action === 'شراء' || recommendation.action === 'بيع' || recommendation.finalSignal === 'BUY' || recommendation.finalSignal === 'SELL')) {
+          const currentPrice = candles[candles.length - 1].close;
+          
+          let confidenceText = recommendation.confidence;
+          if (!confidenceText && typeof recommendation.confidenceScore === 'number' && isFinite(recommendation.confidenceScore)) {
+            confidenceText = `${(recommendation.confidenceScore * 100).toFixed(0)}%`;
+          }
+          
+          let agreementValue = 0;
+          if (typeof recommendation.agreementPercentage === 'number') {
+            agreementValue = recommendation.agreementPercentage;
+          } else if (typeof recommendation.confidenceScore === 'number' && isFinite(recommendation.confidenceScore)) {
+            agreementValue = recommendation.confidenceScore * 100;
+          }
+          
+          const signal = {
+            symbol,
+            marketType: currentMarketType,
+            action: recommendation.action || recommendation.finalSignal,
+            confidence: confidenceText,
+            confidenceScore: recommendation.confidenceScore,
+            agreementPercentage: agreementValue,
+            entryPrice: recommendation.entryPrice || currentPrice,
+            stopLoss: recommendation.stopLoss,
+            takeProfit: recommendation.takeProfit,
+            riskReward: recommendation.riskRewardRatio || recommendation.riskReward,
+            reasons: recommendation.reasons?.slice(0, 3) || [],
+            timeframe,
+            analysisType,
+            score: this.calculateScore(recommendation)
+          };
+          
+          results.push(signal);
+          
+          // إرسال الإشارة فوراً عبر callback
+          if (progressCallback) {
+            progressCallback({
+              type: 'signal',
+              signal: signal
+            });
+          }
+          
+          console.log(`✅ ${symbol}: ${recommendation.action || recommendation.finalSignal} - ${recommendation.confidence || recommendation.confidenceScore}`);
+        }
+        
+      } catch (error) {
+        errorCount++;
+        console.error(`❌ خطأ في تحليل ${symbol}:`, error.message);
+      }
+    }
+    
+    // ترتيب النتائج حسب القوة
+    results.sort((a, b) => b.score - a.score);
+    
+    console.log(`\n📈 النتائج النهائية:`);
+    console.log(`   - تم فحص: ${scannedCount} أصل`);
+    console.log(`   - صفقات قوية: ${results.length}`);
+    console.log(`   - أخطاء: ${errorCount}`);
+    
+    if (progressCallback) {
+      progressCallback({
+        type: 'complete',
+        totalScanned: scannedCount,
+        totalSignals: results.length,
+        totalErrors: errorCount
+      });
+    }
+    
+    return results;
   }
 }
 
