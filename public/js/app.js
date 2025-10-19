@@ -1549,22 +1549,22 @@ async function submitWithdraw() {
 
 async function subscribe() {
     if (userBalance < 10) {
-        tg.showAlert('رصيدك غير كافٍ للاشتراك! الاشتراك يتطلب 10 USDT');
+        tg.showAlert('❌ رصيدك غير كافٍ للاشتراك!\n\nالرصيد الحالي: ' + userBalance.toFixed(2) + ' USDT\nالمطلوب: 10 USDT\n\nقم بإيداع المبلغ المطلوب من قسم المحفظة أولاً.');
         return;
     }
 
     tg.showConfirm(
-        'هل تريد الاشتراك لمدة شهر مقابل 10 USDT؟',
+        '💳 الاشتراك الشهري\n\nالسعر: 10 USDT\nالمدة: 30 يوم\n\nرصيدك بعد الاشتراك: ' + (userBalance - 10).toFixed(2) + ' USDT\n\nهل تريد المتابعة؟',
         async (confirmed) => {
             if (confirmed) {
-                tg.sendData(JSON.stringify({
-                    action: 'subscribe'
-                }));
-                tg.showAlert('تم تفعيل الاشتراك بنجاح!');
-                setTimeout(() => {
-                    loadSubscription();
-                    init();
-                }, 1000);
+                try {
+                    tg.sendData(JSON.stringify({
+                        action: 'subscribe'
+                    }));
+                } catch (error) {
+                    console.error('Error sending subscription data:', error);
+                    tg.showAlert('❌ حدث خطأ في معالجة الاشتراك. يرجى المحاولة مرة أخرى.');
+                }
             }
         }
     );

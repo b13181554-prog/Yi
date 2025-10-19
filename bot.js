@@ -73,30 +73,6 @@ ${t(lang, 'after_subscribe')} /start
   return true;
 }
 
-async function checkSubscription(userId) {
-  const user = await db.getUser(userId);
-  
-  if (!user) return { active: false, reason: 'not_registered' };
-  
-  if (user.free_trial_used === false) {
-    const trialEnd = new Date(user.free_trial_start);
-    trialEnd.setDate(trialEnd.getDate() + config.FREE_TRIAL_DAYS);
-    
-    if (new Date() <= trialEnd) {
-      return { active: true, type: 'trial', daysLeft: Math.ceil((trialEnd - new Date()) / (1000 * 60 * 60 * 24)) };
-    } else {
-      await db.updateUser(userId, { free_trial_used: true });
-      return { active: false, reason: 'trial_expired' };
-    }
-  }
-  
-  if (user.subscription_expires && new Date(user.subscription_expires) > new Date()) {
-    return { active: true, type: 'paid', expiresAt: user.subscription_expires };
-  }
-  
-  return { active: false, reason: 'no_subscription' };
-}
-
 bot.onText(/\/start(.*)/, async (msg, match) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
@@ -221,7 +197,7 @@ ${t(userLang, 'press_button_below')}
         }
       });
     } else {
-      const subscription = await checkSubscription(userId);
+      const subscription = await db.checkSubscription(userId);
       let statusMessage = '';
       
       if (subscription.active) {
@@ -354,7 +330,7 @@ ${t(lang, 'choose_from_menu')}
       });
     } else if (text === '🔙 العودة للقائمة الرئيسية' || text === '🔙 Back to Main Menu' || text === '🔙 Retour au menu principal' || text === '🔙 Volver al menú principal' || text === '🔙 Zurück zum Hauptmenü' || text === '🔙 Вернуться в главное меню' || text === '🔙 返回主菜单') {
       const firstName = msg.from.first_name;
-      const subscription = await checkSubscription(userId);
+      const subscription = await db.checkSubscription(userId);
       let statusMessage = '';
       
       if (subscription.active) {
@@ -478,7 +454,7 @@ bot.on('callback_query', async (query) => {
       
       const user = await db.getUser(userId);
       const firstName = query.from.first_name;
-      const subscription = await checkSubscription(userId);
+      const subscription = await db.checkSubscription(userId);
       let statusMessage = '';
       
       if (subscription.active) {
@@ -518,7 +494,7 @@ ${statusMessage}
       const user = await db.getUser(userId);
       const lang = user ? (user.language || 'ar') : 'ar';
       const firstName = query.from.first_name;
-      const subscription = await checkSubscription(userId);
+      const subscription = await db.checkSubscription(userId);
       let statusMessage = '';
       
       if (subscription.active) {
