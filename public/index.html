@@ -30,10 +30,6 @@
                     <span class="icon">🔥</span>
                     <span data-i18n="nav_movers">الأفضل</span>
                 </button>
-                <button class="nav-btn" onclick="showSection('scanner-section', event)">
-                    <span class="icon">👑</span>
-                    <span data-i18n="nav_vip_search">VIP</span>
-                </button>
                 <button class="nav-btn" onclick="showSection('wallet-section', event)">
                     <span class="icon">💳</span>
                     <span data-i18n="nav_wallet">المحفظة</span>
@@ -176,98 +172,6 @@
                 </div>
                 <div id="movers-list" class="movers-list">
                     <p class="empty-state" data-i18n="empty_state_loading">جاري التحميل...</p>
-                </div>
-            </div>
-
-            <!-- VIP البحث الذكي -->
-            <div id="scanner-section" class="section">
-                <div class="section-header">
-                    <h2 data-i18n="vip_search_title">👑 VIP البحث الذكي</h2>
-                    <p style="color: #666; font-size: 14px; margin-top: 5px;" data-i18n="vip_search_desc">البحث المتقدم عن أفضل الفرص في جميع الأسواق بتقنية الذكاء الاصطناعي</p>
-                    
-                    <!-- VIP Subscription Status -->
-                    <div id="vip-search-status" style="margin-top: 15px; padding: 12px; border-radius: 8px; display: none;">
-                        <!-- Will be populated by JavaScript -->
-                    </div>
-                </div>
-
-                <div class="analysis-controls">
-                    <div class="form-group">
-                        <label>نوع السوق:</label>
-                        <select id="scanner-market-type">
-                            <option value="all">🌐 جميع الأسواق</option>
-                            <option value="crypto">💎 العملات الرقمية</option>
-                            <option value="forex">💱 الفوركس</option>
-                            <option value="stocks">📈 الأسهم</option>
-                            <option value="commodities">🛢️ السلع</option>
-                            <option value="indices">📊 المؤشرات</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>نوع التحليل:</label>
-                        <select id="scanner-analysis-type">
-                            <option value="regular">📊 تحليل عادي</option>
-                            <option value="master">👑 Master Analysis</option>
-                            <option value="ultra">💎 Ultra Analysis</option>
-                            <option value="zero-reversal" selected>⛔ Zero Reversal</option>
-                            <option value="v1-pro">🤖 V1 PRO AI</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>الإطار الزمني:</label>
-                        <select id="scanner-timeframe">
-                            <option value="1m">1 دقيقة</option>
-                            <option value="5m">5 دقائق</option>
-                            <option value="15m">15 دقيقة</option>
-                            <option value="30m">30 دقيقة</option>
-                            <option value="1h" selected>1 ساعة</option>
-                            <option value="4h">4 ساعات</option>
-                            <option value="1d">يوم</option>
-                        </select>
-                    </div>
-
-                    <button id="start-scanner-btn" class="submit-btn" onclick="startSmartScanner()" style="font-size: 18px; padding: 16px; margin-top: 10px; background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); border: none; color: white; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5); transition: all 0.3s;" data-i18n="vip_search_start_btn">
-                        👑 بدء البحث الذكي VIP
-                    </button>
-                    <button id="stop-scanner-btn" class="cancel-btn" onclick="stopSmartScanner()" style="display: none; font-size: 18px; padding: 16px; margin-top: 10px; width: 100%;" data-i18n="vip_search_stop_btn">
-                        ⏸️ إيقاف البحث
-                    </button>
-                </div>
-
-                <div id="scanner-progress" style="display: none; margin-top: 20px;">
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px;">
-                        <h3 style="margin: 0 0 15px 0; font-size: 18px;">📊 حالة المسح</h3>
-                        <div style="background: rgba(255,255,255,0.2); border-radius: 8px; padding: 15px; margin-bottom: 10px;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <span>🔄 الحالة:</span>
-                                <strong id="scanner-status">جاري المسح...</strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <span>📈 تم الفحص:</span>
-                                <strong><span id="scanned-count">0</span> / <span id="total-count">0</span></strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <span>✅ إشارات قوية:</span>
-                                <strong id="signals-found">0</strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>⏱️ الوقت المتبقي:</span>
-                                <strong id="time-remaining">حساب...</strong>
-                            </div>
-                        </div>
-                        <div style="background: rgba(255,255,255,0.3); border-radius: 8px; height: 8px; overflow: hidden;">
-                            <div id="scanner-progress-bar" style="background: #00ff00; height: 100%; width: 0%; transition: width 0.3s;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="scanner-results" style="display: none; margin-top: 20px;">
-                    <h3 style="color: #fff; margin-bottom: 15px;">✨ النتائج المباشرة</h3>
-                    <div id="scanner-results-container">
-                        <!-- النتائج ستظهر هنا -->
-                    </div>
                 </div>
             </div>
 
