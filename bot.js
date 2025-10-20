@@ -803,56 +803,85 @@ ID: ${userId}
     }
     
     else if (data.action === 'subscribe') {
+      console.log(`📝 محاولة اشتراك للمستخدم ${userId} - الرصيد: ${user.balance} USDT`);
+      
       if (user.balance < config.SUBSCRIPTION_PRICE) {
+        console.log(`❌ رصيد غير كافٍ للمستخدم ${userId}`);
         return safeSendMessage(bot, chatId, '❌ رصيدك غير كافٍ للاشتراك!');
       }
       
-      await db.updateUserBalance(userId, -config.SUBSCRIPTION_PRICE);
-      
-      const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + 30);
-      
-      await db.updateUser(userId, { 
-        subscription_expires: expiryDate,
-        free_trial_used: true 
-      });
-      
-      await db.createTransaction({
-        user_id: userId,
-        type: 'subscription',
-        amount: config.SUBSCRIPTION_PRICE,
-        status: 'completed'
-      });
-      
-      let referralCommission = 0;
-      let referrerId = null;
-      let referralType = '';
-      
-      if (user.referred_by_analyst) {
-        referralCommission = config.SUBSCRIPTION_PRICE * 0.2;
-        referrerId = user.referred_by_analyst;
-        referralType = 'analyst_referral';
-      } else if (user.referred_by) {
-        referralCommission = config.SUBSCRIPTION_PRICE * 0.1;
-        referrerId = user.referred_by;
-        referralType = 'subscription';
-      }
-      
-      const ownerShare = config.SUBSCRIPTION_PRICE - referralCommission;
-      
-      await db.updateUserBalance(config.OWNER_ID, ownerShare);
-      
-      if (referrerId) {
-        await db.updateUserBalance(referrerId, referralCommission);
-        await db.addReferralEarning(referrerId, userId, referralType, config.SUBSCRIPTION_PRICE, referralCommission);
-      }
-      
-      await safeSendMessage(bot, chatId, `
-✅ <b>تم تفعيل الاشتراك!</b>
+      try {
+        console.log(`⏳ بدء عملية الاشتراك للمستخدم ${userId}`);
+        
+        let referralCommission = 0;
+        let referrerId = null;
+        let referralType = '';
+        
+        if (user.referred_by_analyst) {
+          referralCommission = config.SUBSCRIPTION_PRICE * 0.2;
+          referrerId = user.referred_by_analyst;
+          referralType = 'analyst_referral';
+        } else if (user.referred_by) {
+          referralCommission = config.SUBSCRIPTION_PRICE * 0.1;
+          referrerId = user.referred_by;
+          referralType = 'subscription';
+        }
+        
+        const result = await db.processSubscriptionPayment(userId, {
+          amount: config.SUBSCRIPTION_PRICE,
+          referrerId: referrerId,
+          referralType: referralType,
+          referralCommission: referralCommission,
+          ownerId: config.OWNER_ID
+        });
+        
+        if (!result.success) {
+          throw new Error('فشل في معالجة الاشتراك');
+        }
+        
+        const expiryDate = result.expiryDate;
+        console.log(`✅ اشتراك ناجح للمستخدم ${userId} - صالح حتى ${expiryDate.toLocaleDateString('ar')}`);
+        
+        await safeSendMessage(bot, chatId, `
+✅ <b>تم تفعيل الاشتراك بنجاح!</b>
 
-صالح حتى: ${expiryDate.toLocaleDateString('ar')}
-استمتع بجميع الميزات! 🎉
+💳 <b>المبلغ المخصوم:</b> ${config.SUBSCRIPTION_PRICE} USDT
+📅 <b>صالح حتى:</b> ${expiryDate.toLocaleDateString('ar')}
+💰 <b>رصيدك الحالي:</b> ${(user.balance - config.SUBSCRIPTION_PRICE).toFixed(2)} USDT
+
+🎉 استمتع بجميع ميزات البوت!
 `, { parse_mode: 'HTML' });
+        
+        await safeSendMessage(bot, config.OWNER_ID, `
+💰 <b>اشتراك جديد</b>
+
+👤 المستخدم: ${user.first_name} (@${user.username || 'بدون معرف'})
+🆔 ID: ${userId}
+💵 المبلغ: ${config.SUBSCRIPTION_PRICE} USDT
+📅 صالح حتى: ${expiryDate.toLocaleDateString('ar')}
+${referrerId ? `🎁 عمولة إحالة: ${referralCommission} USDT` : ''}
+`, { parse_mode: 'HTML' });
+        
+      } catch (error) {
+        console.error(`❌ خطأ في عملية الاشتراك للمستخدم ${userId}:`, error);
+        
+        await safeSendMessage(bot, chatId, `
+❌ <b>حدث خطأ في معالجة الاشتراك</b>
+
+${error.message || 'خطأ غير متوقع'}
+
+يرجى المحاولة مرة أخرى أو التواصل مع الدعم.
+💰 في حالة خصم أي مبلغ، سيتم إرجاعه تلقائياً.
+`, { parse_mode: 'HTML' });
+        
+        await safeSendMessage(bot, config.OWNER_ID, `
+⚠️ <b>فشل في عملية الاشتراك</b>
+
+المستخدم: ${user.first_name} (@${user.username || 'بدون معرف'})
+ID: ${userId}
+الخطأ: ${error.message}
+`, { parse_mode: 'HTML' });
+      }
     }
     
     else if (data.action === 'register_analyst') {

@@ -216,6 +216,186 @@ async function activateSubscription(userId, paymentMethod = 'balance') {
   return endDate;
 }
 
+async function processSubscriptionPayment(userId, subscriptionData) {
+  const { 
+    amount, 
+    referrerId, 
+    referralType, 
+    referralCommission, 
+    ownerId 
+  } = subscriptionData;
+  
+  if (client && client.startSession) {
+    try {
+      const session = client.startSession();
+      let result;
+      
+      try {
+        await session.withTransaction(async () => {
+          const user = await db.collection('users').findOne({ user_id: userId }, { session });
+          
+          if (!user) {
+            throw new Error('المستخدم غير موجود');
+          }
+          
+          if (user.balance < amount) {
+            throw new Error('الرصيد غير كافٍ');
+          }
+          
+          await db.collection('users').updateOne(
+            { user_id: userId },
+            { $inc: { balance: -amount } },
+            { session }
+          );
+          
+          const expiryDate = new Date();
+          expiryDate.setDate(expiryDate.getDate() + 30);
+          
+          await db.collection('users').updateOne(
+            { user_id: userId },
+            { 
+              $set: { 
+                subscription_expires: expiryDate,
+                free_trial_used: true 
+              } 
+            },
+            { session }
+          );
+          
+          await db.collection('subscriptions').insertOne({
+            user_id: userId,
+            amount: amount,
+            start_date: new Date(),
+            end_date: expiryDate,
+            payment_method: 'balance'
+          }, { session });
+          
+          await db.collection('transactions').insertOne({
+            user_id: userId,
+            type: 'subscription',
+            amount: amount,
+            status: 'completed',
+            tx_id: null,
+            payment_method: 'balance',
+            created_at: new Date()
+          }, { session });
+          
+          const ownerShare = amount - referralCommission;
+          await db.collection('users').updateOne(
+            { user_id: ownerId },
+            { $inc: { balance: ownerShare } },
+            { session }
+          );
+          
+          if (referrerId && referralCommission > 0) {
+            await db.collection('users').updateOne(
+              { user_id: referrerId },
+              { $inc: { balance: referralCommission, referral_earnings: referralCommission } },
+              { session }
+            );
+            
+            await db.collection('referral_earnings').insertOne({
+              referrer_id: referrerId,
+              referred_id: userId,
+              transaction_type: referralType,
+              amount: amount,
+              commission: referralCommission,
+              created_at: new Date()
+            }, { session });
+          }
+          
+          result = { success: true, expiryDate };
+        });
+        
+        return result;
+      } finally {
+        await session.endSession();
+      }
+    } catch (transactionError) {
+      if (transactionError.message && 
+          (transactionError.message.includes('Transaction') || 
+           transactionError.message.includes('replica set') ||
+           transactionError.message.includes('session'))) {
+        console.warn('⚠️ MongoDB transactions not supported - using fallback approach');
+      } else {
+        throw transactionError;
+      }
+    }
+  }
+  
+  console.warn('⚠️ Using fallback two-phase approach for subscription (no transactions)');
+  
+  const user = await getUser(userId);
+  
+  if (!user) {
+    throw new Error('المستخدم غير موجود');
+  }
+  
+  if (user.balance < amount) {
+    throw new Error('الرصيد غير كافٍ');
+  }
+  
+  await db.collection('users').updateOne(
+    { user_id: userId },
+    { $inc: { balance: -amount } }
+  );
+  
+  const expiryDate = new Date();
+  expiryDate.setDate(expiryDate.getDate() + 30);
+  
+  await db.collection('users').updateOne(
+    { user_id: userId },
+    { 
+      $set: { 
+        subscription_expires: expiryDate,
+        free_trial_used: true 
+      } 
+    }
+  );
+  
+  await db.collection('subscriptions').insertOne({
+    user_id: userId,
+    amount: amount,
+    start_date: new Date(),
+    end_date: expiryDate,
+    payment_method: 'balance'
+  });
+  
+  await db.collection('transactions').insertOne({
+    user_id: userId,
+    type: 'subscription',
+    amount: amount,
+    status: 'completed',
+    tx_id: null,
+    payment_method: 'balance',
+    created_at: new Date()
+  });
+  
+  const ownerShare = amount - referralCommission;
+  await db.collection('users').updateOne(
+    { user_id: ownerId },
+    { $inc: { balance: ownerShare } }
+  );
+  
+  if (referrerId && referralCommission > 0) {
+    await db.collection('users').updateOne(
+      { user_id: referrerId },
+      { $inc: { balance: referralCommission, referral_earnings: referralCommission } }
+    );
+    
+    await db.collection('referral_earnings').insertOne({
+      referrer_id: referrerId,
+      referred_id: userId,
+      transaction_type: referralType,
+      amount: amount,
+      commission: referralCommission,
+      created_at: new Date()
+    });
+  }
+  
+  return { success: true, expiryDate };
+}
+
 async function createTransaction(userId, type, amount, txId = null, walletAddress = null, status = 'completed') {
   const transaction = {
     user_id: userId,
@@ -1833,6 +2013,7 @@ module.exports = {
   getUserBalance,
   isSubscriptionActive,
   activateSubscription,
+  processSubscriptionPayment,
   createTransaction,
   getTransactionByTxId,
   createSubscription,
