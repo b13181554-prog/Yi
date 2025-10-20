@@ -577,10 +577,29 @@
                     <h3 data-i18n="monthly_subscription_title">⭐ الاشتراك الشهري</h3>
                     <div class="price">10 USDT</div>
                     <p class="period" data-i18n="price_per_month">شهرياً</p>
+                    
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: right;">
+                        <p style="margin: 0 0 10px 0; color: #555; font-size: 14px;">
+                            <strong>✨ مميزات الاشتراك:</strong>
+                        </p>
+                        <ul style="margin: 0; padding-right: 20px; color: #666; font-size: 13px;">
+                            <li>✅ وصول كامل لجميع أدوات التحليل الفني</li>
+                            <li>✅ تحليلات متقدمة (Ultra, Zero Reversal, V1 Pro AI)</li>
+                            <li>✅ إشعارات فورية للفرص القوية</li>
+                            <li>✅ تحليل جميع الأسواق (عملات، فوركس، أسهم...)</li>
+                            <li>✅ دعم فني على مدار الساعة</li>
+                        </ul>
+                    </div>
+                    
                     <div id="sub-details" class="sub-details"></div>
-                    <button class="subscribe-btn" id="subscribe-btn" onclick="subscribe()" data-i18n="subscribe_now_btn">
-                        اشترك الآن
-                    </button>
+                    <div id="subscription-action-area">
+                        <button class="subscribe-btn" id="subscribe-btn" onclick="subscribe()" data-i18n="subscribe_now_btn">
+                            اشترك الآن
+                        </button>
+                        <button class="deposit-quick-btn" id="deposit-quick-btn" onclick="showSection('wallet-section'); document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); document.querySelector('[onclick*=wallet-section]').classList.add('active');" style="display: none; margin-top: 10px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%;">
+                            📥 اذهب للإيداع
+                        </button>
+                    </div>
                 </div>
 
                 <div class="referral-section">

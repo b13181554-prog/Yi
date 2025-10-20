@@ -1557,6 +1557,11 @@ async function subscribe() {
                     tg.sendData(JSON.stringify({
                         action: 'subscribe'
                     }));
+                    
+                    setTimeout(async () => {
+                        await loadUserData();
+                        await loadSubscription();
+                    }, 2000);
                 } catch (error) {
                     console.error('Error sending subscription data:', error);
                     tg.showAlert('❌ حدث خطأ في معالجة الاشتراك. يرجى المحاولة مرة أخرى.');
@@ -1635,22 +1640,58 @@ async function loadSubscription() {
             const statusEl = document.getElementById('subscription-status');
             const detailsEl = document.getElementById('sub-details');
             const subscribeBtn = document.getElementById('subscribe-btn');
+            const depositQuickBtn = document.getElementById('deposit-quick-btn');
 
             if (data.subscription.active) {
                 if (data.subscription.type === 'trial') {
                     statusEl.textContent = `🎁 فترة تجريبية (${data.subscription.daysLeft} يوم متبقي)`;
-                    detailsEl.innerHTML = `<p>تنتهي الفترة التجريبية قريباً. قم بالاشتراك للاستمرار!</p>`;
+                    detailsEl.innerHTML = `<p style="color: #ff9800; font-weight: bold;">⏰ تنتهي الفترة التجريبية قريباً. قم بالاشتراك للاستمرار!</p>`;
                 } else {
                     statusEl.textContent = `✅ نشط`;
-                    detailsEl.innerHTML = `<p>صالح حتى: ${new Date(data.subscription.expiresAt).toLocaleDateString('ar-SA')}</p>`;
+                    detailsEl.innerHTML = `<p style="color: #4CAF50;">صالح حتى: ${new Date(data.subscription.expiresAt).toLocaleDateString('ar-SA')}</p>`;
                 }
                 subscribeBtn.disabled = true;
                 subscribeBtn.textContent = 'الاشتراك نشط';
+                subscribeBtn.style.background = '#ccc';
+                if (depositQuickBtn) depositQuickBtn.style.display = 'none';
             } else {
                 statusEl.textContent = `❌ غير نشط`;
-                detailsEl.innerHTML = `<p>قم بتجديد اشتراكك للاستمرار</p>`;
-                subscribeBtn.disabled = false;
-                subscribeBtn.textContent = 'اشترك الآن';
+                const currentBalance = userBalance || 0;
+                const subscriptionPrice = 10;
+                
+                if (currentBalance < subscriptionPrice) {
+                    const needed = (subscriptionPrice - currentBalance).toFixed(2);
+                    detailsEl.innerHTML = `
+                        <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 12px; border-radius: 8px; margin: 10px 0; text-align: right;">
+                            <p style="margin: 0 0 8px 0; color: #856404; font-weight: bold;">⚠️ رصيدك غير كافٍ للاشتراك</p>
+                            <p style="margin: 0; color: #856404; font-size: 13px;">
+                                💰 رصيدك: ${currentBalance.toFixed(2)} USDT<br>
+                                💎 المطلوب: ${subscriptionPrice} USDT<br>
+                                📥 تحتاج لإيداع: <strong>${needed} USDT</strong> على الأقل
+                            </p>
+                        </div>
+                    `;
+                    subscribeBtn.disabled = true;
+                    subscribeBtn.textContent = 'رصيد غير كافٍ';
+                    subscribeBtn.style.background = '#ccc';
+                    if (depositQuickBtn) {
+                        depositQuickBtn.style.display = 'block';
+                        depositQuickBtn.innerHTML = `📥 إيداع الآن (تحتاج ${needed}+ USDT)`;
+                    }
+                } else {
+                    detailsEl.innerHTML = `
+                        <div style="background: #d4edda; border: 2px solid #28a745; padding: 12px; border-radius: 8px; margin: 10px 0; text-align: right;">
+                            <p style="margin: 0; color: #155724; font-weight: bold;">
+                                ✅ رصيدك كافٍ! يمكنك الاشتراك الآن<br>
+                                <span style="font-size: 13px; font-weight: normal;">💰 رصيدك: ${currentBalance.toFixed(2)} USDT</span>
+                            </p>
+                        </div>
+                    `;
+                    subscribeBtn.disabled = false;
+                    subscribeBtn.textContent = '⭐ اشترك الآن (10 USDT)';
+                    subscribeBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    if (depositQuickBtn) depositQuickBtn.style.display = 'none';
+                }
             }
         }
     } catch (error) {
@@ -1792,6 +1833,8 @@ async function checkPaymentStatus(paymentAddress) {
                 balanceElements.forEach(el => {
                     if (el) el.textContent = `${userBalance.toFixed(2)} USDT`;
                 });
+
+                await loadSubscription();
 
                 tg.showAlert('✅ تم تأكيد الإيداع بنجاح! تم تحديث رصيدك.');
                 
@@ -2024,7 +2067,45 @@ async function analyzeMarketAdvanced() {
                 displayAdvancedAnalysisResult(data.analysis, symbol, timeframe, analysisType);
             }
         } else {
-            alert('❌ خطأ: ' + (data.error || 'فشل التحليل'));
+            if (data.requires_subscription) {
+                const currentBalance = userBalance || 0;
+                const subscriptionPrice = 10;
+                const needsDeposit = currentBalance < subscriptionPrice;
+                
+                let message = `❌ ${data.error}\n\n`;
+                message += `💎 الاشتراك الشهري: ${subscriptionPrice} USDT\n`;
+                message += `💰 رصيدك الحالي: ${currentBalance.toFixed(2)} USDT\n\n`;
+                
+                if (needsDeposit) {
+                    message += `⚠️ رصيدك غير كافٍ!\n`;
+                    message += `📥 المطلوب: قم بالإيداع أولاً من قسم "المحفظة"\n`;
+                    message += `ثم اذهب إلى "حسابي" للاشتراك`;
+                } else {
+                    message += `✅ رصيدك كافٍ!\n`;
+                    message += `اضغط "موافق" للذهاب إلى صفحة الاشتراك`;
+                }
+                
+                if (tg.showAlert) {
+                    tg.showAlert(message);
+                }
+                
+                if (!needsDeposit && tg.showConfirm) {
+                    tg.showConfirm(message, (confirmed) => {
+                        if (confirmed) {
+                            showSection('profile-section');
+                            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                            const profileBtn = document.querySelector('[onclick*="profile-section"]');
+                            if (profileBtn) profileBtn.classList.add('active');
+                        }
+                    });
+                } else {
+                    if (!tg.showAlert) {
+                        alert(message);
+                    }
+                }
+            } else {
+                alert('❌ خطأ: ' + (data.error || 'فشل التحليل'));
+            }
         }
     } catch (error) {
         loadingMsg.remove();
