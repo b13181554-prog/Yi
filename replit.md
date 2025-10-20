@@ -44,6 +44,14 @@ The project uses MongoDB Atlas for its database, designed for 24/7 operation wit
 
 **Subscription UX Enhancements**: Improved error messages for analysis without active subscriptions, providing balance display and navigation to the subscription page. The subscription page features comprehensive benefits, a real-time balance indicator, and a quick deposit button. Auto-update functionality ensures balance and subscription status are always current.
 
+**Robust Subscription Payment System** (October 2025): The subscription payment processing has been fully re-engineered for reliability and data integrity:
+- **MongoDB Transactions**: All subscription operations (balance deduction, subscription activation, transaction recording, referral commissions) are wrapped in atomic MongoDB sessions when available, ensuring either complete success or automatic rollback
+- **Graceful Fallback**: System automatically falls back to two-phase operations when MongoDB transactions are unavailable, maintaining backward compatibility
+- **Comprehensive Error Handling**: Every step is validated with detailed logging; failures trigger automatic rollback and user notification
+- **Referral Integrity**: Both referrer balance and `referral_earnings` counter are updated atomically, ensuring accurate commission tracking and reporting
+- **Owner Notifications**: Admins receive real-time notifications for all subscription events (success and failures) with detailed user information
+- **Enhanced User Feedback**: Users receive clear confirmation messages showing deducted amount, new balance, and subscription expiry date
+
 ## External Dependencies
 
 -   **Databases**: MongoDB Atlas
