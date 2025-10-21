@@ -22,6 +22,7 @@ const { addPaymentCallback, getQueueStats } = require('./payment-callback-queue'
 const monitoringService = require('./monitoring-service');
 const { startWithdrawalScheduler } = require('./withdrawal-scheduler');
 const { safeSendMessage, safeSendPhoto, safeEditMessageText } = require('./safe-message');
+const { getDashboardData, exportReport, getCostStats, getAPIBreakdown, getOptimizationSuggestions, setAlerts } = require('./api-cost-tracker');
 
 // Groq AI - Free and fast alternative to OpenAI
 let groq = null;
@@ -119,6 +120,106 @@ app.get('/api/system/status', async (req, res) => {
     res.json({
       success: true,
       ...status
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.get('/api/admin/costs', async (req, res) => {
+  try {
+    const dashboardData = await getDashboardData();
+    res.json({
+      success: true,
+      data: dashboardData
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.get('/api/admin/costs/stats/:period', async (req, res) => {
+  try {
+    const { period } = req.params;
+    const stats = await getCostStats(period);
+    res.json({
+      success: true,
+      stats
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.get('/api/admin/costs/breakdown', async (req, res) => {
+  try {
+    const breakdown = await getAPIBreakdown();
+    res.json({
+      success: true,
+      breakdown
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.get('/api/admin/costs/suggestions', async (req, res) => {
+  try {
+    const suggestions = await getOptimizationSuggestions();
+    res.json({
+      success: true,
+      suggestions
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.get('/api/admin/costs/export/:format/:period', async (req, res) => {
+  try {
+    const { format, period } = req.params;
+    const report = await exportReport(format, period);
+    
+    if (format === 'csv') {
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=api-costs-${period}-${Date.now()}.csv`);
+      res.send(report);
+    } else {
+      res.json({
+        success: true,
+        report
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.post('/api/admin/costs/alerts', async (req, res) => {
+  try {
+    const thresholds = req.body;
+    const alerts = await setAlerts(thresholds);
+    res.json({
+      success: true,
+      alerts
     });
   } catch (error) {
     res.status(500).json({
