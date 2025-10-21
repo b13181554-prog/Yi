@@ -552,6 +552,76 @@ app.post('/api/subscription', async (req, res) => {
   }
 });
 
+app.post('/api/subscribe', async (req, res) => {
+  try {
+    const { user_id, init_data } = req.body;
+    
+    if (!verifyTelegramWebAppData(init_data)) {
+      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
+    }
+    
+    const user = await db.getUser(user_id);
+    if (!user) {
+      return res.json({ success: false, error: 'المستخدم غير موجود' });
+    }
+    
+    if (user.subscription_expires && new Date(user.subscription_expires) > new Date()) {
+      return res.json({ success: false, error: 'لديك اشتراك نشط بالفعل' });
+    }
+    
+    if (user.balance < config.SUBSCRIPTION_PRICE) {
+      return res.json({ success: false, error: 'رصيدك غير كافٍ للاشتراك' });
+    }
+    
+    let referralCommission = 0;
+    let referrerId = null;
+    let referralType = '';
+    
+    if (user.referred_by) {
+      referralCommission = config.SUBSCRIPTION_PRICE * 0.1;
+      referrerId = user.referred_by;
+      referralType = 'subscription';
+    }
+    
+    const result = await db.processSubscriptionPayment(user_id, {
+      amount: config.SUBSCRIPTION_PRICE,
+      referrerId: referrerId,
+      referralType: referralType,
+      referralCommission: referralCommission,
+      ownerId: config.OWNER_ID
+    });
+    
+    if (!result.success) {
+      throw new Error('فشل في معالجة الاشتراك');
+    }
+    
+    const expiryDate = result.expiryDate;
+    const updatedUser = await db.getUser(user_id);
+    
+    safeSendMessage(bot, config.OWNER_ID, `
+🎉 <b>اشتراك جديد!</b>
+
+👤 المستخدم: ${user.first_name} ${user.username ? `(@${user.username})` : ''}
+💵 المبلغ: ${config.SUBSCRIPTION_PRICE} USDT
+📅 صالح حتى: ${expiryDate.toLocaleDateString('ar')}
+${referrerId ? `\n🔗 عبر إحالة: نعم (${referralCommission} USDT)` : ''}
+`, { parse_mode: 'HTML' }).catch(err => console.error('Error notifying owner:', err));
+    
+    res.json({ 
+      success: true, 
+      subscription: {
+        expiresAt: expiryDate,
+        newBalance: updatedUser.balance,
+        amountPaid: config.SUBSCRIPTION_PRICE
+      },
+      message: 'تم الاشتراك بنجاح! اشتراكك نشط الآن لمدة 30 يوم' 
+    });
+  } catch (error) {
+    console.error('Subscribe API Error:', error);
+    res.json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/referral-stats', async (req, res) => {
   try {
     const { user_id, init_data } = req.body;
