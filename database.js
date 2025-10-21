@@ -481,15 +481,26 @@ async function getPendingWithdrawals() {
 }
 
 async function approveWithdrawal(requestId) {
-  await db.collection('withdrawal_requests').updateOne(
-    { _id: new ObjectId(requestId) },
+  // استخدام findOneAndUpdate مع شرط الحالة لمنع السحب المزدوج
+  const result = await db.collection('withdrawal_requests').findOneAndUpdate(
+    { 
+      _id: new ObjectId(requestId),
+      status: 'pending' // ✅ التحقق من أن الحالة pending فقط
+    },
     { 
       $set: { 
         status: 'approved', 
         processed_at: new Date() 
       } 
-    }
+    },
+    { returnDocument: 'after' }
   );
+  
+  if (!result.value) {
+    throw new Error('طلب السحب غير موجود أو تم معالجته مسبقاً');
+  }
+  
+  return result.value;
 }
 
 async function rejectWithdrawal(requestId) {

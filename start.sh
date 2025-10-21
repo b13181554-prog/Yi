@@ -1,15 +1,22 @@
 #!/bin/bash
 
-echo "🚀 Starting OBENTCHI Trading Bot..."
+echo "🚀 Starting OBENTCHI Trading Bot - New Architecture"
+echo "=================================================="
+echo ""
 
+# تشغيل Redis أولاً
+echo "📡 Starting Redis..."
 ./start-redis.sh
 
 if [ $? -ne 0 ]; then
   echo "⚠️ Warning: Redis failed to start"
-  echo "Continuing without Redis (some features may be disabled)"
+  echo "Some features may be limited without Redis"
 fi
 
 sleep 2
+echo ""
 
-echo "🤖 Starting Bot Server..."
-node index.js
+# تشغيل Process Manager
+echo "🎯 Starting all services via Process Manager..."
+echo ""
+node process-manager.js

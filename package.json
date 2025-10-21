@@ -4,6 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node process-manager.js",
+    "start:all": "node process-manager.js",
+    "start:http": "node services/http-server.js",
+    "start:bot": "node services/bot-worker.js",
+    "start:queue": "node services/queue-worker.js",
+    "start:scheduler": "node services/scheduler.js",
+    "dev": "node process-manager.js",
+    "legacy": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

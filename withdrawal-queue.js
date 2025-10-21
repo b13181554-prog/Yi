@@ -105,8 +105,21 @@ withdrawalQueue.process(5, async (job) => {
       throw new Error(withdrawalResult.error || 'OKX withdrawal failed');
     }
 
-    // تحديث حالة الطلب في قاعدة البيانات
-    await db.approveWithdrawal(requestId);
+    // تحديث حالة الطلب في قاعدة البيانات (مع حماية من السحب المزدوج)
+    try {
+      await db.approveWithdrawal(requestId);
+    } catch (approvalError) {
+      // إذا فشلت الموافقة (مثلاً السحب تمت معالجته مسبقاً)
+      if (approvalError.message.includes('تم معالجته مسبقاً')) {
+        logger.warn(`⚠️ Withdrawal ${requestId} was already processed - skipping duplicate`);
+        return { 
+          success: true, 
+          message: 'Already processed by another worker', 
+          duplicate_prevented: true 
+        };
+      }
+      throw approvalError;
+    }
 
     // إضافة معاملة في السجل
     await db.createTransaction(
