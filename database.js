@@ -227,7 +227,7 @@ async function processSubscriptionPayment(userId, subscriptionData) {
   
   if (client && client.startSession) {
     try {
-      const session = client.startSession();
+      const session = await client.startSession();
       let result;
       
       try {
@@ -497,7 +497,7 @@ async function rejectWithdrawal(requestId) {
   
   if (client && client.startSession) {
     try {
-      const session = client.startSession();
+      const session = await client.startSession();
       let withdrawal;
       
       try {
