@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - OBENTCHI Trading Bot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .stat-title {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .stat-icon {
+            font-size: 24px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .stat-description {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .tier-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .tier-free { background: #f3f4f6; color: #6b7280; }
+        .tier-basic { background: #dbeafe; color: #1e40af; }
+        .tier-vip { background: #fef3c7; color: #92400e; }
+        .tier-analyst { background: #d1fae5; color: #065f46; }
+        .tier-admin { background: #fce7f3; color: #9f1239; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .progress-fill.danger {
+            background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .resources-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .resource-item {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-right: 4px solid #10b981;
+        }
+
+        .resource-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .resource-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .resource-stats {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .recommendations-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .recommendation-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .recommendation-priority {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .recommendation-message {
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .recommendation-action {
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .recommendation-action:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .refresh-btn {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                📊 لوحة التحكم
+            </h1>
+            <div>
+                <span class="live-indicator">
+                    <span class="live-dot"></span>
+                    مباشر
+                </span>
+                <button class="refresh-btn" onclick="loadDashboard()">🔄 تحديث</button>
+            </div>
+        </div>
+
+        <div id="content">
+            <div class="loading">⏳ جاري تحميل البيانات...</div>
+        </div>
+    </div>
+
+    <script>
+        let userId = null;
+        let updateInterval = null;
+
+        let initData = null;
+
+        // Initialize Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            tg.ready();
+            tg.expand();
+            userId = tg.initDataUnsafe?.user?.id;
+            initData = tg.initData;
+        }
+
+        // For testing outside Telegram
+        if (!userId) {
+            const urlParams = new URLSearchParams(window.location.search);
+            userId = urlParams.get('user_id');
+            initData = urlParams.get('init_data');
+            
+            if (!userId) {
+                alert('يرجى فتح لوحة التحكم من داخل Telegram Bot');
+            }
+        }
+
+        async function loadDashboard() {
+            const content = document.getElementById('content');
+            
+            if (!userId) {
+                content.innerHTML = '<div class="error">❌ معرف المستخدم غير موجود</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/access/dashboard?user_id=${userId}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.message || 'خطأ في تحميل البيانات');
+                }
+
+                renderDashboard(data);
+            } catch (error) {
+                content.innerHTML = `<div class="error">❌ ${error.message}</div>`;
+            }
+        }
+
+        function renderDashboard(data) {
+            const { user, access_control, recommendations } = data;
+            const { tier, tier_name, resources } = access_control;
+
+            let html = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">اسم المستخدم</span>
+                            <span class="stat-icon">👤</span>
+                        </div>
+                        <div class="stat-value">@${user.username || 'غير متوفر'}</div>
+                        <div class="stat-description">User ID: ${user.user_id}</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">المستوى</span>
+                            <span class="stat-icon">🎯</span>
+                        </div>
+                        <div class="stat-value">
+                            <span class="tier-badge tier-${tier}">${tier_name}</span>
+                        </div>
+                        <div class="stat-description">مستوى الاشتراك الحالي</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">الرصيد</span>
+                            <span class="stat-icon">💰</span>
+                        </div>
+                        <div class="stat-value">${user.balance.toFixed(2)} USDT</div>
+                        <div class="stat-description">الرصيد المتاح</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">الاشتراك</span>
+                            <span class="stat-icon">⏰</span>
+                        </div>
+                        <div class="stat-value">
+                            ${user.subscription_expires ? 
+                                Math.ceil((new Date(user.subscription_expires) - new Date()) / (1000 * 60 * 60 * 24)) + ' يوم'
+                                : 'غير نشط'}
+                        </div>
+                        <div class="stat-description">
+                            ${user.subscription_expires ? 
+                                'ينتهي في ' + new Date(user.subscription_expires).toLocaleDateString('ar-EG')
+                                : 'لا يوجد اشتراك نشط'}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="resources-section">
+                    <div class="section-title">📈 استخدام الموارد</div>
+            `;
+
+            resources.forEach(resource => {
+                const percentUsed = resource.percent_used || 0;
+                const progressClass = percentUsed >= 90 ? 'danger' : percentUsed >= 80 ? 'warning' : '';
+                const limitText = resource.unlimited ? 'غير محدود' : resource.limit;
+                const remainingText = resource.unlimited ? '∞' : resource.remaining;
+
+                html += `
+                    <div class="resource-item">
+                        <div class="resource-header">
+                            <span class="resource-name">${getResourceName(resource.resource)}</span>
+                            <span class="resource-stats">
+                                ${resource.count || 0} / ${limitText}
+                                (${remainingText} متبقي)
+                            </span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill ${progressClass}" style="width: ${percentUsed}%"></div>
+                        </div>
+                        ${resource.warning ? `<div style="color: #f59e0b; font-size: 12px; margin-top: 5px;">${resource.warning}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+
+            if (recommendations && recommendations.length > 0) {
+                html += `
+                    <div class="recommendations-section">
+                        <div class="section-title">💡 التوصيات</div>
+                `;
+
+                recommendations.forEach(rec => {
+                    html += `
+                        <div class="recommendation-item">
+                            <div class="recommendation-priority">${getPriorityText(rec.priority)}</div>
+                            <div class="recommendation-message">${rec.message}</div>
+                            <button class="recommendation-action" onclick="handleAction('${rec.action}')">
+                                ${getActionText(rec.action)}
+                            </button>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+            }
+
+            document.getElementById('content').innerHTML = html;
+        }
+
+        function getResourceName(resource) {
+            const names = {
+                analysis: '📊 التحليل الفني',
+                market_data: '📈 بيانات السوق',
+                search: '🔍 البحث',
+                ai: '🤖 الذكاء الاصطناعي',
+                scanner: '🔬 ماسح السوق'
+            };
+            return names[resource] || resource;
+        }
+
+        function getPriorityText(priority) {
+            const texts = {
+                high: '⚠️ أولوية عالية',
+                medium: 'ℹ️ أولوية متوسطة',
+                low: '💡 نصيحة'
+            };
+            return texts[priority] || priority;
+        }
+
+        function getActionText(action) {
+            const texts = {
+                subscribe: '🎯 الاشتراك الآن',
+                upgrade_or_wait: '⏰ انتظر أو ترقّى',
+                become_analyst: '📊 كن محللاً'
+            };
+            return texts[action] || 'اتخاذ إجراء';
+        }
+
+        function handleAction(action) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.showAlert('سيتم تطبيق هذه الميزة قريباً!');
+            } else {
+                alert('سيتم تطبيق هذه الميزة قريباً!');
+            }
+        }
+
+        // SSE for real-time updates (optional, fallback to polling)
+        function connectSSE() {
+            if (!userId || !initData) return;
+            
+            const eventSource = new EventSource(`/api/realtime/dashboard/${userId}?init_data=${encodeURIComponent(initData)}`);
+            
+            eventSource.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                if (message.type === 'dashboard_update' && message.data) {
+                    renderDashboard(message.data);
+                }
+            };
+            
+            eventSource.onerror = (error) => {
+                console.warn('SSE connection error, falling back to polling', error);
+                eventSource.close();
+                startAutoRefresh();
+            };
+        }
+
+        // Auto-refresh every 30 seconds (fallback)
+        function startAutoRefresh() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+            updateInterval = setInterval(loadDashboard, 30000);
+        }
+
+        // Initial load
+        loadDashboard();
+        
+        // Try SSE first, fallback to polling
+        try {
+            connectSSE();
+        } catch (error) {
+            console.warn('SSE not available, using polling', error);
+            startAutoRefresh();
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        });
+    </script>
+</body>
+</html>

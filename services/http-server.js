@@ -77,6 +77,10 @@ const setupAPIRoutes = async () => {
   const accessControlRoutes = require('../api-routes/access-control-routes');
   app.use('/api/access', accessControlRoutes);
   
+  // Real-time Dashboard Routes
+  const realtimeDashboardRoutes = require('../api-routes/realtime-dashboard-routes');
+  app.use('/api/realtime', realtimeDashboardRoutes);
+  
   // User data
   app.post('/api/user', authenticateAPI, marketDataRateLimit, async (req, res) => {
     try {

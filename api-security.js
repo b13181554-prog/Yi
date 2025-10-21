@@ -44,7 +44,59 @@ function authenticateAPI(req, res, next) {
     });
   }
   
+  const urlParams = new URLSearchParams(init_data);
+  const userDataStr = urlParams.get('user');
+  if (userDataStr) {
+    try {
+      const userData = JSON.parse(userDataStr);
+      req.auth = { user_id: userData.id, user: userData };
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+    }
+  }
+  
   next();
+}
+
+// Middleware للتحقق من طلبات SSE/GET
+function authenticateSSE(req, res, next) {
+  const init_data = req.query.init_data;
+  
+  if (!init_data) {
+    return res.status(401).json({
+      success: false,
+      error: 'Unauthorized: init_data required'
+    });
+  }
+  
+  if (!verifyTelegramWebAppData(init_data)) {
+    return res.status(401).json({ 
+      success: false, 
+      error: 'Unauthorized: Invalid Telegram data' 
+    });
+  }
+  
+  const urlParams = new URLSearchParams(init_data);
+  const userDataStr = urlParams.get('user');
+  
+  if (!userDataStr) {
+    return res.status(401).json({
+      success: false,
+      error: 'Unauthorized: User data not found'
+    });
+  }
+  
+  try {
+    const userData = JSON.parse(userDataStr);
+    req.auth = { user_id: userData.id.toString(), user: userData };
+    next();
+  } catch (error) {
+    console.error('Error parsing user data:', error);
+    return res.status(401).json({
+      success: false,
+      error: 'Unauthorized: Invalid user data'
+    });
+  }
 }
 
 // Middleware لتحديد معدل الطلبات (Rate Limiting)
@@ -164,6 +216,7 @@ function validateRequestSize(req, res, next) {
 module.exports = {
   verifyTelegramWebAppData,
   authenticateAPI,
+  authenticateSSE,
   apiRateLimit,
   sanitizeInput,
   sanitizeHTML,
