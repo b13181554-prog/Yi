@@ -132,7 +132,7 @@ class OptimizedNotificationService {
       logger.info('🔍 Starting optimized market opportunities scan...');
       
       // الحصول على المستخدمين النشطين فقط مع subscription
-      const users = await db.getDatabase().collection('users').find({
+      const users = await db.getDB().collection('users').find({
         is_active: true,
         subscription_expires: { $gt: new Date() },
         notifications_enabled: { $ne: false }

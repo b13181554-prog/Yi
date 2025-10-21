@@ -67,7 +67,8 @@ paymentCallbackQueue.on('stalled', (job) => {
   logger.warn(`⚠️ Job ${job.id} stalled`);
 });
 
-paymentCallbackQueue.process(10, async (job) => {
+// معالج callbacks - سيتم تسجيله فقط من queue-worker.js
+const paymentProcessor = async (job) => {
   const { callbackData, idempotencyKey } = job.data;
   
   logger.info(`🔄 Processing payment for address: ${callbackData.address_in}`);
@@ -165,7 +166,17 @@ paymentCallbackQueue.process(10, async (job) => {
     logger.error(`❌ Payment processing error: ${error.message}`);
     throw error;
   }
-});
+};
+
+/**
+ * تسجيل معالج المدفوعات
+ * يجب استدعاؤها فقط من queue-worker.js
+ */
+function startPaymentProcessor(concurrency = 3) {
+  logger.info(`🔄 Starting payment processor with ${concurrency} workers...`);
+  paymentCallbackQueue.process(concurrency, paymentProcessor);
+  logger.info('✅ Payment processor started');
+}
 
 async function addPaymentCallback(callbackData, idempotencyKey) {
   const jobId = `payment-${callbackData.address_in}-${idempotencyKey}`;
@@ -234,5 +245,6 @@ module.exports = {
   addPaymentCallback,
   getQueueStats,
   retryFailed,
-  cleanQueue
+  cleanQueue,
+  startPaymentProcessor // دالة جديدة لتسجيل المعالج
 };

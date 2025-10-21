@@ -71,8 +71,8 @@ withdrawalQueue.on('stalled', (job) => {
   logger.warn(`⚠️ Withdrawal job ${job.id} stalled`);
 });
 
-// معالجة السحوبات - 5 workers متزامنة
-withdrawalQueue.process(5, async (job) => {
+// معالج السحوبات - سيتم تسجيله فقط من queue-worker.js
+const withdrawalProcessor = async (job) => {
   const { requestId, userId, amount, walletAddress, userName } = job.data;
   
   logger.info(`🔄 Processing withdrawal for user ${userId}: ${amount} USDT to ${walletAddress}`);
@@ -174,7 +174,17 @@ withdrawalQueue.process(5, async (job) => {
     
     throw error; // للـ retry
   }
-});
+};
+
+/**
+ * تسجيل معالج السحوبات
+ * يجب استدعاؤها فقط من queue-worker.js
+ */
+function startWithdrawalProcessor(concurrency = 5) {
+  logger.info(`🔄 Starting withdrawal processor with ${concurrency} workers...`);
+  withdrawalQueue.process(concurrency, withdrawalProcessor);
+  logger.info('✅ Withdrawal processor started');
+}
 
 /**
  * إضافة طلب سحب للـ Queue
@@ -310,5 +320,6 @@ module.exports = {
   getFailedWithdrawals,
   retryFailedWithdrawals,
   cleanWithdrawalQueue,
-  closeWithdrawalQueue
+  closeWithdrawalQueue,
+  startWithdrawalProcessor // دالة جديدة لتسجيل المعالج
 };

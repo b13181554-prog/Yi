@@ -40,7 +40,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 // Health check (بدون rate limiting)
 app.get('/api/health', async (req, res) => {
   try {
-    const dbHealthy = !!db.getDatabase();
+    const dbHealthy = !!db.getDB();
     res.json({
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -132,7 +132,7 @@ const setupAPIRoutes = async () => {
         return res.json({ success: false, error: 'Symbol and marketType are required' });
       }
       
-      const hasSubscription = await db.hasActiveSubscription(user_id);
+      const hasSubscription = await db.isSubscriptionActive(user_id);
       if (!hasSubscription) {
         return res.json({ 
           success: false, 
@@ -174,9 +174,10 @@ const setupAPIRoutes = async () => {
 // Startup
 const startServer = async () => {
   try {
-    // Initialize database
+    // Initialize database FIRST - critical!
     logger.info('📊 Initializing database...');
     await db.initDatabase();
+    logger.info('✅ Database initialized successfully');
     
     // Setup routes
     await setupAPIRoutes();

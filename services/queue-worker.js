@@ -8,8 +8,8 @@
 
 const pino = require('pino');
 const db = require('../database');
-const { withdrawalQueue } = require('../withdrawal-queue');
-const { paymentCallbackQueue } = require('../payment-callback-queue');
+const { withdrawalQueue, startWithdrawalProcessor } = require('../withdrawal-queue');
+const { paymentCallbackQueue, startPaymentProcessor } = require('../payment-callback-queue');
 
 const logger = pino({
   level: 'info',
@@ -30,14 +30,17 @@ const startQueueWorker = async () => {
     // Initialize database
     logger.info('📊 Initializing database...');
     await db.initDatabase();
+    logger.info('✅ Database initialized');
+    
+    // Start queue processors (ONLY here!)
+    logger.info('🚀 Starting queue processors...');
+    startWithdrawalProcessor(5); // 5 concurrent workers
+    startPaymentProcessor(3); // 3 concurrent workers
     
     logger.info('✅ Queue Worker is running');
-    logger.info('📥 Processing withdrawal queue (5 concurrent workers)');
-    logger.info('💳 Processing payment callback queue (3 concurrent workers)');
-    logger.info('♻️ Auto-retry enabled with exponential backoff');
-    
-    // Queues are already processing from their modules
-    // This process just keeps them alive
+    logger.info('📥 Withdrawal queue: 5 concurrent workers');
+    logger.info('💳 Payment callback queue: 3 concurrent workers');
+    logger.info('♻️ Auto-retry enabled with exponential backoff')
     
   } catch (error) {
     logger.error(`❌ Failed to start Queue Worker: ${error.message}`);
