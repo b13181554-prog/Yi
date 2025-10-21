@@ -11,7 +11,8 @@ const path = require('path');
 const pino = require('pino');
 const config = require('../config');
 const db = require('../database');
-const { createRateLimitMiddleware } = require('../redis-rate-limiter');
+const { rateLimitMiddleware } = require('../advanced-rate-limiter');
+const accessControl = require('../user-access-control');
 const { authenticateAPI, validateRequestSize } = require('../api-security');
 
 const logger = pino({
@@ -56,23 +57,12 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Rate limiters بمستويات مختلفة
-const strictRateLimit = createRateLimitMiddleware({
-  limit: 10,
-  windowMs: 60000, // 10 requests per minute
-  message: 'Too many requests from this user. Please try again in a minute.'
-});
-
-const moderateRateLimit = createRateLimitMiddleware({
-  limit: 30,
-  windowMs: 60000, // 30 requests per minute
-  message: 'Too many requests. Please slow down.'
-});
-
-const lenientRateLimit = createRateLimitMiddleware({
-  limit: 60,
-  windowMs: 60000 // 60 requests per minute
-});
+// Advanced Tiered Rate Limiters - per resource type
+const analysisRateLimit = rateLimitMiddleware.analysis();
+const marketDataRateLimit = rateLimitMiddleware.marketData();
+const searchRateLimit = rateLimitMiddleware.search();
+const aiRateLimit = rateLimitMiddleware.ai();
+const scannerRateLimit = rateLimitMiddleware.scanner();
 
 // تحميل API routes
 const setupAPIRoutes = async () => {
@@ -83,8 +73,12 @@ const setupAPIRoutes = async () => {
   const { addPaymentCallback } = require('../payment-callback-queue');
   const monitoringService = require('../monitoring-service');
   
+  // Access Control Routes
+  const accessControlRoutes = require('../api-routes/access-control-routes');
+  app.use('/api/access', accessControlRoutes);
+  
   // User data
-  app.post('/api/user', authenticateAPI, moderateRateLimit, async (req, res) => {
+  app.post('/api/user', authenticateAPI, marketDataRateLimit, async (req, res) => {
     try {
       const { user_id } = req.body;
       const user = await db.getUser(user_id);
@@ -101,7 +95,7 @@ const setupAPIRoutes = async () => {
   });
 
   // Market data endpoints
-  app.post('/api/price', authenticateAPI, lenientRateLimit, async (req, res) => {
+  app.post('/api/price', authenticateAPI, marketDataRateLimit, async (req, res) => {
     try {
       const { symbol, marketType } = req.body;
       
@@ -123,8 +117,8 @@ const setupAPIRoutes = async () => {
     }
   });
 
-  // Analysis endpoint - strict rate limit
-  app.post('/api/analyze', authenticateAPI, strictRateLimit, async (req, res) => {
+  // Analysis endpoint - tier-based rate limit
+  app.post('/api/analyze', authenticateAPI, analysisRateLimit, async (req, res) => {
     try {
       const { symbol, marketType, user_id } = req.body;
       
@@ -151,8 +145,8 @@ const setupAPIRoutes = async () => {
     }
   });
 
-  // Withdrawal endpoints - very strict rate limit
-  app.post('/api/withdraw', authenticateAPI, strictRateLimit, async (req, res) => {
+  // Withdrawal endpoints - tier-based analysis rate limit
+  app.post('/api/withdraw', authenticateAPI, analysisRateLimit, async (req, res) => {
     try {
       const { user_id, amount, wallet_address } = req.body;
       
@@ -186,7 +180,8 @@ const startServer = async () => {
     app.listen(PORT, '0.0.0.0', () => {
       logger.info(`🌐 HTTP Server running on port ${PORT}`);
       logger.info(`📡 Health endpoint: http://localhost:${PORT}/api/health`);
-      logger.info(`🔒 Rate limiting: Redis-based sliding window`);
+      logger.info(`🔒 Rate limiting: Advanced Tiered System (Free/Basic/VIP/Analyst/Admin)`);
+      logger.info(`🎯 Access Control: /api/access/* endpoints available`);
     });
   } catch (error) {
     logger.error(`❌ Failed to start HTTP server: ${error.message}`);
