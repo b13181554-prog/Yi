@@ -1,8 +1,54 @@
 const { MongoClient, ObjectId } = require('mongodb');
 const config = require('./config');
+const { createLogger } = require('./centralized-logger');
+
+const logger = createLogger('database');
 
 let db = null;
 let client = null;
+
+function createPaginationHelper(page = 1, limit = 20) {
+  const pageNum = Math.max(1, parseInt(page) || 1);
+  const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 20));
+  const skip = (pageNum - 1) * limitNum;
+  
+  return {
+    page: pageNum,
+    limit: limitNum,
+    skip,
+    getPaginationInfo: (totalCount) => ({
+      current_page: pageNum,
+      page_size: limitNum,
+      total_items: totalCount,
+      total_pages: Math.ceil(totalCount / limitNum),
+      has_next: pageNum < Math.ceil(totalCount / limitNum),
+      has_prev: pageNum > 1
+    })
+  };
+}
+
+async function getPaginatedResults(collection, query = {}, options = {}) {
+  const {
+    page = 1,
+    limit = 20,
+    sort = { created_at: -1 },
+    projection = {}
+  } = options;
+  
+  const pagination = createPaginationHelper(page, limit);
+  const totalCount = await db.collection(collection).countDocuments(query);
+  const results = await db.collection(collection)
+    .find(query, { projection })
+    .sort(sort)
+    .skip(pagination.skip)
+    .limit(pagination.limit)
+    .toArray();
+  
+  return {
+    data: results,
+    pagination: pagination.getPaginationInfo(totalCount)
+  };
+}
 
 async function initDatabase() {
   try {
@@ -22,14 +68,14 @@ async function initDatabase() {
     await client.connect();
     db = client.db(config.MONGODB_DB_NAME);
     
-    console.log('📊 Creating optimized database indexes...');
+    logger.info('📊 Creating optimized database indexes...');
     
     const createIndexSafely = async (collection, indexSpec, options = {}) => {
       try {
         await db.collection(collection).createIndex(indexSpec, options);
       } catch (error) {
         if (error.code === 85 || error.code === 86) {
-          console.log(`ℹ️ Index already exists: ${collection} - ${JSON.stringify(indexSpec)}`);
+          logger.info(`ℹ️ Index already exists: ${collection} - ${JSON.stringify(indexSpec)}`);
         } else {
           throw error;
         }
@@ -90,19 +136,19 @@ async function initDatabase() {
           collation: { locale: 'en', strength: 2 }
         }
       );
-      console.log('✅ Analyst name unique index created');
+      logger.info('✅ Analyst name unique index created');
     } catch (indexError) {
       if (indexError.code === 11000 || indexError.code === 85 || indexError.code === 86) {
-        console.log('⚠️ Analyst name index already exists, skipping...');
+        logger.info('⚠️ Analyst name index already exists, skipping...');
       } else {
         throw indexError;
       }
     }
     
-    console.log('✅ Database connected with optimized connection pool (10-100 connections)');
-    console.log('✅ All indexes created successfully for 1M users scalability');
+    logger.info('✅ Database connected with optimized connection pool (10-100 connections)');
+    logger.info('✅ All indexes created successfully for 1M users scalability');
   } catch (error) {
-    console.error('❌ Database initialization error:', error);
+    logger.error({ err: error }, '❌ Database initialization error');
     throw error;
   }
 }
@@ -316,14 +362,14 @@ async function processSubscriptionPayment(userId, subscriptionData) {
           (transactionError.message.includes('Transaction') || 
            transactionError.message.includes('replica set') ||
            transactionError.message.includes('session'))) {
-        console.warn('⚠️ MongoDB transactions not supported - using fallback approach');
+        logger.warn('⚠️ MongoDB transactions not supported - using fallback approach');
       } else {
         throw transactionError;
       }
     }
   }
   
-  console.warn('⚠️ Using fallback two-phase approach for subscription (no transactions)');
+  logger.warn('⚠️ Using fallback two-phase approach for subscription (no transactions)');
   
   const user = await getUser(userId);
   
@@ -560,18 +606,18 @@ async function rejectWithdrawal(requestId) {
           (transactionError.message.includes('Transaction') || 
            transactionError.message.includes('replica set') ||
            transactionError.message.includes('session'))) {
-        console.warn('⚠️ MongoDB transactions not supported - using fallback approach');
+        logger.warn('⚠️ MongoDB transactions not supported - using fallback approach');
       } else if (transactionError.message && transactionError.message.includes('طلب السحب')) {
         throw transactionError;
       } else {
-        console.error('Transaction error:', transactionError);
+        logger.error({ err: transactionError }, 'Transaction error');
       }
     }
   }
   
-  console.warn('⚠️ Using fallback two-phase approach for withdrawal rejection (no transactions)');
-  console.warn('⚠️ Note: Without transactions, there is a small risk of double-refund in rare crash scenarios.');
-  console.warn('⚠️ For production, strongly recommend using MongoDB Replica Set with transactions.');
+  logger.warn('⚠️ Using fallback two-phase approach for withdrawal rejection (no transactions)');
+  logger.warn('⚠️ Note: Without transactions, there is a small risk of double-refund in rare crash scenarios.');
+  logger.warn('⚠️ For production, strongly recommend using MongoDB Replica Set with transactions.');
   
   let withdrawal = await db.collection('withdrawal_requests').findOne({ 
     _id: new ObjectId(requestId)
@@ -673,11 +719,31 @@ async function getUserSettings(userId) {
   };
 }
 
-async function getAllUsers() {
+async function getAllUsers(options = {}) {
+  const { page, limit, paginated = false } = options;
+  
+  if (paginated && page) {
+    return await getPaginatedResults('users', {}, { 
+      page, 
+      limit: limit || 20,
+      sort: { created_at: -1 }
+    });
+  }
+  
   return await db.collection('users').find().sort({ created_at: -1 }).toArray();
 }
 
-async function getUserTransactions(userId) {
+async function getUserTransactions(userId, options = {}) {
+  const { page, limit, paginated = false } = options;
+  
+  if (paginated && page) {
+    return await getPaginatedResults('transactions', { user_id: userId }, {
+      page,
+      limit: limit || 20,
+      sort: { created_at: -1 }
+    });
+  }
+  
   return await db.collection('transactions')
     .find({ user_id: userId })
     .sort({ created_at: -1 })
@@ -685,36 +751,53 @@ async function getUserTransactions(userId) {
     .toArray();
 }
 
-async function getAllTransactions(limit = 50) {
-  return await db.collection('transactions')
-    .aggregate([
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'user_id',
-          foreignField: 'user_id',
-          as: 'user'
-        }
-      },
-      { $unwind: '$user' },
-      {
-        $project: {
-          _id: 1,
-          user_id: 1,
-          type: 1,
-          amount: 1,
-          tx_id: 1,
-          wallet_address: 1,
-          status: 1,
-          created_at: 1,
-          username: '$user.username',
-          first_name: '$user.first_name'
-        }
-      },
-      { $sort: { created_at: -1 } },
-      { $limit: limit }
-    ])
-    .toArray();
+async function getAllTransactions(options = {}) {
+  const { page, limit = 50, paginated = false } = options;
+  
+  const pipeline = [
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'user_id',
+        foreignField: 'user_id',
+        as: 'user'
+      }
+    },
+    { $unwind: '$user' },
+    {
+      $project: {
+        _id: 1,
+        user_id: 1,
+        type: 1,
+        amount: 1,
+        tx_id: 1,
+        wallet_address: 1,
+        status: 1,
+        created_at: 1,
+        username: '$user.username',
+        first_name: '$user.first_name'
+      }
+    },
+    { $sort: { created_at: -1 } }
+  ];
+  
+  if (paginated && page) {
+    const pagination = createPaginationHelper(page, limit);
+    const totalCount = await db.collection('transactions').countDocuments({});
+    
+    pipeline.push({ $skip: pagination.skip });
+    pipeline.push({ $limit: pagination.limit });
+    
+    const results = await db.collection('transactions').aggregate(pipeline).toArray();
+    
+    return {
+      data: results,
+      pagination: pagination.getPaginationInfo(totalCount)
+    };
+  }
+  
+  pipeline.push({ $limit: limit });
+  return await db.collection('transactions').aggregate(pipeline).toArray();
 }
 
 async function getTransactionStats() {
@@ -799,7 +882,7 @@ async function createAnalyst(userId, name, description, monthlyPrice, markets = 
     throw new Error('هذا الاسم مستخدم بالفعل، يرجى اختيار اسم آخر');
   }
   
-  console.log(`✅ إنشاء محلل جديد - ID: ${userId}, الاسم: ${sanitizedName}, السعر: ${monthlyPrice}`);
+  logger.info(`✅ إنشاء محلل جديد - ID: ${userId}, الاسم: ${sanitizedName}, السعر: ${monthlyPrice}`);
   
   const analyst = {
     user_id: userId,
@@ -821,7 +904,7 @@ async function createAnalyst(userId, name, description, monthlyPrice, markets = 
   };
   
   const result = await db.collection('analysts').insertOne(analyst);
-  console.log(`✅ تم حفظ المحلل بنجاح - _id: ${result.insertedId}`);
+  logger.info(`✅ تم حفظ المحلل بنجاح - _id: ${result.insertedId}`);
   return { ...analyst, _id: result.insertedId };
 }
 
@@ -833,8 +916,10 @@ async function getAnalystByUserId(userId) {
   return await db.collection('analysts').findOne({ user_id: userId });
 }
 
-async function getAllAnalysts() {
-  return await db.collection('analysts').aggregate([
+async function getAllAnalysts(options = {}) {
+  const { page, limit = 50, paginated = false } = options;
+  
+  const pipeline = [
     { $match: { is_active: true } },
     {
       $lookup: {
@@ -851,7 +936,24 @@ async function getAllAnalysts() {
       }
     },
     { $sort: { total_subscribers: -1, created_at: -1 } }
-  ]).toArray();
+  ];
+  
+  if (paginated && page) {
+    const pagination = createPaginationHelper(page, limit);
+    const totalCount = await db.collection('analysts').countDocuments({ is_active: true });
+    
+    pipeline.push({ $skip: pagination.skip });
+    pipeline.push({ $limit: pagination.limit });
+    
+    const results = await db.collection('analysts').aggregate(pipeline).toArray();
+    
+    return {
+      data: results,
+      pagination: pagination.getPaginationInfo(totalCount)
+    };
+  }
+  
+  return await db.collection('analysts').aggregate(pipeline).toArray();
 }
 
 async function updateAnalyst(analystId, updates) {
@@ -1006,8 +1108,10 @@ async function addReferralEarning(referrerId, referredId, transactionType, amoun
   return { ...earning, _id: result.insertedId };
 }
 
-async function getReferralEarnings(userId) {
-  return await db.collection('referral_earnings').aggregate([
+async function getReferralEarnings(userId, options = {}) {
+  const { page, limit = 50, paginated = false } = options;
+  
+  const pipeline = [
     { $match: { referrer_id: userId } },
     {
       $lookup: {
@@ -1032,7 +1136,24 @@ async function getReferralEarnings(userId) {
       }
     },
     { $sort: { created_at: -1 } }
-  ]).toArray();
+  ];
+  
+  if (paginated && page) {
+    const pagination = createPaginationHelper(page, limit);
+    const totalCount = await db.collection('referral_earnings').countDocuments({ referrer_id: userId });
+    
+    pipeline.push({ $skip: pagination.skip });
+    pipeline.push({ $limit: pagination.limit });
+    
+    const results = await db.collection('referral_earnings').aggregate(pipeline).toArray();
+    
+    return {
+      data: results,
+      pagination: pagination.getPaginationInfo(totalCount)
+    };
+  }
+  
+  return await db.collection('referral_earnings').aggregate(pipeline).toArray();
 }
 
 async function getTotalReferralEarnings(userId) {
@@ -1257,11 +1378,24 @@ async function getAnalystRank(analystId) {
   return rank || null;
 }
 
-async function getAnalystTrades(analystId, limit = 20) {
+async function getAnalystTrades(analystId, options = {}) {
+  const { page, limit = 20, paginated = false } = options;
+  
+  if (paginated && page) {
+    return await getPaginatedResults('analyst_trades', 
+      { analyst_id: new ObjectId(analystId) }, 
+      {
+        page,
+        limit,
+        sort: { created_at: -1 }
+      }
+    );
+  }
+  
   return await db.collection('analyst_trades')
     .find({ analyst_id: new ObjectId(analystId) })
     .sort({ created_at: -1 })
-    .limit(limit)
+    .limit(typeof limit === 'number' ? limit : 20)
     .toArray();
 }
 
@@ -1294,7 +1428,7 @@ async function updateAllAnalystRankings() {
     await updateAnalystStats(analyst._id);
   }
   
-  console.log(`✅ Updated rankings for ${analysts.length} analysts`);
+  logger.info(`✅ Updated rankings for ${analysts.length} analysts`);
   return analysts.length;
 }
 
@@ -1303,7 +1437,20 @@ async function createAnalystSignal(signal) {
   return { ...signal, _id: result.insertedId };
 }
 
-async function getAnalystSignals(analystId) {
+async function getAnalystSignals(analystId, options = {}) {
+  const { page, limit = 50, paginated = false } = options;
+  
+  if (paginated && page) {
+    return await getPaginatedResults('analyst_signals',
+      { analyst_id: analystId },
+      {
+        page,
+        limit,
+        sort: { created_at: -1 }
+      }
+    );
+  }
+  
   return await db.collection('analyst_signals')
     .find({ analyst_id: analystId })
     .sort({ created_at: -1 })
@@ -1340,11 +1487,22 @@ async function createAnalystReview(userId, analystId, rating, comment, marketTyp
   return { ...review, _id: result.insertedId };
 }
 
-async function getAnalystReviews(analystId, marketType = null) {
+async function getAnalystReviews(analystId, marketType = null, options = {}) {
+  const { page, limit = 50, paginated = false } = options;
   const query = { analyst_id: new ObjectId(analystId) };
+  
   if (marketType) {
     query.market_type = marketType;
   }
+  
+  if (paginated && page) {
+    return await getPaginatedResults('analyst_reviews', query, {
+      page,
+      limit,
+      sort: { created_at: -1 }
+    });
+  }
+  
   return await db.collection('analyst_reviews')
     .find(query)
     .sort({ created_at: -1 })
@@ -1533,7 +1691,7 @@ async function createAnalystRoomPost(analystId, userId, postData) {
   try {
     await updateAnalystLastPost(analystId);
   } catch (error) {
-    console.error('خطأ في تحديث تاريخ آخر نشر للمحلل:', error);
+    logger.error({ err: error }, 'خطأ في تحديث تاريخ آخر نشر للمحلل');
   }
   
   return { ...post, _id: result.insertedId };
@@ -1570,7 +1728,7 @@ async function updateAnalystLastPost(analystId) {
   const analyst = await db.collection('analysts').findOne({ _id: new ObjectId(analystId) });
   if (analyst && analyst.is_suspended) {
     await unsuspendAnalyst(analystId);
-    console.log(`✅ تم إعادة تفعيل المحلل ${analyst.name} بعد نشر صفقة جديدة`);
+    logger.info(`✅ تم إعادة تفعيل المحلل ${analyst.name} بعد نشر صفقة جديدة`);
   }
   
   await db.collection('analysts').updateOne(
@@ -1704,7 +1862,7 @@ async function processDailyEscrowRelease() {
 
     return results;
   } catch (error) {
-    console.error('Error in processDailyEscrowRelease:', error);
+    logger.error({ err: error }, 'Error in processDailyEscrowRelease');
     return [];
   }
 }
@@ -2017,6 +2175,8 @@ function getDB() {
 module.exports = {
   initDatabase,
   getDB,
+  createPaginationHelper,
+  getPaginatedResults,
   getUser,
   createUser,
   updateUser,

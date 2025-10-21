@@ -1,4 +1,5 @@
 const pino = require('pino');
+const os = require('os');
 const { paymentCallbackQueue } = require('./payment-callback-queue');
 const db = require('./database');
 
@@ -32,22 +33,37 @@ class MonitoringService {
       },
       performance: {
         avgProcessingTime: 0,
-        lastCheckTime: Date.now()
+        lastCheckTime: Date.now(),
+        requestLatencies: []
+      },
+      system: {
+        memory: {},
+        cpu: {},
+        uptime: 0
+      },
+      database: {
+        poolStats: {},
+        responseTime: 0
       }
     };
     
     this.healthChecks = new Map();
+    this.requestStartTimes = new Map();
   }
 
   async collectMetrics() {
     try {
-      const [queueStats, dbStats] = await Promise.all([
+      const [queueStats, dbStats, systemStats, dbPerformance] = await Promise.all([
         this.getQueueMetrics(),
-        this.getDatabaseMetrics()
+        this.getDatabaseMetrics(),
+        this.getSystemMetrics(),
+        this.getDatabasePerformance()
       ]);
 
       this.metrics.queue = queueStats;
       this.metrics.payments = dbStats;
+      this.metrics.system = systemStats;
+      this.metrics.database = dbPerformance;
       this.metrics.performance.lastCheckTime = Date.now();
 
       return this.metrics;
@@ -55,6 +71,126 @@ class MonitoringService {
       logger.error(`❌ Error collecting metrics: ${error.message}`);
       return this.metrics;
     }
+  }
+  
+  getSystemMetrics() {
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const usedMem = totalMem - freeMem;
+    const memUsagePercent = (usedMem / totalMem) * 100;
+    
+    const cpus = os.cpus();
+    const cpuUsage = cpus.map((cpu, i) => {
+      const total = Object.values(cpu.times).reduce((a, b) => a + b, 0);
+      const idle = cpu.times.idle;
+      const usage = 100 - (idle / total * 100);
+      return { core: i, usage: Math.round(usage * 100) / 100 };
+    });
+    
+    const avgCpuUsage = cpuUsage.reduce((sum, cpu) => sum + cpu.usage, 0) / cpuUsage.length;
+    
+    return {
+      memory: {
+        total: Math.round(totalMem / 1024 / 1024),
+        free: Math.round(freeMem / 1024 / 1024),
+        used: Math.round(usedMem / 1024 / 1024),
+        usagePercent: Math.round(memUsagePercent * 100) / 100,
+        processMemory: Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
+      },
+      cpu: {
+        cores: cpus.length,
+        model: cpus[0]?.model || 'Unknown',
+        usage: cpuUsage,
+        avgUsage: Math.round(avgCpuUsage * 100) / 100
+      },
+      uptime: {
+        system: Math.round(os.uptime()),
+        process: Math.round(process.uptime())
+      },
+      loadAverage: os.loadavg().map(load => Math.round(load * 100) / 100),
+      platform: os.platform(),
+      arch: os.arch()
+    };
+  }
+  
+  async getDatabasePerformance() {
+    const start = Date.now();
+    
+    try {
+      const database = db.getDB();
+      if (!database) {
+        return {
+          responseTime: 0,
+          status: 'disconnected',
+          poolStats: {}
+        };
+      }
+      
+      await database.admin().ping();
+      const responseTime = Date.now() - start;
+      
+      return {
+        responseTime,
+        status: 'connected',
+        poolStats: {
+          maxPoolSize: 100,
+          minPoolSize: 10,
+          message: 'MongoDB connection pooling active'
+        }
+      };
+    } catch (error) {
+      return {
+        responseTime: Date.now() - start,
+        status: 'error',
+        error: error.message,
+        poolStats: {}
+      };
+    }
+  }
+  
+  trackRequestLatency(requestId, duration) {
+    if (this.metrics.performance.requestLatencies.length >= 100) {
+      this.metrics.performance.requestLatencies.shift();
+    }
+    
+    this.metrics.performance.requestLatencies.push({
+      id: requestId,
+      duration,
+      timestamp: Date.now()
+    });
+    
+    const latencies = this.metrics.performance.requestLatencies.map(r => r.duration);
+    this.metrics.performance.avgProcessingTime = 
+      Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length);
+    
+    this.metrics.performance.p95Latency = this.calculatePercentile(latencies, 95);
+    this.metrics.performance.p99Latency = this.calculatePercentile(latencies, 99);
+  }
+  
+  calculatePercentile(arr, percentile) {
+    if (arr.length === 0) return 0;
+    
+    const sorted = [...arr].sort((a, b) => a - b);
+    const index = Math.ceil((percentile / 100) * sorted.length) - 1;
+    return Math.round(sorted[index] || 0);
+  }
+  
+  createRequestTracker() {
+    const requestId = Date.now() + Math.random();
+    this.requestStartTimes.set(requestId, Date.now());
+    
+    return {
+      finish: () => {
+        const start = this.requestStartTimes.get(requestId);
+        if (start) {
+          const duration = Date.now() - start;
+          this.trackRequestLatency(requestId, duration);
+          this.requestStartTimes.delete(requestId);
+          return duration;
+        }
+        return 0;
+      }
+    };
   }
 
   async getQueueMetrics() {
@@ -94,10 +230,13 @@ class MonitoringService {
   }
 
   async checkHealth() {
+    const startTime = Date.now();
     const health = {
       status: 'healthy',
       timestamp: new Date().toISOString(),
-      services: {}
+      services: {},
+      system: {},
+      performance: {}
     };
 
     const checks = [
@@ -122,6 +261,35 @@ class MonitoringService {
         health.status = 'unhealthy';
       }
     }
+    
+    const systemMetrics = this.getSystemMetrics();
+    health.system = {
+      memory: systemMetrics.memory,
+      cpu: {
+        cores: systemMetrics.cpu.cores,
+        avgUsage: systemMetrics.cpu.avgUsage
+      },
+      uptime: systemMetrics.uptime
+    };
+    
+    if (systemMetrics.memory.usagePercent > 90) {
+      health.status = 'degraded';
+      health.warnings = health.warnings || [];
+      health.warnings.push('High memory usage detected');
+    }
+    
+    if (systemMetrics.cpu.avgUsage > 80) {
+      health.status = 'degraded';
+      health.warnings = health.warnings || [];
+      health.warnings.push('High CPU usage detected');
+    }
+    
+    health.performance = {
+      avgLatency: this.metrics.performance.avgProcessingTime || 0,
+      p95Latency: this.metrics.performance.p95Latency || 0,
+      p99Latency: this.metrics.performance.p99Latency || 0,
+      healthCheckDuration: Date.now() - startTime
+    };
 
     this.healthChecks.set('last_check', health);
     return health;
