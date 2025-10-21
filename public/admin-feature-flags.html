@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة Feature Flags - OBENTCHI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            color: white;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: #475569;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #64748b;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .filters {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 5px;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .flags-table {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #0f172a;
+            padding: 15px;
+            text-align: right;
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        tr:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-enabled {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .badge-disabled {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .badge-global {
+            background: rgba(147, 51, 234, 0.2);
+            color: #a855f7;
+        }
+
+        .badge-tier {
+            background: rgba(249, 115, 22, 0.2);
+            color: #f97316;
+        }
+
+        .badge-user {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .slider-container {
+            margin-top: 10px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #0f172a;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-value {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-top: 8px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .page-btn {
+            padding: 8px 16px;
+            background: #334155;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: #475569;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-btn.active {
+            background: #3b82f6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .rollout-info {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>
+                🚩 إدارة Feature Flags
+            </h1>
+            <div class="actions">
+                <button class="btn btn-secondary" onclick="window.location.href='admin-dashboard.html'">
+                    ← رجوع للوحة التحكم
+                </button>
+                <button class="btn btn-primary" onclick="openCreateModal()">
+                    + إضافة Flag جديد
+                </button>
+            </div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-label">إجمالي Flags</div>
+                <div class="stat-value" id="totalFlags">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Flags مفعّلة</div>
+                <div class="stat-value" id="enabledFlags">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Flags معطّلة</div>
+                <div class="stat-value" id="disabledFlags">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Global Flags</div>
+                <div class="stat-value" id="globalFlags">-</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>بحث</label>
+                <input type="text" id="searchKey" placeholder="ابحث عن Flag..." onchange="loadFlags()">
+            </div>
+            <div class="filter-group">
+                <label>النطاق (Scope)</label>
+                <select id="filterScope" onchange="loadFlags()">
+                    <option value="">الكل</option>
+                    <option value="global">Global</option>
+                    <option value="tier">Tier</option>
+                    <option value="user">User</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>الحالة</label>
+                <select id="filterEnabled" onchange="loadFlags()">
+                    <option value="">الكل</option>
+                    <option value="true">مفعّل</option>
+                    <option value="false">معطّل</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <button class="btn btn-secondary" onclick="clearFilters()">مسح الفلاتر</button>
+            </div>
+        </div>
+
+        <div class="flags-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>المفتاح</th>
+                        <th>النطاق</th>
+                        <th>الهدف</th>
+                        <th>الحالة</th>
+                        <th>نسبة الطرح</th>
+                        <th>آخر تحديث</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="flagsTableBody">
+                    <tr>
+                        <td colspan="7">
+                            <div class="loading">جاري التحميل...</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <div class="modal" id="createModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">إضافة Feature Flag جديد</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="flagForm" onsubmit="handleSubmit(event)">
+                <div class="form-group">
+                    <label>المفتاح (Key) *</label>
+                    <input type="text" id="flagKey" required placeholder="مثال: new_feature">
+                </div>
+
+                <div class="form-group">
+                    <label>النطاق (Scope) *</label>
+                    <select id="flagScope" required onchange="updateTargetField()">
+                        <option value="global">Global - لجميع المستخدمين</option>
+                        <option value="tier">Tier - لمستوى معين</option>
+                        <option value="user">User - لمستخدم محدد</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="targetGroup" style="display: none;">
+                    <label id="targetLabel">الهدف (Target) *</label>
+                    <input type="text" id="flagTarget" placeholder="">
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="flagEnabled" checked>
+                        <label for="flagEnabled">مفعّل</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>نسبة الطرح التدريجي (Rollout %)</label>
+                    <div class="slider-container">
+                        <input type="range" id="rolloutPercentage" class="slider" min="0" max="100" value="100" 
+                               oninput="updateSliderValue(this.value)">
+                        <div class="slider-value" id="rolloutValue">100%</div>
+                        <div class="rollout-info">سيتم تطبيق الـ flag على نسبة من المستخدمين فقط</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>الوصف (اختياري)</label>
+                    <textarea id="flagDescription" placeholder="وصف الميزة..."></textarea>
+                </div>
+
+                <div class="actions" style="justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        let currentPage = 1;
+        let currentEditFlag = null;
+        const USER_ID = new URLSearchParams(window.location.search).get('user_id') || '1';
+
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_URL}${endpoint}`, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-user-id': USER_ID,
+                        ...options.headers
+                    }
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                alert('خطأ في الاتصال بالخادم');
+                throw error;
+            }
+        }
+
+        async function loadStats() {
+            try {
+                const stats = await apiCall('/api/feature-flags/stats');
+                if (stats.success) {
+                    document.getElementById('totalFlags').textContent = stats.stats.total;
+                    document.getElementById('enabledFlags').textContent = stats.stats.enabled;
+                    document.getElementById('disabledFlags').textContent = stats.stats.disabled;
+                    document.getElementById('globalFlags').textContent = 
+                        stats.stats.by_scope.global?.total || 0;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadFlags(page = 1) {
+            currentPage = page;
+            const searchKey = document.getElementById('searchKey').value;
+            const scope = document.getElementById('filterScope').value;
+            const enabled = document.getElementById('filterEnabled').value;
+
+            let queryParams = `?page=${page}&limit=20`;
+            if (searchKey) queryParams += `&key=${encodeURIComponent(searchKey)}`;
+            if (scope) queryParams += `&scope=${scope}`;
+            if (enabled) queryParams += `&enabled=${enabled}`;
+
+            try {
+                const result = await apiCall(`/api/feature-flags${queryParams}`);
+                
+                if (result.success) {
+                    renderFlags(result.data);
+                    renderPagination(result.pagination);
+                } else {
+                    document.getElementById('flagsTableBody').innerHTML = `
+                        <tr><td colspan="7"><div class="empty-state">خطأ في تحميل البيانات</div></td></tr>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading flags:', error);
+            }
+        }
+
+        function renderFlags(flags) {
+            const tbody = document.getElementById('flagsTableBody');
+            
+            if (flags.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="7">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🚩</div>
+                            <div>لا توجد Feature Flags بعد</div>
+                        </div>
+                    </td></tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = flags.map(flag => {
+                const scopeBadgeClass = `badge-${flag.scope}`;
+                const statusBadgeClass = flag.enabled ? 'badge-enabled' : 'badge-disabled';
+                const rolloutText = flag.rollout ? `${flag.rollout.percentage}%` : '100%';
+                const updatedAt = new Date(flag.updated_at).toLocaleString('ar-EG');
+
+                return `
+                    <tr>
+                        <td><strong>${flag.key}</strong></td>
+                        <td><span class="badge ${scopeBadgeClass}">${flag.scope}</span></td>
+                        <td>${flag.target || '-'}</td>
+                        <td><span class="badge ${statusBadgeClass}">${flag.enabled ? 'مفعّل' : 'معطّل'}</span></td>
+                        <td>${rolloutText}</td>
+                        <td style="font-size: 12px;">${updatedAt}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn btn-small btn-primary" onclick='editFlag(${JSON.stringify(flag)})'>
+                                    تعديل
+                                </button>
+                                <button class="btn btn-small ${flag.enabled ? 'btn-secondary' : 'btn-success'}" 
+                                        onclick='toggleFlag(${JSON.stringify(flag)})'>
+                                    ${flag.enabled ? 'تعطيل' : 'تفعيل'}
+                                </button>
+                                <button class="btn btn-small btn-danger" onclick='deleteFlag(${JSON.stringify(flag)})'>
+                                    حذف
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderPagination(pagination) {
+            const container = document.getElementById('pagination');
+            
+            if (pagination.total_pages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = `
+                <button class="page-btn" onclick="loadFlags(${pagination.current_page - 1})" 
+                        ${!pagination.has_prev ? 'disabled' : ''}>
+                    السابق
+                </button>
+            `;
+
+            for (let i = 1; i <= pagination.total_pages; i++) {
+                if (
+                    i === 1 || 
+                    i === pagination.total_pages || 
+                    (i >= pagination.current_page - 2 && i <= pagination.current_page + 2)
+                ) {
+                    html += `
+                        <button class="page-btn ${i === pagination.current_page ? 'active' : ''}" 
+                                onclick="loadFlags(${i})">
+                            ${i}
+                        </button>
+                    `;
+                } else if (i === pagination.current_page - 3 || i === pagination.current_page + 3) {
+                    html += `<span style="padding: 8px;">...</span>`;
+                }
+            }
+
+            html += `
+                <button class="page-btn" onclick="loadFlags(${pagination.current_page + 1})" 
+                        ${!pagination.has_next ? 'disabled' : ''}>
+                    التالي
+                </button>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function openCreateModal() {
+            currentEditFlag = null;
+            document.getElementById('modalTitle').textContent = 'إضافة Feature Flag جديد';
+            document.getElementById('flagForm').reset();
+            document.getElementById('flagKey').disabled = false;
+            document.getElementById('flagScope').disabled = false;
+            updateSliderValue(100);
+            updateTargetField();
+            document.getElementById('createModal').classList.add('active');
+        }
+
+        function editFlag(flag) {
+            currentEditFlag = flag;
+            document.getElementById('modalTitle').textContent = 'تعديل Feature Flag';
+            document.getElementById('flagKey').value = flag.key;
+            document.getElementById('flagKey').disabled = true;
+            document.getElementById('flagScope').value = flag.scope;
+            document.getElementById('flagScope').disabled = true;
+            document.getElementById('flagTarget').value = flag.target || '';
+            document.getElementById('flagEnabled').checked = flag.enabled;
+            document.getElementById('rolloutPercentage').value = flag.rollout?.percentage || 100;
+            document.getElementById('flagDescription').value = flag.metadata?.description || '';
+            updateSliderValue(flag.rollout?.percentage || 100);
+            updateTargetField();
+            document.getElementById('createModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('createModal').classList.remove('active');
+            currentEditFlag = null;
+        }
+
+        function updateTargetField() {
+            const scope = document.getElementById('flagScope').value;
+            const targetGroup = document.getElementById('targetGroup');
+            const targetLabel = document.getElementById('targetLabel');
+            const targetInput = document.getElementById('flagTarget');
+
+            if (scope === 'global') {
+                targetGroup.style.display = 'none';
+                targetInput.required = false;
+            } else if (scope === 'tier') {
+                targetGroup.style.display = 'block';
+                targetLabel.textContent = 'المستوى (Tier) *';
+                targetInput.placeholder = 'free, basic, vip, analyst, admin';
+                targetInput.required = true;
+            } else if (scope === 'user') {
+                targetGroup.style.display = 'block';
+                targetLabel.textContent = 'معرف المستخدم (User ID) *';
+                targetInput.placeholder = 'مثال: 123456789';
+                targetInput.required = true;
+            }
+        }
+
+        function updateSliderValue(value) {
+            document.getElementById('rolloutValue').textContent = value + '%';
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+
+            const key = document.getElementById('flagKey').value;
+            const scope = document.getElementById('flagScope').value;
+            const target = scope !== 'global' ? document.getElementById('flagTarget').value : null;
+            const enabled = document.getElementById('flagEnabled').checked;
+            const percentage = parseInt(document.getElementById('rolloutPercentage').value);
+            const description = document.getElementById('flagDescription').value;
+
+            const data = {
+                user_id: USER_ID,
+                key,
+                scope,
+                target,
+                enabled,
+                rollout: percentage < 100 ? { percentage } : null,
+                metadata: {
+                    description
+                }
+            };
+
+            try {
+                let result;
+                if (currentEditFlag) {
+                    result = await apiCall(`/api/feature-flags/${key}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(data)
+                    });
+                } else {
+                    result = await apiCall('/api/feature-flags', {
+                        method: 'POST',
+                        body: JSON.stringify(data)
+                    });
+                }
+
+                if (result.success) {
+                    alert('تم حفظ Feature Flag بنجاح');
+                    closeModal();
+                    loadFlags(currentPage);
+                    loadStats();
+                } else {
+                    alert('خطأ: ' + (result.message || 'فشل الحفظ'));
+                }
+            } catch (error) {
+                console.error('Error saving flag:', error);
+            }
+        }
+
+        async function toggleFlag(flag) {
+            const newStatus = !flag.enabled;
+            const confirmMsg = newStatus ? 
+                `هل تريد تفعيل Flag "${flag.key}"؟` : 
+                `هل تريد تعطيل Flag "${flag.key}"؟`;
+
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                const result = await apiCall(`/api/feature-flags/${flag.key}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        user_id: USER_ID,
+                        scope: flag.scope,
+                        target: flag.target,
+                        enabled: newStatus,
+                        rollout: flag.rollout,
+                        metadata: flag.metadata
+                    })
+                });
+
+                if (result.success) {
+                    loadFlags(currentPage);
+                    loadStats();
+                } else {
+                    alert('خطأ: ' + (result.message || 'فشل التحديث'));
+                }
+            } catch (error) {
+                console.error('Error toggling flag:', error);
+            }
+        }
+
+        async function deleteFlag(flag) {
+            if (!confirm(`هل أنت متأكد من حذف Flag "${flag.key}"؟\nهذا الإجراء لا يمكن التراجع عنه.`)) {
+                return;
+            }
+
+            try {
+                const result = await apiCall(
+                    `/api/feature-flags/${flag.key}?scope=${flag.scope}&target=${flag.target || ''}&user_id=${USER_ID}`,
+                    { method: 'DELETE' }
+                );
+
+                if (result.success) {
+                    alert('تم حذف Feature Flag بنجاح');
+                    loadFlags(currentPage);
+                    loadStats();
+                } else {
+                    alert('خطأ: ' + (result.message || 'فشل الحذف'));
+                }
+            } catch (error) {
+                console.error('Error deleting flag:', error);
+            }
+        }
+
+        function clearFilters() {
+            document.getElementById('searchKey').value = '';
+            document.getElementById('filterScope').value = '';
+            document.getElementById('filterEnabled').value = '';
+            loadFlags(1);
+        }
+
+        window.addEventListener('click', (event) => {
+            const modal = document.getElementById('createModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            loadFlags();
+        });
+    </script>
+</body>
+</html>

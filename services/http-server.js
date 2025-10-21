@@ -81,6 +81,10 @@ const setupAPIRoutes = async () => {
   const realtimeDashboardRoutes = require('../api-routes/realtime-dashboard-routes');
   app.use('/api/realtime', realtimeDashboardRoutes);
   
+  // Feature Flags Routes
+  const featureFlagRoutes = require('../api-routes/feature-flag-routes');
+  app.use('/api/feature-flags', featureFlagRoutes);
+  
   // User data
   app.post('/api/user', authenticateAPI, marketDataRateLimit, async (req, res) => {
     try {
@@ -176,6 +180,10 @@ const startServer = async () => {
     logger.info('📊 Initializing database...');
     await db.initDatabase();
     logger.info('✅ Database initialized successfully');
+    
+    // Initialize Feature Flags Service
+    const featureFlagService = require('../services/feature-flags');
+    await featureFlagService.initialize(db.getDB());
     
     // Setup routes
     await setupAPIRoutes();

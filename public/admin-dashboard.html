@@ -227,9 +227,15 @@
             <h1>
                 👑 لوحة تحكم الإدارة
             </h1>
-            <div class="live-status">
-                <span class="live-dot"></span>
-                <span id="status">متصل</span>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="btn" onclick="window.location.href='admin-feature-flags.html?user_id=' + (adminId || '1')" 
+                        style="padding: 10px 20px; font-size: 14px;">
+                    🚩 Feature Flags
+                </button>
+                <div class="live-status">
+                    <span class="live-dot"></span>
+                    <span id="status">متصل</span>
+                </div>
             </div>
         </div>
 
