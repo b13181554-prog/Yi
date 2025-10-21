@@ -51,6 +51,7 @@ The project uses MongoDB Atlas for its database, designed for 24/7 operation wit
 - **Referral Integrity**: Both referrer balance and `referral_earnings` counter are updated atomically, ensuring accurate commission tracking and reporting
 - **Owner Notifications**: Admins receive real-time notifications for all subscription events (success and failures) with detailed user information
 - **Enhanced User Feedback**: Users receive clear confirmation messages showing deducted amount, new balance, and subscription expiry date
+- **Web App Integration** (October 21, 2025): Added `/api/subscribe` endpoint to enable basic subscription purchases directly from the Web App interface, matching the functionality previously available only through the Telegram bot
 
 ## External Dependencies
 
