@@ -64,3 +64,34 @@ The project uses MongoDB Atlas for its database, designed for 24/7 operation wit
 -   **AI/Customer Support**: Groq API (Llama 3.3 70B Versatile model)
 -   **Payment Gateway**: CryptAPI
 -   **Whale Tracking**: Whale Alert
+
+## Recent Project Cleanup (October 21, 2025)
+
+A comprehensive cleanup was performed to remove all outdated code, files, and unused features:
+
+**Removed Files**:
+- `test-v1-pro.js` - Old test file for V1 PRO analysis system
+- `cleanup-db.js` - Deprecated database cleanup script
+- `security-logger.js` - Unused security logging module
+- `attached_assets/content-1760204333150.md` - Temporary content file
+- `redis.log` - Log file (regenerated as needed)
+
+**Updated Documentation**:
+- `README.md` - Removed references to non-existent `test-wallet.js`
+
+**Database Status**:
+All MongoDB collections are actively used and necessary:
+- Core: `users`, `transactions`, `withdrawal_requests`, `subscriptions`
+- Analysts: `analysts`, `analyst_subscriptions`, `analyst_reviews`, `analyst_room_posts`, `trade_signals`, `analyst_ai_insights`
+- Features: `pump_subscriptions`, `vip_search_subscriptions`, `cryptapi_payments`
+- AI/ML: `v1_pro_weights`, `v1_pro_performance`
+- Referrals: `referral_earnings`
+
+**Active Modules** (All Currently Used):
+- `blockchain-pump-scanner.js` - Used by notifications system
+- `whale-tracker.js` - Used by pump analysis
+- `cache-manager.js` - Used by monitoring system
+- `circuit-breaker.js` - Used by CryptAPI integration
+- `withdrawal-notifier.js` - Used by withdrawal queue and scheduler
+
+**Note**: The `javascript_openai` integration is listed but unused (project uses Groq API instead). This can be manually removed from Replit integrations panel if desired.
