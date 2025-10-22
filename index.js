@@ -994,7 +994,7 @@ app.post('/api/top-movers', async (req, res) => {
       
       for (const stock of stocks) {
         try {
-          const candles = await marketData.getStockCandles(stock, '1d', 2);
+          const candles = await marketData.getCandles(stock, '1d', 2, 'stocks');
           if (candles && candles.length >= 2) {
             const current = parseFloat(candles[candles.length - 1].close);
             const previous = parseFloat(candles[candles.length - 2].close);
@@ -1019,7 +1019,7 @@ app.post('/api/top-movers', async (req, res) => {
       
       for (const commodity of commodities) {
         try {
-          const candles = await marketData.getCommodityCandles(commodity, '1d', 2);
+          const candles = await marketData.getCandles(commodity, '1d', 2, 'commodities');
           if (candles && candles.length >= 2) {
             const current = parseFloat(candles[candles.length - 1].close);
             const previous = parseFloat(candles[candles.length - 2].close);
@@ -1043,7 +1043,7 @@ app.post('/api/top-movers', async (req, res) => {
       
       for (const index of indices) {
         try {
-          const candles = await marketData.getIndicesCandles(index, '1d', 2);
+          const candles = await marketData.getCandles(index, '1d', 2, 'indices');
           if (candles && candles.length >= 2) {
             const current = parseFloat(candles[candles.length - 1].close);
             const previous = parseFloat(candles[candles.length - 2].close);
