@@ -1,3 +1,5 @@
+// Fix MaxListenersExceededWarning
+require('events').EventEmitter.defaultMaxListeners = 20;
 
 const express = require('express');
 const { ObjectId } = require('mongodb');

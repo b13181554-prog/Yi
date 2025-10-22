@@ -379,14 +379,27 @@ async function init() {
                 'version': tg.version
             });
             
-            showError(
-                '❌ لا يمكن تحميل بيانات المستخدم<br><br>' +
-                '<strong>الرجاء اتباع الخطوات التالية:</strong><br>' +
-                '1️⃣ أغلق هذه النافذة<br>' +
-                '2️⃣ ارجع للبوت في Telegram<br>' +
-                '3️⃣ اضغط على زر "🚀 Open App" أو أرسل /start<br><br>' +
-                '<small style="color: #999;">يجب فتح التطبيق من خلال البوت مباشرةً</small>'
-            );
+            document.getElementById('loading').innerHTML = `
+                <div style="text-align: center; padding: 40px 20px; max-width: 500px; margin: 0 auto;">
+                    <div style="font-size: 80px; margin-bottom: 20px;">🔒</div>
+                    <h2 style="color: #ee0979; margin-bottom: 10px;">التطبيق يعمل فقط من خلال Telegram</h2>
+                    <p style="color: #666; margin-bottom: 30px;">لا يمكن فتح هذا التطبيق مباشرة من المتصفح</p>
+                    
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; text-align: right;">
+                        <h3 style="margin: 0 0 15px 0; font-size: 18px;">✅ الطريقة الصحيحة:</h3>
+                        <ol style="margin: 0; padding-right: 20px; text-align: right; line-height: 2;">
+                            <li>افتح تطبيق <strong>Telegram</strong></li>
+                            <li>ابحث عن بوت <strong>@OBENTCHI_Bot</strong></li>
+                            <li>أرسل <strong>/start</strong></li>
+                            <li>اضغط على زر <strong>🚀 فتح التطبيق</strong></li>
+                        </ol>
+                    </div>
+                    
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 10px; font-size: 14px; color: #666;">
+                        💡 <strong>نصيحة:</strong> يجب فتح التطبيق من داخل Telegram فقط للحفاظ على أمان حسابك
+                    </div>
+                </div>
+            `;
             return;
         }
         
