@@ -3787,15 +3787,18 @@ app.get('/metrics', async (req, res) => {
 });
 
 // معالج 404 لـ API endpoints - يجب أن يكون قبل SPA fallback
-app.use('/api/*', (req, res) => {
-  console.error(`❌ API endpoint not found: ${req.method} ${req.path}`);
-  res.status(404).json({ 
-    success: false, 
-    error: 'endpoint_not_found',
-    message: 'API endpoint not found',
-    path: req.path,
-    method: req.method
-  });
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) {
+    console.error(`❌ API endpoint not found: ${req.method} ${req.path}`);
+    return res.status(404).json({ 
+      success: false, 
+      error: 'endpoint_not_found',
+      message: 'API endpoint not found',
+      path: req.path,
+      method: req.method
+    });
+  }
+  next();
 });
 
 // SPA fallback - يخدم index.html لجميع المسارات غير API
