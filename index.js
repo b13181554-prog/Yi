@@ -20,7 +20,8 @@ const { getTelegramProfilePhoto } = require('./telegram-helpers');
 const { initTradeSignalsMonitor } = require('./trade-signals-monitor');
 const monitor = require('./monitoring');
 const Groq = require('groq-sdk');
-const { addPaymentCallback, getQueueStats } = require('./payment-callback-queue');
+const { addPaymentCallback, getQueueStats, startPaymentProcessor } = require('./payment-callback-queue');
+const { startWithdrawalProcessor } = require('./withdrawal-queue');
 const monitoringService = require('./monitoring-service');
 const { startWithdrawalScheduler } = require('./withdrawal-scheduler');
 const { safeSendMessage, safeSendPhoto, safeEditMessageText } = require('./safe-message');
@@ -265,6 +266,11 @@ async function main() {
     
     monitoringService.startMonitoring(60000);
     console.log('📊 Monitoring service started');
+    
+    // Start Queue Processors for withdrawal and payment processing
+    startWithdrawalProcessor(5); // 5 concurrent workers
+    startPaymentProcessor(3); // 3 concurrent workers
+    console.log('✅ Queue processors started (Withdrawals: 5 workers, Payments: 3 workers)');
     
     notifications.initNotifications(bot);
     initAnalystMonitor(bot);
