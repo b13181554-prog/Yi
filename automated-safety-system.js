@@ -13,9 +13,6 @@
 
 const { createLogger } = require('./centralized-logger');
 const cron = require('node-cron');
-const db = require('./database');
-const securitySystem = require('./advanced-security-system');
-const actionSystem = require('./flexible-action-system');
 
 const logger = createLogger('automated-safety');
 
@@ -42,6 +39,12 @@ class AutomatedSafetySystem {
   }
 
   initialize() {
+    this.db = require('./database');
+    this.securitySystem = require('./advanced-security-system');
+    this.actionSystem = require('./flexible-action-system');
+    
+    this.actionSystem.initialize();
+    
     this.startMonitoring();
     this.scheduleAutomatedTasks();
     logger.info('✅ Automated Safety System initialized');
@@ -89,7 +92,9 @@ class AutomatedSafetySystem {
 
   async monitorWithdrawals() {
     try {
-      const database = db.getDB();
+      if (!this.db) return;
+      
+      const database = this.db.getDB();
       const withdrawals = database.collection('withdrawals');
 
       const window = Date.now() - this.thresholds.failedWithdrawals.window;
@@ -133,7 +138,9 @@ class AutomatedSafetySystem {
 
   async monitorLogins() {
     try {
-      const database = db.getDB();
+      if (!this.db) return;
+      
+      const database = this.db.getDB();
       const events = database.collection('security_events');
 
       const window = Date.now() - this.thresholds.suspiciousLogins.window;
@@ -171,7 +178,9 @@ class AutomatedSafetySystem {
 
   async monitorBalanceChanges() {
     try {
-      const database = db.getDB();
+      if (!this.db) return;
+      
+      const database = this.db.getDB();
       const earnings = database.collection('earnings');
 
       const window = Date.now() - this.thresholds.rapidBalanceChanges.window;
@@ -239,14 +248,16 @@ class AutomatedSafetySystem {
 
   async handleSuspiciousActivity(userId, activity) {
     try {
-      const riskAnalysis = await securitySystem.analyzeUserBehavior(
+      if (!this.securitySystem || !this.actionSystem) return { success: false, error: 'not_initialized' };
+      
+      const riskAnalysis = await this.securitySystem.analyzeUserBehavior(
         userId,
         activity.type,
         activity
       );
 
       if (riskAnalysis.risk_level === 'high' || riskAnalysis.risk_level === 'critical') {
-        await securitySystem.blockUser(userId, '24h');
+        await this.securitySystem.blockUser(userId, '24h');
 
         await this.createAlert({
           level: 'high',
@@ -256,7 +267,7 @@ class AutomatedSafetySystem {
           details: { activity, riskAnalysis }
         });
 
-        await actionSystem.executeAction('send_notification', {
+        await this.actionSystem.executeAction('send_notification', {
           user_id: userId,
           message: '⚠️ تم حظر حسابك مؤقتاً بسبب نشاط مشبوه. يرجى التواصل مع الدعم.'
         });
@@ -273,9 +284,11 @@ class AutomatedSafetySystem {
 
   async performDailySecurityAudit() {
     try {
+      if (!this.db) return { success: false, error: 'not_initialized' };
+      
       logger.info('🔍 Starting daily security audit');
 
-      const database = db.getDB();
+      const database = this.db.getDB();
       const users = database.collection('users');
       const events = database.collection('security_events');
 
@@ -325,7 +338,9 @@ class AutomatedSafetySystem {
 
   async cleanupOldData() {
     try {
-      const database = db.getDB();
+      if (!this.db) return { success: false, error: 'not_initialized' };
+      
+      const database = this.db.getDB();
 
       const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000);
 
@@ -359,7 +374,9 @@ class AutomatedSafetySystem {
 
   async checkUserAccounts() {
     try {
-      const database = db.getDB();
+      if (!this.db || !this.actionSystem) return { success: false, error: 'not_initialized' };
+      
+      const database = this.db.getDB();
       const users = database.collection('users');
 
       const now = new Date();
@@ -378,7 +395,7 @@ class AutomatedSafetySystem {
           }
         );
 
-        await actionSystem.executeAction('send_notification', {
+        await this.actionSystem.executeAction('send_notification', {
           user_id: user.user_id,
           message: '✅ تم رفع الحظر عن حسابك. يمكنك الآن استخدام جميع الميزات.'
         });
@@ -400,7 +417,9 @@ class AutomatedSafetySystem {
 
   async detectAnomalies() {
     try {
-      const database = db.getDB();
+      if (!this.db) return { success: false, error: 'not_initialized' };
+      
+      const database = this.db.getDB();
 
       const fiveMinutesAgo = new Date(Date.now() - 300000);
 
@@ -439,6 +458,10 @@ class AutomatedSafetySystem {
 
   async createAlert(alertData) {
     try {
+      if (!this.db) return { success: false, error: 'not_initialized' };
+      
+      const crypto = require('crypto');
+      
       this.alerts.push({
         ...alertData,
         id: crypto.randomUUID(),
@@ -450,7 +473,7 @@ class AutomatedSafetySystem {
         this.alerts.shift();
       }
 
-      const database = db.getDB();
+      const database = this.db.getDB();
       const alerts = database.collection('safety_alerts');
       await alerts.insertOne(alertData);
 

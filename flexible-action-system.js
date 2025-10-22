@@ -23,8 +23,17 @@ class FlexibleActionSystem {
     this.scheduledActions = new Map();
     this.actionHistory = [];
     this.maxHistorySize = 1000;
+    this.initialized = false;
+  }
+
+  initialize() {
+    if (this.initialized) {
+      return;
+    }
     
     this.registerDefaultActions();
+    this.initialized = true;
+    logger.info('✅ Flexible Action System initialized');
   }
 
   registerDefaultActions() {
@@ -85,6 +94,7 @@ class FlexibleActionSystem {
 
     this.registerAction('ban_user', async (context) => {
       const { user_id, reason } = context;
+      const db = require('./database');
       
       await db.updateUser(user_id, {
         banned: true,
