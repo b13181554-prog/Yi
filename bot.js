@@ -192,7 +192,7 @@ ${t(userLang, 'press_button_below')}
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '/start', callback_data: 'start_action' }]
+            [{ text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }]
           ]
         }
       });
@@ -233,7 +233,7 @@ ${t(userLang, 'open_app')} 👇
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '/start', callback_data: 'start_action' }]
+            [{ text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }]
           ]
         }
       });
@@ -287,7 +287,7 @@ ${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '/start', callback_data: 'start_action' }
+            { text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }
           ]
         ]
       }
@@ -352,7 +352,7 @@ ${statusMessage}
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '/start', callback_data: 'start_action' }]
+            [{ text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }]
           ]
         }
       });
@@ -411,7 +411,7 @@ ${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
         reply_markup: {
           inline_keyboard: [
             [
-              { text: '/start', callback_data: 'start_action' }
+              { text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }
             ]
           ]
         }
@@ -476,7 +476,7 @@ ${statusMessage}
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '/start', callback_data: 'start_action' }]
+            [{ text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }]
           ]
         }
       });
@@ -518,7 +518,7 @@ ${t(lang, 'open_app')} 👇
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '/start', callback_data: 'start_action' }]
+            [{ text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }]
           ]
         }
       });
@@ -578,7 +578,7 @@ ${enabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
         reply_markup: {
           inline_keyboard: [
             [
-              { text: '/start', callback_data: 'start_action' }
+              { text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }
             ]
           ]
         }

@@ -434,9 +434,13 @@ function updateUI() {
 
     // تحديث رابط الإحالة
     const refLinkEl = document.getElementById('ref-link');
-    if (refLinkEl && botUsername) {
-        const refLink = `https://t.me/${botUsername}?start=ref_${user.id}`;
-        refLinkEl.textContent = refLink;
+    if (refLinkEl) {
+        if (botUsername) {
+            const refLink = `https://t.me/${botUsername}?start=ref_${user.id}`;
+            refLinkEl.textContent = refLink;
+        } else {
+            refLinkEl.textContent = 'جاري التحميل...';
+        }
     }
 }
 
