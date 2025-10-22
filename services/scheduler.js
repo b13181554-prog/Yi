@@ -12,6 +12,8 @@ const { startWithdrawalScheduler, stopWithdrawalScheduler } = require('../withdr
 const rankingScheduler = require('../ranking-scheduler');
 const { initAnalystMonitor } = require('../analyst-monitor');
 const { initTradeSignalsMonitor } = require('../trade-signals-monitor');
+const featureFlagService = require('./feature-flags');
+const automatedSafety = require('../automated-safety-system');
 
 const logger = pino({
   level: 'info',
@@ -32,6 +34,16 @@ const startScheduler = async () => {
     // Initialize database
     logger.info('📊 Initializing database...');
     await db.initDatabase();
+    
+    // Initialize feature flags
+    logger.info('⚙️ Initializing feature flags...');
+    await featureFlagService.initialize(db.getDB());
+    logger.info('  ✅ Feature flags initialized');
+    
+    // Initialize automated safety system
+    logger.info('🛡️ Initializing automated safety system...');
+    automatedSafety.initialize();
+    logger.info('  ✅ Automated safety system initialized');
     
     // Start all schedulers
     logger.info('🔄 Starting scheduled jobs...');
@@ -72,6 +84,7 @@ const shutdown = async () => {
     
     stopWithdrawalScheduler();
     rankingScheduler.stop();
+    automatedSafety.stop();
     
     logger.info('✅ Scheduler shut down successfully');
     process.exit(0);

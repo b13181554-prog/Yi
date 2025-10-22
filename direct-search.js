@@ -1,10 +1,12 @@
 const axios = require('axios');
 const cacheManager = require('./cache-manager');
+const smartSearchOptimizer = require('./smart-search-optimizer');
 
 class DirectSearchService {
   constructor() {
     this.searchCache = new Map();
     this.cacheTimeout = 300000; // 5 دقائق
+    this.useSmartSearch = true;
   }
 
   async searchCryptoFromOKX(query) {
@@ -213,6 +215,36 @@ class DirectSearchService {
   async search(query, marketType = null, isVIP = false) {
     try {
       const searchLower = query.toLowerCase().trim();
+      
+      if (this.useSmartSearch && isVIP) {
+        console.log(`🔍 استخدام البحث الذكي المحسّن: ${query}`);
+        
+        const markets = [];
+        if (!marketType || marketType === 'crypto') markets.push('crypto');
+        if (!marketType || marketType === 'forex') markets.push('forex');
+        if (!marketType || marketType === 'stocks') markets.push('stocks');
+        
+        const smartResult = await smartSearchOptimizer.optimizeSearch(searchLower, {
+          markets,
+          limit: 50,
+          parallel: true,
+          minConfidence: 0.3
+        });
+        
+        if (smartResult.success) {
+          const formattedResults = smartResult.results.map(r => ({
+            symbol: r.symbol,
+            value: r.symbol,
+            label: r.name || r.symbol,
+            market_type: r.market,
+            vip_relevance_score: r.confidence * 100
+          }));
+          
+          console.log(`✅ نتائج البحث الذكي: ${formattedResults.length} (Cached: ${smartResult.cached})`);
+          return formattedResults;
+        }
+      }
+      
       let allResults = [];
 
       const searchPromises = [];

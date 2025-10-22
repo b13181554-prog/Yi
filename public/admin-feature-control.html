@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم في الميزات - OBENTCHI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349, #f45c43);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .flags-table {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px;
+            text-align: right;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-enabled {
+            background: #38ef7d;
+            color: white;
+        }
+
+        .status-disabled {
+            background: #eb3349;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 15px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            float: left;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #667eea;
+        }
+
+        .error {
+            background: #eb3349;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .success {
+            background: #38ef7d;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ لوحة التحكم الديناميكي في الميزات</h1>
+            <p>تحكم في جميع ميزات النظام بدون إعادة تشغيل</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>إجمالي الميزات</h3>
+                <div class="value" id="totalFlags">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>ميزات مفعّلة</h3>
+                <div class="value" id="enabledFlags">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>ميزات معطلة</h3>
+                <div class="value" id="disabledFlags">-</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-success" onclick="openCreateModal()">➕ إضافة ميزة جديدة</button>
+            <button class="btn" onclick="loadFlags()">🔄 تحديث</button>
+            
+            <div style="margin-top: 15px;">
+                <select id="filterScope" onchange="loadFlags()" style="display: inline-block; width: auto; margin-left: 10px;">
+                    <option value="">جميع النطاقات</option>
+                    <option value="global">عام (Global)</option>
+                    <option value="tier">حسب الفئة (Tier)</option>
+                    <option value="user">حسب المستخدم (User)</option>
+                </select>
+                
+                <select id="filterEnabled" onchange="loadFlags()" style="display: inline-block; width: auto;">
+                    <option value="">جميع الحالات</option>
+                    <option value="true">مفعّل فقط</option>
+                    <option value="false">معطل فقط</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="flags-table">
+            <h2 style="margin-bottom: 15px;">قائمة الميزات</h2>
+            <div id="tableContainer">
+                <div class="loading">⏳ جارِ التحميل...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreateModal()">&times;</span>
+            <h2 style="margin-bottom: 20px;">إضافة ميزة جديدة</h2>
+            
+            <div id="modalMessage"></div>
+            
+            <div class="form-group">
+                <label>مفتاح الميزة (Key) *</label>
+                <input type="text" id="flagKey" placeholder="مثال: ultra_analysis">
+            </div>
+            
+            <div class="form-group">
+                <label>النطاق (Scope) *</label>
+                <select id="flagScope" onchange="updateTargetField()">
+                    <option value="global">عام (Global)</option>
+                    <option value="tier">حسب الفئة (Tier)</option>
+                    <option value="user">حسب المستخدم (User)</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="targetGroup" style="display: none;">
+                <label>الهدف (Target) *</label>
+                <input type="text" id="flagTarget" placeholder="مثال: vip أو user_id">
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="flagEnabled" checked>
+                    مفعّل
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label>نسبة الطرح (%) - اختياري</label>
+                <input type="number" id="flagRollout" min="0" max="100" placeholder="100">
+            </div>
+            
+            <div class="form-group">
+                <label>الوصف - اختياري</label>
+                <input type="text" id="flagDescription" placeholder="وصف الميزة">
+            </div>
+            
+            <button class="btn btn-success" onclick="createFlag()">✅ حفظ الميزة</button>
+            <button class="btn btn-danger" onclick="closeCreateModal()">❌ إلغاء</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/feature-flags';
+        const initData = window.Telegram?.WebApp?.initData || '';
+
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/stats`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success && data.stats) {
+                    document.getElementById('totalFlags').textContent = data.stats.total;
+                    document.getElementById('enabledFlags').textContent = data.stats.enabled;
+                    document.getElementById('disabledFlags').textContent = data.stats.disabled;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadFlags() {
+            const scope = document.getElementById('filterScope').value;
+            const enabled = document.getElementById('filterEnabled').value;
+            
+            let url = `${API_BASE}?limit=100`;
+            if (scope) url += `&scope=${scope}`;
+            if (enabled) url += `&enabled=${enabled}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    renderTable(data.data);
+                    loadStats();
+                } else {
+                    document.getElementById('tableContainer').innerHTML = 
+                        '<div class="error">فشل تحميل البيانات</div>';
+                }
+            } catch (error) {
+                console.error('Error loading flags:', error);
+                document.getElementById('tableContainer').innerHTML = 
+                    '<div class="error">خطأ في الاتصال بالخادم</div>';
+            }
+        }
+
+        function renderTable(flags) {
+            if (flags.length === 0) {
+                document.getElementById('tableContainer').innerHTML = 
+                    '<p style="text-align: center; padding: 20px;">لا توجد ميزات</p>';
+                return;
+            }
+            
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>المفتاح</th>
+                            <th>النطاق</th>
+                            <th>الهدف</th>
+                            <th>الحالة</th>
+                            <th>نسبة الطرح</th>
+                            <th>آخر تحديث</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            flags.forEach(flag => {
+                const status = flag.enabled ? 
+                    '<span class="status-badge status-enabled">مفعّل</span>' :
+                    '<span class="status-badge status-disabled">معطل</span>';
+                
+                const rollout = flag.rollout ? `${flag.rollout.percentage}%` : 'N/A';
+                const target = flag.target || '-';
+                const updatedAt = new Date(flag.updated_at).toLocaleString('ar-EG');
+                
+                html += `
+                    <tr>
+                        <td><strong>${flag.key}</strong></td>
+                        <td>${flag.scope}</td>
+                        <td>${target}</td>
+                        <td>${status}</td>
+                        <td>${rollout}</td>
+                        <td style="font-size: 12px;">${updatedAt}</td>
+                        <td>
+                            <button class="btn" style="padding: 5px 10px; font-size: 12px;" 
+                                    onclick="toggleFlag('${flag.key}', '${flag.scope}', '${target}', ${!flag.enabled})">
+                                ${flag.enabled ? '🔴 تعطيل' : '🟢 تفعيل'}
+                            </button>
+                            <button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" 
+                                    onclick="deleteFlag('${flag.key}', '${flag.scope}', '${target}')">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('tableContainer').innerHTML = html;
+        }
+
+        async function toggleFlag(key, scope, target, enabled) {
+            try {
+                const targetValue = target !== '-' ? target : null;
+                
+                const response = await fetch(`${API_BASE}/${key}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        init_data: initData,
+                        scope,
+                        target: targetValue,
+                        enabled
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('تم تحديث الميزة بنجاح', 'success');
+                    loadFlags();
+                } else {
+                    showMessage('فشل تحديث الميزة', 'error');
+                }
+            } catch (error) {
+                console.error('Error toggling flag:', error);
+                showMessage('خطأ في الاتصال بالخادم', 'error');
+            }
+        }
+
+        async function deleteFlag(key, scope, target) {
+            if (!confirm(`هل أنت متأكد من حذف الميزة "${key}"؟`)) return;
+            
+            try {
+                const targetQuery = target !== '-' ? `&target=${target}` : '';
+                
+                const response = await fetch(`${API_BASE}/${key}?scope=${scope}${targetQuery}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ init_data: initData })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('تم حذف الميزة بنجاح', 'success');
+                    loadFlags();
+                } else {
+                    showMessage('فشل حذف الميزة', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting flag:', error);
+                showMessage('خطأ في الاتصال بالخادم', 'error');
+            }
+        }
+
+        function openCreateModal() {
+            document.getElementById('createModal').style.display = 'block';
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').style.display = 'none';
+            document.getElementById('flagKey').value = '';
+            document.getElementById('flagTarget').value = '';
+            document.getElementById('flagRollout').value = '';
+            document.getElementById('flagDescription').value = '';
+            document.getElementById('flagEnabled').checked = true;
+            document.getElementById('modalMessage').innerHTML = '';
+        }
+
+        function updateTargetField() {
+            const scope = document.getElementById('flagScope').value;
+            const targetGroup = document.getElementById('targetGroup');
+            
+            if (scope === 'tier' || scope === 'user') {
+                targetGroup.style.display = 'block';
+            } else {
+                targetGroup.style.display = 'none';
+            }
+        }
+
+        async function createFlag() {
+            const key = document.getElementById('flagKey').value.trim();
+            const scope = document.getElementById('flagScope').value;
+            const target = document.getElementById('flagTarget').value.trim();
+            const enabled = document.getElementById('flagEnabled').checked;
+            const rolloutPercentage = document.getElementById('flagRollout').value;
+            const description = document.getElementById('flagDescription').value.trim();
+            
+            if (!key) {
+                showModalMessage('يرجى إدخال مفتاح الميزة', 'error');
+                return;
+            }
+            
+            if ((scope === 'tier' || scope === 'user') && !target) {
+                showModalMessage('يرجى إدخال الهدف', 'error');
+                return;
+            }
+            
+            const payload = {
+                init_data: initData,
+                key,
+                scope,
+                enabled,
+                target: (scope === 'tier' || scope === 'user') ? target : null
+            };
+            
+            if (rolloutPercentage) {
+                payload.rollout = {
+                    percentage: parseInt(rolloutPercentage),
+                    strategy: 'percentage'
+                };
+            }
+            
+            if (description) {
+                payload.metadata = { description };
+            }
+            
+            try {
+                const response = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('تم إنشاء الميزة بنجاح', 'success');
+                    closeCreateModal();
+                    loadFlags();
+                } else {
+                    showModalMessage(data.message || 'فشل إنشاء الميزة', 'error');
+                }
+            } catch (error) {
+                console.error('Error creating flag:', error);
+                showModalMessage('خطأ في الاتصال بالخادم', 'error');
+            }
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            messageDiv.style.position = 'fixed';
+            messageDiv.style.top = '20px';
+            messageDiv.style.left = '50%';
+            messageDiv.style.transform = 'translateX(-50%)';
+            messageDiv.style.zIndex = '9999';
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        function showModalMessage(message, type) {
+            const modalMessage = document.getElementById('modalMessage');
+            modalMessage.className = type;
+            modalMessage.textContent = message;
+            
+            setTimeout(() => {
+                modalMessage.innerHTML = '';
+            }, 5000);
+        }
+
+        loadFlags();
+    </script>
+</body>
+</html>

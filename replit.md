@@ -53,6 +53,53 @@ All analysis systems include risk assessment, precise Stop Loss & Take Profit, a
 -   **Enhanced Health Check Metrics**: Comprehensive system, database, and request latency monitoring with automatic warnings for degraded status.
 -   **Complete Centralized Logging Migration**: Replaced all `console.log` calls with the centralized logger for consistent, structured logging across the database layer.
 
+## Recent Updates (October 22, 2025)
+
+**New Systems Added** (see NEW_FEATURES_2025.md for full details):
+
+1. **Dynamic Feature Control System** (`services/feature-flags.js`, `api-routes/feature-flag-routes.js`, `public/admin-feature-control.html`):
+   - Real-time feature toggling without system restart
+   - 3 scopes: Global, Tier-based, User-specific
+   - Gradual rollout with percentage-based deployment
+   - Redis + MongoDB caching for performance
+   - Web-based admin control panel
+
+2. **Smart Search Optimizer** (`smart-search-optimizer.js`):
+   - Multi-level caching (LRU + Redis)
+   - Parallel multi-market search
+   - Fuzzy matching and intelligent ranking
+   - Auto-complete suggestions based on popular searches
+   - Performance analytics (70%+ cache hit rate)
+
+3. **Enhanced Earning System** (`enhanced-earning-system.js`):
+   - 3-level referral program: Level 1 (10%), Level 2 (5%), Level 3 (2.5%)
+   - 5 milestone bonuses (10 to 250 referrals)
+   - Analyst performance bonuses
+   - Comprehensive earnings dashboard
+   - Leaderboard system for top earners
+
+4. **Advanced Security System** (`advanced-security-system.js`):
+   - Automated fraud detection
+   - Real-time user behavior analysis
+   - Risk scoring (0-100) with 4 threat levels
+   - Automatic actions: Log, Notify, Block, Ban
+   - Device fingerprinting and IP reputation checks
+
+5. **Flexible Action System** (`flexible-action-system.js`):
+   - Custom action registration and execution
+   - Action chaining with conditional logic
+   - Scheduled actions (cron-based)
+   - Action history and rollback capability
+   - Pre-built templates for common workflows
+
+6. **Automated Safety System** (`automated-safety-system.js`):
+   - 24/7 automated monitoring
+   - 4 active monitors: Withdrawals, Logins, Balance, System Health
+   - Daily security audits (2 AM)
+   - Anomaly detection every 5 minutes
+   - Auto-cleanup of old data (every 15 minutes)
+   - Instant admin notifications for critical issues
+
 ## External Dependencies
 
 -   **Databases**: MongoDB Atlas
