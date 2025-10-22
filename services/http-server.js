@@ -95,7 +95,11 @@ const setupAPIRoutes = async () => {
         return res.json({ success: false, error: 'User not found' });
       }
       
-      res.json({ success: true, user });
+      const bot = require('../bot');
+      const botInfo = await bot.getMe();
+      const botUsername = botInfo.username;
+      
+      res.json({ success: true, user, botUsername });
     } catch (error) {
       logger.error(`Error fetching user: ${error.message}`);
       res.status(500).json({ success: false, error: error.message });
