@@ -11,11 +11,7 @@ echo "📡 Starting Redis..."
 sleep 2
 echo ""
 
-# تشغيل جميع الخدمات في الخلفية ماعدا HTTP Server
-echo "🤖 Starting Bot Worker in background..."
-node services/bot-worker.js > /dev/null 2>&1 &
-BOT_PID=$!
-
+# تشغيل Queue Worker و Scheduler في الخلفية
 echo "⚙️ Starting Queue Worker in background..."
 node services/queue-worker.js > /dev/null 2>&1 &
 QUEUE_PID=$!
@@ -27,12 +23,12 @@ SCHEDULER_PID=$!
 sleep 2
 echo ""
 
-# تشغيل HTTP Server في المقدمة (للـ workflow)
-echo "🌐 Starting HTTP Server on port 5000..."
+# تشغيل index.js الذي يحتوي على جميع API endpoints والبوت
+echo "🌐 Starting Complete Server (API + Bot) on port 5000..."
 echo ""
-node services/http-server.js
+node index.js
 
 # عند الإيقاف، إيقاف جميع العمليات
 echo ""
 echo "⚠️ Stopping all background services..."
-kill $BOT_PID $QUEUE_PID $SCHEDULER_PID 2>/dev/null
+kill $QUEUE_PID $SCHEDULER_PID 2>/dev/null

@@ -354,15 +354,44 @@ async function init() {
     }
 
     try {
+        // استدعاء tg.ready() أولاً قبل أي شيء
+        tg.ready();
+        tg.expand();
+        
+        // انتظار قليل للتأكد من تحميل البيانات
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        console.log('🔍 Telegram WebApp Info:', {
+            version: tg.version,
+            platform: tg.platform,
+            initData: tg.initData ? 'موجود' : 'فارغ',
+            initDataUnsafe: tg.initDataUnsafe,
+            user: tg.initDataUnsafe?.user
+        });
+        
         if (!tg.initDataUnsafe?.user?.id) {
-            throw new Error('لا يوجد معرف مستخدم من Telegram. يجب فتح التطبيق من خلال البوت.');
+            console.error('❌ لا يوجد معرف مستخدم من Telegram');
+            console.error('📋 تفاصيل التشخيص:', {
+                'tg موجود': !!tg,
+                'initData': tg.initData || 'فارغ',
+                'initDataUnsafe': JSON.stringify(tg.initDataUnsafe),
+                'platform': tg.platform,
+                'version': tg.version
+            });
+            
+            showError(
+                '❌ لا يمكن تحميل بيانات المستخدم<br><br>' +
+                '<strong>الرجاء اتباع الخطوات التالية:</strong><br>' +
+                '1️⃣ أغلق هذه النافذة<br>' +
+                '2️⃣ ارجع للبوت في Telegram<br>' +
+                '3️⃣ اضغط على زر "🚀 Open App" أو أرسل /start<br><br>' +
+                '<small style="color: #999;">يجب فتح التطبيق من خلال البوت مباشرةً</small>'
+            );
+            return;
         }
         
         userId = tg.initDataUnsafe.user.id;
         console.log('✅ User ID:', userId);
-
-        tg.ready();
-        tg.expand();
 
         // تحميل بيانات المستخدم أولاً
         await loadUserData();

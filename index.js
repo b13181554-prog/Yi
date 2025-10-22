@@ -3786,6 +3786,18 @@ app.get('/metrics', async (req, res) => {
   }
 });
 
+// معالج 404 لـ API endpoints - يجب أن يكون قبل SPA fallback
+app.use('/api/*', (req, res) => {
+  console.error(`❌ API endpoint not found: ${req.method} ${req.path}`);
+  res.status(404).json({ 
+    success: false, 
+    error: 'endpoint_not_found',
+    message: 'API endpoint not found',
+    path: req.path,
+    method: req.method
+  });
+});
+
 // SPA fallback - يخدم index.html لجميع المسارات غير API
 app.use((req, res, next) => {
   if (!req.path.startsWith('/api/') && !req.path.startsWith('/health') && !req.path.startsWith('/ping') && !req.path.startsWith('/metrics')) {
@@ -3793,6 +3805,23 @@ app.use((req, res, next) => {
   } else {
     next();
   }
+});
+
+// معالج أخطاء عام
+app.use((err, req, res, next) => {
+  console.error('❌ Unhandled error:', err);
+  
+  // التأكد من إرجاع JSON للـ API requests
+  if (req.path.startsWith('/api/')) {
+    return res.status(500).json({
+      success: false,
+      error: 'internal_server_error',
+      message: process.env.NODE_ENV === 'development' ? err.message : 'حدث خطأ داخلي'
+    });
+  }
+  
+  // للـ requests الأخرى، إرجاع صفحة خطأ
+  res.status(500).send('حدث خطأ في الخادم');
 });
 
 main();
