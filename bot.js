@@ -183,18 +183,10 @@ ${t(userLang, 'feature_top_movers')}
 ${t(userLang, 'feature_wallet')}
 ${t(userLang, 'feature_analysts')}
 ${t(userLang, 'feature_referrals')}
-
-<b>${t(userLang, 'open_app_now')}</b>
-${t(userLang, 'press_button_below')}
 `;
       
       await safeSendMessage(bot, chatId, welcomeMessage, {
-        parse_mode: 'HTML',
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }]
-          ]
-        }
+        parse_mode: 'HTML'
       });
     } else {
       const subscription = await db.checkSubscription(userId);
@@ -227,15 +219,8 @@ ${t(userLang, 'press_button_below')}
 
 ${statusMessage}
 💰 <b>${t(userLang, 'your_balance')}</b> ${user.balance} USDT
-
-${t(userLang, 'open_app')} 👇
 `, {
-        parse_mode: 'HTML',
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }]
-          ]
-        }
+        parse_mode: 'HTML'
       });
     }
   } catch (error) {
@@ -283,14 +268,7 @@ ${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
 
 💡 <b>ملاحظة:</b> لتعديل إعدادات الإشعارات والأسواق، افتح التطبيق واذهب إلى قسم "حسابي" ثم "إعدادات الإشعارات"
     `, {
-      parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }
-          ]
-        ]
-      }
+      parse_mode: 'HTML'
     });
   } catch (error) {
     console.error('Error in /notifications:', error);
@@ -349,12 +327,7 @@ ${t(lang, 'choose_from_menu')}
 ${statusMessage}
 💰 <b>${t(lang, 'your_balance')}</b> ${user.balance} USDT
       `, {
-        parse_mode: 'HTML',
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }]
-          ]
-        }
+        parse_mode: 'HTML'
       });
     } else if (text === '🌐 إعدادات اللغة' || text === '🌐 Language Settings' || text === '🌐 Paramètres de langue' || text === '🌐 Configuración de idioma' || text === '🌐 Spracheinstellungen' || text === '🌐 Настройки языка' || text === '🌐 语言设置') {
       await safeSendMessage(bot, chatId, `
@@ -407,14 +380,7 @@ ${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
 
 💡 <b>ملاحظة:</b> لتعديل إعدادات الإشعارات والأسواق، افتح التطبيق واذهب إلى قسم "حسابي" ثم "إعدادات الإشعارات"
       `, {
-        parse_mode: 'HTML',
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }
-            ]
-          ]
-        }
+        parse_mode: 'HTML'
       });
     } else if (user.awaitingCustomerServiceMessage) {
       const config = require('./config');
@@ -473,12 +439,7 @@ bot.on('callback_query', async (query) => {
 ${statusMessage}
 💰 <b>${t(selectedLang, 'your_balance')}</b> ${user.balance} USDT
       `, {
-        parse_mode: 'HTML',
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }]
-          ]
-        }
+        parse_mode: 'HTML'
       });
     } catch (error) {
       console.error('Error changing language:', error);
@@ -512,15 +473,8 @@ ${statusMessage}
 
 ${statusMessage}
 💰 <b>${t(lang, 'your_balance')}</b> ${user.balance} USDT
-
-${t(lang, 'open_app')} 👇
       `, {
-        parse_mode: 'HTML',
-        reply_markup: {
-          inline_keyboard: [
-            [{ text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }]
-          ]
-        }
+        parse_mode: 'HTML'
       });
     } catch (error) {
       console.error('Error in start_action:', error);
@@ -574,14 +528,7 @@ ${enabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
       `, {
         chat_id: chatId,
         message_id: query.message.message_id,
-        parse_mode: 'HTML',
-        reply_markup: {
-          inline_keyboard: [
-            [
-              { text: '🚀 فتح التطبيق', web_app: { url: config.WEBAPP_URL } }
-            ]
-          ]
-        }
+        parse_mode: 'HTML'
       });
     } catch (error) {
       console.error('Error toggling notifications:', error);
