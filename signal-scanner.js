@@ -294,8 +294,8 @@ class SignalScanner {
           symbol: pair.value, 
           marketType: 'forex' 
         }));
-        allSymbols.push(...forexSymbols.slice(0, 50)); // أول 50 زوج فقط لتجنب التحميل الزائد
-        console.log(`✅ تم إضافة ${forexSymbols.slice(0, 50).length} زوج فوركس`);
+        allSymbols.push(...forexSymbols);
+        console.log(`✅ تم إضافة ${forexSymbols.length} زوج فوركس`);
       } catch (error) {
         console.error('❌ خطأ في جلب أزواج الفوركس:', error.message);
       }
@@ -307,8 +307,8 @@ class SignalScanner {
           symbol: stock.value, 
           marketType: 'stocks' 
         }));
-        allSymbols.push(...stockSymbols.slice(0, 50)); // أول 50 سهم
-        console.log(`✅ تم إضافة ${stockSymbols.slice(0, 50).length} سهم`);
+        allSymbols.push(...stockSymbols);
+        console.log(`✅ تم إضافة ${stockSymbols.length} سهم`);
       } catch (error) {
         console.error('❌ خطأ في جلب الأسهم:', error.message);
       }

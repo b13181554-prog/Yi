@@ -1013,7 +1013,7 @@ app.post('/api/top-movers', async (req, res) => {
       }
       
       movers.sort((a, b) => type === 'gainers' ? b.change - a.change : a.change - b.change);
-      movers = movers.slice(0, 10);
+      movers = movers.slice(0, 50);
       
     } else if (market_type === 'stocks') {
       const stocks = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'NFLX', 'AMD', 'BABA', 'TSM', 'V', 'JPM', 'WMT', 'JNJ'];
@@ -1038,7 +1038,7 @@ app.post('/api/top-movers', async (req, res) => {
       }
       
       movers.sort((a, b) => type === 'gainers' ? b.change - a.change : a.change - b.change);
-      movers = movers.slice(0, 10);
+      movers = movers.slice(0, 50);
       
     } else if (market_type === 'commodities') {
       const commodities = ['XAUUSD', 'XAGUSD', 'WTIUSD', 'BCOUSD', 'XPTUSD', 'COPPER'];

@@ -46,8 +46,7 @@ class DirectSearchService {
             quoteCcy: inst.quoteCcy,
             label: `${this.getCryptoEmoji(inst.baseCcy)} ${inst.baseCcy}`,
             market_type: 'crypto'
-          }))
-          .slice(0, 50);
+          }));
 
         await cacheManager.set(cacheKey, results, 300);
         console.log(`✅ تم العثور على ${results.length} عملة من OKX`);
@@ -75,7 +74,7 @@ class DirectSearchService {
       const response = await axios.get(searchUrl, {
         params: {
           q: query,
-          quotesCount: 20,
+          quotesCount: 100,
           newsCount: 0,
           enableFuzzyQuery: false,
           quotesQueryId: 'tss_match_phrase_query',
@@ -100,8 +99,7 @@ class DirectSearchService {
             label: `📈 ${quote.shortname || quote.longname || quote.symbol}`,
             market: quote.exchange || 'Global',
             market_type: 'stocks'
-          }))
-          .slice(0, 20);
+          }));
 
         await cacheManager.set(cacheKey, results, 300);
         console.log(`✅ تم العثور على ${results.length} سهم من Yahoo`);
@@ -154,7 +152,7 @@ class DirectSearchService {
       }
     }
 
-    return results.slice(0, 30);
+    return results;
   }
 
   getCommoditiesList() {

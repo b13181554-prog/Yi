@@ -91,7 +91,7 @@ class SmartSearchOptimizer {
   getCacheKey(query, options) {
     const optionsKey = JSON.stringify({
       markets: options.markets || [],
-      limit: options.limit || 50,
+      limit: options.limit || 500,
       minConfidence: options.minConfidence || 0
     });
     
@@ -102,7 +102,7 @@ class SmartSearchOptimizer {
     try {
       const {
         markets = ['crypto', 'forex', 'stocks'],
-        limit = 50,
+        limit = 500,
         parallel = true,
         minConfidence = 0.3
       } = options;
@@ -176,7 +176,7 @@ class SmartSearchOptimizer {
       
       results.sort((a, b) => b.confidence - a.confidence);
       
-      return results.slice(0, options.limit || 20);
+      return results.slice(0, options.limit || 100);
     } catch (error) {
       logger.warn({ err: error, market, query }, 'Market search error');
       return [];
@@ -198,7 +198,7 @@ class SmartSearchOptimizer {
       const forexService = require('./forex-service');
       
       if (market === 'crypto') {
-        symbols = await marketData.getTopCryptos(200);
+        symbols = await marketData.getTopCryptos(1000);
         symbols = symbols.map(s => ({
           symbol: s.symbol,
           name: s.name,
