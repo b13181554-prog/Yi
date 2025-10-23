@@ -1941,6 +1941,49 @@ function showError(message) {
 }
 
 let selectedAnalysisType = 'complete';
+let selectedPaymentMode = 'subscription';
+
+function selectPaymentMode(mode) {
+    selectedPaymentMode = mode;
+    
+    const subscriptionBtn = document.getElementById('subscription-mode-btn');
+    const perAnalysisBtn = document.getElementById('per-analysis-mode-btn');
+    const warning = document.getElementById('payment-mode-warning');
+    
+    if (mode === 'subscription') {
+        subscriptionBtn.style.border = '3px solid #667eea';
+        subscriptionBtn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        subscriptionBtn.style.color = 'white';
+        subscriptionBtn.style.boxShadow = '0 4px 10px rgba(102, 126, 234, 0.4)';
+        
+        perAnalysisBtn.style.border = '2px solid #ddd';
+        perAnalysisBtn.style.background = 'white';
+        perAnalysisBtn.style.color = '#333';
+        perAnalysisBtn.style.boxShadow = 'none';
+        
+        warning.style.display = 'none';
+    } else {
+        perAnalysisBtn.style.border = '3px solid #10b981';
+        perAnalysisBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+        perAnalysisBtn.style.color = 'white';
+        perAnalysisBtn.style.boxShadow = '0 4px 10px rgba(16, 185, 129, 0.4)';
+        
+        subscriptionBtn.style.border = '2px solid #ddd';
+        subscriptionBtn.style.background = 'white';
+        subscriptionBtn.style.color = '#333';
+        subscriptionBtn.style.boxShadow = 'none';
+        
+        warning.style.display = 'block';
+        
+        if (userBalance < 0.1) {
+            if (tg.showAlert) {
+                tg.showAlert('⚠️ رصيدك الحالي: ' + userBalance.toFixed(2) + ' USDT\nيلزم 0.1 USDT على الأقل للتحليل');
+            } else {
+                alert('⚠️ رصيدك الحالي: ' + userBalance.toFixed(2) + ' USDT\nيلزم 0.1 USDT على الأقل للتحليل');
+            }
+        }
+    }
+}
 
 function selectAnalysisType(type, event) {
     selectedAnalysisType = type;
@@ -2100,11 +2143,22 @@ async function analyzeMarketAdvanced() {
             trading_type: tradingType,
             analysis_type: analysisType,
             indicators,
+            payment_mode: selectedPaymentMode,
             init_data: tg.initData
         };
 
         if (analysisType === 'v1-pro') {
             requestBody.balance = userData?.balance || 10000;
+        }
+        
+        if (selectedPaymentMode === 'per_analysis' && userBalance < 0.1) {
+            loadingMsg.remove();
+            if (tg.showAlert) {
+                tg.showAlert('⚠️ الرصيد غير كافٍ!\n\nرصيدك الحالي: ' + userBalance.toFixed(2) + ' USDT\nيلزم 0.1 USDT على الأقل للتحليل\n\nيرجى الإيداع من قسم "المحفظة"');
+            } else {
+                alert('⚠️ الرصيد غير كافٍ!\n\nرصيدك الحالي: ' + userBalance.toFixed(2) + ' USDT\nيلزم 0.1 USDT على الأقل للتحليل\n\nيرجى الإيداع من قسم "المحفظة"');
+            }
+            return;
         }
 
         const response = await fetch(apiEndpoint, {
@@ -2131,7 +2185,21 @@ async function analyzeMarketAdvanced() {
                 displayAdvancedAnalysisResult(data.analysis, symbol, timeframe, analysisType);
             }
         } else {
-            if (data.requires_subscription) {
+            if (data.requires_balance) {
+                const currentBalance = userBalance || 0;
+                let message = `❌ ${data.error}\n\n`;
+                message += `💰 رصيدك الحالي: ${currentBalance.toFixed(2)} USDT\n`;
+                message += `💵 المطلوب: 0.1 USDT\n\n`;
+                message += `📥 يرجى الإيداع من قسم "المحفظة"`;
+                
+                if (tg.showAlert) {
+                    tg.showAlert(message);
+                } else {
+                    alert(message);
+                }
+                
+                await loadUserData();
+            } else if (data.requires_subscription) {
                 const currentBalance = userBalance || 0;
                 const subscriptionPrice = 10;
                 const needsDeposit = currentBalance < subscriptionPrice;
