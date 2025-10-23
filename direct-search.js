@@ -224,7 +224,7 @@ class DirectSearchService {
         
         const smartResult = await smartSearchOptimizer.optimizeSearch(searchLower, {
           markets,
-          limit: 50,
+          limit: 500,
           parallel: true,
           minConfidence: 0.3
         });
