@@ -73,9 +73,22 @@ class AssetsManager {
   // إنشاء جميع أزواج الفوركس
   generateAllForexPairs() {
     const majorCurrencies = ['EUR', 'GBP', 'USD', 'JPY', 'AUD', 'CAD', 'NZD', 'CHF'];
-    // حذف العملات النادرة جداً التي لا تعمل بشكل جيد (HUF, CZK)
     const minorCurrencies = ['NOK', 'SEK', 'DKK', 'PLN', 'TRY', 'ZAR', 'MXN', 'SGD', 'HKD', 'THB', 'INR', 'CNY', 'KRW', 'BRL', 'RUB'];
     const allCurrencies = [...majorCurrencies, ...minorCurrencies];
+    
+    // أزواج محظورة (لا تعمل في Yahoo Finance أو TwelveData)
+    const blockedPairs = new Set([
+      'PLNBRL', 'BRLPLN',  // PLN-BRL
+      'TRYBRL', 'BRLTRY',  // TRY-BRL
+      'INRTRY', 'TRYINR',  // INR-TRY
+      'NOKKRW', 'KRWNOK',  // NOK-KRW
+      'RUBINR', 'INRRUB',  // RUB-INR
+      'PLNINR', 'INRPLN',  // PLN-INR
+      'TRYSGD', 'SGDTRY',  // TRY-SGD
+      'INRZAR', 'ZARINR',  // INR-ZAR
+      'TRYTHB', 'THBTRY',  // TRY-THB
+      'RUBZAR', 'ZARRUB'   // RUB-ZAR
+    ]);
     
     const pairs = [];
     const flags = {
@@ -94,6 +107,11 @@ class AssetsManager {
           const quote = allCurrencies[j];
           const pair = base + quote;
           
+          // تخطي الأزواج المحظورة
+          if (blockedPairs.has(pair)) {
+            continue;
+          }
+          
           pairs.push({
             value: pair,
             label: `${flags[base] || '🌐'} ${base}/${quote} ${flags[quote] || '🌐'}`
@@ -103,7 +121,7 @@ class AssetsManager {
     }
 
     this.forexPairs = pairs;
-    console.log(`✅ تم إنشاء ${this.forexPairs.length} زوج فوركس`);
+    console.log(`✅ تم إنشاء ${this.forexPairs.length} زوج فوركس (تم استبعاد ${blockedPairs.size} زوج محظور)`);
     return this.forexPairs;
   }
 
@@ -380,26 +398,26 @@ class AssetsManager {
       { value: 'VOW.DE', label: '🚗 Volkswagen', market: 'Germany' },
       { value: 'SIE.DE', label: '⚡ Siemens', market: 'Germany' },
       { value: 'DTE.DE', label: '📱 Deutsche Telekom', market: 'Germany' },
-      { value: 'SHEL', label: '🛢️ Shell', market: 'UK' },
-      { value: 'BP', label: '🛢️ BP', market: 'UK' },
-      { value: 'HSBC', label: '🏦 HSBC', market: 'UK' },
-      { value: 'ULVR', label: '🧴 Unilever', market: 'UK' },
-      { value: 'AZN', label: '💊 AstraZeneca', market: 'UK' },
-      { value: 'GSK', label: '💊 GSK', market: 'UK' },
-      { value: 'DGE', label: '🍺 Diageo', market: 'UK' },
-      { value: 'RIO', label: '⛏️ Rio Tinto', market: 'UK' },
-      { value: 'BHP', label: '⛏️ BHP Group', market: 'UK' },
+      { value: 'SHEL.L', label: '🛢️ Shell', market: 'UK' },
+      { value: 'BP.L', label: '🛢️ BP', market: 'UK' },
+      { value: 'HSBA.L', label: '🏦 HSBC', market: 'UK' },
+      { value: 'ULVR.L', label: '🧴 Unilever', market: 'UK' },
+      { value: 'AZN.L', label: '💊 AstraZeneca', market: 'UK' },
+      { value: 'GSK.L', label: '💊 GSK', market: 'UK' },
+      { value: 'DGE.L', label: '🍺 Diageo', market: 'UK' },
+      { value: 'RIO.L', label: '⛏️ Rio Tinto', market: 'UK' },
+      { value: 'BHP.L', label: '⛏️ BHP Group', market: 'UK' },
       { value: 'AAL.L', label: '⛏️ Anglo American', market: 'UK' },
-      { value: 'GLEN', label: '⛏️ Glencore', market: 'UK' },
-      { value: 'BARC', label: '🏦 Barclays', market: 'UK' },
-      { value: 'LLOY', label: '🏦 Lloyds Banking', market: 'UK' },
-      { value: 'NWG', label: '🏦 NatWest Group', market: 'UK' },
-      { value: 'PRU', label: '💼 Prudential', market: 'UK' },
-      { value: 'LSEG', label: '📈 London Stock Exchange', market: 'UK' },
-      { value: 'RR', label: '✈️ Rolls-Royce', market: 'UK' },
-      { value: 'BAE', label: '🛡️ BAE Systems', market: 'UK' },
-      { value: 'VOD', label: '📱 Vodafone', market: 'UK' },
-      { value: 'BT.A', label: '📞 BT Group', market: 'UK' },
+      { value: 'GLEN.L', label: '⛏️ Glencore', market: 'UK' },
+      { value: 'BARC.L', label: '🏦 Barclays', market: 'UK' },
+      { value: 'LLOY.L', label: '🏦 Lloyds Banking', market: 'UK' },
+      { value: 'NWG.L', label: '🏦 NatWest Group', market: 'UK' },
+      { value: 'PRU.L', label: '💼 Prudential', market: 'UK' },
+      { value: 'LSEG.L', label: '📈 London Stock Exchange', market: 'UK' },
+      { value: 'RR.L', label: '✈️ Rolls-Royce', market: 'UK' },
+      { value: 'BAE.L', label: '🛡️ BAE Systems', market: 'UK' },
+      { value: 'VOD.L', label: '📱 Vodafone', market: 'UK' },
+      { value: 'BT-A.L', label: '📞 BT Group', market: 'UK' },
       { value: 'ADS.DE', label: '👟 Adidas', market: 'Germany' },
       { value: 'BMW.DE', label: '🚗 BMW', market: 'Germany' },
       { value: 'DAI.DE', label: '🚗 Daimler', market: 'Germany' },
@@ -526,117 +544,38 @@ class AssetsManager {
   getAllCommodities() {
     this.commodities = [
       // المعادن الثمينة
-      { value: 'XAUUSD', label: '🥇 Gold (الذهب)', category: 'Precious Metals' },
-      { value: 'XAGUSD', label: '🥈 Silver (الفضة)', category: 'Precious Metals' },
-      { value: 'XPTUSD', label: '⚪ Platinum (البلاتين)', category: 'Precious Metals' },
-      { value: 'XPDUSD', label: '⚫ Palladium (البلاديوم)', category: 'Precious Metals' },
-      { value: 'XRHUSD', label: '💎 Rhodium (الروديوم)', category: 'Precious Metals' },
+      { value: 'GC=F', label: '🥇 Gold Futures (الذهب)', category: 'Precious Metals' },
+      { value: 'SI=F', label: '🥈 Silver Futures (الفضة)', category: 'Precious Metals' },
+      { value: 'PL=F', label: '⚪ Platinum Futures (البلاتين)', category: 'Precious Metals' },
+      { value: 'PA=F', label: '⚫ Palladium Futures (البلاديوم)', category: 'Precious Metals' },
       
       // الطاقة
-      { value: 'BCOUSD', label: '🛢️ Brent Crude Oil (برنت)', category: 'Energy' },
-      { value: 'CL=F', label: '🛢️ WTI Crude Oil Futures (عقود النفط)', category: 'Energy' },
-      { value: 'BZ=F', label: '🛢️ Brent Crude Futures (عقود برنت)', category: 'Energy' },
-      { value: 'NG=F', label: '🔥 Natural Gas Futures (عقود الغاز)', category: 'Energy' },
-      { value: 'ZC=F', label: '🌽 Corn Futures (عقود الذرة)', category: 'Grains' },
-      { value: 'ZW=F', label: '🌾 Wheat Futures (عقود القمح)', category: 'Grains' },
-      { value: 'KC=F', label: '☕ Coffee Futures (عقود القهوة)', category: 'Soft Commodities' },
-      { value: 'SB=F', label: '🍬 Sugar Futures (عقود السكر)', category: 'Soft Commodities' },
-      { value: 'CC=F', label: '🍫 Cocoa Futures (عقود الكاكاو)', category: 'Soft Commodities' },
-      { value: 'NGAS', label: '🔥 Natural Gas (الغاز الطبيعي)', category: 'Energy' },
-      { value: 'USOIL', label: '🛢️ US Oil', category: 'Energy' },
-      { value: 'UKOIL', label: '🛢️ UK Oil', category: 'Energy' },
-      { value: 'GASOIL', label: '⛽ Heating Oil', category: 'Energy' },
+      { value: 'CL=F', label: '🛢️ WTI Crude Oil Futures (نفط خام WTI)', category: 'Energy' },
+      { value: 'BZ=F', label: '🛢️ Brent Crude Futures (نفط برنت)', category: 'Energy' },
+      { value: 'NG=F', label: '🔥 Natural Gas Futures (الغاز الطبيعي)', category: 'Energy' },
+      { value: 'HO=F', label: '⛽ Heating Oil Futures (زيت التدفئة)', category: 'Energy' },
+      { value: 'RB=F', label: '⛽ Gasoline Futures (البنزين)', category: 'Energy' },
+      
+      // الحبوب والمحاصيل الزراعية
+      { value: 'ZC=F', label: '🌽 Corn Futures (الذرة)', category: 'Grains' },
+      { value: 'ZW=F', label: '🌾 Wheat Futures (القمح)', category: 'Grains' },
+      { value: 'ZS=F', label: '🌱 Soybean Futures (فول الصويا)', category: 'Grains' },
+      { value: 'ZO=F', label: '🌾 Oat Futures (الشوفان)', category: 'Grains' },
+      { value: 'ZR=F', label: '🌾 Rice Futures (الأرز)', category: 'Grains' },
+      
+      // المنتجات الغذائية
+      { value: 'KC=F', label: '☕ Coffee Futures (القهوة)', category: 'Soft Commodities' },
+      { value: 'SB=F', label: '🍬 Sugar Futures (السكر)', category: 'Soft Commodities' },
+      { value: 'CC=F', label: '🍫 Cocoa Futures (الكاكاو)', category: 'Soft Commodities' },
+      { value: 'CT=F', label: '🧵 Cotton Futures (القطن)', category: 'Soft Commodities' },
+      { value: 'OJ=F', label: '🍊 Orange Juice Futures (عصير البرتقال)', category: 'Soft Commodities' },
       
       // المعادن الصناعية
-      { value: 'COPPER', label: '🟤 Copper (النحاس)', category: 'Industrial Metals' },
-      { value: 'LEAD', label: '⚫ Lead (الرصاص)', category: 'Industrial Metals' },
-      { value: 'TIN', label: '⚪ Tin (القصدير)', category: 'Industrial Metals' },
-      { value: 'IRON', label: '🔴 Iron Ore (خام الحديد)', category: 'Industrial Metals' },
-      { value: 'STEEL', label: '🔩 Steel (الصلب)', category: 'Industrial Metals' },
-      
-      // المحاصيل الزراعية - الحبوب
-      { value: 'WHEAT', label: '🌾 Wheat (القمح)', category: 'Grains' },
-      { value: 'CORN', label: '🌽 Corn (الذرة)', category: 'Grains' },
-      { value: 'OATS', label: '🌾 Oats (الشوفان)', category: 'Grains' },
-      { value: 'SOYMEAL', label: '🍽️ Soybean Meal', category: 'Grains' },
-      { value: 'SOYOIL', label: '🛢️ Soybean Oil', category: 'Grains' },
-      
-      // المنتجات الغذائية الأخرى
-      { value: 'SUGAR', label: '🍬 Sugar (السكر)', category: 'Soft Commodities' },
-      { value: 'COFFEE', label: '☕ Coffee (القهوة)', category: 'Soft Commodities' },
-      { value: 'COCOA', label: '🍫 Cocoa (الكاكاو)', category: 'Soft Commodities' },
-      { value: 'ORANGE', label: '🍊 Orange Juice (عصير البرتقال)', category: 'Soft Commodities' },
+      { value: 'HG=F', label: '🟤 Copper Futures (النحاس)', category: 'Industrial Metals' },
       
       // الماشية
-      { value: 'CATTLE', label: '🐄 Live Cattle (الماشية الحية)', category: 'Livestock' },
-      { value: 'HOGS', label: '🐷 Lean Hogs (الخنازير)', category: 'Livestock' },
-      
-      // أخرى
-      { value: 'PALM', label: '🌴 Palm Oil (زيت النخيل)', category: 'Other' },
-      { value: 'WOOL', label: '🐑 Wool (الصوف)', category: 'Other' },
-      { value: 'ETHANOL', label: '⚗️ Ethanol (الإيثانول)', category: 'Energy' },
-      { value: 'URANIUM', label: '☢️ Uranium (اليورانيوم)', category: 'Energy' },
-      { value: 'COAL', label: '⚫ Coal (الفحم)', category: 'Energy' },
-      { value: 'LITHIUM', label: '⚡ Lithium (الليثيوم)', category: 'Industrial Metals' },
-      { value: 'COBALT', label: '🔵 Cobalt (الكوبالت)', category: 'Industrial Metals' },
-      { value: 'MOLYBDENUM', label: '⚪ Molybdenum (الموليبدينوم)', category: 'Industrial Metals' },
-      
-      // المزيد من السلع النادرة (المدعومة فقط)
-      { value: 'GRAPHITE', label: '⚫ Graphite (الجرافيت)', category: 'Industrial Metals' },
-      { value: 'VANADIUM', label: '⚪ Vanadium (الفاناديوم)', category: 'Industrial Metals' },
-      { value: 'TITANIUM', label: '⚪ Titanium (التيتانيوم)', category: 'Industrial Metals' },
-      { value: 'CHROMIUM', label: '⚪ Chromium (الكروم)', category: 'Industrial Metals' },
-      { value: 'TUNGSTEN', label: '⚪ Tungsten (التنغستن)', category: 'Industrial Metals' },
-      { value: 'ANTIMONY', label: '⚪ Antimony (الأنتيمون)', category: 'Industrial Metals' },
-      { value: 'NEODYMIUM', label: '🧲 Neodymium (النيوديميوم)', category: 'Rare Metals' },
-      { value: 'PRASEODYMIUM', label: '🟢 Praseodymium', category: 'Rare Metals' },
-      { value: 'DYSPROSIUM', label: '⚪ Dysprosium', category: 'Rare Metals' },
-      { value: 'EUROPIUM', label: '🔴 Europium', category: 'Rare Metals' },
-      { value: 'YTTRIUM', label: '⚪ Yttrium', category: 'Rare Metals' },
-      { value: 'SCANDIUM', label: '⚪ Scandium', category: 'Rare Metals' },
-      { value: 'TELLURIUM', label: '⚪ Tellurium', category: 'Rare Metals' },
-      { value: 'SELENIUM', label: '⚪ Selenium (السيلينيوم)', category: 'Rare Metals' },
-      { value: 'CADMIUM', label: '⚪ Cadmium (الكادميوم)', category: 'Industrial Metals' },
-      
-      // المزيد من منتجات الطاقة (المدعومة فقط)
-      { value: 'PROPANE', label: '⚗️ Propane (البروبان)', category: 'Energy' },
-      { value: 'BUTANE', label: '⚗️ Butane (البيوتان)', category: 'Energy' },
-      { value: 'NAPHTHA', label: '🛢️ Naphtha (النافثا)', category: 'Energy' },
-      { value: 'JET_FUEL', label: '✈️ Jet Fuel (وقود الطائرات)', category: 'Energy' },
-      { value: 'DIESEL', label: '🚛 Diesel (الديزل)', category: 'Energy' },
-      { value: 'LPG', label: '🔥 LPG (غاز البترول المسال)', category: 'Energy' },
-      { value: 'LNG', label: '💧 LNG (الغاز الطبيعي المسال)', category: 'Energy' },
-      { value: 'BIODIESEL', label: '🌱 Biodiesel', category: 'Energy' },
-      
-      // منتجات زراعية إضافية (المدعومة فقط)
-      { value: 'SUNFLOWER', label: '🌻 Sunflower (دوار الشمس)', category: 'Grains' },
-      { value: 'PALM_KERNEL', label: '🌴 Palm Kernel (نواة النخيل)', category: 'Grains' },
-      { value: 'LINSEED', label: '🌾 Linseed (بذر الكتان)', category: 'Grains' },
-      { value: 'JUTE', label: '🧵 Jute (الجوت)', category: 'Soft Commodities' },
-      { value: 'SISAL', label: '🌿 Sisal (السيزال)', category: 'Soft Commodities' },
-      { value: 'HEMP', label: '🌿 Hemp (القنب)', category: 'Soft Commodities' },
-      { value: 'FLAX', label: '🌾 Flax (الكتان)', category: 'Soft Commodities' },
-      { value: 'SILK', label: '🐛 Silk (الحرير)', category: 'Soft Commodities' },
-      { value: 'CASHMERE', label: '🐐 Cashmere', category: 'Soft Commodities' },
-      { value: 'FEATHERS', label: '🪶 Feathers (الريش)', category: 'Soft Commodities' },
-      { value: 'HIDES', label: '🐄 Hides (الجلود)', category: 'Livestock' },
-      { value: 'MILK', label: '🥛 Milk (الحليب)', category: 'Livestock' },
-      { value: 'BUTTER', label: '🧈 Butter (الزبدة)', category: 'Livestock' },
-      { value: 'CHEESE', label: '🧀 Cheese (الجبن)', category: 'Livestock' },
-      { value: 'EGGS', label: '🥚 Eggs (البيض)', category: 'Livestock' },
-      { value: 'HONEY', label: '🍯 Honey (العسل)', category: 'Soft Commodities' },
-      { value: 'PEPPER', label: '🌶️ Pepper (الفلفل)', category: 'Soft Commodities' },
-      { value: 'CLOVES', label: '🌰 Cloves (القرنفل)', category: 'Soft Commodities' },
-      { value: 'CINNAMON', label: '🌰 Cinnamon (القرفة)', category: 'Soft Commodities' },
-      { value: 'NUTMEG', label: '🌰 Nutmeg (جوزة الطيب)', category: 'Soft Commodities' },
-      { value: 'SAFFRON', label: '🌼 Saffron (الزعفران)', category: 'Soft Commodities' },
-      { value: 'TURMERIC', label: '🟡 Turmeric (الكركم)', category: 'Soft Commodities' },
-      { value: 'GINGER', label: '🫚 Ginger (الزنجبيل)', category: 'Soft Commodities' },
-      { value: 'GARLIC', label: '🧄 Garlic (الثوم)', category: 'Soft Commodities' },
-      { value: 'BANANA', label: '🍌 Banana (الموز)', category: 'Soft Commodities' },
-      { value: 'APPLE', label: '🍎 Apple (التفاح)', category: 'Soft Commodities' },
-      { value: 'GRAPE', label: '🍇 Grape (العنب)', category: 'Soft Commodities' },
-      { value: 'WINE', label: '🍷 Wine (النبيذ)', category: 'Soft Commodities' }
+      { value: 'LE=F', label: '🐄 Live Cattle Futures (الماشية الحية)', category: 'Livestock' },
+      { value: 'HE=F', label: '🐷 Lean Hogs Futures (الخنازير)', category: 'Livestock' }
     ];
 
     console.log(`✅ قائمة السلع: ${this.commodities.length} سلعة`);
@@ -647,63 +586,45 @@ class AssetsManager {
   getAllIndices() {
     this.indices = [
       // المؤشرات الأمريكية
-      { value: 'US30', label: '🇺🇸 Dow Jones Industrial (US30)', region: 'USA' },
-      { value: 'SPX500', label: '🇺🇸 S&P 500 (SPX500)', region: 'USA' },
-      { value: 'NAS100', label: '🇺🇸 NASDAQ 100 (NAS100)', region: 'USA' },
-      { value: 'US500', label: '🇺🇸 S&P 500', region: 'USA' },
-      { value: 'DJ30', label: '🇺🇸 Dow Jones 30', region: 'USA' },
-      { value: 'RUSSELL', label: '🇺🇸 Russell 2000', region: 'USA' },
-      { value: 'VIX', label: '🇺🇸 VIX (مؤشر الخوف)', region: 'USA' },
+      { value: '^DJI', label: '🇺🇸 Dow Jones Industrial Average', region: 'USA' },
+      { value: '^GSPC', label: '🇺🇸 S&P 500', region: 'USA' },
+      { value: '^IXIC', label: '🇺🇸 NASDAQ Composite', region: 'USA' },
+      { value: '^NDX', label: '🇺🇸 NASDAQ 100', region: 'USA' },
+      { value: '^RUT', label: '🇺🇸 Russell 2000', region: 'USA' },
+      { value: '^VIX', label: '🇺🇸 VIX (مؤشر الخوف)', region: 'USA' },
       
       // المؤشرات الأوروبية
-      { value: 'UK100', label: '🇬🇧 FTSE 100', region: 'UK' },
+      { value: '^FTSE', label: '🇬🇧 FTSE 100', region: 'UK' },
+      { value: '^GDAXI', label: '🇩🇪 DAX (Germany)', region: 'Germany' },
+      { value: '^FCHI', label: '🇫🇷 CAC 40 (France)', region: 'France' },
+      { value: '^STOXX50E', label: '🇪🇺 Euro Stoxx 50', region: 'Europe' },
       { value: '^SSMI', label: '🇨🇭 Swiss Market Index (SMI)', region: 'Switzerland' },
-      { value: '^KOSPI', label: '🇰🇷 KOSPI (Korea)', region: 'Korea' },
+      { value: '^AEX', label: '🇳🇱 AEX (Netherlands)', region: 'Netherlands' },
+      { value: '^FTMIB', label: '🇮🇹 FTSE MIB (Italy)', region: 'Italy' },
+      { value: '^IBEX', label: '🇪🇸 IBEX 35 (Spain)', region: 'Spain' },
       { value: '^OSEAX', label: '🇳🇴 Oslo Stock Exchange', region: 'Norway' },
-      { value: '^MXX', label: '🇲🇽 IPC Mexico', region: 'Mexico' },
-      { value: '^N225', label: '🇯🇵 Nikkei 225', region: 'Japan' },
-      { value: '^AXJO', label: '🇦🇺 ASX 200 (Australia)', region: 'Australia' },
-      { value: 'GER40', label: '🇩🇪 DAX 40 (Germany)', region: 'Germany' },
-      { value: 'FRA40', label: '🇫🇷 CAC 40 (France)', region: 'France' },
-      { value: 'ITA40', label: '🇮🇹 FTSE MIB (Italy)', region: 'Italy' },
-      { value: 'NLD25', label: '🇳🇱 AEX 25 (Netherlands)', region: 'Netherlands' },
-      { value: 'STOXX50', label: '🇪🇺 Euro Stoxx 50', region: 'Europe' },
-      { value: 'BEL20', label: '🇧🇪 BEL 20 (Belgium)', region: 'Belgium' },
-      { value: 'POR20', label: '🇵🇹 PSI 20 (Portugal)', region: 'Portugal' },
+      { value: '^OMXS30', label: '🇸🇪 OMX Stockholm 30', region: 'Sweden' },
+      { value: '^OMXC25', label: '🇩🇰 OMX Copenhagen 25', region: 'Denmark' },
       
       // المؤشرات الآسيوية
-      { value: 'HK50', label: '🇭🇰 Hang Seng (Hong Kong)', region: 'Hong Kong' },
-      { value: 'CHN50', label: '🇨🇳 China A50', region: 'China' },
-      { value: 'TWN', label: '🇹🇼 TAIEX (Taiwan)', region: 'Taiwan' },
-      { value: 'IDN', label: '🇮🇩 IDX (Indonesia)', region: 'Indonesia' },
-      { value: 'MYS', label: '🇲🇾 KLCI (Malaysia)', region: 'Malaysia' },
-      { value: 'PHL', label: '🇵🇭 PSEi (Philippines)', region: 'Philippines' },
-      
-      // المؤشرات الأفريقية والشرق الأوسط
-      { value: 'ISR35', label: '🇮🇱 TA-35 (Israel)', region: 'Israel' },
-      { value: 'SAU', label: '🇸🇦 TASI (Saudi Arabia)', region: 'Saudi Arabia' },
-      { value: 'UAE', label: '🇦🇪 ADX (UAE)', region: 'UAE' },
-      { value: 'QAT', label: '🇶🇦 QE Index (Qatar)', region: 'Qatar' },
-      { value: 'KWT', label: '🇰🇼 Kuwait (Kuwait)', region: 'Kuwait' },
-      
-      // المؤشرات الأمريكية اللاتينية
+      { value: '^N225', label: '🇯🇵 Nikkei 225', region: 'Japan' },
+      { value: '^HSI', label: '🇭🇰 Hang Seng (Hong Kong)', region: 'Hong Kong' },
+      { value: '000001.SS', label: '🇨🇳 Shanghai Composite', region: 'China' },
+      { value: '^AXJO', label: '🇦🇺 ASX 200 (Australia)', region: 'Australia' },
+      { value: '^KOSPI', label: '🇰🇷 KOSPI (Korea)', region: 'Korea' },
+      { value: '^TWII', label: '🇹🇼 TWSE (Taiwan)', region: 'Taiwan' },
+      { value: '^STI', label: '🇸🇬 Straits Times Index (Singapore)', region: 'Singapore' },
+      { value: '^JKSE', label: '🇮🇩 Jakarta Composite (Indonesia)', region: 'Indonesia' },
+      { value: '^KLSE', label: '🇲🇾 FTSE Bursa Malaysia KLCI', region: 'Malaysia' },
+      { value: '^BSESN', label: '🇮🇳 BSE Sensex (India)', region: 'India' },
+      { value: '^NSEI', label: '🇮🇳 Nifty 50 (India)', region: 'India' },
       
       // المؤشرات الأخرى
-      { value: 'RUS50', label: '🇷🇺 MOEX Russia', region: 'Russia' },
-      { value: 'TUR30', label: '🇹🇷 BIST 30 (Turkey)', region: 'Turkey' },
-      { value: 'FIN25', label: '🇫🇮 OMX Helsinki', region: 'Finland' },
-      { value: 'POL20', label: '🇵🇱 WIG20 (Poland)', region: 'Poland' },
-      { value: 'HUN', label: '🇭🇺 BUX (Hungary)', region: 'Hungary' },
-      { value: 'CZE', label: '🇨🇿 PX (Czech)', region: 'Czech Republic' },
-      { value: 'ROM', label: '🇷🇴 BET (Romania)', region: 'Romania' },
-      { value: 'VNM', label: '🇻🇳 VN-Index (Vietnam)', region: 'Vietnam' },
-      { value: 'BGD', label: '🇧🇩 DSEX (Bangladesh)', region: 'Bangladesh' },
-      { value: 'KEN', label: '🇰🇪 NSE 20 (Kenya)', region: 'Kenya' },
-      { value: 'MAR', label: '🇲🇦 MASI (Morocco)', region: 'Morocco' },
-      { value: 'JOR', label: '🇯🇴 Amman SE (Jordan)', region: 'Jordan' },
-      { value: 'LEB', label: '🇱🇧 BLOM (Lebanon)', region: 'Lebanon' },
-      { value: 'BHR', label: '🇧🇭 Bahrain (Bahrain)', region: 'Bahrain' },
-      { value: 'IRQ', label: '🇮🇶 ISX (Iraq)', region: 'Iraq' }
+      { value: '^MXX', label: '🇲🇽 IPC Mexico', region: 'Mexico' },
+      { value: '^BVSP', label: '🇧🇷 Bovespa (Brazil)', region: 'Brazil' },
+      { value: '^MERV', label: '🇦🇷 MERVAL (Argentina)', region: 'Argentina' },
+      { value: '^TA125.TA', label: '🇮🇱 TA-125 (Israel)', region: 'Israel' },
+      { value: '^XU100', label: '🇹🇷 BIST 100 (Turkey)', region: 'Turkey' }
     ];
 
     console.log(`✅ قائمة المؤشرات: ${this.indices.length} مؤشر عالمي`);
