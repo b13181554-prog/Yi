@@ -2222,6 +2222,57 @@ async function getFailedWithdrawals(minutes = 60) {
   }
 }
 
+async function deductAnalysisFee(userId, feeAmount, symbol, analysisType, marketType) {
+  try {
+    const user = await db.collection('users').findOne({ user_id: userId });
+    
+    if (!user) {
+      return { 
+        success: false, 
+        error: 'المستخدم غير موجود' 
+      };
+    }
+    
+    if (user.balance < feeAmount) {
+      return { 
+        success: false, 
+        error: 'الرصيد غير كافٍ. يلزم ' + feeAmount + ' USDT على الأقل' 
+      };
+    }
+    
+    await db.collection('users').updateOne(
+      { user_id: userId },
+      { $inc: { balance: -feeAmount } }
+    );
+    
+    await db.collection('transactions').insertOne({
+      user_id: userId,
+      type: 'analysis_fee',
+      amount: -feeAmount,
+      symbol: symbol,
+      analysis_type: analysisType,
+      market_type: marketType,
+      status: 'completed',
+      created_at: new Date(),
+      completed_at: new Date()
+    });
+    
+    const updatedUser = await db.collection('users').findOne({ user_id: userId });
+    
+    return { 
+      success: true, 
+      new_balance: updatedUser.balance,
+      fee_deducted: feeAmount
+    };
+  } catch (error) {
+    logger.error('Error deducting analysis fee:', error);
+    return { 
+      success: false, 
+      error: 'حدث خطأ أثناء خصم رسوم التحليل: ' + error.message 
+    };
+  }
+}
+
 module.exports = {
   initDatabase,
   getDB,
@@ -2337,5 +2388,6 @@ module.exports = {
   getAnalystsCount,
   getRecentUserErrors,
   getFailedPayments,
-  getFailedWithdrawals
+  getFailedWithdrawals,
+  deductAnalysisFee
 };
