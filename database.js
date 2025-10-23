@@ -2224,28 +2224,34 @@ async function getFailedWithdrawals(minutes = 60) {
 
 async function deductAnalysisFee(userId, feeAmount, symbol, analysisType, marketType) {
   try {
-    const user = await db.collection('users').findOne({ user_id: userId });
+    const result = await db.collection('users').findOneAndUpdate(
+      { 
+        user_id: userId,
+        balance: { $gte: feeAmount }
+      },
+      { 
+        $inc: { balance: -feeAmount } 
+      },
+      { 
+        returnDocument: 'after'
+      }
+    );
     
-    if (!user) {
-      return { 
-        success: false, 
-        error: 'المستخدم غير موجود' 
-      };
-    }
-    
-    if (user.balance < feeAmount) {
+    if (!result) {
+      const user = await db.collection('users').findOne({ user_id: userId });
+      if (!user) {
+        return { 
+          success: false, 
+          error: 'المستخدم غير موجود' 
+        };
+      }
       return { 
         success: false, 
         error: 'الرصيد غير كافٍ. يلزم ' + feeAmount + ' USDT على الأقل' 
       };
     }
     
-    await db.collection('users').updateOne(
-      { user_id: userId },
-      { $inc: { balance: -feeAmount } }
-    );
-    
-    await db.collection('transactions').insertOne({
+    const transaction = await db.collection('transactions').insertOne({
       user_id: userId,
       type: 'analysis_fee',
       amount: -feeAmount,
@@ -2257,18 +2263,61 @@ async function deductAnalysisFee(userId, feeAmount, symbol, analysisType, market
       completed_at: new Date()
     });
     
-    const updatedUser = await db.collection('users').findOne({ user_id: userId });
-    
     return { 
       success: true, 
-      new_balance: updatedUser.balance,
-      fee_deducted: feeAmount
+      new_balance: result.balance,
+      fee_deducted: feeAmount,
+      transaction_id: transaction.insertedId
     };
   } catch (error) {
     logger.error('Error deducting analysis fee:', error);
     return { 
       success: false, 
       error: 'حدث خطأ أثناء خصم رسوم التحليل: ' + error.message 
+    };
+  }
+}
+
+async function refundAnalysisFee(userId, feeAmount, transactionId, reason) {
+  try {
+    await db.collection('users').updateOne(
+      { user_id: userId },
+      { $inc: { balance: feeAmount } }
+    );
+    
+    await db.collection('transactions').updateOne(
+      { _id: transactionId },
+      { 
+        $set: { 
+          status: 'refunded',
+          refund_reason: reason,
+          refunded_at: new Date()
+        }
+      }
+    );
+    
+    await db.collection('transactions').insertOne({
+      user_id: userId,
+      type: 'analysis_fee_refund',
+      amount: feeAmount,
+      related_transaction: transactionId,
+      reason: reason,
+      status: 'completed',
+      created_at: new Date(),
+      completed_at: new Date()
+    });
+    
+    logger.info(`Refunded ${feeAmount} USDT to user ${userId}. Reason: ${reason}`);
+    
+    return { 
+      success: true, 
+      refunded_amount: feeAmount
+    };
+  } catch (error) {
+    logger.error('Error refunding analysis fee:', error);
+    return { 
+      success: false, 
+      error: 'حدث خطأ أثناء استرجاع الرسوم: ' + error.message 
     };
   }
 }
@@ -2389,5 +2438,6 @@ module.exports = {
   getRecentUserErrors,
   getFailedPayments,
   getFailedWithdrawals,
-  deductAnalysisFee
+  deductAnalysisFee,
+  refundAnalysisFee
 };

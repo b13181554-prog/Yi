@@ -2092,10 +2092,12 @@ app.post('/api/analyze-advanced', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
+    let transactionId = null;
+    const analysisFee = 0.1;
+    
     // التحقق من نظام الدفع
     if (payment_mode === 'per_analysis') {
       // نظام الدفع لكل تحليل - خصم 0.1 USDT
-      const analysisFee = 0.1;
       const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, analysis_type || 'advanced', market_type);
       
       if (!feeResult.success) {
@@ -2105,6 +2107,8 @@ app.post('/api/analyze-advanced', async (req, res) => {
           requires_balance: true 
         });
       }
+      
+      transactionId = feeResult.transaction_id;
     } else {
       // نظام الاشتراك الشهري (النظام الافتراضي)
       const subscription = await db.checkSubscription(user_id);
@@ -2125,65 +2129,72 @@ app.post('/api/analyze-advanced', async (req, res) => {
       }
     }
     
-    let candles;
-    
-    if (market_type === 'forex') {
-      candles = await forexService.getCandles(symbol, timeframe, 100);
-    } else {
-      candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
-    }
-    
-    if (!candles || candles.length < 50) {
-      return res.json({ success: false, error: 'بيانات غير كافية للتحليل' });
-    }
-    
-    const TechnicalAnalysis = require('./analysis');
-    const analysis = new TechnicalAnalysis(candles);
-    
-    // تحديد نوع التحليل المطلوب
-    let indicators = [];
-    let analysisResult = {};
-    
-    switch(analysis_type) {
-      case 'complete':
-        // تحليل شامل - جميع المؤشرات
-        indicators = [
-          'RSI', 'MACD', 'EMA', 'SMA', 'BBANDS', 'ATR', 'STOCH', 'ADX', 'VOLUME',
-          'FIBONACCI', 'CANDLE_PATTERNS', 'HEAD_SHOULDERS', 'SUPPORT_RESISTANCE'
-        ];
-        break;
-      case 'fibonacci':
-        // تحليل فيبوناتشي فقط
-        indicators = ['FIBONACCI', 'SUPPORT_RESISTANCE'];
-        break;
-      case 'patterns':
-        // أنماط الشموع فقط
-        indicators = ['CANDLE_PATTERNS', 'HEAD_SHOULDERS'];
-        break;
-      case 'indicators':
-        // المؤشرات الفنية الأساسية
-        indicators = ['RSI', 'MACD', 'EMA', 'SMA', 'BBANDS', 'ATR', 'STOCH', 'ADX', 'VOLUME'];
-        break;
-      default:
-        // افتراضي - تحليل شامل
-        indicators = [
-          'RSI', 'MACD', 'EMA', 'SMA', 'BBANDS', 'ATR', 'STOCH', 'ADX', 'VOLUME',
-          'FIBONACCI', 'CANDLE_PATTERNS', 'SUPPORT_RESISTANCE'
-        ];
-    }
-    
-    const recommendation = analysis.getTradeRecommendationWithMarketType(market_type, trading_type || 'spot');
-    const allIndicators = analysis.getAnalysis(indicators);
-    
-    res.json({
-      success: true,
-      analysis: {
-        ...recommendation,
-        allIndicators,
-        currentPrice: candles[candles.length - 1].close,
-        analysisType: analysis_type || 'complete'
+    try {
+      let candles;
+      
+      if (market_type === 'forex') {
+        candles = await forexService.getCandles(symbol, timeframe, 100);
+      } else {
+        candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
       }
-    });
+      
+      if (!candles || candles.length < 50) {
+        throw new Error('بيانات غير كافية للتحليل');
+      }
+      
+      const TechnicalAnalysis = require('./analysis');
+      const analysis = new TechnicalAnalysis(candles);
+      
+      // تحديد نوع التحليل المطلوب
+      let indicators = [];
+      let analysisResult = {};
+      
+      switch(analysis_type) {
+        case 'complete':
+          // تحليل شامل - جميع المؤشرات
+          indicators = [
+            'RSI', 'MACD', 'EMA', 'SMA', 'BBANDS', 'ATR', 'STOCH', 'ADX', 'VOLUME',
+            'FIBONACCI', 'CANDLE_PATTERNS', 'HEAD_SHOULDERS', 'SUPPORT_RESISTANCE'
+          ];
+          break;
+        case 'fibonacci':
+          // تحليل فيبوناتشي فقط
+          indicators = ['FIBONACCI', 'SUPPORT_RESISTANCE'];
+          break;
+        case 'patterns':
+          // أنماط الشموع فقط
+          indicators = ['CANDLE_PATTERNS', 'HEAD_SHOULDERS'];
+          break;
+        case 'indicators':
+          // المؤشرات الفنية الأساسية
+          indicators = ['RSI', 'MACD', 'EMA', 'SMA', 'BBANDS', 'ATR', 'STOCH', 'ADX', 'VOLUME'];
+          break;
+        default:
+          // افتراضي - تحليل شامل
+          indicators = [
+            'RSI', 'MACD', 'EMA', 'SMA', 'BBANDS', 'ATR', 'STOCH', 'ADX', 'VOLUME',
+            'FIBONACCI', 'CANDLE_PATTERNS', 'SUPPORT_RESISTANCE'
+          ];
+      }
+      
+      const recommendation = analysis.getTradeRecommendationWithMarketType(market_type, trading_type || 'spot');
+      const allIndicators = analysis.getAnalysis(indicators);
+      
+      res.json({
+        success: true,
+        analysis: {
+          ...recommendation,
+          allIndicators,
+          currentPrice: candles[candles.length - 1].close,
+          analysisType: analysis_type || 'complete'
+        }
+      });
+    } catch (analysisError) {
+      if (payment_mode === 'per_analysis' && transactionId) {
+        await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'Analysis failed: ' + analysisError.message);
+      }
+      return res.json({ success: false, error: 'فشل التحليل: ' + analysisError.message });
+    }
   } catch (error) {
     console.error('Advanced Analysis API Error:', error);
     res.json({ success: false, error: error.message });
@@ -2198,9 +2209,11 @@ app.post('/api/analyze-ultra', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
+    let transactionId = null;
+    const analysisFee = 0.1;
+    
     // التحقق من نظام الدفع
     if (payment_mode === 'per_analysis') {
-      const analysisFee = 0.1;
       const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'ultra', market_type);
       
       if (!feeResult.success) {
@@ -2210,6 +2223,8 @@ app.post('/api/analyze-ultra', async (req, res) => {
           requires_balance: true 
         });
       }
+      
+      transactionId = feeResult.transaction_id;
     } else {
       const subscription = await db.checkSubscription(user_id);
       if (!subscription.active) {
@@ -2229,27 +2244,34 @@ app.post('/api/analyze-ultra', async (req, res) => {
       }
     }
     
-    let candles;
-    
-    if (market_type === 'forex') {
-      candles = await forexService.getCandles(symbol, timeframe, 100);
-    } else {
-      candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
+    try {
+      let candles;
+      
+      if (market_type === 'forex') {
+        candles = await forexService.getCandles(symbol, timeframe, 100);
+      } else {
+        candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
+      }
+      
+      if (!candles || candles.length < 50) {
+        throw new Error('بيانات غير كافية للتحليل المتقدم - يجب توفر 50 شمعة على الأقل');
+      }
+      
+      const UltraAnalysis = require('./ultra-analysis');
+      const ultraAnalysis = new UltraAnalysis(candles);
+      
+      const ultraRecommendation = ultraAnalysis.getUltraRecommendation(market_type, trading_type || 'spot', timeframe);
+      
+      res.json({
+        success: true,
+        analysis: ultraRecommendation
+      });
+    } catch (analysisError) {
+      if (payment_mode === 'per_analysis' && transactionId) {
+        await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'Analysis failed: ' + analysisError.message);
+      }
+      return res.json({ success: false, error: 'فشل التحليل: ' + analysisError.message });
     }
-    
-    if (!candles || candles.length < 50) {
-      return res.json({ success: false, error: 'بيانات غير كافية للتحليل المتقدم - يجب توفر 50 شمعة على الأقل' });
-    }
-    
-    const UltraAnalysis = require('./ultra-analysis');
-    const ultraAnalysis = new UltraAnalysis(candles);
-    
-    const ultraRecommendation = ultraAnalysis.getUltraRecommendation(market_type, trading_type || 'spot', timeframe);
-    
-    res.json({
-      success: true,
-      analysis: ultraRecommendation
-    });
   } catch (error) {
     console.error('Ultra Analysis API Error:', error);
     res.json({ success: false, error: error.message });
@@ -2264,9 +2286,11 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
+    let transactionId = null;
+    const analysisFee = 0.1;
+    
     // التحقق من نظام الدفع
     if (payment_mode === 'per_analysis') {
-      const analysisFee = 0.1;
       const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'zero-reversal', market_type);
       
       if (!feeResult.success) {
@@ -2276,6 +2300,8 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
           requires_balance: true 
         });
       }
+      
+      transactionId = feeResult.transaction_id;
     } else {
       const subscription = await db.checkSubscription(user_id);
       if (!subscription.active) {
@@ -2295,38 +2321,45 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
       }
     }
     
-    let candles;
-    
-    if (market_type === 'forex') {
-      candles = await forexService.getCandles(symbol, timeframe, 100);
-    } else {
-      candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
-    }
-    
-    // للسلع والأسهم، نقبل 80 شمعة كحد أدنى بسبب محدودية البيانات التاريخية
-    const minCandles = (market_type === 'commodities' || market_type === 'stocks') ? 80 : 100;
-    
-    if (!candles || candles.length < minCandles) {
-      let errorMessage = `بيانات غير كافية لنظام Zero Reversal - متوفر ${candles?.length || 0} شمعة فقط`;
+    try {
+      let candles;
       
-      if (market_type === 'commodities' || market_type === 'stocks') {
-        errorMessage += `\n💡 نصيحة: استخدم إطار زمني أطول (4h أو 1d) للحصول على بيانات أكثر`;
+      if (market_type === 'forex') {
+        candles = await forexService.getCandles(symbol, timeframe, 100);
       } else {
-        errorMessage += `\nيجب توفر ${minCandles} شمعة على الأقل`;
+        candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
       }
       
-      return res.json({ success: false, error: errorMessage });
+      // للسلع والأسهم، نقبل 80 شمعة كحد أدنى بسبب محدودية البيانات التاريخية
+      const minCandles = (market_type === 'commodities' || market_type === 'stocks') ? 80 : 100;
+      
+      if (!candles || candles.length < minCandles) {
+        let errorMessage = `بيانات غير كافية لنظام Zero Reversal - متوفر ${candles?.length || 0} شمعة فقط`;
+        
+        if (market_type === 'commodities' || market_type === 'stocks') {
+          errorMessage += `\n💡 نصيحة: استخدم إطار زمني أطول (4h أو 1d) للحصول على بيانات أكثر`;
+        } else {
+          errorMessage += `\nيجب توفر ${minCandles} شمعة على الأقل`;
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      const ZeroReversalAnalysis = require('./zero-reversal-analysis');
+      const zeroReversalAnalysis = new ZeroReversalAnalysis(candles);
+      
+      const zeroReversalRecommendation = zeroReversalAnalysis.getZeroReversalRecommendation(market_type, trading_type || 'spot', timeframe);
+      
+      res.json({
+        success: true,
+        analysis: zeroReversalRecommendation
+      });
+    } catch (analysisError) {
+      if (payment_mode === 'per_analysis' && transactionId) {
+        await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'Analysis failed: ' + analysisError.message);
+      }
+      return res.json({ success: false, error: 'فشل التحليل: ' + analysisError.message });
     }
-    
-    const ZeroReversalAnalysis = require('./zero-reversal-analysis');
-    const zeroReversalAnalysis = new ZeroReversalAnalysis(candles);
-    
-    const zeroReversalRecommendation = zeroReversalAnalysis.getZeroReversalRecommendation(market_type, trading_type || 'spot', timeframe);
-    
-    res.json({
-      success: true,
-      analysis: zeroReversalRecommendation
-    });
   } catch (error) {
     console.error('Zero Reversal Analysis API Error:', error);
     res.json({ success: false, error: error.message });
@@ -2341,9 +2374,11 @@ app.post('/api/analyze-v1-pro', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
+    let transactionId = null;
+    const analysisFee = 0.1;
+    
     // التحقق من نظام الدفع
     if (payment_mode === 'per_analysis') {
-      const analysisFee = 0.1;
       const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'v1-pro', market_type);
       
       if (!feeResult.success) {
@@ -2353,6 +2388,8 @@ app.post('/api/analyze-v1-pro', async (req, res) => {
           requires_balance: true 
         });
       }
+      
+      transactionId = feeResult.transaction_id;
     } else {
       const subscription = await db.checkSubscription(user_id);
       if (!subscription.active) {
@@ -2372,57 +2409,64 @@ app.post('/api/analyze-v1-pro', async (req, res) => {
       }
     }
     
-    let candles;
-    
-    if (market_type === 'forex') {
-      candles = await forexService.getCandles(symbol, timeframe, 100);
-    } else {
-      candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
-    }
-    
-    // V1 PRO يحتاج 100 شمعة على الأقل للتحليل الدقيق
-    const minCandles = 100;
-    
-    if (!candles || candles.length < minCandles) {
-      let errorMessage = `بيانات غير كافية لنظام V1 PRO - متوفر ${candles?.length || 0} شمعة فقط`;
-      errorMessage += `\nيجب توفر ${minCandles} شمعة على الأقل`;
+    try {
+      let candles;
       
-      if (market_type === 'commodities' || market_type === 'stocks') {
-        errorMessage += `\n💡 نصيحة: استخدم إطار زمني أطول (4h أو 1d) للحصول على بيانات أكثر`;
+      if (market_type === 'forex') {
+        candles = await forexService.getCandles(symbol, timeframe, 100);
+      } else {
+        candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
       }
       
-      return res.json({ success: false, error: errorMessage });
-    }
-    
-    // الحصول على رصيد المستخدم أو استخدام القيمة الافتراضية
-    let userBalance = balance || 10000;
-    
-    if (user_id) {
-      try {
-        const user = await db.getUser(user_id);
-        if (user && user.balance) {
-          userBalance = user.balance;
+      // V1 PRO يحتاج 100 شمعة على الأقل للتحليل الدقيق
+      const minCandles = 100;
+      
+      if (!candles || candles.length < minCandles) {
+        let errorMessage = `بيانات غير كافية لنظام V1 PRO - متوفر ${candles?.length || 0} شمعة فقط`;
+        errorMessage += `\nيجب توفر ${minCandles} شمعة على الأقل`;
+        
+        if (market_type === 'commodities' || market_type === 'stocks') {
+          errorMessage += `\n💡 نصيحة: استخدم إطار زمني أطول (4h أو 1d) للحصول على بيانات أكثر`;
         }
-      } catch (err) {
-        console.log('⚠️ لم يتم جلب رصيد المستخدم، استخدام القيمة الافتراضية');
+        
+        throw new Error(errorMessage);
       }
+      
+      // الحصول على رصيد المستخدم أو استخدام القيمة الافتراضية
+      let userBalance = balance || 10000;
+      
+      if (user_id) {
+        try {
+          const user = await db.getUser(user_id);
+          if (user && user.balance) {
+            userBalance = user.balance;
+          }
+        } catch (err) {
+          console.log('⚠️ لم يتم جلب رصيد المستخدم، استخدام القيمة الافتراضية');
+        }
+      }
+      
+      const OBENTCHIV1ProAnalysis = require('./v1-pro-analysis');
+      const v1ProAnalysis = new OBENTCHIV1ProAnalysis(candles, userBalance, symbol);
+      
+      // استخدام await لأن getCompleteAnalysis أصبح async
+      const v1ProResult = await v1ProAnalysis.getCompleteAnalysis();
+      
+      // إضافة معلومات إضافية
+      v1ProResult.tradingType = trading_type || 'spot';
+      v1ProResult.marketType = market_type;
+      v1ProResult.timeframe = timeframe;
+      
+      res.json({
+        success: true,
+        analysis: v1ProResult
+      });
+    } catch (analysisError) {
+      if (payment_mode === 'per_analysis' && transactionId) {
+        await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'Analysis failed: ' + analysisError.message);
+      }
+      return res.json({ success: false, error: 'فشل التحليل: ' + analysisError.message });
     }
-    
-    const OBENTCHIV1ProAnalysis = require('./v1-pro-analysis');
-    const v1ProAnalysis = new OBENTCHIV1ProAnalysis(candles, userBalance, symbol);
-    
-    // استخدام await لأن getCompleteAnalysis أصبح async
-    const v1ProResult = await v1ProAnalysis.getCompleteAnalysis();
-    
-    // إضافة معلومات إضافية
-    v1ProResult.tradingType = trading_type || 'spot';
-    v1ProResult.marketType = market_type;
-    v1ProResult.timeframe = timeframe;
-    
-    res.json({
-      success: true,
-      analysis: v1ProResult
-    });
   } catch (error) {
     console.error('V1 PRO Analysis API Error:', error);
     res.json({ success: false, error: error.message });
@@ -2437,9 +2481,11 @@ app.post('/api/analyze-pump', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
+    let transactionId = null;
+    const analysisFee = 0.1;
+    
     // التحقق من نظام الدفع
     if (payment_mode === 'per_analysis') {
-      const analysisFee = 0.1;
       const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'pump', market_type);
       
       if (!feeResult.success) {
@@ -2449,6 +2495,8 @@ app.post('/api/analyze-pump', async (req, res) => {
           requires_balance: true 
         });
       }
+      
+      transactionId = feeResult.transaction_id;
     } else {
       const subscription = await db.checkSubscription(user_id);
       if (!subscription.active) {
@@ -2468,28 +2516,35 @@ app.post('/api/analyze-pump', async (req, res) => {
       }
     }
     
-    if (market_type !== 'crypto') {
-      return res.json({ success: false, error: 'تحليل Pump متاح للعملات الرقمية فقط' });
+    try {
+      if (market_type !== 'crypto') {
+        throw new Error('تحليل Pump متاح للعملات الرقمية فقط');
+      }
+      
+      const candles = await marketData.getCandles(symbol, timeframe || '1h', 100, market_type);
+      
+      if (!candles || candles.length < 100) {
+        throw new Error(`بيانات غير كافية لتحليل Pump - متوفر ${candles?.length || 0} شمعة فقط`);
+      }
+      
+      const PumpAnalysis = require('./pump-analysis');
+      const pumpAnalysis = new PumpAnalysis(candles, symbol);
+      
+      // استخدام await لأن getPumpPotential أصبح async
+      const pumpPotential = await pumpAnalysis.getPumpPotential();
+      pumpPotential.tradingType = trading_type || 'spot';
+      pumpPotential.marketType = market_type;
+      
+      res.json({
+        success: true,
+        analysis: pumpPotential
+      });
+    } catch (analysisError) {
+      if (payment_mode === 'per_analysis' && transactionId) {
+        await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'Analysis failed: ' + analysisError.message);
+      }
+      return res.json({ success: false, error: 'فشل التحليل: ' + analysisError.message });
     }
-    
-    const candles = await marketData.getCandles(symbol, timeframe || '1h', 100, market_type);
-    
-    if (!candles || candles.length < 100) {
-      return res.json({ success: false, error: `بيانات غير كافية لتحليل Pump - متوفر ${candles?.length || 0} شمعة فقط` });
-    }
-    
-    const PumpAnalysis = require('./pump-analysis');
-    const pumpAnalysis = new PumpAnalysis(candles, symbol);
-    
-    // استخدام await لأن getPumpPotential أصبح async
-    const pumpPotential = await pumpAnalysis.getPumpPotential();
-    pumpPotential.tradingType = trading_type || 'spot';
-    pumpPotential.marketType = market_type;
-    
-    res.json({
-      success: true,
-      analysis: pumpPotential
-    });
   } catch (error) {
     console.error('Pump Analysis API Error:', error);
     res.json({ success: false, error: error.message });
@@ -2504,9 +2559,11 @@ app.post('/api/analyze-master', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
+    let transactionId = null;
+    const analysisFee = 0.1;
+    
     // التحقق من نظام الدفع
     if (payment_mode === 'per_analysis') {
-      const analysisFee = 0.1;
       const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'master', market_type);
       
       if (!feeResult.success) {
@@ -2516,6 +2573,8 @@ app.post('/api/analyze-master', async (req, res) => {
           requires_balance: true 
         });
       }
+      
+      transactionId = feeResult.transaction_id;
     } else {
       const subscription = await db.checkSubscription(user_id);
       if (!subscription.active) {
@@ -2535,37 +2594,44 @@ app.post('/api/analyze-master', async (req, res) => {
       }
     }
     
-    let candles;
-    
-    if (market_type === 'forex') {
-      candles = await forexService.getCandles(symbol, timeframe, 100);
-    } else {
-      candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
-    }
-    
-    const minCandles = (market_type === 'commodities' || market_type === 'stocks') ? 50 : 100;
-    
-    if (!candles || candles.length < minCandles) {
-      let errorMessage = `بيانات غير كافية للتحليل الشامل - متوفر ${candles?.length || 0} شمعة فقط`;
+    try {
+      let candles;
       
-      if (market_type === 'commodities' || market_type === 'stocks') {
-        errorMessage += `\n💡 نصيحة: استخدم إطار زمني أطول (4h أو 1d) للحصول على بيانات أكثر`;
+      if (market_type === 'forex') {
+        candles = await forexService.getCandles(symbol, timeframe, 100);
       } else {
-        errorMessage += `\nيجب توفر ${minCandles} شمعة على الأقل`;
+        candles = await marketData.getCandles(symbol, timeframe, 100, market_type);
       }
       
-      return res.json({ success: false, error: errorMessage });
+      const minCandles = (market_type === 'commodities' || market_type === 'stocks') ? 50 : 100;
+      
+      if (!candles || candles.length < minCandles) {
+        let errorMessage = `بيانات غير كافية للتحليل الشامل - متوفر ${candles?.length || 0} شمعة فقط`;
+        
+        if (market_type === 'commodities' || market_type === 'stocks') {
+          errorMessage += `\n💡 نصيحة: استخدم إطار زمني أطول (4h أو 1d) للحصول على بيانات أكثر`;
+        } else {
+          errorMessage += `\nيجب توفر ${minCandles} شمعة على الأقل`;
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      const MasterAnalysis = require('./master-analysis');
+      const masterAnalysis = new MasterAnalysis(candles, symbol, timeframe, market_type);
+      
+      const masterResult = await masterAnalysis.getMasterAnalysis(trading_type || 'spot');
+      
+      res.json({
+        success: true,
+        analysis: masterResult
+      });
+    } catch (analysisError) {
+      if (payment_mode === 'per_analysis' && transactionId) {
+        await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'Analysis failed: ' + analysisError.message);
+      }
+      return res.json({ success: false, error: 'فشل التحليل: ' + analysisError.message });
     }
-    
-    const MasterAnalysis = require('./master-analysis');
-    const masterAnalysis = new MasterAnalysis(candles, symbol, timeframe, market_type);
-    
-    const masterResult = await masterAnalysis.getMasterAnalysis(trading_type || 'spot');
-    
-    res.json({
-      success: true,
-      analysis: masterResult
-    });
   } catch (error) {
     console.error('Master Analysis API Error:', error);
     res.json({ success: false, error: error.message });
