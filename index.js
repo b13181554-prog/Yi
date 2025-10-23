@@ -2086,28 +2086,43 @@ app.post('/api/compare-analysts', async (req, res) => {
 
 app.post('/api/analyze-advanced', async (req, res) => {
   try {
-    const { user_id, symbol, timeframe, market_type, trading_type, analysis_type, init_data } = req.body;
+    const { user_id, symbol, timeframe, market_type, trading_type, analysis_type, payment_mode, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    // التحقق من حالة الاشتراك
-    const subscription = await db.checkSubscription(user_id);
-    if (!subscription.active) {
-      let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+    // التحقق من نظام الدفع
+    if (payment_mode === 'per_analysis') {
+      // نظام الدفع لكل تحليل - خصم 0.1 USDT
+      const analysisFee = 0.1;
+      const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, analysis_type || 'advanced', market_type);
       
-      if (subscription.reason === 'trial_expired') {
-        errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
-      } else if (subscription.reason === 'no_subscription') {
-        errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+      if (!feeResult.success) {
+        return res.json({ 
+          success: false, 
+          error: feeResult.error,
+          requires_balance: true 
+        });
       }
-      
-      return res.json({ 
-        success: false, 
-        error: errorMessage,
-        requires_subscription: true 
-      });
+    } else {
+      // نظام الاشتراك الشهري (النظام الافتراضي)
+      const subscription = await db.checkSubscription(user_id);
+      if (!subscription.active) {
+        let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+        
+        if (subscription.reason === 'trial_expired') {
+          errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
+        } else if (subscription.reason === 'no_subscription') {
+          errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+        }
+        
+        return res.json({ 
+          success: false, 
+          error: errorMessage,
+          requires_subscription: true 
+        });
+      }
     }
     
     let candles;
@@ -2177,28 +2192,41 @@ app.post('/api/analyze-advanced', async (req, res) => {
 
 app.post('/api/analyze-ultra', async (req, res) => {
   try {
-    const { user_id, symbol, timeframe, market_type, trading_type, init_data } = req.body;
+    const { user_id, symbol, timeframe, market_type, trading_type, payment_mode, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    // التحقق من حالة الاشتراك
-    const subscription = await db.checkSubscription(user_id);
-    if (!subscription.active) {
-      let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+    // التحقق من نظام الدفع
+    if (payment_mode === 'per_analysis') {
+      const analysisFee = 0.1;
+      const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'ultra', market_type);
       
-      if (subscription.reason === 'trial_expired') {
-        errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
-      } else if (subscription.reason === 'no_subscription') {
-        errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+      if (!feeResult.success) {
+        return res.json({ 
+          success: false, 
+          error: feeResult.error,
+          requires_balance: true 
+        });
       }
-      
-      return res.json({ 
-        success: false, 
-        error: errorMessage,
-        requires_subscription: true 
-      });
+    } else {
+      const subscription = await db.checkSubscription(user_id);
+      if (!subscription.active) {
+        let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+        
+        if (subscription.reason === 'trial_expired') {
+          errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
+        } else if (subscription.reason === 'no_subscription') {
+          errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+        }
+        
+        return res.json({ 
+          success: false, 
+          error: errorMessage,
+          requires_subscription: true 
+        });
+      }
     }
     
     let candles;
@@ -2230,28 +2258,41 @@ app.post('/api/analyze-ultra', async (req, res) => {
 
 app.post('/api/analyze-zero-reversal', async (req, res) => {
   try {
-    const { user_id, symbol, timeframe, market_type, trading_type, init_data } = req.body;
+    const { user_id, symbol, timeframe, market_type, trading_type, payment_mode, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    // التحقق من حالة الاشتراك
-    const subscription = await db.checkSubscription(user_id);
-    if (!subscription.active) {
-      let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+    // التحقق من نظام الدفع
+    if (payment_mode === 'per_analysis') {
+      const analysisFee = 0.1;
+      const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'zero-reversal', market_type);
       
-      if (subscription.reason === 'trial_expired') {
-        errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
-      } else if (subscription.reason === 'no_subscription') {
-        errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+      if (!feeResult.success) {
+        return res.json({ 
+          success: false, 
+          error: feeResult.error,
+          requires_balance: true 
+        });
       }
-      
-      return res.json({ 
-        success: false, 
-        error: errorMessage,
-        requires_subscription: true 
-      });
+    } else {
+      const subscription = await db.checkSubscription(user_id);
+      if (!subscription.active) {
+        let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+        
+        if (subscription.reason === 'trial_expired') {
+          errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
+        } else if (subscription.reason === 'no_subscription') {
+          errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+        }
+        
+        return res.json({ 
+          success: false, 
+          error: errorMessage,
+          requires_subscription: true 
+        });
+      }
     }
     
     let candles;
@@ -2294,28 +2335,41 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
 
 app.post('/api/analyze-v1-pro', async (req, res) => {
   try {
-    const { user_id, symbol, timeframe, market_type, trading_type, balance, init_data } = req.body;
+    const { user_id, symbol, timeframe, market_type, trading_type, balance, payment_mode, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    // التحقق من حالة الاشتراك
-    const subscription = await db.checkSubscription(user_id);
-    if (!subscription.active) {
-      let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+    // التحقق من نظام الدفع
+    if (payment_mode === 'per_analysis') {
+      const analysisFee = 0.1;
+      const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'v1-pro', market_type);
       
-      if (subscription.reason === 'trial_expired') {
-        errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
-      } else if (subscription.reason === 'no_subscription') {
-        errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+      if (!feeResult.success) {
+        return res.json({ 
+          success: false, 
+          error: feeResult.error,
+          requires_balance: true 
+        });
       }
-      
-      return res.json({ 
-        success: false, 
-        error: errorMessage,
-        requires_subscription: true 
-      });
+    } else {
+      const subscription = await db.checkSubscription(user_id);
+      if (!subscription.active) {
+        let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+        
+        if (subscription.reason === 'trial_expired') {
+          errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
+        } else if (subscription.reason === 'no_subscription') {
+          errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+        }
+        
+        return res.json({ 
+          success: false, 
+          error: errorMessage,
+          requires_subscription: true 
+        });
+      }
     }
     
     let candles;
@@ -2377,28 +2431,41 @@ app.post('/api/analyze-v1-pro', async (req, res) => {
 
 app.post('/api/analyze-pump', async (req, res) => {
   try {
-    const { symbol, market_type, timeframe, trading_type, init_data, user_id } = req.body;
+    const { symbol, market_type, timeframe, trading_type, payment_mode, init_data, user_id } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    // التحقق من حالة الاشتراك
-    const subscription = await db.checkSubscription(user_id);
-    if (!subscription.active) {
-      let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+    // التحقق من نظام الدفع
+    if (payment_mode === 'per_analysis') {
+      const analysisFee = 0.1;
+      const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'pump', market_type);
       
-      if (subscription.reason === 'trial_expired') {
-        errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
-      } else if (subscription.reason === 'no_subscription') {
-        errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+      if (!feeResult.success) {
+        return res.json({ 
+          success: false, 
+          error: feeResult.error,
+          requires_balance: true 
+        });
       }
-      
-      return res.json({ 
-        success: false, 
-        error: errorMessage,
-        requires_subscription: true 
-      });
+    } else {
+      const subscription = await db.checkSubscription(user_id);
+      if (!subscription.active) {
+        let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+        
+        if (subscription.reason === 'trial_expired') {
+          errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
+        } else if (subscription.reason === 'no_subscription') {
+          errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+        }
+        
+        return res.json({ 
+          success: false, 
+          error: errorMessage,
+          requires_subscription: true 
+        });
+      }
     }
     
     if (market_type !== 'crypto') {
@@ -2431,28 +2498,41 @@ app.post('/api/analyze-pump', async (req, res) => {
 
 app.post('/api/analyze-master', async (req, res) => {
   try {
-    const { user_id, symbol, timeframe, market_type, trading_type, init_data } = req.body;
+    const { user_id, symbol, timeframe, market_type, trading_type, payment_mode, init_data } = req.body;
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    // التحقق من حالة الاشتراك
-    const subscription = await db.checkSubscription(user_id);
-    if (!subscription.active) {
-      let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+    // التحقق من نظام الدفع
+    if (payment_mode === 'per_analysis') {
+      const analysisFee = 0.1;
+      const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'master', market_type);
       
-      if (subscription.reason === 'trial_expired') {
-        errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
-      } else if (subscription.reason === 'no_subscription') {
-        errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+      if (!feeResult.success) {
+        return res.json({ 
+          success: false, 
+          error: feeResult.error,
+          requires_balance: true 
+        });
       }
-      
-      return res.json({ 
-        success: false, 
-        error: errorMessage,
-        requires_subscription: true 
-      });
+    } else {
+      const subscription = await db.checkSubscription(user_id);
+      if (!subscription.active) {
+        let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+        
+        if (subscription.reason === 'trial_expired') {
+          errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
+        } else if (subscription.reason === 'no_subscription') {
+          errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+        }
+        
+        return res.json({ 
+          success: false, 
+          error: errorMessage,
+          requires_subscription: true 
+        });
+      }
     }
     
     let candles;
