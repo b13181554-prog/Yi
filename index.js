@@ -717,7 +717,8 @@ ${referrerId ? `\n🔗 عبر إحالة: نعم (${referralCommission} USDT)` :
 `, { parse_mode: 'HTML' }).catch(err => console.error('Error notifying owner:', err));
     
     res.json({ 
-      success: true, 
+      success: true,
+      expiry_date: expiryDate,
       subscription: {
         expiresAt: expiryDate,
         newBalance: updatedUser.balance,

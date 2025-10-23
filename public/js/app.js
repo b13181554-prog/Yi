@@ -1600,16 +1600,34 @@ async function subscribe() {
         async (confirmed) => {
             if (confirmed) {
                 try {
-                    tg.sendData(JSON.stringify({
-                        action: 'subscribe'
-                    }));
+                    console.log('🔔 User confirmed subscription');
                     
-                    setTimeout(async () => {
-                        await loadUserData();
-                        await loadSubscription();
-                    }, 2000);
+                    const response = await fetch('/api/subscribe', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            user_id: userId,
+                            init_data: tg.initData
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    console.log('📊 Subscription result:', result);
+                    
+                    if (result.success) {
+                        tg.showAlert('✅ تم تفعيل الاشتراك بنجاح!\n\n💳 المبلغ المخصوم: 10 USDT\n📅 صالح حتى: ' + new Date(result.expiry_date).toLocaleDateString('ar'));
+                        
+                        setTimeout(async () => {
+                            await loadUserData();
+                            await loadSubscription();
+                        }, 1000);
+                    } else {
+                        tg.showAlert('❌ ' + (result.error || 'حدث خطأ في معالجة الاشتراك'));
+                    }
                 } catch (error) {
-                    console.error('Error sending subscription data:', error);
+                    console.error('Error processing subscription:', error);
                     tg.showAlert('❌ حدث خطأ في معالجة الاشتراك. يرجى المحاولة مرة أخرى.');
                 }
             }
