@@ -1941,7 +1941,7 @@ function showError(message) {
 }
 
 let selectedAnalysisType = 'complete';
-let selectedPaymentMode = 'subscription';
+let selectedPaymentMode = 'per_analysis'; // النظام الافتراضي: الخصم الفوري 0.1 USDT
 
 function selectPaymentMode(mode) {
     selectedPaymentMode = mode;
