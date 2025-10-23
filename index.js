@@ -2182,6 +2182,24 @@ app.post('/api/analyze-advanced', async (req, res) => {
     const recommendation = analysis.getTradeRecommendationWithMarketType(market_type, trading_type || 'spot');
     const allIndicators = analysis.getAnalysis(indicators);
     
+    // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
+    if (payment_mode === 'per_analysis' && transactionId) {
+      const agreementPercentageStr = recommendation.scores?.agreementPercentage || '0%';
+      const agreementPercentage = parseFloat(agreementPercentageStr.replace('%', ''));
+      
+      if (agreementPercentage < 60) {
+        await db.refundAnalysisFee(
+          user_id, 
+          analysisFee, 
+          transactionId, 
+          `جودة الإشارة منخفضة (${agreementPercentage.toFixed(1)}%) - تم استرجاع المبلغ`
+        );
+        console.log(`💰 تم استرجاع ${analysisFee} USDT للمستخدم ${user_id} - جودة الإشارة: ${agreementPercentage.toFixed(1)}%`);
+      } else {
+        console.log(`✅ إشارة جيدة (${agreementPercentage.toFixed(1)}%) - لا استرجاع للمستخدم ${user_id}`);
+      }
+    }
+    
     res.json({
       success: true,
       analysis: {
@@ -2264,6 +2282,24 @@ app.post('/api/analyze-ultra', async (req, res) => {
     const ultraAnalysis = new UltraAnalysis(candles);
     
     const ultraRecommendation = ultraAnalysis.getUltraRecommendation(market_type, trading_type || 'spot', timeframe);
+    
+    // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
+    if (payment_mode === 'per_analysis' && transactionId) {
+      const agreementPercentageStr = ultraRecommendation.scores?.agreementPercentage || '0%';
+      const agreementPercentage = parseFloat(agreementPercentageStr.replace('%', ''));
+      
+      if (agreementPercentage < 60) {
+        await db.refundAnalysisFee(
+          user_id, 
+          analysisFee, 
+          transactionId, 
+          `جودة الإشارة منخفضة (${agreementPercentage.toFixed(1)}%) - تم استرجاع المبلغ`
+        );
+        console.log(`💰 تم استرجاع ${analysisFee} USDT للمستخدم ${user_id} - جودة الإشارة: ${agreementPercentage.toFixed(1)}%`);
+      } else {
+        console.log(`✅ إشارة جيدة (${agreementPercentage.toFixed(1)}%) - لا استرجاع للمستخدم ${user_id}`);
+      }
+    }
     
     res.json({
       success: true,
@@ -2353,6 +2389,24 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
     const zeroReversalAnalysis = new ZeroReversalAnalysis(candles);
     
     const zeroReversalRecommendation = zeroReversalAnalysis.getZeroReversalRecommendation(market_type, trading_type || 'spot', timeframe);
+    
+    // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
+    if (payment_mode === 'per_analysis' && transactionId) {
+      const agreementPercentageStr = zeroReversalRecommendation.scores?.agreementPercentage || '0%';
+      const agreementPercentage = parseFloat(agreementPercentageStr.replace('%', ''));
+      
+      if (agreementPercentage < 60) {
+        await db.refundAnalysisFee(
+          user_id, 
+          analysisFee, 
+          transactionId, 
+          `جودة الإشارة منخفضة (${agreementPercentage.toFixed(1)}%) - تم استرجاع المبلغ`
+        );
+        console.log(`💰 تم استرجاع ${analysisFee} USDT للمستخدم ${user_id} - جودة الإشارة: ${agreementPercentage.toFixed(1)}%`);
+      } else {
+        console.log(`✅ إشارة جيدة (${agreementPercentage.toFixed(1)}%) - لا استرجاع للمستخدم ${user_id}`);
+      }
+    }
     
     res.json({
       success: true,
@@ -2462,6 +2516,24 @@ app.post('/api/analyze-v1-pro', async (req, res) => {
     v1ProResult.marketType = market_type;
     v1ProResult.timeframe = timeframe;
     
+    // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
+    if (payment_mode === 'per_analysis' && transactionId) {
+      const agreementPercentageStr = v1ProResult.scores?.agreementPercentage || '0%';
+      const agreementPercentage = parseFloat(agreementPercentageStr.replace('%', ''));
+      
+      if (agreementPercentage < 60) {
+        await db.refundAnalysisFee(
+          user_id, 
+          analysisFee, 
+          transactionId, 
+          `جودة الإشارة منخفضة (${agreementPercentage.toFixed(1)}%) - تم استرجاع المبلغ`
+        );
+        console.log(`💰 تم استرجاع ${analysisFee} USDT للمستخدم ${user_id} - جودة الإشارة: ${agreementPercentage.toFixed(1)}%`);
+      } else {
+        console.log(`✅ إشارة جيدة (${agreementPercentage.toFixed(1)}%) - لا استرجاع للمستخدم ${user_id}`);
+      }
+    }
+    
     res.json({
       success: true,
       analysis: v1ProResult
@@ -2543,6 +2615,24 @@ app.post('/api/analyze-pump', async (req, res) => {
     const pumpPotential = await pumpAnalysis.getPumpPotential();
     pumpPotential.tradingType = trading_type || 'spot';
     pumpPotential.marketType = market_type;
+    
+    // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
+    if (payment_mode === 'per_analysis' && transactionId) {
+      const agreementPercentageStr = pumpPotential.scores?.agreementPercentage || pumpPotential.pumpScore || '0%';
+      const agreementPercentage = parseFloat(agreementPercentageStr.toString().replace('%', ''));
+      
+      if (agreementPercentage < 60) {
+        await db.refundAnalysisFee(
+          user_id, 
+          analysisFee, 
+          transactionId, 
+          `جودة الإشارة منخفضة (${agreementPercentage.toFixed(1)}%) - تم استرجاع المبلغ`
+        );
+        console.log(`💰 تم استرجاع ${analysisFee} USDT للمستخدم ${user_id} - جودة الإشارة: ${agreementPercentage.toFixed(1)}%`);
+      } else {
+        console.log(`✅ إشارة جيدة (${agreementPercentage.toFixed(1)}%) - لا استرجاع للمستخدم ${user_id}`);
+      }
+    }
     
     res.json({
       success: true,
@@ -2631,6 +2721,24 @@ app.post('/api/analyze-master', async (req, res) => {
     const masterAnalysis = new MasterAnalysis(candles, symbol, timeframe, market_type);
     
     const masterResult = await masterAnalysis.getMasterAnalysis(trading_type || 'spot');
+    
+    // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
+    if (payment_mode === 'per_analysis' && transactionId) {
+      const agreementPercentageStr = masterResult.scores?.agreementPercentage || '0%';
+      const agreementPercentage = parseFloat(agreementPercentageStr.replace('%', ''));
+      
+      if (agreementPercentage < 60) {
+        await db.refundAnalysisFee(
+          user_id, 
+          analysisFee, 
+          transactionId, 
+          `جودة الإشارة منخفضة (${agreementPercentage.toFixed(1)}%) - تم استرجاع المبلغ`
+        );
+        console.log(`💰 تم استرجاع ${analysisFee} USDT للمستخدم ${user_id} - جودة الإشارة: ${agreementPercentage.toFixed(1)}%`);
+      } else {
+        console.log(`✅ إشارة جيدة (${agreementPercentage.toFixed(1)}%) - لا استرجاع للمستخدم ${user_id}`);
+      }
+    }
     
     res.json({
       success: true,
