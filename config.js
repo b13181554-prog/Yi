@@ -19,7 +19,6 @@ module.exports = {
   
   SUBSCRIPTION_PRICE: parseInt(process.env.SUBSCRIPTION_PRICE) || 10,
   PUMP_SUBSCRIPTION_PRICE: parseInt(process.env.PUMP_SUBSCRIPTION_PRICE) || 5,
-  VIP_SEARCH_SUBSCRIPTION_PRICE: parseInt(process.env.VIP_SEARCH_SUBSCRIPTION_PRICE) || 10,
   WITHDRAWAL_FEE: parseInt(process.env.WITHDRAWAL_FEE) || 1,
   FREE_TRIAL_DAYS: parseInt(process.env.FREE_TRIAL_DAYS) || 7,
   

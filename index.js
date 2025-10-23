@@ -2519,15 +2519,6 @@ app.post('/api/smart-scanner', async (req, res) => {
       return res.json({ success: false, error: 'User ID is required' });
     }
     
-    const vipSubscription = await db.getVIPSearchSubscription(user_id);
-    if (!vipSubscription || !vipSubscription.active) {
-      return res.json({ 
-        success: false, 
-        error: 'VIP Search subscription required',
-        requires_subscription: true
-      });
-    }
-    
     // إعداد SSE
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -2618,15 +2609,9 @@ app.post('/api/search-assets', async (req, res) => {
       return res.json({ success: false, error: 'Query is required' });
     }
     
-    let isVIP = false;
-    if (user_id) {
-      const vipSubscription = await db.getVIPSearchSubscription(user_id);
-      isVIP = vipSubscription && vipSubscription.active;
-    }
-    
     const directSearch = require('./direct-search');
     
-    const results = await directSearch.search(query.trim(), market_type, isVIP);
+    const results = await directSearch.search(query.trim(), market_type, false);
     
     const limitedResults = results.slice(0, parseInt(limit));
     
@@ -2636,8 +2621,8 @@ app.post('/api/search-assets', async (req, res) => {
       total_found: results.length,
       returned: limitedResults.length,
       query: query,
-      search_type: isVIP ? 'vip' : 'direct',
-      is_vip: isVIP
+      search_type: 'direct',
+      is_vip: false
     });
   } catch (error) {
     console.error('Search Assets API Error:', error);
@@ -2767,68 +2752,6 @@ app.post('/api/subscribe-pump', async (req, res) => {
     res.json({ success: true, message: 'تم الاشتراك في نظام Pump بنجاح' });
   } catch (error) {
     console.error('Subscribe Pump API Error:', error);
-    res.json({ success: false, error: error.message });
-  }
-});
-
-// VIP Search Subscription APIs
-app.post('/api/vip-search-subscription', async (req, res) => {
-  try {
-    const { user_id, init_data } = req.body;
-    
-    if (!verifyTelegramWebAppData(init_data)) {
-      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
-    }
-    
-    const existingSub = await db.getVIPSearchSubscription(user_id);
-    if (existingSub) {
-      return res.json({ success: false, error: 'لديك اشتراك VIP Search نشط بالفعل' });
-    }
-    
-    const user = await db.getUser(user_id);
-    if (user.balance < config.VIP_SEARCH_SUBSCRIPTION_PRICE) {
-      return res.json({ success: false, error: 'رصيدك غير كافٍ' });
-    }
-    
-    await db.updateUser(user_id, { balance: user.balance - config.VIP_SEARCH_SUBSCRIPTION_PRICE });
-    await db.subscribeToVIPSearch(user_id, config.VIP_SEARCH_SUBSCRIPTION_PRICE);
-    
-    const ownerShare = config.VIP_SEARCH_SUBSCRIPTION_PRICE;
-    await db.updateUserBalance(config.OWNER_ID, ownerShare);
-    
-    res.json({ success: true, message: 'تم الاشتراك في VIP Search بنجاح' });
-  } catch (error) {
-    console.error('Subscribe VIP Search API Error:', error);
-    res.json({ success: false, error: error.message });
-  }
-});
-
-app.post('/api/check-vip-search-subscription', async (req, res) => {
-  try {
-    const { user_id, init_data } = req.body;
-    
-    if (!verifyTelegramWebAppData(init_data)) {
-      return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
-    }
-    
-    const subscription = await db.getVIPSearchSubscription(user_id);
-    
-    if (subscription) {
-      const daysLeft = Math.ceil((new Date(subscription.end_date) - new Date()) / (1000 * 60 * 60 * 24));
-      res.json({ 
-        success: true, 
-        active: true,
-        end_date: subscription.end_date,
-        days_left: daysLeft
-      });
-    } else {
-      res.json({ 
-        success: true, 
-        active: false
-      });
-    }
-  } catch (error) {
-    console.error('Check VIP Search Subscription API Error:', error);
     res.json({ success: false, error: error.message });
   }
 });

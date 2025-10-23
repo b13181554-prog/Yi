@@ -1978,45 +1978,6 @@ async function getPumpSubscription(userId) {
   });
 }
 
-async function subscribeToVIPSearch(userId, amount) {
-  const endDate = new Date();
-  endDate.setMonth(endDate.getMonth() + 1);
-  
-  const subscription = {
-    user_id: userId,
-    type: 'vip_search',
-    amount: amount,
-    start_date: new Date(),
-    end_date: endDate,
-    status: 'active',
-    created_at: new Date()
-  };
-  
-  const result = await db.collection('vip_search_subscriptions').insertOne(subscription);
-  return { ...subscription, _id: result.insertedId };
-}
-
-async function getVIPSearchSubscription(userId) {
-  const subscription = await db.collection('vip_search_subscriptions').findOne({
-    user_id: userId,
-    status: 'active',
-    end_date: { $gt: new Date() }
-  });
-  
-  if (!subscription) {
-    return null;
-  }
-  
-  const now = new Date();
-  const endDate = new Date(subscription.end_date);
-  const daysLeft = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
-  
-  return {
-    ...subscription,
-    active: true,
-    days_left: daysLeft
-  };
-}
 
 async function createCryptAPIPayment(userId, paymentAddress, amount, qrCodeUrl, callbackUrl) {
   const payment = {
@@ -2355,8 +2316,6 @@ module.exports = {
   getNotificationSettings,
   subscribeToPumpAnalysis,
   getPumpSubscription,
-  subscribeToVIPSearch,
-  getVIPSearchSubscription,
   createCryptAPIPayment,
   getCryptAPIPayment,
   getCryptAPIPaymentByUser,

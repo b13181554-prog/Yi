@@ -185,11 +185,6 @@ class AdvancedRateLimiter {
       }
       
       // Check subscription status
-      const isVIP = await db.isVIPSearchActive(userId);
-      if (isVIP) {
-        return 'vip';
-      }
-      
       const hasSubscription = await db.isSubscriptionActive(userId);
       if (hasSubscription) {
         return 'basic';
