@@ -2172,6 +2172,95 @@ function getDB() {
   return db;
 }
 
+async function getUserCount() {
+  try {
+    return await db.collection('users').countDocuments();
+  } catch (error) {
+    logger.error('Error getting user count:', error);
+    return 0;
+  }
+}
+
+async function getActiveSubscriptionsCount() {
+  try {
+    const now = new Date();
+    return await db.collection('users').countDocuments({
+      subscription_expires: { $gt: now }
+    });
+  } catch (error) {
+    logger.error('Error getting active subscriptions count:', error);
+    return 0;
+  }
+}
+
+async function getPendingWithdrawalsCount() {
+  try {
+    return await db.collection('withdrawal_requests').countDocuments({
+      status: 'pending'
+    });
+  } catch (error) {
+    logger.error('Error getting pending withdrawals count:', error);
+    return 0;
+  }
+}
+
+async function getRecentTransactionsCount(minutes = 60) {
+  try {
+    const since = new Date(Date.now() - minutes * 60 * 1000);
+    return await db.collection('transactions').countDocuments({
+      created_at: { $gte: since }
+    });
+  } catch (error) {
+    logger.error('Error getting recent transactions count:', error);
+    return 0;
+  }
+}
+
+async function getAnalystsCount() {
+  try {
+    return await db.collection('analysts').countDocuments();
+  } catch (error) {
+    logger.error('Error getting analysts count:', error);
+    return 0;
+  }
+}
+
+async function getRecentUserErrors(minutes = 30) {
+  try {
+    return [];
+  } catch (error) {
+    logger.error('Error getting recent user errors:', error);
+    return [];
+  }
+}
+
+async function getFailedPayments(minutes = 60) {
+  try {
+    const since = new Date(Date.now() - minutes * 60 * 1000);
+    return await db.collection('transactions').find({
+      type: 'deposit',
+      status: 'failed',
+      created_at: { $gte: since }
+    }).toArray();
+  } catch (error) {
+    logger.error('Error getting failed payments:', error);
+    return [];
+  }
+}
+
+async function getFailedWithdrawals(minutes = 60) {
+  try {
+    const since = new Date(Date.now() - minutes * 60 * 1000);
+    return await db.collection('withdrawal_requests').find({
+      status: 'failed',
+      created_at: { $gte: since }
+    }).toArray();
+  } catch (error) {
+    logger.error('Error getting failed withdrawals:', error);
+    return [];
+  }
+}
+
 module.exports = {
   initDatabase,
   getDB,
@@ -2281,5 +2370,13 @@ module.exports = {
   updateAnalystPerformance,
   updateAnalystTierAndBadges,
   getAnalystPerformance,
-  checkSubscription
+  checkSubscription,
+  getUserCount,
+  getActiveSubscriptionsCount,
+  getPendingWithdrawalsCount,
+  getRecentTransactionsCount,
+  getAnalystsCount,
+  getRecentUserErrors,
+  getFailedPayments,
+  getFailedWithdrawals
 };

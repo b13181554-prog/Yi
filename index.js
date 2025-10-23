@@ -26,6 +26,7 @@ const monitoringService = require('./monitoring-service');
 const { startWithdrawalScheduler } = require('./withdrawal-scheduler');
 const { safeSendMessage, safeSendPhoto, safeEditMessageText } = require('./safe-message');
 const { getDashboardData, exportReport, getCostStats, getAPIBreakdown, getOptimizationSuggestions, setAlerts } = require('./api-cost-tracker');
+const aiMonitor = require('./ai-monitor');
 
 // Groq AI - Free and fast alternative to OpenAI
 let groq = null;
@@ -108,6 +109,21 @@ app.get('/api/queue/stats', async (req, res) => {
       success: true,
       queue: stats,
       cryptapi: cryptapi.getCircuitBreakerStatus()
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.get('/api/ai-monitor/status', async (req, res) => {
+  try {
+    const status = aiMonitor.getStatus();
+    res.json({
+      success: true,
+      aiMonitor: status
     });
   } catch (error) {
     res.status(500).json({
@@ -450,6 +466,9 @@ ${description}
     
     console.log('✅ OBENTCHI Bot is now running!');
     console.log('📊 Bot ready to analyze crypto markets');
+    
+    aiMonitor.start();
+    console.log('🤖 AI Monitor started - checking every 5 minutes');
     
   } catch (error) {
     console.error('❌ Error starting bot:', error);
