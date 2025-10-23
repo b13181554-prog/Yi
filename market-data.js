@@ -438,7 +438,7 @@ class MarketDataService {
         timeout: 15000
       });
 
-      if (response.data && response.data.data) {
+      if (response.data && response.data.data && response.data.data.length > 0) {
         const candles = response.data.data.reverse().map(candle => ({
           openTime: parseInt(candle[0]),
           open: candle[1],
@@ -452,9 +452,116 @@ class MarketDataService {
         console.log(`✅ OKX: Got ${candles.length} real candles for ${symbol}`);
         return candles;
       }
+      
+      console.warn(`⚠️ OKX: No candle data available for ${symbol}`);
       return null;
     } catch (error) {
-      console.error(`❌ OKX candles error for ${symbol}:`, error.message);
+      if (error.response?.status === 404) {
+        console.warn(`⚠️ OKX: ${symbol} not found on exchange`);
+      } else {
+        console.error(`❌ OKX candles error for ${symbol}:`, error.message);
+      }
+      return null;
+    }
+  }
+
+  async getCandlesFromBybit(symbol, interval, limit = 100) {
+    try {
+      const bybitSymbol = symbol;
+      const intervalMap = {
+        '1m': '1',
+        '5m': '5',
+        '15m': '15',
+        '30m': '30',
+        '1h': '60',
+        '4h': '240',
+        '1d': 'D',
+        '1w': 'W'
+      };
+
+      const response = await axios.get('https://api.bybit.com/v5/market/kline', {
+        params: {
+          category: 'spot',
+          symbol: bybitSymbol,
+          interval: intervalMap[interval] || '60',
+          limit: limit
+        },
+        timeout: 15000
+      });
+
+      if (response.data && response.data.result && response.data.result.list && response.data.result.list.length > 0) {
+        const candles = response.data.result.list.reverse().map(candle => ({
+          openTime: parseInt(candle[0]),
+          open: candle[1],
+          high: candle[2],
+          low: candle[3],
+          close: candle[4],
+          volume: candle[5],
+          closeTime: parseInt(candle[0]) + 60000
+        }));
+
+        console.log(`✅ Bybit: Got ${candles.length} real candles for ${symbol}`);
+        return candles;
+      }
+      
+      console.warn(`⚠️ Bybit: No candle data available for ${symbol}`);
+      return null;
+    } catch (error) {
+      if (error.response?.status === 404 || error.response?.data?.retMsg?.includes('not found')) {
+        console.warn(`⚠️ Bybit: ${symbol} not found on exchange`);
+      } else {
+        console.error(`❌ Bybit candles error for ${symbol}:`, error.message);
+      }
+      return null;
+    }
+  }
+
+  async getCandlesFromGateIO(symbol, interval, limit = 100) {
+    try {
+      const gateSymbol = symbol.replace('USDT', '_USDT');
+      const intervalMap = {
+        '1m': '1m',
+        '5m': '5m',
+        '15m': '15m',
+        '30m': '30m',
+        '1h': '1h',
+        '4h': '4h',
+        '1d': '1d',
+        '1w': '1w'
+      };
+
+      const response = await axios.get('https://api.gateio.ws/api/v4/spot/candlesticks', {
+        params: {
+          currency_pair: gateSymbol,
+          interval: intervalMap[interval] || '1h',
+          limit: limit
+        },
+        timeout: 15000
+      });
+
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        const candles = response.data.reverse().map(candle => ({
+          openTime: parseInt(candle[0]) * 1000,
+          open: candle[5],
+          high: candle[3],
+          low: candle[4],
+          close: candle[2],
+          volume: candle[1],
+          closeTime: parseInt(candle[0]) * 1000 + 60000
+        }));
+
+        console.log(`✅ Gate.io: Got ${candles.length} real candles for ${symbol}`);
+        return candles;
+      }
+      
+      console.warn(`⚠️ Gate.io: No candle data available for ${symbol}`);
+      return null;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        console.warn(`⚠️ Gate.io: ${symbol} not found on exchange`);
+      } else {
+        console.error(`❌ Gate.io candles error for ${symbol}:`, error.message);
+      }
       return null;
     }
   }
@@ -602,6 +709,16 @@ class MarketDataService {
       candles = await this.getCandlesFromYahooFinance(symbol, interval, limit, marketType);
     } else {
       candles = await this.getCandlesFromOKX(symbol, interval, limit);
+      
+      if (!candles || candles.length === 0) {
+        console.log(`⚠️ OKX failed for ${symbol}, trying Bybit...`);
+        candles = await this.getCandlesFromBybit(symbol, interval, limit);
+      }
+      
+      if (!candles || candles.length === 0) {
+        console.log(`⚠️ Bybit failed for ${symbol}, trying Gate.io...`);
+        candles = await this.getCandlesFromGateIO(symbol, interval, limit);
+      }
     }
 
     if (candles && candles.length > 0) {
@@ -609,7 +726,9 @@ class MarketDataService {
       return candles;
     }
 
-    throw new Error(`فشل في الحصول على بيانات الشموع الحقيقية لـ ${symbol}`);
+    const errorMsg = `فشل في الحصول على بيانات الشموع لـ ${symbol} من جميع المصادر (OKX, Bybit, Gate.io)`;
+    console.error(`❌ ${errorMsg}`);
+    throw new Error(errorMsg);
   }
 
   validateCandleData(candles, symbol) {

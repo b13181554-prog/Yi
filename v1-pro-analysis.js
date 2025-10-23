@@ -1,5 +1,5 @@
 const TechnicalAnalysis = require('./analysis');
-const Groq = require('groq-sdk');
+const groqService = require('./groq-service');
 const axios = require('axios');
 
 class OBENTCHIV1ProAnalysis {
@@ -9,9 +9,7 @@ class OBENTCHIV1ProAnalysis {
     this.symbol = symbol;
     this.analysis = new TechnicalAnalysis(candles);
     
-    this.groq = new Groq({
-      apiKey: process.env.GROQ_API_KEY
-    });
+    this.groqService = groqService;
     
     this.indicatorWeights = {
       rsi: 1.2,
@@ -312,11 +310,10 @@ class OBENTCHIV1ProAnalysis {
         `${index + 1}. ${item.title} (${item.source})`
       ).join('\n');
       
-      const completion = await this.groq.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: `أنت محلل خبير للمشاعر في أسواق العملات الرقمية. قم بتحليل الأخبار التالية وأعطني:
+      const completion = await this.groqService.chat([
+        {
+          role: 'system',
+          content: `أنت محلل خبير للمشاعر في أسواق العملات الرقمية. قم بتحليل الأخبار التالية وأعطني:
 1. درجة المشاعر من -1 (سلبي جداً) إلى +1 (إيجابي جداً)
 2. تصنيف المشاعر (إيجابي قوي، إيجابي، محايد، سلبي، سلبي قوي)
 3. درجة الثقة من 0 إلى 1
@@ -329,19 +326,19 @@ class OBENTCHIV1ProAnalysis {
   "confidence": رقم من 0 إلى 1,
   "summary": "الملخص بالعربية"
 }`
-          },
-          {
-            role: 'user',
-            content: `حلل المشاعر للأخبار التالية عن ${this.symbol}:\n\n${newsText}`
-          }
-        ],
+        },
+        {
+          role: 'user',
+          content: `حلل المشاعر للأخبار التالية عن ${this.symbol}:\n\n${newsText}`
+        }
+      ], {
         model: 'llama-3.3-70b-versatile',
         temperature: 0.3,
         max_tokens: 500,
         response_format: { type: 'json_object' }
       });
       
-      const result = JSON.parse(completion.choices[0].message.content);
+      const result = JSON.parse(completion.content);
       
       const weightedScore = this.applyNewsWeighting(result.score, news);
       

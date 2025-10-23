@@ -133,6 +133,22 @@ app.get('/api/ai-monitor/status', async (req, res) => {
   }
 });
 
+app.get('/api/groq/status', async (req, res) => {
+  try {
+    const groqService = require('./groq-service');
+    const status = groqService.getStatus();
+    res.json({
+      success: true,
+      groq: status
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 app.get('/api/system/status', async (req, res) => {
   try {
     const status = await monitoringService.getSystemStatus();

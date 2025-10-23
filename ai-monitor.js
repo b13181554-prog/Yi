@@ -1,4 +1,4 @@
-const Groq = require('groq-sdk');
+const groqService = require('./groq-service');
 const db = require('./database');
 const config = require('./config');
 const { safeSendMessage } = require('./safe-message');
@@ -12,14 +12,8 @@ const execPromise = promisifyExec(exec);
 
 class AIMonitor {
   constructor() {
-    if (!process.env.GROQ_API_KEY) {
-      console.warn('⚠️ GROQ_API_KEY not found. AI Monitor will not work.');
-      this.enabled = false;
-      return;
-    }
-    
-    this.groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    this.enabled = true;
+    this.groqService = groqService;
+    this.enabled = groqService.enabled;
     this.lastCheck = new Date();
     this.issuesLog = [];
     this.maxIssuesLog = 100;
@@ -188,23 +182,22 @@ ${logs}
   "summary": "النظام يعمل بشكل طبيعي ✅"
 }`;
 
-      const completion = await this.groq.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'أنت نظام مراقبة ذكي متخصص في تحليل أنظمة التداول والبوتات. ترجع فقط JSON صالح بدون أي نص إضافي.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
+      const completion = await this.groqService.chat([
+        {
+          role: 'system',
+          content: 'أنت نظام مراقبة ذكي متخصص في تحليل أنظمة التداول والبوتات. ترجع فقط JSON صالح بدون أي نص إضافي.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ], {
         model: 'llama-3.3-70b-versatile',
         temperature: 0.3,
         max_tokens: 2000
       });
 
-      const response = completion.choices[0]?.message?.content || '{}';
+      const response = completion.content || '{}';
       
       let cleanResponse = response.trim();
       if (cleanResponse.startsWith('```json')) {
