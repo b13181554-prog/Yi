@@ -50,6 +50,80 @@ async function getPaginatedResults(collection, query = {}, options = {}) {
   };
 }
 
+/**
+ * ✅ safeFind - منع تحميل arrays كبيرة دفعة واحدة (حماية من Out of Memory)
+ * يفرض استخدام pagination أو limit عند تحميل عدد كبير من السجلات
+ * لدعم ملايين المستخدمين بأمان
+ */
+const MAX_RESULTS_WITHOUT_PAGINATION = 1000;
+
+async function safeFind(collection, query = {}, options = {}) {
+  // السماح بـ cursor streaming (بدون toArray)
+  if (options.stream) {
+    return db.collection(collection).find(query, options);
+  }
+  
+  // إذا كان limit محدد ومعقول، السماح به
+  if (options.limit && options.limit <= MAX_RESULTS_WITHOUT_PAGINATION) {
+    return db.collection(collection)
+      .find(query, options)
+      .toArray();
+  }
+  
+  // حساب العدد أولاً للتحقق من الحجم
+  const count = await db.collection(collection).countDocuments(query);
+  
+  // رفض إذا كان كبير جداً بدون pagination
+  if (count > MAX_RESULTS_WITHOUT_PAGINATION && !options.limit) {
+    const error = new Error(
+      `⚠️ Query would return ${count} documents. ` +
+      `Please use pagination (limit/skip) or streaming. ` +
+      `Max allowed without pagination: ${MAX_RESULTS_WITHOUT_PAGINATION}`
+    );
+    logger.warn({ 
+      collection, 
+      query, 
+      count,
+      message: 'Prevented large array loading'
+    }, error.message);
+    throw error;
+  }
+  
+  return db.collection(collection)
+    .find(query, options)
+    .toArray();
+}
+
+/**
+ * ✅ processAllDocuments - معالجة المستندات واحدًا تلو الآخر (streaming)
+ * للعمليات الكبيرة مثل المسح الشامل أو التحديثات الجماعية
+ */
+async function processAllDocuments(collection, query = {}, processFn, options = {}) {
+  const cursor = db.collection(collection).find(query, options);
+  let processedCount = 0;
+  let errorCount = 0;
+  
+  for await (const doc of cursor) {
+    try {
+      await processFn(doc);
+      processedCount++;
+    } catch (error) {
+      errorCount++;
+      logger.error({ 
+        collection, 
+        docId: doc._id,
+        error: error.message 
+      }, 'Error processing document');
+    }
+  }
+  
+  return {
+    processed: processedCount,
+    errors: errorCount,
+    total: processedCount + errorCount
+  };
+}
+
 async function initDatabase() {
   try {
     client = new MongoClient(config.MONGODB_URI, {
@@ -2395,6 +2469,8 @@ module.exports = {
   getDB,
   createPaginationHelper,
   getPaginatedResults,
+  safeFind,
+  processAllDocuments,
   getUser,
   createUser,
   updateUser,

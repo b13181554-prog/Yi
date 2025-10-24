@@ -1,8 +1,10 @@
 const TelegramBot = require('node-telegram-bot-api');
+const { LRUCache } = require('lru-cache');
 const config = require('./config');
 const db = require('./database');
 const { t, getLanguageKeyboard } = require('./languages');
 const { safeSendMessage, safeSendPhoto, safeEditMessageText, safeAnswerCallbackQuery } = require('./safe-message');
+const { BatchLoader } = require('./utils/batch-loader');
 
 const bot = new TelegramBot(config.BOT_TOKEN, { 
   polling: {
@@ -12,6 +14,13 @@ const bot = new TelegramBot(config.BOT_TOKEN, {
       timeout: 10
     }
   }
+});
+
+let batchLoader;
+db.initDatabase().then(() => {
+  batchLoader = new BatchLoader(db.getDB());
+}).catch(err => {
+  console.error('Error initializing batch loader:', err);
 });
 
 bot.on('polling_error', (error) => {
@@ -26,23 +35,25 @@ bot.on('polling_error', (error) => {
   }
 });
 
-const membershipCache = new Map();
-const CACHE_DURATION = 1 * 1000;
+// ✅ استخدام LRU Cache مع حد أقصى لمنع memory leak عند ملايين المستخدمين
+const membershipCache = new LRUCache({
+  max: 10000,           // حد أقصى 10,000 مستخدم (~1-2 MB)
+  ttl: 60 * 1000,       // تنظيف تلقائي بعد دقيقة
+  updateAgeOnGet: true, // تحديث العمر عند الاستخدام
+  allowStale: false
+});
 
 async function checkChannelMembership(userId) {
   try {
     const cached = membershipCache.get(userId);
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.isMember;
+    if (cached !== undefined) {
+      return cached;
     }
     
     const member = await bot.getChatMember(config.CHANNEL_ID, userId);
     const isMember = ['member', 'administrator', 'creator'].includes(member.status);
     
-    membershipCache.set(userId, {
-      isMember,
-      timestamp: Date.now()
-    });
+    membershipCache.set(userId, isMember);
     
     return isMember;
   } catch (error) {
@@ -130,8 +141,23 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
         });
       }
       
+      // ✅ استخدام Batch Loading لتحميل جميع المستخدمين دفعة واحدة (تحسين 66%+)
+      const userIdsToFetch = [];
+      if (referrerId) userIdsToFetch.push(referrerId);
+      if (analystReferrerId) userIdsToFetch.push(analystReferrerId);
+      if (promoterReferrerId) userIdsToFetch.push(promoterReferrerId);
+      
+      // تحميل جميع المستخدمين في query واحد
+      const referrerUsers = userIdsToFetch.length > 0 && batchLoader 
+        ? await batchLoader.loadUsers(userIdsToFetch)
+        : [];
+      
+      // إنشاء map للوصول السريع
+      const userMap = new Map(referrerUsers.map(u => [u.user_id, u]));
+      
+      // إرسال الرسائل باستخدام البيانات المحملة
       if (referrerId) {
-        const referrerUser = await db.getUser(referrerId);
+        const referrerUser = userMap.get(referrerId);
         const referrerLang = referrerUser ? (referrerUser.language || 'ar') : 'ar';
         
         await safeSendMessage(bot, referrerId, `
@@ -143,7 +169,7 @@ ${t(referrerLang, 'you_will_get_commission')}
       }
       
       if (analystReferrerId) {
-        const analystReferrerUser = await db.getUser(analystReferrerId);
+        const analystReferrerUser = userMap.get(analystReferrerId);
         const analystReferrerLang = analystReferrerUser ? (analystReferrerUser.language || 'ar') : 'ar';
         
         await safeSendMessage(bot, analystReferrerId, `
@@ -155,7 +181,7 @@ ${t(analystReferrerLang, 'analyst_commission')}
       }
       
       if (promoterReferrerId) {
-        const promoterReferrerUser = await db.getUser(promoterReferrerId);
+        const promoterReferrerUser = userMap.get(promoterReferrerId);
         const promoterReferrerLang = promoterReferrerUser ? (promoterReferrerUser.language || 'ar') : 'ar';
         
         await safeSendMessage(bot, promoterReferrerId, `
