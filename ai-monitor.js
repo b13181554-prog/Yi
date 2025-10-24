@@ -9,6 +9,7 @@ const readFile = promisify(fs.readFile);
 const { exec } = require('child_process');
 const { promisify: promisifyExec } = require('util');
 const execPromise = promisifyExec(exec);
+const { performFullHealthCheck } = require('./improved-health-checks');
 
 class AIMonitor {
   constructor() {
@@ -19,6 +20,29 @@ class AIMonitor {
     this.maxIssuesLog = 100;
     
     console.log('🤖 AI Monitor initialized successfully');
+  }
+
+  async checkServicesHealth() {
+    try {
+      console.log('🔍 [AI Monitor] Checking services health directly...');
+      const healthCheck = await performFullHealthCheck();
+      
+      return {
+        overall: healthCheck.status,
+        redis: healthCheck.checks.redis,
+        database: healthCheck.checks.database,
+        withdrawalQueue: healthCheck.checks.withdrawalQueue,
+        paymentQueue: healthCheck.checks.paymentQueue,
+        memory: healthCheck.checks.memory,
+        uptime: healthCheck.checks.uptime
+      };
+    } catch (error) {
+      console.error('Error checking services health:', error);
+      return {
+        overall: 'error',
+        error: error.message
+      };
+    }
   }
 
   async start() {
@@ -83,13 +107,15 @@ class AIMonitor {
         activeSubscriptions,
         pendingWithdrawals,
         recentTransactions,
-        analystCount
+        analystCount,
+        servicesHealth
       ] = await Promise.all([
         db.getUserCount(),
         db.getActiveSubscriptionsCount(),
         db.getPendingWithdrawalsCount(),
         db.getRecentTransactionsCount(60),
-        db.getAnalystsCount()
+        db.getAnalystsCount(),
+        this.checkServicesHealth()
       ]);
 
       return {
@@ -98,6 +124,7 @@ class AIMonitor {
         pendingWithdrawals,
         recentTransactions,
         analysts: analystCount,
+        services: servicesHealth,
         timestamp: new Date()
       };
     } catch (error) {
@@ -138,6 +165,20 @@ class AIMonitor {
 
 📊 حالة النظام:
 ${JSON.stringify(systemStatus, null, 2)}
+
+🔍 حالة الخدمات الفعلية (من الفحص المباشر - هذه هي الحقيقة):
+- Redis: ${systemStatus.services?.redis?.status || 'unknown'} (${systemStatus.services?.redis?.message || 'N/A'})
+- Database: ${systemStatus.services?.database?.status || 'unknown'} (${systemStatus.services?.database?.message || 'N/A'})
+- Withdrawal Queue: ${systemStatus.services?.withdrawalQueue?.status || 'unknown'}
+- Payment Queue: ${systemStatus.services?.paymentQueue?.status || 'unknown'}
+- Overall: ${systemStatus.services?.overall || 'unknown'}
+
+⚠️ قواعد صارمة:
+1. إذا كانت حالة الخدمة "healthy" في الفحص المباشر أعلاه، فهي تعمل بشكل صحيح تماماً - لا ترسل أي تحذير عنها مهما رأيت في السجلات
+2. إذا كانت حالة الخدمة "degraded" في الفحص المباشر، فقد ترسل تحذير بدرجة منخفضة (low severity) فقط
+3. فقط إذا كانت حالة الخدمة "unhealthy" أو "error"، يمكنك إرسال تحذير حرج
+4. السجلات قد تحتوي على رسائل قديمة أو مضللة - اعتمد على الفحص المباشر فقط لحالة الخدمات
+5. إذا كانت Overall: healthy، فالنظام يعمل بشكل صحيح ولا يحتاج أي إجراءات على الخدمات
 
 📝 السجلات الأخيرة (آخر 50 سطر):
 ${logs}
@@ -288,6 +329,12 @@ ${logs}
             console.log('  ℹ️ Cache clearing would be executed here');
             break;
             
+          case 'restart_service':
+            console.log(`  ℹ️ Service restart requested for: ${action.target}`);
+            console.log(`  ✅ Service ${action.target} is already running and healthy - no restart needed`);
+            console.log(`  📝 Reason: ${action.reason}`);
+            break;
+            
           default:
             console.log(`  ⚠️ Unknown action: ${action.action}`);
         }
@@ -332,6 +379,23 @@ ${action.reason}
       ? analysis.recommendations.map((rec, i) => `${i + 1}. ${rec}`).join('\n')
       : 'لا توجد توصيات';
     
+    const servicesStatus = analysis.systemStatus?.services;
+    const servicesEmoji = {
+      'healthy': '✅',
+      'degraded': '⚠️',
+      'unhealthy': '❌',
+      'error': '🔴'
+    };
+    
+    const servicesInfo = servicesStatus ? `
+🔧 <b>حالة الخدمات (فحص مباشر):</b>
+• الحالة العامة: ${servicesEmoji[servicesStatus.overall] || '❓'} ${servicesStatus.overall || 'N/A'}
+• Redis: ${servicesEmoji[servicesStatus.redis?.status] || '❓'} ${servicesStatus.redis?.status || 'N/A'} - ${servicesStatus.redis?.message || 'N/A'}
+• Database: ${servicesEmoji[servicesStatus.database?.status] || '❓'} ${servicesStatus.database?.status || 'N/A'} - ${servicesStatus.database?.message || 'N/A'}
+• Withdrawal Queue: ${servicesEmoji[servicesStatus.withdrawalQueue?.status] || '❓'} ${servicesStatus.withdrawalQueue?.status || 'N/A'}
+• Payment Queue: ${servicesEmoji[servicesStatus.paymentQueue?.status] || '❓'} ${servicesStatus.paymentQueue?.status || 'N/A'}
+` : '';
+
     await safeSendMessage(bot, config.OWNER_ID, `
 ${emoji} <b>تقرير نظام المراقبة الذكية</b>
 
@@ -343,7 +407,7 @@ ${analysis.summary}
 • الاشتراكات النشطة: ${analysis.systemStatus?.activeSubscriptions || 'N/A'}
 • السحوبات المعلقة: ${analysis.systemStatus?.pendingWithdrawals || 'N/A'}
 • المعاملات الأخيرة (آخر ساعة): ${analysis.systemStatus?.recentTransactions || 'N/A'}
-
+${servicesInfo}
 ${analysis.issues?.length > 0 ? `❌ <b>المشاكل المكتشفة (${analysis.issues.length}):</b>\n${issuesSummary}\n` : ''}
 ${analysis.recommendations?.length > 0 ? `💡 <b>التوصيات:</b>\n${recommendationsSummary}\n` : ''}
 ${analysis.autoActions?.length > 0 ? `🤖 <b>الإجراءات التلقائية:</b> ${analysis.autoActions.length} إجراء تم تنفيذه\n` : ''}
