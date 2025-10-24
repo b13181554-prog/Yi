@@ -270,6 +270,9 @@ bot.onText(/\/notifications/, async (msg) => {
   const userId = msg.from.id;
   
   try {
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+    
     const settings = await db.getNotificationSettings(userId);
     const isEnabled = settings.enabled || false;
     const markets = settings.markets || ['crypto', 'forex', 'stocks', 'commodities', 'indices'];
@@ -282,30 +285,28 @@ bot.onText(/\/notifications/, async (msg) => {
       'indices': '📊'
     };
     
-    const marketNames = {
-      'crypto': 'العملات الرقمية',
-      'forex': 'الفوركس',
-      'stocks': 'الأسهم',
-      'commodities': 'السلع',
-      'indices': 'المؤشرات'
+    const getMarketName = (market) => {
+      return t(lang, `market_${market}`);
     };
     
-    let marketsText = markets.map(m => `${marketEmojis[m]} ${marketNames[m]}`).join('\n');
+    let marketsText = markets.map(m => `${marketEmojis[m]} ${getMarketName(m)}`).join('\n');
     
     await safeSendMessage(bot, chatId, `
-🔔 <b>إعدادات الإشعارات</b>
+🔔 <b>${t(lang, 'notifications_settings')}</b>
 
-📊 <b>الحالة:</b> ${isEnabled ? '✅ مفعلة' : '❌ معطلة'}
+📊 <b>${t(lang, 'status_label')}</b> ${isEnabled ? `✅ ${t(lang, 'enabled_label')}` : `❌ ${t(lang, 'disabled_label')}`}
 
-${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
+${isEnabled ? `<b>${t(lang, 'selected_markets')}</b>\n${marketsText}` : ''}
 
-💡 <b>ملاحظة:</b> لتعديل إعدادات الإشعارات والأسواق، افتح التطبيق واذهب إلى قسم "حسابي" ثم "إعدادات الإشعارات"
+💡 <b>${t(lang, 'notification_note')}</b>
     `, {
       parse_mode: 'HTML'
     });
   } catch (error) {
     console.error('Error in /notifications:', error);
-    await safeSendMessage(bot, chatId, '❌ حدث خطأ، يرجى المحاولة مرة أخرى.');
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+    await safeSendMessage(bot, chatId, t(lang, 'error_occurred'));
   }
 });
 
@@ -394,35 +395,31 @@ ${t(lang, 'select_language')}
         'indices': '📊'
       };
       
-      const marketNames = {
-        'crypto': 'العملات الرقمية',
-        'forex': 'الفوركس',
-        'stocks': 'الأسهم',
-        'commodities': 'السلع',
-        'indices': 'المؤشرات'
+      const getMarketName = (market) => {
+        return t(lang, `market_${market}`);
       };
       
-      let marketsText = markets.map(m => `${marketEmojis[m]} ${marketNames[m]}`).join('\n');
+      let marketsText = markets.map(m => `${marketEmojis[m]} ${getMarketName(m)}`).join('\n');
       
       await safeSendMessage(bot, chatId, `
 🔔 <b>${t(lang, 'notifications_settings')}</b>
 
-📊 <b>الحالة:</b> ${isEnabled ? t(lang, 'notifications_enabled') : t(lang, 'notifications_disabled')}
+📊 <b>${t(lang, 'status_label')}</b> ${isEnabled ? t(lang, 'notifications_enabled') : t(lang, 'notifications_disabled')}
 
-${isEnabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
+${isEnabled ? `<b>${t(lang, 'selected_markets')}</b>\n${marketsText}` : ''}
 
-💡 <b>ملاحظة:</b> لتعديل إعدادات الإشعارات والأسواق، افتح التطبيق واذهب إلى قسم "حسابي" ثم "إعدادات الإشعارات"
+💡 <b>${t(lang, 'notification_note')}</b>
       `, {
         parse_mode: 'HTML'
       });
     } else if (user.awaitingCustomerServiceMessage) {
       const config = require('./config');
       await safeSendMessage(bot, config.OWNER_ID, `
-📞 <b>رسالة جديدة من خدمة العملاء</b>
+📞 <b>${t('ar', 'customer_service_new_message')}</b>
 
-👤 <b>المستخدم:</b> ${msg.from.first_name} ${msg.from.last_name || ''}
-🆔 <b>ID:</b> <code>${userId}</code>
-📝 <b>الرسالة:</b>
+👤 <b>${t('ar', 'user_label')}</b> ${msg.from.first_name} ${msg.from.last_name || ''}
+🆔 <b>${t('ar', 'id_label')}</b> <code>${userId}</code>
+📝 <b>${t('ar', 'message_label')}</b>
 
 ${text}
       `, { parse_mode: 'HTML' });
@@ -477,7 +474,7 @@ ${statusMessage}
     } catch (error) {
       console.error('Error changing language:', error);
       await safeAnswerCallbackQuery(bot, query.id, {
-        text: '❌ حدث خطأ',
+        text: t('ar', 'generic_error'),
         show_alert: true
       });
     }
@@ -512,7 +509,7 @@ ${statusMessage}
     } catch (error) {
       console.error('Error in start_action:', error);
       await safeAnswerCallbackQuery(bot, query.id, {
-        text: '❌ حدث خطأ',
+        text: t('ar', 'generic_error'),
         show_alert: true
       });
     }
@@ -522,13 +519,14 @@ ${statusMessage}
     try {
       await db.toggleNotifications(userId, enabled);
       
+      const user = await db.getUser(userId);
+      const lang = user ? (user.language || 'ar') : 'ar';
+      
       await safeAnswerCallbackQuery(bot, query.id, {
-        text: enabled ? '✅ تم تفعيل الإشعارات' : '❌ تم إيقاف الإشعارات',
+        text: enabled ? t(lang, 'notifications_toggled_on') : t(lang, 'notifications_toggled_off'),
         show_alert: true
       });
       
-      const user = await db.getUser(userId);
-      const lang = user ? (user.language || 'ar') : 'ar';
       const settings = await db.getNotificationSettings(userId);
       const markets = settings.markets || ['crypto', 'forex', 'stocks', 'commodities', 'indices'];
       
