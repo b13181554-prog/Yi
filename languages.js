@@ -117,6 +117,68 @@ const translations = {
     amount_distribution: '📊 توزيع المبلغ:',
     owner_share: '• حصة المالك',
     referral_commission: '• عمولة إحالة',
+    
+    // أسواق التداول
+    market_crypto: 'العملات الرقمية',
+    market_forex: 'الفوركس',
+    market_stocks: 'الأسهم',
+    market_commodities: 'السلع',
+    market_indices: 'المؤشرات',
+    
+    // رسائل الحالة
+    status_label: 'الحالة:',
+    enabled_label: 'مفعلة',
+    disabled_label: 'معطلة',
+    selected_markets: 'الأسواق المختارة:',
+    notification_note: 'ملاحظة: لتعديل إعدادات الإشعارات والأسواق، افتح التطبيق واذهب إلى قسم "حسابي" ثم "إعدادات الإشعارات"',
+    
+    // رسائل الاشتراك
+    subscription_activated: 'تم تفعيل الاشتراك بنجاح!',
+    amount_deducted: 'المبلغ المخصوم:',
+    valid_until: 'صالح حتى:',
+    current_balance: 'رصيدك الحالي:',
+    enjoy_features: 'استمتع بجميع ميزات البوت!',
+    new_subscription: 'اشتراك جديد',
+    user_label: 'المستخدم:',
+    id_label: 'ID:',
+    amount_label: 'المبلغ:',
+    referral_commission_label: 'عمولة إحالة:',
+    subscription_error: 'حدث خطأ في معالجة الاشتراك',
+    try_again_or_contact: 'يرجى المحاولة مرة أخرى أو التواصل مع الدعم.',
+    refund_notice: 'في حالة خصم أي مبلغ، سيتم إرجاعه تلقائياً.',
+    subscription_failed: 'فشل في عملية الاشتراك',
+    error_label: 'الخطأ:',
+    
+    // تسجيل المحللين
+    analyst_registration: 'التسجيل كمحلل',
+    send_following_data: 'أرسل البيانات التالية (كل في سطر منفصل):',
+    name_field: 'الاسم',
+    description_field: 'الوصف',
+    monthly_price: 'السعر الشهري (USDT)',
+    example_label: 'مثال:',
+    invalid_data: 'بيانات غير صحيحة!',
+    must_send_three_lines: 'يجب إرسال 3 أسطر فقط:',
+    price_must_be_number: 'السعر يجب أن يكون رقم صحيح (1 USDT على الأقل)',
+    analyst_registered: 'تم التسجيل كمحلل بنجاح!',
+    name_label: 'الاسم:',
+    price_label: 'السعر:',
+    per_month: '/شهر',
+    users_can_subscribe: 'يمكن للمستخدمين الآن الاشتراك في خدماتك!',
+    new_analyst: 'محلل جديد',
+    description_label: 'الوصف:',
+    
+    // رسائل خدمة العملاء
+    customer_service_new_message: 'رسالة جديدة من خدمة العملاء',
+    message_label: 'الرسالة:',
+    no_username: 'بدون معرف',
+    
+    // رسائل تبديل الإشعارات
+    notifications_toggled_on: 'تم تفعيل الإشعارات',
+    notifications_toggled_off: 'تم إيقاف الإشعارات',
+    
+    // رسائل أخطاء عامة
+    generic_error: 'حدث خطأ',
+    request_processing_error: 'حدث خطأ في معالجة الطلب',
   },
   
   en: {
@@ -237,6 +299,68 @@ const translations = {
     amount_distribution: '📊 Amount Distribution:',
     owner_share: '• Owner share',
     referral_commission: '• Referral commission',
+    
+    // Trading markets
+    market_crypto: 'Cryptocurrency',
+    market_forex: 'Forex',
+    market_stocks: 'Stocks',
+    market_commodities: 'Commodities',
+    market_indices: 'Indices',
+    
+    // Status messages
+    status_label: 'Status:',
+    enabled_label: 'Enabled',
+    disabled_label: 'Disabled',
+    selected_markets: 'Selected Markets:',
+    notification_note: 'Note: To modify notification and market settings, open the app and go to "My Account" then "Notification Settings"',
+    
+    // Subscription messages
+    subscription_activated: 'Subscription activated successfully!',
+    amount_deducted: 'Amount deducted:',
+    valid_until: 'Valid until:',
+    current_balance: 'Your current balance:',
+    enjoy_features: 'Enjoy all bot features!',
+    new_subscription: 'New Subscription',
+    user_label: 'User:',
+    id_label: 'ID:',
+    amount_label: 'Amount:',
+    referral_commission_label: 'Referral commission:',
+    subscription_error: 'An error occurred while processing the subscription',
+    try_again_or_contact: 'Please try again or contact support.',
+    refund_notice: 'If any amount was deducted, it will be refunded automatically.',
+    subscription_failed: 'Subscription process failed',
+    error_label: 'Error:',
+    
+    // Analyst registration
+    analyst_registration: 'Analyst Registration',
+    send_following_data: 'Send the following data (each on a separate line):',
+    name_field: 'Name',
+    description_field: 'Description',
+    monthly_price: 'Monthly price (USDT)',
+    example_label: 'Example:',
+    invalid_data: 'Invalid data!',
+    must_send_three_lines: 'You must send exactly 3 lines:',
+    price_must_be_number: 'Price must be a valid number (at least 1 USDT)',
+    analyst_registered: 'Successfully registered as analyst!',
+    name_label: 'Name:',
+    price_label: 'Price:',
+    per_month: '/month',
+    users_can_subscribe: 'Users can now subscribe to your services!',
+    new_analyst: 'New Analyst',
+    description_label: 'Description:',
+    
+    // Customer service messages
+    customer_service_new_message: 'New message from customer service',
+    message_label: 'Message:',
+    no_username: 'No username',
+    
+    // Notification toggle messages
+    notifications_toggled_on: 'Notifications enabled',
+    notifications_toggled_off: 'Notifications disabled',
+    
+    // General error messages
+    generic_error: 'An error occurred',
+    request_processing_error: 'An error occurred while processing the request',
   },
   
   fr: {
@@ -335,6 +459,68 @@ const translations = {
     amount_distribution: '📊 Distribution du montant:',
     owner_share: '• Part du propriétaire',
     referral_commission: '• Commission de parrainage',
+    
+    // Marchés de trading
+    market_crypto: 'Cryptomonnaie',
+    market_forex: 'Forex',
+    market_stocks: 'Actions',
+    market_commodities: 'Matières premières',
+    market_indices: 'Indices',
+    
+    // Messages de statut
+    status_label: 'Statut:',
+    enabled_label: 'Activé',
+    disabled_label: 'Désactivé',
+    selected_markets: 'Marchés sélectionnés:',
+    notification_note: 'Note: Pour modifier les paramètres de notification et de marché, ouvrez l\'application et allez dans "Mon compte" puis "Paramètres de notification"',
+    
+    // Messages d\'abonnement
+    subscription_activated: 'Abonnement activé avec succès!',
+    amount_deducted: 'Montant déduit:',
+    valid_until: 'Valide jusqu\'au:',
+    current_balance: 'Votre solde actuel:',
+    enjoy_features: 'Profitez de toutes les fonctionnalités du bot!',
+    new_subscription: 'Nouvel abonnement',
+    user_label: 'Utilisateur:',
+    id_label: 'ID:',
+    amount_label: 'Montant:',
+    referral_commission_label: 'Commission de parrainage:',
+    subscription_error: 'Une erreur s\'est produite lors du traitement de l\'abonnement',
+    try_again_or_contact: 'Veuillez réessayer ou contacter le support.',
+    refund_notice: 'Si un montant a été déduit, il sera remboursé automatiquement.',
+    subscription_failed: 'Le processus d\'abonnement a échoué',
+    error_label: 'Erreur:',
+    
+    // Inscription analyste
+    analyst_registration: 'Inscription d\'analyste',
+    send_following_data: 'Envoyez les données suivantes (chacune sur une ligne séparée):',
+    name_field: 'Nom',
+    description_field: 'Description',
+    monthly_price: 'Prix mensuel (USDT)',
+    example_label: 'Exemple:',
+    invalid_data: 'Données invalides!',
+    must_send_three_lines: 'Vous devez envoyer exactement 3 lignes:',
+    price_must_be_number: 'Le prix doit être un nombre valide (au moins 1 USDT)',
+    analyst_registered: 'Inscrit avec succès en tant qu\'analyste!',
+    name_label: 'Nom:',
+    price_label: 'Prix:',
+    per_month: '/mois',
+    users_can_subscribe: 'Les utilisateurs peuvent maintenant s\'abonner à vos services!',
+    new_analyst: 'Nouvel analyste',
+    description_label: 'Description:',
+    
+    // Messages du service client
+    customer_service_new_message: 'Nouveau message du service client',
+    message_label: 'Message:',
+    no_username: 'Pas de nom d\'utilisateur',
+    
+    // Messages de basculement des notifications
+    notifications_toggled_on: 'Notifications activées',
+    notifications_toggled_off: 'Notifications désactivées',
+    
+    // Messages d\'erreur généraux
+    generic_error: 'Une erreur s\'est produite',
+    request_processing_error: 'Une erreur s\'est produite lors du traitement de la demande',
   },
   
   es: {
@@ -433,6 +619,68 @@ const translations = {
     amount_distribution: '📊 Distribución del monto:',
     owner_share: '• Parte del propietario',
     referral_commission: '• Comisión de referencia',
+    
+    // Mercados de trading
+    market_crypto: 'Criptomonedas',
+    market_forex: 'Forex',
+    market_stocks: 'Acciones',
+    market_commodities: 'Materias primas',
+    market_indices: 'Índices',
+    
+    // Mensajes de estado
+    status_label: 'Estado:',
+    enabled_label: 'Activado',
+    disabled_label: 'Desactivado',
+    selected_markets: 'Mercados seleccionados:',
+    notification_note: 'Nota: Para modificar la configuración de notificaciones y mercados, abre la aplicación y ve a "Mi cuenta" y luego a "Configuración de notificaciones"',
+    
+    // Mensajes de suscripción
+    subscription_activated: '¡Suscripción activada con éxito!',
+    amount_deducted: 'Monto deducido:',
+    valid_until: 'Válido hasta:',
+    current_balance: 'Tu saldo actual:',
+    enjoy_features: '¡Disfruta de todas las funciones del bot!',
+    new_subscription: 'Nueva suscripción',
+    user_label: 'Usuario:',
+    id_label: 'ID:',
+    amount_label: 'Monto:',
+    referral_commission_label: 'Comisión de referencia:',
+    subscription_error: 'Ocurrió un error al procesar la suscripción',
+    try_again_or_contact: 'Por favor, inténtalo de nuevo o contacta con soporte.',
+    refund_notice: 'Si se dedujo algún monto, será reembolsado automáticamente.',
+    subscription_failed: 'El proceso de suscripción falló',
+    error_label: 'Error:',
+    
+    // Registro de analista
+    analyst_registration: 'Registro de analista',
+    send_following_data: 'Envía los siguientes datos (cada uno en una línea separada):',
+    name_field: 'Nombre',
+    description_field: 'Descripción',
+    monthly_price: 'Precio mensual (USDT)',
+    example_label: 'Ejemplo:',
+    invalid_data: '¡Datos inválidos!',
+    must_send_three_lines: 'Debes enviar exactamente 3 líneas:',
+    price_must_be_number: 'El precio debe ser un número válido (al menos 1 USDT)',
+    analyst_registered: '¡Registrado como analista con éxito!',
+    name_label: 'Nombre:',
+    price_label: 'Precio:',
+    per_month: '/mes',
+    users_can_subscribe: '¡Los usuarios ahora pueden suscribirse a tus servicios!',
+    new_analyst: 'Nuevo analista',
+    description_label: 'Descripción:',
+    
+    // Mensajes de servicio al cliente
+    customer_service_new_message: 'Nuevo mensaje del servicio al cliente',
+    message_label: 'Mensaje:',
+    no_username: 'Sin nombre de usuario',
+    
+    // Mensajes de activación de notificaciones
+    notifications_toggled_on: 'Notificaciones activadas',
+    notifications_toggled_off: 'Notificaciones desactivadas',
+    
+    // Mensajes de error generales
+    generic_error: 'Ocurrió un error',
+    request_processing_error: 'Ocurrió un error al procesar la solicitud',
   },
   
   de: {
@@ -531,6 +779,68 @@ const translations = {
     amount_distribution: '📊 Betragsverteilung:',
     owner_share: '• Besitzeranteil',
     referral_commission: '• Empfehlungsprovision',
+    
+    // Handelsmärkte
+    market_crypto: 'Kryptowährung',
+    market_forex: 'Forex',
+    market_stocks: 'Aktien',
+    market_commodities: 'Rohstoffe',
+    market_indices: 'Indizes',
+    
+    // Statusnachrichten
+    status_label: 'Status:',
+    enabled_label: 'Aktiviert',
+    disabled_label: 'Deaktiviert',
+    selected_markets: 'Ausgewählte Märkte:',
+    notification_note: 'Hinweis: Um Benachrichtigungs- und Markteinstellungen zu ändern, öffnen Sie die App und gehen Sie zu "Mein Konto" und dann zu "Benachrichtigungseinstellungen"',
+    
+    // Abonnement-Nachrichten
+    subscription_activated: 'Abonnement erfolgreich aktiviert!',
+    amount_deducted: 'Abgezogener Betrag:',
+    valid_until: 'Gültig bis:',
+    current_balance: 'Ihr aktueller Kontostand:',
+    enjoy_features: 'Genießen Sie alle Bot-Funktionen!',
+    new_subscription: 'Neues Abonnement',
+    user_label: 'Benutzer:',
+    id_label: 'ID:',
+    amount_label: 'Betrag:',
+    referral_commission_label: 'Empfehlungsprovision:',
+    subscription_error: 'Bei der Verarbeitung des Abonnements ist ein Fehler aufgetreten',
+    try_again_or_contact: 'Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.',
+    refund_notice: 'Wenn ein Betrag abgezogen wurde, wird er automatisch erstattet.',
+    subscription_failed: 'Abonnementvorgang fehlgeschlagen',
+    error_label: 'Fehler:',
+    
+    // Analysten-Registrierung
+    analyst_registration: 'Analysten-Registrierung',
+    send_following_data: 'Senden Sie die folgenden Daten (jeweils in einer separaten Zeile):',
+    name_field: 'Name',
+    description_field: 'Beschreibung',
+    monthly_price: 'Monatspreis (USDT)',
+    example_label: 'Beispiel:',
+    invalid_data: 'Ungültige Daten!',
+    must_send_three_lines: 'Sie müssen genau 3 Zeilen senden:',
+    price_must_be_number: 'Der Preis muss eine gültige Zahl sein (mindestens 1 USDT)',
+    analyst_registered: 'Erfolgreich als Analyst registriert!',
+    name_label: 'Name:',
+    price_label: 'Preis:',
+    per_month: '/Monat',
+    users_can_subscribe: 'Benutzer können sich jetzt für Ihre Dienste anmelden!',
+    new_analyst: 'Neuer Analyst',
+    description_label: 'Beschreibung:',
+    
+    // Kundenservice-Nachrichten
+    customer_service_new_message: 'Neue Nachricht vom Kundenservice',
+    message_label: 'Nachricht:',
+    no_username: 'Kein Benutzername',
+    
+    // Benachrichtigungs-Toggle-Nachrichten
+    notifications_toggled_on: 'Benachrichtigungen aktiviert',
+    notifications_toggled_off: 'Benachrichtigungen deaktiviert',
+    
+    // Allgemeine Fehlermeldungen
+    generic_error: 'Ein Fehler ist aufgetreten',
+    request_processing_error: 'Bei der Verarbeitung der Anfrage ist ein Fehler aufgetreten',
   },
   
   ru: {
@@ -629,6 +939,68 @@ const translations = {
     amount_distribution: '📊 Распределение суммы:',
     owner_share: '• Доля владельца',
     referral_commission: '• Реферальная комиссия',
+    
+    // Торговые рынки
+    market_crypto: 'Криптовалюта',
+    market_forex: 'Форекс',
+    market_stocks: 'Акции',
+    market_commodities: 'Товары',
+    market_indices: 'Индексы',
+    
+    // Статусные сообщения
+    status_label: 'Статус:',
+    enabled_label: 'Включено',
+    disabled_label: 'Отключено',
+    selected_markets: 'Выбранные рынки:',
+    notification_note: 'Примечание: Чтобы изменить настройки уведомлений и рынков, откройте приложение и перейдите в "Мой аккаунт", затем в "Настройки уведомлений"',
+    
+    // Сообщения о подписке
+    subscription_activated: 'Подписка успешно активирована!',
+    amount_deducted: 'Сумма списана:',
+    valid_until: 'Действительно до:',
+    current_balance: 'Ваш текущий баланс:',
+    enjoy_features: 'Наслаждайтесь всеми функциями бота!',
+    new_subscription: 'Новая подписка',
+    user_label: 'Пользователь:',
+    id_label: 'ID:',
+    amount_label: 'Сумма:',
+    referral_commission_label: 'Реферальная комиссия:',
+    subscription_error: 'Произошла ошибка при обработке подписки',
+    try_again_or_contact: 'Пожалуйста, попробуйте еще раз или обратитесь в поддержку.',
+    refund_notice: 'Если была списана какая-либо сумма, она будет возвращена автоматически.',
+    subscription_failed: 'Процесс подписки не удался',
+    error_label: 'Ошибка:',
+    
+    // Регистрация аналитика
+    analyst_registration: 'Регистрация аналитика',
+    send_following_data: 'Отправьте следующие данные (каждая в отдельной строке):',
+    name_field: 'Имя',
+    description_field: 'Описание',
+    monthly_price: 'Ежемесячная цена (USDT)',
+    example_label: 'Пример:',
+    invalid_data: 'Неверные данные!',
+    must_send_three_lines: 'Вы должны отправить ровно 3 строки:',
+    price_must_be_number: 'Цена должна быть допустимым числом (не менее 1 USDT)',
+    analyst_registered: 'Успешно зарегистрирован как аналитик!',
+    name_label: 'Имя:',
+    price_label: 'Цена:',
+    per_month: '/месяц',
+    users_can_subscribe: 'Пользователи теперь могут подписаться на ваши услуги!',
+    new_analyst: 'Новый аналитик',
+    description_label: 'Описание:',
+    
+    // Сообщения службы поддержки
+    customer_service_new_message: 'Новое сообщение от службы поддержки',
+    message_label: 'Сообщение:',
+    no_username: 'Нет имени пользователя',
+    
+    // Сообщения переключения уведомлений
+    notifications_toggled_on: 'Уведомления включены',
+    notifications_toggled_off: 'Уведомления отключены',
+    
+    // Общие сообщения об ошибках
+    generic_error: 'Произошла ошибка',
+    request_processing_error: 'Произошла ошибка при обработке запроса',
   },
   
   zh: {
@@ -727,6 +1099,68 @@ const translations = {
     amount_distribution: '📊 金额分配：',
     owner_share: '• 所有者份额',
     referral_commission: '• 推荐佣金',
+    
+    // 交易市场
+    market_crypto: '加密货币',
+    market_forex: '外汇',
+    market_stocks: '股票',
+    market_commodities: '商品',
+    market_indices: '指数',
+    
+    // 状态消息
+    status_label: '状态：',
+    enabled_label: '已启用',
+    disabled_label: '已禁用',
+    selected_markets: '选定市场：',
+    notification_note: '注意：要修改通知和市场设置，请打开应用程序，进入"我的账户"，然后进入"通知设置"',
+    
+    // 订阅消息
+    subscription_activated: '订阅成功激活！',
+    amount_deducted: '扣除金额：',
+    valid_until: '有效期至：',
+    current_balance: '您当前的余额：',
+    enjoy_features: '享受所有机器人功能！',
+    new_subscription: '新订阅',
+    user_label: '用户：',
+    id_label: 'ID：',
+    amount_label: '金额：',
+    referral_commission_label: '推荐佣金：',
+    subscription_error: '处理订阅时发生错误',
+    try_again_or_contact: '请重试或联系支持。',
+    refund_notice: '如果扣除了任何金额，将自动退款。',
+    subscription_failed: '订阅过程失败',
+    error_label: '错误：',
+    
+    // 分析师注册
+    analyst_registration: '分析师注册',
+    send_following_data: '发送以下数据（每行一个）：',
+    name_field: '名称',
+    description_field: '描述',
+    monthly_price: '月价格（USDT）',
+    example_label: '示例：',
+    invalid_data: '数据无效！',
+    must_send_three_lines: '您必须发送恰好3行：',
+    price_must_be_number: '价格必须是有效数字（至少1 USDT）',
+    analyst_registered: '成功注册为分析师！',
+    name_label: '名称：',
+    price_label: '价格：',
+    per_month: '/月',
+    users_can_subscribe: '用户现在可以订阅您的服务！',
+    new_analyst: '新分析师',
+    description_label: '描述：',
+    
+    // 客户服务消息
+    customer_service_new_message: '来自客户服务的新消息',
+    message_label: '消息：',
+    no_username: '无用户名',
+    
+    // 通知切换消息
+    notifications_toggled_on: '通知已启用',
+    notifications_toggled_off: '通知已禁用',
+    
+    // 通用错误消息
+    generic_error: '发生错误',
+    request_processing_error: '处理请求时发生错误',
   }
 };
 
