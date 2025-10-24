@@ -27,6 +27,7 @@ const { startWithdrawalScheduler } = require('./withdrawal-scheduler');
 const { safeSendMessage, safeSendPhoto, safeEditMessageText } = require('./safe-message');
 const { getDashboardData, exportReport, getCostStats, getAPIBreakdown, getOptimizationSuggestions, setAlerts } = require('./api-cost-tracker');
 const aiMonitor = require('./ai-monitor');
+const analysisFeeManager = require('./analysis-fee-manager');
 
 // Groq AI - Free and fast alternative to OpenAI
 let groq = null;
@@ -2085,6 +2086,8 @@ app.post('/api/compare-analysts', async (req, res) => {
 });
 
 app.post('/api/analyze-advanced', async (req, res) => {
+  let transactionId = null;
+  
   try {
     const { user_id, symbol, timeframe, market_type, trading_type, analysis_type, payment_mode, init_data } = req.body;
     
@@ -2092,13 +2095,15 @@ app.post('/api/analyze-advanced', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    let transactionId = null;
-    const analysisFee = 0.1;
-    
     // التحقق من نظام الدفع
     if (payment_mode === 'per_analysis') {
-      // نظام الدفع لكل تحليل - خصم 0.1 USDT
-      const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, analysis_type || 'advanced', market_type);
+      // خصم فوري باستخدام النظام المحسّن
+      const feeResult = await analysisFeeManager.deductFee(
+        user_id, 
+        symbol, 
+        analysis_type || 'advanced', 
+        market_type
+      );
       
       if (!feeResult.success) {
         return res.json({ 
@@ -2110,7 +2115,7 @@ app.post('/api/analyze-advanced', async (req, res) => {
       
       transactionId = feeResult.transaction_id;
     } else {
-      // نظام الاشتراك الشهري (النظام الافتراضي)
+      // نظام الاشتراك الشهري
       const subscription = await db.checkSubscription(user_id);
       if (!subscription.active) {
         let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
@@ -2139,7 +2144,7 @@ app.post('/api/analyze-advanced', async (req, res) => {
     
     if (!candles || candles.length < 50) {
       if (payment_mode === 'per_analysis' && transactionId) {
-        await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'بيانات غير كافية للتحليل');
+        await analysisFeeManager.refundOnFailure(user_id, transactionId, 'بيانات غير كافية للتحليل');
       }
       return res.json({ success: false, error: 'بيانات غير كافية للتحليل' });
     }
@@ -2149,30 +2154,24 @@ app.post('/api/analyze-advanced', async (req, res) => {
     
     // تحديد نوع التحليل المطلوب
     let indicators = [];
-    let analysisResult = {};
     
     switch(analysis_type) {
       case 'complete':
-        // تحليل شامل - جميع المؤشرات
         indicators = [
           'RSI', 'MACD', 'EMA', 'SMA', 'BBANDS', 'ATR', 'STOCH', 'ADX', 'VOLUME',
           'FIBONACCI', 'CANDLE_PATTERNS', 'HEAD_SHOULDERS', 'SUPPORT_RESISTANCE'
         ];
         break;
       case 'fibonacci':
-        // تحليل فيبوناتشي فقط
         indicators = ['FIBONACCI', 'SUPPORT_RESISTANCE'];
         break;
       case 'patterns':
-        // أنماط الشموع فقط
         indicators = ['CANDLE_PATTERNS', 'HEAD_SHOULDERS'];
         break;
       case 'indicators':
-        // المؤشرات الفنية الأساسية
         indicators = ['RSI', 'MACD', 'EMA', 'SMA', 'BBANDS', 'ATR', 'STOCH', 'ADX', 'VOLUME'];
         break;
       default:
-        // افتراضي - تحليل شامل
         indicators = [
           'RSI', 'MACD', 'EMA', 'SMA', 'BBANDS', 'ATR', 'STOCH', 'ADX', 'VOLUME',
           'FIBONACCI', 'CANDLE_PATTERNS', 'SUPPORT_RESISTANCE'
@@ -2182,22 +2181,15 @@ app.post('/api/analyze-advanced', async (req, res) => {
     const recommendation = analysis.getTradeRecommendationWithMarketType(market_type, trading_type || 'spot');
     const allIndicators = analysis.getAnalysis(indicators);
     
-    // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
+    // فحص الجودة واسترجاع تلقائي إذا كانت منخفضة
     if (payment_mode === 'per_analysis' && transactionId) {
-      const agreementPercentageStr = recommendation.scores?.agreementPercentage || '0%';
-      const agreementPercentage = parseFloat(agreementPercentageStr.replace('%', ''));
+      const qualityResult = await analysisFeeManager.checkQualityAndRefund(
+        user_id, 
+        recommendation, 
+        transactionId
+      );
       
-      if (agreementPercentage < 60) {
-        await db.refundAnalysisFee(
-          user_id, 
-          analysisFee, 
-          transactionId, 
-          `جودة الإشارة منخفضة (${agreementPercentage.toFixed(1)}%) - تم استرجاع المبلغ`
-        );
-        console.log(`💰 تم استرجاع ${analysisFee} USDT للمستخدم ${user_id} - جودة الإشارة: ${agreementPercentage.toFixed(1)}%`);
-      } else {
-        console.log(`✅ إشارة جيدة (${agreementPercentage.toFixed(1)}%) - لا استرجاع للمستخدم ${user_id}`);
-      }
+      console.log(`📊 جودة الإشارة: ${qualityResult.quality}% - ${qualityResult.reason}`);
     }
     
     res.json({
@@ -2213,7 +2205,7 @@ app.post('/api/analyze-advanced', async (req, res) => {
     console.error('Advanced Analysis API Error:', error);
     
     if (payment_mode === 'per_analysis' && transactionId) {
-      await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'Analysis failed: ' + error.message);
+      await analysisFeeManager.refundOnFailure(user_id, transactionId, error.message);
     }
     
     res.json({ success: false, error: error.message });
@@ -2221,6 +2213,8 @@ app.post('/api/analyze-advanced', async (req, res) => {
 });
 
 app.post('/api/analyze-ultra', async (req, res) => {
+  let transactionId = null;
+  
   try {
     const { user_id, symbol, timeframe, market_type, trading_type, payment_mode, init_data } = req.body;
     
@@ -2228,12 +2222,9 @@ app.post('/api/analyze-ultra', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
-    let transactionId = null;
-    const analysisFee = 0.1;
-    
     // التحقق من نظام الدفع
     if (payment_mode === 'per_analysis') {
-      const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'ultra', market_type);
+      const feeResult = await analysisFeeManager.deductFee(user_id, symbol, 'ultra', market_type);
       
       if (!feeResult.success) {
         return res.json({ 
@@ -2273,7 +2264,7 @@ app.post('/api/analyze-ultra', async (req, res) => {
     
     if (!candles || candles.length < 50) {
       if (payment_mode === 'per_analysis' && transactionId) {
-        await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'بيانات غير كافية للتحليل المتقدم - يجب توفر 50 شمعة على الأقل');
+        await analysisFeeManager.refundOnFailure(user_id, transactionId, 'بيانات غير كافية للتحليل المتقدم - يجب توفر 50 شمعة على الأقل');
       }
       return res.json({ success: false, error: 'بيانات غير كافية للتحليل المتقدم - يجب توفر 50 شمعة على الأقل' });
     }
@@ -2283,22 +2274,10 @@ app.post('/api/analyze-ultra', async (req, res) => {
     
     const ultraRecommendation = ultraAnalysis.getUltraRecommendation(market_type, trading_type || 'spot', timeframe);
     
-    // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
+    // فحص الجودة واسترجاع تلقائي إذا كانت منخفضة
     if (payment_mode === 'per_analysis' && transactionId) {
-      const agreementPercentageStr = ultraRecommendation.scores?.agreementPercentage || '0%';
-      const agreementPercentage = parseFloat(agreementPercentageStr.replace('%', ''));
-      
-      if (agreementPercentage < 60) {
-        await db.refundAnalysisFee(
-          user_id, 
-          analysisFee, 
-          transactionId, 
-          `جودة الإشارة منخفضة (${agreementPercentage.toFixed(1)}%) - تم استرجاع المبلغ`
-        );
-        console.log(`💰 تم استرجاع ${analysisFee} USDT للمستخدم ${user_id} - جودة الإشارة: ${agreementPercentage.toFixed(1)}%`);
-      } else {
-        console.log(`✅ إشارة جيدة (${agreementPercentage.toFixed(1)}%) - لا استرجاع للمستخدم ${user_id}`);
-      }
+      const qualityResult = await analysisFeeManager.checkQualityAndRefund(user_id, ultraRecommendation, transactionId);
+      console.log(`📊 جودة الإشارة: ${qualityResult.quality}% - ${qualityResult.reason}`);
     }
     
     res.json({
@@ -2309,7 +2288,7 @@ app.post('/api/analyze-ultra', async (req, res) => {
     console.error('Ultra Analysis API Error:', error);
     
     if (payment_mode === 'per_analysis' && transactionId) {
-      await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'Analysis failed: ' + error.message);
+      await analysisFeeManager.refundOnFailure(user_id, transactionId, error.message);
     }
     
     res.json({ success: false, error: error.message });
@@ -2325,11 +2304,10 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
     }
     
     let transactionId = null;
-    const analysisFee = 0.1;
     
     // التحقق من نظام الدفع
     if (payment_mode === 'per_analysis') {
-      const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'zero-reversal', market_type);
+      const feeResult = await analysisFeeManager.deductFee(user_id, symbol, 'zero-reversal', market_type);
       
       if (!feeResult.success) {
         return res.json({ 
@@ -2380,7 +2358,7 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
       }
       
       if (payment_mode === 'per_analysis' && transactionId) {
-        await db.refundAnalysisFee(user_id, analysisFee, transactionId, errorMessage);
+        await analysisFeeManager.refundOnFailure(user_id, transactionId, errorMessage);
       }
       return res.json({ success: false, error: errorMessage });
     }
@@ -2392,20 +2370,8 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
     
     // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
     if (payment_mode === 'per_analysis' && transactionId) {
-      const agreementPercentageStr = zeroReversalRecommendation.scores?.agreementPercentage || '0%';
-      const agreementPercentage = parseFloat(agreementPercentageStr.replace('%', ''));
-      
-      if (agreementPercentage < 60) {
-        await db.refundAnalysisFee(
-          user_id, 
-          analysisFee, 
-          transactionId, 
-          `جودة الإشارة منخفضة (${agreementPercentage.toFixed(1)}%) - تم استرجاع المبلغ`
-        );
-        console.log(`💰 تم استرجاع ${analysisFee} USDT للمستخدم ${user_id} - جودة الإشارة: ${agreementPercentage.toFixed(1)}%`);
-      } else {
-        console.log(`✅ إشارة جيدة (${agreementPercentage.toFixed(1)}%) - لا استرجاع للمستخدم ${user_id}`);
-      }
+      const qualityResult = await analysisFeeManager.checkQualityAndRefund(user_id, zeroReversalRecommendation, transactionId);
+      console.log(`📊 جودة الإشارة: ${qualityResult.quality}% - ${qualityResult.reason}`);
     }
     
     res.json({
@@ -2416,7 +2382,7 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
     console.error('Zero Reversal Analysis API Error:', error);
     
     if (payment_mode === 'per_analysis' && transactionId) {
-      await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'Analysis failed: ' + error.message);
+      await analysisFeeManager.refundOnFailure(user_id, transactionId, error.message);
     }
     
     res.json({ success: false, error: error.message });
@@ -2432,11 +2398,10 @@ app.post('/api/analyze-v1-pro', async (req, res) => {
     }
     
     let transactionId = null;
-    const analysisFee = 0.1;
     
     // التحقق من نظام الدفع
     if (payment_mode === 'per_analysis') {
-      const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'v1-pro', market_type);
+      const feeResult = await analysisFeeManager.deductFee(user_id, symbol, 'v1-pro', market_type);
       
       if (!feeResult.success) {
         return res.json({ 
@@ -2486,7 +2451,7 @@ app.post('/api/analyze-v1-pro', async (req, res) => {
       }
       
       if (payment_mode === 'per_analysis' && transactionId) {
-        await db.refundAnalysisFee(user_id, analysisFee, transactionId, errorMessage);
+        await analysisFeeManager.refundOnFailure(user_id, transactionId, errorMessage);
       }
       return res.json({ success: false, error: errorMessage });
     }
@@ -2518,20 +2483,8 @@ app.post('/api/analyze-v1-pro', async (req, res) => {
     
     // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
     if (payment_mode === 'per_analysis' && transactionId) {
-      const agreementPercentageStr = v1ProResult.scores?.agreementPercentage || '0%';
-      const agreementPercentage = parseFloat(agreementPercentageStr.replace('%', ''));
-      
-      if (agreementPercentage < 60) {
-        await db.refundAnalysisFee(
-          user_id, 
-          analysisFee, 
-          transactionId, 
-          `جودة الإشارة منخفضة (${agreementPercentage.toFixed(1)}%) - تم استرجاع المبلغ`
-        );
-        console.log(`💰 تم استرجاع ${analysisFee} USDT للمستخدم ${user_id} - جودة الإشارة: ${agreementPercentage.toFixed(1)}%`);
-      } else {
-        console.log(`✅ إشارة جيدة (${agreementPercentage.toFixed(1)}%) - لا استرجاع للمستخدم ${user_id}`);
-      }
+      const qualityResult = await analysisFeeManager.checkQualityAndRefund(user_id, v1ProResult, transactionId);
+      console.log(`📊 جودة الإشارة: ${qualityResult.quality}% - ${qualityResult.reason}`);
     }
     
     res.json({
@@ -2542,7 +2495,7 @@ app.post('/api/analyze-v1-pro', async (req, res) => {
     console.error('V1 PRO Analysis API Error:', error);
     
     if (payment_mode === 'per_analysis' && transactionId) {
-      await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'Analysis failed: ' + error.message);
+      await analysisFeeManager.refundOnFailure(user_id, transactionId, error.message);
     }
     
     res.json({ success: false, error: error.message });
@@ -2558,11 +2511,10 @@ app.post('/api/analyze-pump', async (req, res) => {
     }
     
     let transactionId = null;
-    const analysisFee = 0.1;
     
     // التحقق من نظام الدفع
     if (payment_mode === 'per_analysis') {
-      const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'pump', market_type);
+      const feeResult = await analysisFeeManager.deductFee(user_id, symbol, 'pump', market_type);
       
       if (!feeResult.success) {
         return res.json({ 
@@ -2594,7 +2546,7 @@ app.post('/api/analyze-pump', async (req, res) => {
     
     if (market_type !== 'crypto') {
       if (payment_mode === 'per_analysis' && transactionId) {
-        await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'تحليل Pump متاح للعملات الرقمية فقط');
+        await analysisFeeManager.refundOnFailure(user_id, transactionId, 'تحليل Pump متاح للعملات الرقمية فقط');
       }
       return res.json({ success: false, error: 'تحليل Pump متاح للعملات الرقمية فقط' });
     }
@@ -2603,7 +2555,7 @@ app.post('/api/analyze-pump', async (req, res) => {
     
     if (!candles || candles.length < 100) {
       if (payment_mode === 'per_analysis' && transactionId) {
-        await db.refundAnalysisFee(user_id, analysisFee, transactionId, `بيانات غير كافية لتحليل Pump - متوفر ${candles?.length || 0} شمعة فقط`);
+        await analysisFeeManager.refundOnFailure(user_id, transactionId, `بيانات غير كافية لتحليل Pump - متوفر ${candles?.length || 0} شمعة فقط`);
       }
       return res.json({ success: false, error: `بيانات غير كافية لتحليل Pump - متوفر ${candles?.length || 0} شمعة فقط` });
     }
@@ -2618,20 +2570,8 @@ app.post('/api/analyze-pump', async (req, res) => {
     
     // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
     if (payment_mode === 'per_analysis' && transactionId) {
-      const agreementPercentageStr = pumpPotential.scores?.agreementPercentage || pumpPotential.pumpScore || '0%';
-      const agreementPercentage = parseFloat(agreementPercentageStr.toString().replace('%', ''));
-      
-      if (agreementPercentage < 60) {
-        await db.refundAnalysisFee(
-          user_id, 
-          analysisFee, 
-          transactionId, 
-          `جودة الإشارة منخفضة (${agreementPercentage.toFixed(1)}%) - تم استرجاع المبلغ`
-        );
-        console.log(`💰 تم استرجاع ${analysisFee} USDT للمستخدم ${user_id} - جودة الإشارة: ${agreementPercentage.toFixed(1)}%`);
-      } else {
-        console.log(`✅ إشارة جيدة (${agreementPercentage.toFixed(1)}%) - لا استرجاع للمستخدم ${user_id}`);
-      }
+      const qualityResult = await analysisFeeManager.checkQualityAndRefund(user_id, pumpPotential, transactionId);
+      console.log(`📊 جودة الإشارة: ${qualityResult.quality}% - ${qualityResult.reason}`);
     }
     
     res.json({
@@ -2642,7 +2582,7 @@ app.post('/api/analyze-pump', async (req, res) => {
     console.error('Pump Analysis API Error:', error);
     
     if (payment_mode === 'per_analysis' && transactionId) {
-      await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'Analysis failed: ' + error.message);
+      await analysisFeeManager.refundOnFailure(user_id, transactionId, error.message);
     }
     
     res.json({ success: false, error: error.message });
@@ -2658,11 +2598,10 @@ app.post('/api/analyze-master', async (req, res) => {
     }
     
     let transactionId = null;
-    const analysisFee = 0.1;
     
     // التحقق من نظام الدفع
     if (payment_mode === 'per_analysis') {
-      const feeResult = await db.deductAnalysisFee(user_id, analysisFee, symbol, 'master', market_type);
+      const feeResult = await analysisFeeManager.deductFee(user_id, symbol, 'master', market_type);
       
       if (!feeResult.success) {
         return res.json({ 
@@ -2712,7 +2651,7 @@ app.post('/api/analyze-master', async (req, res) => {
       }
       
       if (payment_mode === 'per_analysis' && transactionId) {
-        await db.refundAnalysisFee(user_id, analysisFee, transactionId, errorMessage);
+        await analysisFeeManager.refundOnFailure(user_id, transactionId, errorMessage);
       }
       return res.json({ success: false, error: errorMessage });
     }
@@ -2724,20 +2663,8 @@ app.post('/api/analyze-master', async (req, res) => {
     
     // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
     if (payment_mode === 'per_analysis' && transactionId) {
-      const agreementPercentageStr = masterResult.scores?.agreementPercentage || '0%';
-      const agreementPercentage = parseFloat(agreementPercentageStr.replace('%', ''));
-      
-      if (agreementPercentage < 60) {
-        await db.refundAnalysisFee(
-          user_id, 
-          analysisFee, 
-          transactionId, 
-          `جودة الإشارة منخفضة (${agreementPercentage.toFixed(1)}%) - تم استرجاع المبلغ`
-        );
-        console.log(`💰 تم استرجاع ${analysisFee} USDT للمستخدم ${user_id} - جودة الإشارة: ${agreementPercentage.toFixed(1)}%`);
-      } else {
-        console.log(`✅ إشارة جيدة (${agreementPercentage.toFixed(1)}%) - لا استرجاع للمستخدم ${user_id}`);
-      }
+      const qualityResult = await analysisFeeManager.checkQualityAndRefund(user_id, masterResult, transactionId);
+      console.log(`📊 جودة الإشارة: ${qualityResult.quality}% - ${qualityResult.reason}`);
     }
     
     res.json({
@@ -2748,7 +2675,7 @@ app.post('/api/analyze-master', async (req, res) => {
     console.error('Master Analysis API Error:', error);
     
     if (payment_mode === 'per_analysis' && transactionId) {
-      await db.refundAnalysisFee(user_id, analysisFee, transactionId, 'Analysis failed: ' + error.message);
+      await analysisFeeManager.refundOnFailure(user_id, transactionId, error.message);
     }
     
     res.json({ success: false, error: error.message });
