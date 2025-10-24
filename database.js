@@ -794,7 +794,7 @@ async function getUserSettings(userId) {
 }
 
 async function getAllUsers(options = {}) {
-  const { page, limit, paginated = false } = options;
+  const { page, limit, paginated = false, unsafe_load_all = false } = options;
   
   if (paginated && page) {
     return await getPaginatedResults('users', {}, { 
@@ -804,7 +804,15 @@ async function getAllUsers(options = {}) {
     });
   }
   
-  return await db.collection('users').find().sort({ created_at: -1 }).toArray();
+  if (unsafe_load_all) {
+    logger.warn('⚠️ getAllUsers called with unsafe_load_all=true - this may cause memory issues with large datasets');
+    return await db.collection('users').find().sort({ created_at: -1 }).toArray();
+  }
+  
+  return await safeFind('users', {}, { 
+    sort: { created_at: -1 },
+    limit: limit || 10000
+  });
 }
 
 async function getUserTransactions(userId, options = {}) {
@@ -991,7 +999,7 @@ async function getAnalystByUserId(userId) {
 }
 
 async function getAllAnalysts(options = {}) {
-  const { page, limit = 50, paginated = false } = options;
+  const { page, limit = 50, paginated = false, unsafe_load_all = false } = options;
   
   const pipeline = [
     { $match: { is_active: true } },
@@ -1027,6 +1035,12 @@ async function getAllAnalysts(options = {}) {
     };
   }
   
+  if (unsafe_load_all) {
+    logger.warn('⚠️ getAllAnalysts called with unsafe_load_all=true - this may cause memory issues with large datasets');
+    return await db.collection('analysts').aggregate(pipeline).toArray();
+  }
+  
+  pipeline.push({ $limit: 5000 });
   return await db.collection('analysts').aggregate(pipeline).toArray();
 }
 
