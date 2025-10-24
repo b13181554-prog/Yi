@@ -2228,59 +2228,61 @@ async function deductAnalysisFee(userId, feeAmount, symbol, analysisType, market
   try {
     logger.info(`Deducting ${feeAmount} USDT from user ${userId}`);
     
-    const user = await db.collection('users').findOne({ user_id: userId });
-    
-    if (!user) {
-      logger.warn(`User ${userId} not found for fee deduction`);
-      return { 
-        success: false, 
-        error: 'المستخدم غير موجود' 
-      };
-    }
-    
-    const currentBalance = parseFloat(user.balance) || 0;
-    const requiredAmount = parseFloat(feeAmount);
-    
-    logger.info(`Balance check: Current=${currentBalance.toFixed(10)}, Required=${requiredAmount}, Sufficient=${currentBalance >= requiredAmount}`);
-    
-    if (currentBalance < requiredAmount) {
-      logger.warn(`Insufficient balance for user ${userId}. Current: ${currentBalance}, Required: ${requiredAmount}`);
-      return { 
-        success: false, 
-        error: `الرصيد غير كافٍ. الرصيد الحالي: ${currentBalance.toFixed(2)} USDT، المطلوب: ${requiredAmount} USDT` 
-      };
-    }
-    
-    const newBalance = Math.max(0, currentBalance - requiredAmount);
-    const roundedNewBalance = Math.round(newBalance * 100000000) / 100000000;
-    
+    // استخدام العملية الذرية مع $inc للخصم مباشرة
+    // هذا يضمن عدم وجود مشاكل مع التزامن أو دقة الأرقام العشرية
     const result = await db.collection('users').findOneAndUpdate(
       { 
         user_id: userId,
-        balance: user.balance
+        balance: { $gte: feeAmount }
       },
       { 
-        $set: { balance: roundedNewBalance } 
+        $inc: { balance: -feeAmount } 
       },
       { 
         returnDocument: 'after'
       }
     );
     
-    if (!result || !result.value) {
-      logger.error(`Failed to update balance for user ${userId} - concurrent modification detected`);
+    if (!result) {
+      // فشل التحديث - إما المستخدم غير موجود أو الرصيد غير كافٍ
+      const user = await db.collection('users').findOne({ user_id: userId });
+      
+      if (!user) {
+        logger.warn(`User ${userId} not found for fee deduction`);
+        return { 
+          success: false, 
+          error: 'المستخدم غير موجود' 
+        };
+      }
+      
+      const currentBalance = parseFloat(user.balance) || 0;
+      logger.warn(`Insufficient balance for user ${userId}. Current: ${currentBalance.toFixed(8)}, Required: ${feeAmount}`);
       return { 
         success: false, 
-        error: 'فشل خصم الرسوم بسبب تعديل متزامن. يرجى المحاولة مرة أخرى.' 
+        error: `الرصيد غير كافٍ. الرصيد الحالي: ${currentBalance.toFixed(2)} USDT، المطلوب: ${feeAmount} USDT` 
       };
+    }
+    
+    // الحصول على الرصيد الجديد بعد الخصم (MongoDB driver يعيد المستند مباشرة)
+    let balanceAfter = parseFloat(result.balance) || 0;
+    const balanceBefore = balanceAfter + feeAmount;
+    
+    // تقريب الرصيد الجديد لتجنب مشاكل الدقة العشرية
+    const roundedBalance = Math.round(balanceAfter * 100000000) / 100000000;
+    if (Math.abs(balanceAfter - roundedBalance) > 0.00000001) {
+      await db.collection('users').updateOne(
+        { user_id: userId },
+        { $set: { balance: roundedBalance } }
+      );
+      balanceAfter = roundedBalance;
     }
     
     const transaction = await db.collection('transactions').insertOne({
       user_id: userId,
       type: 'analysis_fee',
       amount: -feeAmount,
-      balance_before: result.value.balance + feeAmount,
-      balance_after: result.value.balance,
+      balance_before: balanceBefore,
+      balance_after: balanceAfter,
       symbol: symbol,
       analysis_type: analysisType,
       market_type: marketType,
@@ -2293,13 +2295,14 @@ async function deductAnalysisFee(userId, feeAmount, symbol, analysisType, market
     logger.info(`✅ Fee deducted successfully in ${duration}ms`, {
       userId,
       amount: feeAmount,
-      newBalance: result.value.balance,
+      balanceBefore,
+      balanceAfter,
       transactionId: transaction.insertedId
     });
     
     return { 
       success: true, 
-      new_balance: result.value.balance,
+      new_balance: balanceAfter,
       fee_deducted: feeAmount,
       transaction_id: transaction.insertedId,
       duration_ms: duration
