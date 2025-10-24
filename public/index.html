@@ -62,28 +62,28 @@
                 <!-- نظام الدفع -->
                 <div class="payment-mode-selector" style="margin: 20px 0; padding: 15px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                     <div style="text-align: center; margin-bottom: 15px;">
-                        <span style="font-weight: bold; font-size: 16px; color: #333;">💰 اختر نظام الدفع</span>
+                        <span style="font-weight: bold; font-size: 16px; color: #333;" data-i18n="payment_mode_select_title">💰 اختر نظام الدفع</span>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <button id="subscription-mode-btn" class="payment-mode-btn" onclick="selectPaymentMode('subscription')" style="padding: 15px; border: 2px solid #ddd; border-radius: 10px; background: white; color: #333; font-weight: bold; cursor: pointer; transition: all 0.3s;">
                             <div style="font-size: 24px; margin-bottom: 5px;">📅</div>
-                            <div style="font-size: 14px;">اشتراك شهري</div>
-                            <div style="font-size: 11px; margin-top: 5px; opacity: 0.7;">تحليلات غير محدودة</div>
+                            <div style="font-size: 14px;" data-i18n="payment_mode_subscription">اشتراك شهري</div>
+                            <div style="font-size: 11px; margin-top: 5px; opacity: 0.7;" data-i18n="payment_mode_unlimited">تحليلات غير محدودة</div>
                         </button>
                         <button id="per-analysis-mode-btn" class="payment-mode-btn active" onclick="selectPaymentMode('per_analysis')" style="padding: 15px; border: 3px solid #10b981; border-radius: 10px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-weight: bold; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.4);">
                             <div style="font-size: 24px; margin-bottom: 5px;">💵</div>
-                            <div style="font-size: 14px;">دفع لكل تحليل</div>
-                            <div style="font-size: 11px; margin-top: 5px; opacity: 0.9; font-weight: bold;">0.1 USDT للتحليل</div>
+                            <div style="font-size: 14px;" data-i18n="payment_mode_per_analysis">دفع لكل تحليل</div>
+                            <div style="font-size: 11px; margin-top: 5px; opacity: 0.9; font-weight: bold;" data-i18n="payment_mode_price_per_analysis">0.1 USDT للتحليل</div>
                         </button>
                     </div>
                     <div id="payment-mode-warning" style="display: block; margin-top: 15px; padding: 12px; background: #dbeafe; border-right: 4px solid #3b82f6; border-radius: 8px; color: #1e40af; font-size: 13px;">
                         <div style="margin-bottom: 8px;">
-                            ✅ <strong>النظام الحالي: الخصم الفوري</strong>
+                            ✅ <strong data-i18n="payment_mode_current">النظام الحالي: الخصم الفوري</strong>
                         </div>
                         <div style="font-size: 12px; line-height: 1.6;">
-                            💰 <strong>الخصم:</strong> يتم خصم 0.1 USDT عند الضغط على زر التحليل<br>
-                            ♻️ <strong>الاسترجاع:</strong> يتم استرجاع المبلغ تلقائياً إذا كانت جودة الإشارة أقل من 60%<br>
-                            ⚠️ <strong>إشارة جيدة (≥60%):</strong> لا يتم الاسترجاع - أنت تدفع مقابل إشارة قوية
+                            💰 <strong data-i18n="payment_mode_deduction_label">الخصم:</strong> <span data-i18n="payment_mode_deduction_text">يتم خصم 0.1 USDT عند الضغط على زر التحليل</span><br>
+                            ♻️ <strong data-i18n="payment_mode_refund_label">الاسترجاع:</strong> <span data-i18n="payment_mode_refund_text">يتم استرجاع المبلغ تلقائياً إذا كانت جودة الإشارة أقل من 60%</span><br>
+                            ⚠️ <strong data-i18n="payment_mode_good_signal_label">إشارة جيدة (≥60%):</strong> <span data-i18n="payment_mode_good_signal_text">لا يتم الاسترجاع - أنت تدفع مقابل إشارة قوية</span>
                         </div>
                     </div>
                 </div>
@@ -149,13 +149,13 @@
                             </div>
                             <div class="analysis-type-card" data-type="v1-pro" onclick="selectAnalysisType('v1-pro', event)" style="border: 3px solid #00FF00; background: linear-gradient(135deg, #00FF0020 0%, #00CC0020 100%);">
                                 <span class="type-icon">🤖</span>
-                                <span class="type-label">V1 PRO AI</span>
-                                <small style="font-size: 10px; color: #00AA00; display: block; margin-top: 2px; font-weight: bold;">ذكاء اصطناعي + مشاعر</small>
+                                <span class="type-label" data-i18n="analysis_v1_pro">V1 PRO AI</span>
+                                <small style="font-size: 10px; color: #00AA00; display: block; margin-top: 2px; font-weight: bold;" data-i18n="analysis_v1_pro_desc">ذكاء اصطناعي + مشاعر</small>
                             </div>
                             <div class="analysis-type-card" data-type="master" onclick="selectAnalysisType('master', event)" style="border: 3px solid #FFD700; background: linear-gradient(135deg, #667eea30 0%, #764ba230 100%); box-shadow: 0 4px 15px rgba(255,215,0,0.4);">
                                 <span class="type-icon">👑</span>
-                                <span class="type-label">MASTER ANALYSIS</span>
-                                <small style="font-size: 10px; color: #667eea; display: block; margin-top: 2px; font-weight: bold;">التحليل الأسطوري الشامل</small>
+                                <span class="type-label" data-i18n="analysis_master">MASTER ANALYSIS</span>
+                                <small style="font-size: 10px; color: #667eea; display: block; margin-top: 2px; font-weight: bold;" data-i18n="analysis_master_desc">التحليل الأسطوري الشامل</small>
                             </div>
                             <div class="analysis-type-card" data-type="fibonacci" onclick="selectAnalysisType('fibonacci', event)">
                                 <span class="type-icon">🎯</span>
@@ -317,13 +317,13 @@
 
                 <div id="all-analysts-tab" class="analysts-tab-content active">
                     <div id="analyst-register-card" class="info-card" style="margin-bottom: 20px;">
-                        <h3>💼 هل تريد أن تصبح محلل؟</h3>
-                        <p>يمكنك التسجيل كمحلل والحصول على دخل شهري من المشتركين!</p>
-                        <button class="submit-btn" onclick="showAnalystRegistrationForm()">التسجيل كمحلل</button>
+                        <h3 data-i18n="analyst_register_title">💼 هل تريد أن تصبح محلل؟</h3>
+                        <p data-i18n="analyst_register_desc">يمكنك التسجيل كمحلل والحصول على دخل شهري من المشتركين!</p>
+                        <button class="submit-btn" onclick="showAnalystRegistrationForm()" data-i18n="analyst_register_button">التسجيل كمحلل</button>
                     </div>
 
                     <div id="my-analyst-profile" class="info-card" style="margin-bottom: 20px; display: none;">
-                        <h3>👨‍💼 ملفك كمحلل</h3>
+                        <h3 data-i18n="analyst_profile_title">👨‍💼 ملفك كمحلل</h3>
                         <div style="margin: 15px 0;">
                             <div style="margin-bottom: 10px;">
                                 <strong>الاسم:</strong> <span id="my-analyst-name">-</span>
@@ -430,7 +430,7 @@
 
                     <div id="analyst-registration-form" style="display: none;">
                         <div class="info-card">
-                            <h3 id="analyst-form-title">📝 نموذج التسجيل كمحلل</h3>
+                            <h3 id="analyst-form-title" data-i18n="analyst_registration_form_title">📝 نموذج التسجيل كمحلل</h3>
                             
                             <div style="margin: 20px 0; padding: 15px; background: #e3f2fd; border-right: 4px solid #2196F3; border-radius: 8px;">
                                 <p style="margin: 0; color: #1976D2; font-size: 14px;">
@@ -446,23 +446,23 @@
                                 <div style="margin-bottom: 15px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
                                     <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
                                         <input type="checkbox" id="market-crypto" value="crypto" style="margin-left: 10px; width: 18px; height: 18px;">
-                                        <span>💎 عملات رقمية</span>
+                                        <span data-i18n="market_crypto_short">💎 عملات رقمية</span>
                                     </label>
                                     <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
                                         <input type="checkbox" id="market-forex" value="forex" style="margin-left: 10px; width: 18px; height: 18px;">
-                                        <span>💱 فوركس</span>
+                                        <span data-i18n="market_forex_short">💱 فوركس</span>
                                     </label>
                                     <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
                                         <input type="checkbox" id="market-stocks" value="stocks" style="margin-left: 10px; width: 18px; height: 18px;">
-                                        <span>📈 أسهم</span>
+                                        <span data-i18n="market_stocks_short">📈 أسهم</span>
                                     </label>
                                     <label style="display: flex; align-items: center; margin-bottom: 10px; cursor: pointer;">
                                         <input type="checkbox" id="market-commodities" value="commodities" style="margin-left: 10px; width: 18px; height: 18px;">
-                                        <span>🛢️ سلع</span>
+                                        <span data-i18n="market_commodities_short">🛢️ سلع</span>
                                     </label>
                                     <label style="display: flex; align-items: center; cursor: pointer;">
                                         <input type="checkbox" id="market-indices" value="indices" style="margin-left: 10px; width: 18px; height: 18px;">
-                                        <span>📊 مؤشرات</span>
+                                        <span data-i18n="market_indices_short">📊 مؤشرات</span>
                                     </label>
                                 </div>
                                 
@@ -656,8 +656,8 @@
                     
                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: #f8f9fa; border-radius: 8px; margin-bottom: 15px;">
                         <div>
-                            <strong style="display: block; margin-bottom: 5px;">تفعيل الإشعارات</strong>
-                            <span style="color: #666; font-size: 13px;">تلقي إشعارات الصفقات القوية</span>
+                            <strong style="display: block; margin-bottom: 5px;" data-i18n="enable_notifications">تفعيل الإشعارات</strong>
+                            <span style="color: #666; font-size: 13px;" data-i18n="notification_desc">تلقي إشعارات الصفقات القوية</span>
                         </div>
                         <label class="switch">
                             <input type="checkbox" id="notifications-toggle" onchange="toggleNotifications()">
@@ -670,26 +670,26 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                             <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
                                 <input type="checkbox" class="market-checkbox" value="crypto" style="margin-left: 10px;" checked>
-                                <span>💎 عملات رقمية</span>
+                                <span data-i18n="market_crypto_short">💎 عملات رقمية</span>
                             </label>
                             <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
                                 <input type="checkbox" class="market-checkbox" value="forex" style="margin-left: 10px;" checked>
-                                <span>💱 فوركس</span>
+                                <span data-i18n="market_forex_short">💱 فوركس</span>
                             </label>
                             <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
                                 <input type="checkbox" class="market-checkbox" value="stocks" style="margin-left: 10px;" checked>
-                                <span>📈 أسهم</span>
+                                <span data-i18n="market_stocks_short">📈 أسهم</span>
                             </label>
                             <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
                                 <input type="checkbox" class="market-checkbox" value="commodities" style="margin-left: 10px;" checked>
-                                <span>🥇 سلع</span>
+                                <span data-i18n="market_commodities_short">🥇 سلع</span>
                             </label>
                             <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
                                 <input type="checkbox" class="market-checkbox" value="indices" style="margin-left: 10px;" checked>
-                                <span>📊 مؤشرات</span>
+                                <span data-i18n="market_indices_short">📊 مؤشرات</span>
                             </label>
                         </div>
-                        <button onclick="saveNotificationMarkets()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; font-weight: bold;">حفظ التفضيلات</button>
+                        <button onclick="saveNotificationMarkets()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; font-weight: bold;" data-i18n="save_preferences">حفظ التفضيلات</button>
                     </div>
                 </div>
 
@@ -733,7 +733,7 @@
                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px; background: #f8f9fa; border-radius: 8px; margin: 15px 0;">
                         <div>
                             <strong style="display: block; margin-bottom: 5px;" data-i18n="enable_notifications">تفعيل الإشعارات</strong>
-                            <span style="color: #666; font-size: 13px;">تلقي إشعارات الصفقات القوية</span>
+                            <span style="color: #666; font-size: 13px;" data-i18n="notification_desc">تلقي إشعارات الصفقات القوية</span>
                         </div>
                         <label class="switch">
                             <input type="checkbox" id="more-notifications-toggle" onchange="toggleNotificationsFromMore()">
@@ -746,23 +746,23 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                             <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
                                 <input type="checkbox" class="more-market-checkbox" value="crypto" style="margin-left: 10px;" checked>
-                                <span>💎 عملات رقمية</span>
+                                <span data-i18n="market_crypto_short">💎 عملات رقمية</span>
                             </label>
                             <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
                                 <input type="checkbox" class="more-market-checkbox" value="forex" style="margin-left: 10px;" checked>
-                                <span>💱 فوركس</span>
+                                <span data-i18n="market_forex_short">💱 فوركس</span>
                             </label>
                             <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
                                 <input type="checkbox" class="more-market-checkbox" value="stocks" style="margin-left: 10px;" checked>
-                                <span>📈 أسهم</span>
+                                <span data-i18n="market_stocks_short">📈 أسهم</span>
                             </label>
                             <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
                                 <input type="checkbox" class="more-market-checkbox" value="commodities" style="margin-left: 10px;" checked>
-                                <span>🥇 سلع</span>
+                                <span data-i18n="market_commodities_short">🥇 سلع</span>
                             </label>
                             <label style="display: flex; align-items: center; padding: 10px; background: white; border: 1px solid #ddd; border-radius: 8px; cursor: pointer;">
                                 <input type="checkbox" class="more-market-checkbox" value="indices" style="margin-left: 10px;" checked>
-                                <span>📊 مؤشرات</span>
+                                <span data-i18n="market_indices_short">📊 مؤشرات</span>
                             </label>
                         </div>
                         <button onclick="saveNotificationMarketsFromMore()" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; margin-top: 15px; cursor: pointer; font-weight: bold;" data-i18n="save_preferences">حفظ التفضيلات</button>
@@ -778,14 +778,14 @@
                 </div>
 
                 <div class="admin-tabs" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto;">
-                    <button class="admin-tab-btn active" onclick="switchAdminTab('stats')" style="padding: 10px 20px; border: none; border-radius: 8px; background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%); color: white; cursor: pointer; white-space: nowrap;">📊 الإحصائيات</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('revenue')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">💰 الأرباح</button>
+                    <button class="admin-tab-btn active" onclick="switchAdminTab('stats')" style="padding: 10px 20px; border: none; border-radius: 8px; background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%); color: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_stats_tab">📊 الإحصائيات</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('revenue')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_revenue_tab">💰 الأرباح</button>
                     <button class="admin-tab-btn" onclick="switchAdminTab('users')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_users_tab">👥 المستخدمين</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('analysts')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">👨‍💼 المحللين</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('withdrawals')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">💸 طلبات السحب</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('transactions')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">💰 المعاملات</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('system')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">🖥️ النظام</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('broadcast')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;">📢 رسالة</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('analysts')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_analysts_tab">👨‍💼 المحللين</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('withdrawals')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_withdrawals_tab">💸 طلبات السحب</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('transactions')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_transactions_tab">💰 المعاملات</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('system')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_system_tab">🖥️ النظام</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('broadcast')" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 8px; background: white; cursor: pointer; white-space: nowrap;" data-i18n="admin_broadcast_tab">📢 رسالة</button>
                 </div>
 
                 <!-- الإحصائيات -->
@@ -793,39 +793,39 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
                         <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
                             <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-total-users">-</div>
-                            <div style="font-size: 14px; opacity: 0.9;">إجمالي المستخدمين</div>
+                            <div style="font-size: 14px; opacity: 0.9;" data-i18n="admin_stat_total_users">إجمالي المستخدمين</div>
                         </div>
                         <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
                             <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-active-today">-</div>
-                            <div style="font-size: 14px; opacity: 0.9;">نشط اليوم</div>
+                            <div style="font-size: 14px; opacity: 0.9;" data-i18n="admin_stat_active_today">نشط اليوم</div>
                         </div>
                         <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
                             <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-active-week">-</div>
-                            <div style="font-size: 14px; opacity: 0.9;">نشط هذا الأسبوع</div>
+                            <div style="font-size: 14px; opacity: 0.9;" data-i18n="admin_stat_active_week">نشط هذا الأسبوع</div>
                         </div>
                         <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
                             <div style="font-size: 28px; font-weight: bold; margin-bottom: 5px;" id="stat-total-balance">- USDT</div>
-                            <div style="font-size: 14px; opacity: 0.9;">إجمالي الأرصدة</div>
+                            <div style="font-size: 14px; opacity: 0.9;" data-i18n="admin_stat_total_balance">إجمالي الأرصدة</div>
                         </div>
                         <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
                             <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-subscriptions">-</div>
-                            <div style="font-size: 14px; opacity: 0.9;">الاشتراكات النشطة</div>
+                            <div style="font-size: 14px; opacity: 0.9;" data-i18n="admin_stat_subscriptions">الاشتراكات النشطة</div>
                         </div>
                         <div class="stat-card" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
                             <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-analysts">-</div>
-                            <div style="font-size: 14px; opacity: 0.9;">عدد المحللين</div>
+                            <div style="font-size: 14px; opacity: 0.9;" data-i18n="admin_stat_analysts">عدد المحللين</div>
                         </div>
                         <div class="stat-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #333; padding: 20px; border-radius: 12px; text-align: center;">
                             <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-transactions">-</div>
-                            <div style="font-size: 14px; opacity: 0.8;">عدد المعاملات</div>
+                            <div style="font-size: 14px; opacity: 0.8;" data-i18n="admin_stat_transactions">عدد المعاملات</div>
                         </div>
                         <div class="stat-card" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #333; padding: 20px; border-radius: 12px; text-align: center;">
                             <div style="font-size: 32px; font-weight: bold; margin-bottom: 5px;" id="stat-pending-withdrawals">-</div>
-                            <div style="font-size: 14px; opacity: 0.8;">طلبات السحب المعلقة</div>
+                            <div style="font-size: 14px; opacity: 0.8;" data-i18n="admin_stat_pending_withdrawals">طلبات السحب المعلقة</div>
                         </div>
                         <div class="stat-card" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #333; padding: 20px; border-radius: 12px; text-align: center;">
                             <div style="font-size: 28px; font-weight: bold; margin-bottom: 5px;" id="stat-referral-earnings">- USDT</div>
-                            <div style="font-size: 14px; opacity: 0.8;">أرباح الإحالات</div>
+                            <div style="font-size: 14px; opacity: 0.8;" data-i18n="admin_stat_referral_earnings">أرباح الإحالات</div>
                         </div>
                     </div>
                 </div>
@@ -834,24 +834,24 @@
                 <div id="admin-revenue-tab" class="admin-tab-content" style="display: none;">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
                         <div class="stat-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);">
-                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💰 أرباح الاشتراكات</div>
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;" data-i18n="admin_revenue_subscriptions">💰 أرباح الاشتراكات</div>
                             <div style="font-size: 32px; font-weight: bold;" id="revenue-subscriptions">- USDT</div>
                         </div>
                         <div class="stat-card" style="background: linear-gradient(135deg, #00D9FF 0%, #A855F7 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(0, 217, 255, 0.3);">
-                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">📊 عمولات المحللين</div>
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;" data-i18n="admin_revenue_analysts_commission">📊 عمولات المحللين</div>
                             <div style="font-size: 32px; font-weight: bold;" id="revenue-analysts">- USDT</div>
                         </div>
                         <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);">
-                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💵 إجمالي الإيداعات</div>
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;" data-i18n="admin_revenue_total_deposits">💵 إجمالي الإيداعات</div>
                             <div style="font-size: 32px; font-weight: bold;" id="revenue-deposits">- USDT</div>
                         </div>
                         <div class="stat-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 25px; border-radius: 12px; text-align: center; box-shadow: 0 4px 15px rgba(250, 112, 154, 0.3);">
-                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">💎 إجمالي الأرباح</div>
+                            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;" data-i18n="admin_revenue_total">💎 إجمالي الأرباح</div>
                             <div style="font-size: 36px; font-weight: bold;" id="revenue-total">- USDT</div>
                         </div>
                     </div>
                     
-                    <h3 style="margin: 25px 0 15px;">🏆 أفضل 10 محللين (الأكثر ربحية)</h3>
+                    <h3 style="margin: 25px 0 15px;" data-i18n="admin_top_analysts_title">🏆 أفضل 10 محللين (الأكثر ربحية)</h3>
                     <div id="top-analysts-list" style="display: flex; flex-direction: column; gap: 10px;">
                         <p class="empty-state">جاري التحميل...</p>
                     </div>
@@ -859,27 +859,27 @@
                     <h3 style="margin: 25px 0 15px;">💸 إحصائيات طلبات السحب</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px;">
                         <div style="background: #fff3cd; padding: 15px; border-radius: 10px; border-right: 4px solid #ffc107; text-align: center;">
-                            <div style="font-size: 11px; color: #856404; margin-bottom: 5px;">⏳ معلقة</div>
+                            <div style="font-size: 11px; color: #856404; margin-bottom: 5px;" data-i18n="admin_withdrawal_stat_pending">⏳ معلقة</div>
                             <div style="font-size: 24px; font-weight: bold; color: #856404;" id="withdrawal-pending">-</div>
                         </div>
                         <div style="background: #d1ecf1; padding: 15px; border-radius: 10px; border-right: 4px solid #17a2b8; text-align: center;">
-                            <div style="font-size: 11px; color: #0c5460; margin-bottom: 5px;">✅ مكتملة</div>
+                            <div style="font-size: 11px; color: #0c5460; margin-bottom: 5px;" data-i18n="admin_withdrawal_stat_completed">✅ مكتملة</div>
                             <div style="font-size: 24px; font-weight: bold; color: #0c5460;" id="withdrawal-completed">-</div>
                         </div>
                         <div style="background: #f8d7da; padding: 15px; border-radius: 10px; border-right: 4px solid #dc3545; text-align: center;">
-                            <div style="font-size: 11px; color: #721c24; margin-bottom: 5px;">❌ مرفوضة</div>
+                            <div style="font-size: 11px; color: #721c24; margin-bottom: 5px;" data-i18n="admin_withdrawal_stat_rejected">❌ مرفوضة</div>
                             <div style="font-size: 24px; font-weight: bold; color: #721c24;" id="withdrawal-rejected">-</div>
                         </div>
                         <div style="background: #f8d7da; padding: 15px; border-radius: 10px; border-right: 4px solid #dc3545; text-align: center;">
-                            <div style="font-size: 11px; color: #721c24; margin-bottom: 5px;">⚠️ فاشلة</div>
+                            <div style="font-size: 11px; color: #721c24; margin-bottom: 5px;" data-i18n="admin_withdrawal_stat_failed">⚠️ فاشلة</div>
                             <div style="font-size: 24px; font-weight: bold; color: #721c24;" id="withdrawal-failed">-</div>
                         </div>
                         <div style="background: #e7f3ff; padding: 15px; border-radius: 10px; border-right: 4px solid #004085; text-align: center;">
-                            <div style="font-size: 11px; color: #004085; margin-bottom: 5px;">💰 مبلغ معلق</div>
+                            <div style="font-size: 11px; color: #004085; margin-bottom: 5px;" data-i18n="admin_withdrawal_stat_pending_amount">💰 مبلغ معلق</div>
                             <div style="font-size: 20px; font-weight: bold; color: #004085;" id="withdrawal-pending-amount">- USDT</div>
                         </div>
                         <div style="background: #d4edda; padding: 15px; border-radius: 10px; border-right: 4px solid #28a745; text-align: center;">
-                            <div style="font-size: 11px; color: #155724; margin-bottom: 5px;">💸 مبلغ مكتمل</div>
+                            <div style="font-size: 11px; color: #155724; margin-bottom: 5px;" data-i18n="admin_withdrawal_stat_completed_amount">💸 مبلغ مكتمل</div>
                             <div style="font-size: 20px; font-weight: bold; color: #155724;" id="withdrawal-completed-amount">- USDT</div>
                         </div>
                     </div>
@@ -988,7 +988,7 @@
                 <!-- رسالة جماعية -->
                 <div id="admin-broadcast-tab" class="admin-tab-content" style="display: none;">
                     <div style="background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                        <h3 style="margin-bottom: 15px;">📢 إرسال رسالة جماعية</h3>
+                        <h3 style="margin-bottom: 15px;" data-i18n="admin_broadcast_title">📢 إرسال رسالة جماعية</h3>
                         <div style="margin-bottom: 15px;">
                             <label style="display: block; margin-bottom: 8px; font-weight: bold;">نص الرسالة (يدعم HTML):</label>
                             <textarea id="broadcast-message" rows="8" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-family: inherit; resize: vertical;" placeholder="اكتب رسالتك هنا...&#10;&#10;يمكنك استخدام:&#10;<b>نص عريض</b>&#10;<i>نص مائل</i>&#10;<code>كود</code>"></textarea>
