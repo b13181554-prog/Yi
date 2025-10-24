@@ -268,6 +268,47 @@ app.post('/api/admin/costs/alerts', async (req, res) => {
 // تطبيق Rate Limiting على جميع API endpoints
 app.use('/api', apiRateLimit);
 
+// ========== Webhook Endpoint للبوت (Webhook Mode) ==========
+const USE_WEBHOOK = process.env.USE_WEBHOOK === 'true';
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+
+if (USE_WEBHOOK) {
+  app.post('/webhook', async (req, res) => {
+    try {
+      // التحقق من Secret Token
+      const secretToken = req.headers['x-telegram-bot-api-secret-token'];
+      if (WEBHOOK_SECRET && secretToken !== WEBHOOK_SECRET) {
+        console.log('⚠️ Unauthorized webhook request - invalid secret token');
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      
+      const update = req.body;
+      
+      if (!update || !update.update_id) {
+        return res.status(400).json({ error: 'Invalid update' });
+      }
+      
+      // الرد فوراً لـ Telegram (200 OK)
+      res.status(200).json({ ok: true });
+      
+      // معالجة التحديث بشكل غير متزامن
+      setImmediate(async () => {
+        try {
+          await bot.processUpdate(update);
+        } catch (error) {
+          console.error(`Error processing webhook update ${update.update_id}:`, error);
+        }
+      });
+      
+    } catch (error) {
+      console.error('Webhook error:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+  
+  console.log('✅ Webhook endpoint configured at /webhook');
+}
+
 // معالج الملفات الثابتة
 app.use(express.static('public', {
   setHeaders: (res, path) => {
@@ -286,12 +327,17 @@ app.use(express.static('public', {
 async function main() {
   try {
     console.log('🚀 Starting OBENTCHI Bot...');
+    console.log(`🔄 Mode: ${USE_WEBHOOK ? 'WEBHOOK' : 'POLLING'}`);
     
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🌐 HTTP Server is running on port ${PORT}`);
       console.log(`📡 Health endpoint: http://localhost:${PORT}/api/health`);
       console.log(`📊 Metrics endpoint: http://localhost:${PORT}/api/metrics`);
       console.log(`📈 Queue stats: http://localhost:${PORT}/api/queue/stats`);
+      if (USE_WEBHOOK) {
+        const publicUrl = process.env.PUBLIC_URL || `https://${process.env.REPLIT_DOMAINS}`;
+        console.log(`🪝 Webhook endpoint: ${publicUrl}/webhook`);
+      }
       console.log(`🔗 Public URL will be available at your Replit domain`);
     });
     
@@ -313,7 +359,48 @@ async function main() {
     startWithdrawalScheduler();
     console.log('✅ Withdrawal scheduler started');
     
-    bot.startBot();
+    // إعداد Webhook أو Polling
+    if (USE_WEBHOOK) {
+      const publicUrl = process.env.PUBLIC_URL || `https://${process.env.REPLIT_DOMAINS}`;
+      const webhookUrl = `${publicUrl}/webhook`;
+      
+      // حذف أي webhook سابق
+      await bot.deleteWebHook();
+      console.log('🗑️ Deleted old webhook');
+      
+      // تعيين webhook جديد
+      const webhookOptions = {
+        drop_pending_updates: false,
+        max_connections: 100,
+        allowed_updates: ['message', 'callback_query', 'inline_query']
+      };
+      
+      if (WEBHOOK_SECRET) {
+        webhookOptions.secret_token = WEBHOOK_SECRET;
+        console.log('🔒 Using secret token for webhook security');
+      } else {
+        console.warn('⚠️ WEBHOOK_SECRET not set! Webhook is not fully secured.');
+      }
+      
+      const result = await bot.setWebHook(webhookUrl, webhookOptions);
+      
+      if (result) {
+        console.log(`✅ Webhook set successfully: ${webhookUrl}`);
+        
+        // التحقق من الإعداد
+        const webhookInfo = await bot.getWebHookInfo();
+        console.log('📡 Webhook Info:', {
+          url: webhookInfo.url,
+          pending_updates: webhookInfo.pending_update_count,
+          max_connections: webhookInfo.max_connections
+        });
+      } else {
+        throw new Error('Failed to set webhook');
+      }
+    } else {
+      // وضع Polling
+      bot.startBot();
+    }
     
     bot.on('message', async (msg) => {
       const chatId = msg.chat.id;

@@ -6,14 +6,18 @@ const { t, getLanguageKeyboard } = require('./languages');
 const { safeSendMessage, safeSendPhoto, safeEditMessageText, safeAnswerCallbackQuery } = require('./safe-message');
 const { BatchLoader } = require('./utils/batch-loader');
 
+// تحديد الوضع: webhook أو polling
+const USE_WEBHOOK = process.env.USE_WEBHOOK === 'true';
+
 const bot = new TelegramBot(config.BOT_TOKEN, { 
-  polling: {
+  polling: USE_WEBHOOK ? false : {
     interval: 1000,
     autoStart: false,
     params: {
       timeout: 10
     }
-  }
+  },
+  webHook: false // سنفعله يدوياً في index.js
 });
 
 let batchLoader;
@@ -23,17 +27,20 @@ db.initDatabase().then(() => {
   console.error('Error initializing batch loader:', err);
 });
 
-bot.on('polling_error', (error) => {
-  if (error.message.includes('409') || error.message.includes('ETELEGRAM: 409')) {
-    console.log('⚠️ هناك نسخة أخرى من البوت تعمل. يرجى إيقاف النسخ الأخرى.');
-    process.exit(1); // إيقاف هذه النسخة
-  } else if (error.message.includes('query is too old')) {
-    console.log('⚠️ تجاهل التحديثات القديمة...');
-    // استمر في العمل - هذا خطأ عادي بعد إعادة التشغيل
-  } else {
-    console.error('Polling error:', error.message);
-  }
-});
+// معالجة أخطاء Polling فقط في وضع Polling
+if (!USE_WEBHOOK) {
+  bot.on('polling_error', (error) => {
+    if (error.message.includes('409') || error.message.includes('ETELEGRAM: 409')) {
+      console.log('⚠️ هناك نسخة أخرى من البوت تعمل. يرجى إيقاف النسخ الأخرى.');
+      process.exit(1); // إيقاف هذه النسخة
+    } else if (error.message.includes('query is too old')) {
+      console.log('⚠️ تجاهل التحديثات القديمة...');
+      // استمر في العمل - هذا خطأ عادي بعد إعادة التشغيل
+    } else {
+      console.error('Polling error:', error.message);
+    }
+  });
+}
 
 // ✅ استخدام LRU Cache مع حد أقصى لمنع memory leak عند ملايين المستخدمين
 const membershipCache = new LRUCache({
