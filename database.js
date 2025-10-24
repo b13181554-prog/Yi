@@ -2228,13 +2228,39 @@ async function deductAnalysisFee(userId, feeAmount, symbol, analysisType, market
   try {
     logger.info(`Deducting ${feeAmount} USDT from user ${userId}`);
     
+    const user = await db.collection('users').findOne({ user_id: userId });
+    
+    if (!user) {
+      logger.warn(`User ${userId} not found for fee deduction`);
+      return { 
+        success: false, 
+        error: 'المستخدم غير موجود' 
+      };
+    }
+    
+    const currentBalance = parseFloat(user.balance) || 0;
+    const requiredAmount = parseFloat(feeAmount);
+    
+    logger.info(`Balance check: Current=${currentBalance.toFixed(10)}, Required=${requiredAmount}, Sufficient=${currentBalance >= requiredAmount}`);
+    
+    if (currentBalance < requiredAmount) {
+      logger.warn(`Insufficient balance for user ${userId}. Current: ${currentBalance}, Required: ${requiredAmount}`);
+      return { 
+        success: false, 
+        error: `الرصيد غير كافٍ. الرصيد الحالي: ${currentBalance.toFixed(2)} USDT، المطلوب: ${requiredAmount} USDT` 
+      };
+    }
+    
+    const newBalance = Math.max(0, currentBalance - requiredAmount);
+    const roundedNewBalance = Math.round(newBalance * 100000000) / 100000000;
+    
     const result = await db.collection('users').findOneAndUpdate(
       { 
         user_id: userId,
-        balance: { $gte: feeAmount }
+        balance: user.balance
       },
       { 
-        $inc: { balance: -feeAmount } 
+        $set: { balance: roundedNewBalance } 
       },
       { 
         returnDocument: 'after'
@@ -2242,20 +2268,10 @@ async function deductAnalysisFee(userId, feeAmount, symbol, analysisType, market
     );
     
     if (!result || !result.value) {
-      const user = await db.collection('users').findOne({ user_id: userId });
-      
-      if (!user) {
-        logger.warn(`User ${userId} not found for fee deduction`);
-        return { 
-          success: false, 
-          error: 'المستخدم غير موجود' 
-        };
-      }
-      
-      logger.warn(`Insufficient balance for user ${userId}. Current: ${user.balance}, Required: ${feeAmount}`);
+      logger.error(`Failed to update balance for user ${userId} - concurrent modification detected`);
       return { 
         success: false, 
-        error: `الرصيد غير كافٍ. الرصيد الحالي: ${user.balance.toFixed(2)} USDT، المطلوب: ${feeAmount} USDT` 
+        error: 'فشل خصم الرسوم بسبب تعديل متزامن. يرجى المحاولة مرة أخرى.' 
       };
     }
     

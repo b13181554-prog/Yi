@@ -2151,15 +2151,8 @@ async function analyzeMarketAdvanced() {
             requestBody.balance = userData?.balance || 10000;
         }
         
-        if (selectedPaymentMode === 'per_analysis' && userBalance < 0.1) {
-            loadingMsg.remove();
-            if (tg.showAlert) {
-                tg.showAlert('⚠️ الرصيد غير كافٍ!\n\nرصيدك الحالي: ' + userBalance.toFixed(2) + ' USDT\nيلزم 0.1 USDT على الأقل للتحليل\n\nيرجى الإيداع من قسم "المحفظة"');
-            } else {
-                alert('⚠️ الرصيد غير كافٍ!\n\nرصيدك الحالي: ' + userBalance.toFixed(2) + ' USDT\nيلزم 0.1 USDT على الأقل للتحليل\n\nيرجى الإيداع من قسم "المحفظة"');
-            }
-            return;
-        }
+        // إزالة الفحص من الواجهة - سيتم الفحص في الخادم فقط للتأكد من الرصيد الحقيقي
+        // الفحص في الواجهة قد يكون غير دقيق بسبب التحديثات المتأخرة
 
         const response = await fetch(apiEndpoint, {
             method: 'POST',
@@ -2186,10 +2179,10 @@ async function analyzeMarketAdvanced() {
             }
         } else {
             if (data.requires_balance) {
-                const currentBalance = userBalance || 0;
+                // تحديث الرصيد أولاً للحصول على القيمة الدقيقة
+                await loadUserData();
+                
                 let message = `❌ ${data.error}\n\n`;
-                message += `💰 رصيدك الحالي: ${currentBalance.toFixed(2)} USDT\n`;
-                message += `💵 المطلوب: 0.1 USDT\n\n`;
                 message += `📥 يرجى الإيداع من قسم "المحفظة"`;
                 
                 if (tg.showAlert) {
@@ -2197,8 +2190,6 @@ async function analyzeMarketAdvanced() {
                 } else {
                     alert(message);
                 }
-                
-                await loadUserData();
             } else if (data.requires_subscription) {
                 const currentBalance = userBalance || 0;
                 const subscriptionPrice = 10;
