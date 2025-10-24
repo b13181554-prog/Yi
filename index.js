@@ -28,6 +28,7 @@ const { safeSendMessage, safeSendPhoto, safeEditMessageText } = require('./safe-
 const { getDashboardData, exportReport, getCostStats, getAPIBreakdown, getOptimizationSuggestions, setAlerts } = require('./api-cost-tracker');
 const aiMonitor = require('./ai-monitor');
 const analysisFeeManager = require('./analysis-fee-manager');
+const memoryOptimizer = require('./memory-optimizer');
 
 // Groq AI - Free and fast alternative to OpenAI
 let groq = null;
@@ -125,6 +126,43 @@ app.get('/api/ai-monitor/status', async (req, res) => {
     res.json({
       success: true,
       aiMonitor: status
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.get('/api/memory/status', async (req, res) => {
+  try {
+    const { checkMemoryHealth } = require('./improved-health-checks');
+    const memoryHealth = checkMemoryHealth();
+    const optimizerStats = memoryOptimizer.getStats();
+    
+    res.json({
+      success: true,
+      memory: memoryHealth,
+      optimizer: optimizerStats
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.post('/api/memory/optimize', async (req, res) => {
+  try {
+    const aggressive = req.body?.aggressive || false;
+    const result = await memoryOptimizer.optimize(aggressive);
+    
+    res.json({
+      success: true,
+      message: 'Memory optimization completed',
+      result
     });
   } catch (error) {
     res.status(500).json({
@@ -573,6 +611,11 @@ ${description}
     
     aiMonitor.start();
     console.log('🤖 AI Monitor started - checking every 5 minutes');
+    
+    const intelligentCache = require('./intelligent-cache');
+    memoryOptimizer.registerCache('intelligent-cache-memory', intelligentCache.default.memoryCache, 'purge');
+    memoryOptimizer.start();
+    console.log('🧠 Memory Optimizer started - monitoring every 5 minutes');
     
   } catch (error) {
     console.error('❌ Error starting bot:', error);

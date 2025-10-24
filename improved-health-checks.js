@@ -156,34 +156,61 @@ async function checkPaymentQueueHealth() {
   }
 }
 
+// مخزن لقراءات الذاكرة السابقة (للمتوسط المتحرك)
+const memoryReadings = [];
+const MAX_MEMORY_READINGS = 5;
+
 /**
- * فحص صحة الذاكرة
+ * فحص صحة الذاكرة مع متوسط متحرك لتجنب الإنذارات الكاذبة
  */
 function checkMemoryHealth() {
   const usage = process.memoryUsage();
   const totalMemoryMB = usage.heapTotal / 1024 / 1024;
   const usedMemoryMB = usage.heapUsed / 1024 / 1024;
+  const rssMB = usage.rss / 1024 / 1024;
   const usagePercent = (usedMemoryMB / totalMemoryMB) * 100;
   
+  // إضافة القراءة الحالية
+  memoryReadings.push(usagePercent);
+  if (memoryReadings.length > MAX_MEMORY_READINGS) {
+    memoryReadings.shift();
+  }
+  
+  // حساب المتوسط المتحرك
+  const avgUsagePercent = memoryReadings.reduce((a, b) => a + b, 0) / memoryReadings.length;
+  
+  // استخدام المتوسط المتحرك لتحديد الحالة (لتجنب الارتفاعات المؤقتة)
   let status = 'healthy';
   let message = 'Memory usage normal';
   
-  if (usagePercent > 90) {
+  // عتبات أكثر تساهلاً مع المتوسط المتحرك
+  if (avgUsagePercent > 95) {
     status = 'critical';
-    message = 'Memory usage critical';
-  } else if (usagePercent > 75) {
+    message = 'Memory usage critical (sustained high usage)';
+  } else if (avgUsagePercent > 85) {
     status = 'degraded';
     message = 'Memory usage high';
+  } else if (usagePercent > 90 && avgUsagePercent > 75) {
+    // ارتفاع مؤقت لكن المتوسط مرتفع
+    status = 'degraded';
+    message = 'Memory spike detected';
   }
+  
+  // إذا كانت RSS أكثر من 1GB، أضف تحذيراً
+  const rssWarning = rssMB > 1024 ? ' (High RSS)' : '';
   
   return {
     status,
-    message,
+    message: message + rssWarning,
     details: {
       heapUsed: `${usedMemoryMB.toFixed(2)} MB`,
       heapTotal: `${totalMemoryMB.toFixed(2)} MB`,
-      usagePercent: `${usagePercent.toFixed(2)}%`,
-      rss: `${(usage.rss / 1024 / 1024).toFixed(2)} MB`
+      currentUsagePercent: `${usagePercent.toFixed(2)}%`,
+      avgUsagePercent: `${avgUsagePercent.toFixed(2)}%`,
+      rss: `${rssMB.toFixed(2)} MB`,
+      external: `${(usage.external / 1024 / 1024).toFixed(2)} MB`,
+      arrayBuffers: `${(usage.arrayBuffers / 1024 / 1024).toFixed(2)} MB`,
+      readingsCount: memoryReadings.length
     }
   };
 }
