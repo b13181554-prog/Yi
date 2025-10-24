@@ -14,6 +14,7 @@ const db = require('../database');
 const { rateLimitMiddleware } = require('../advanced-rate-limiter');
 const accessControl = require('../user-access-control');
 const { authenticateAPI, validateRequestSize } = require('../api-security');
+const { createMetricsEndpoint, httpMetricsMiddleware } = require('../metrics-exporter');
 
 const logger = pino({
   level: 'info',
@@ -34,6 +35,7 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(validateRequestSize);
+app.use(httpMetricsMiddleware);
 
 // Static files
 app.use(express.static(path.join(__dirname, '..', 'public')));
@@ -56,6 +58,9 @@ app.get('/api/health', async (req, res) => {
     });
   }
 });
+
+// Prometheus metrics endpoint
+createMetricsEndpoint(app);
 
 // Advanced Tiered Rate Limiters - per resource type
 const analysisRateLimit = rateLimitMiddleware.analysis();

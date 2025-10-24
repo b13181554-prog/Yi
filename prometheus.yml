@@ -1,0 +1,98 @@
+# Prometheus Configuration
+# مراقبة شاملة لجميع الخدمات
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'obentchi-bot-production'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - 'alertmanager:9093'
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - 'alerts.yml'
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # HTTP Servers
+  - job_name: 'http-servers'
+    static_configs:
+      - targets:
+        - 'http-server-1:5000'
+        - 'http-server-2:5000'
+        - 'http-server-3:5000'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Bot Webhook Workers
+  - job_name: 'bot-webhooks'
+    static_configs:
+      - targets:
+        - 'bot-webhook-1:8443'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Queue Workers
+  - job_name: 'queue-workers'
+    static_configs:
+      - targets:
+        - 'queue-worker-1:9100'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Redis Cluster
+  - job_name: 'redis-cluster'
+    static_configs:
+      - targets:
+        - 'redis-master-1:7001'
+        - 'redis-master-2:7002'
+        - 'redis-master-3:7003'
+        - 'redis-replica-1:7004'
+        - 'redis-replica-2:7005'
+        - 'redis-replica-3:7006'
+    metrics_path: '/metrics'
+
+  # Nginx
+  - job_name: 'nginx'
+    static_configs:
+      - targets: ['nginx:9113']
+    metrics_path: '/metrics'
+
+  # Node Exporter (system metrics)
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets:
+        - 'node-exporter:9100'
+
+  # Kubernetes pods
+  - job_name: 'kubernetes-pods'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - obentchi-bot
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__

@@ -1,0 +1,75 @@
+# Git
+.git
+.gitignore
+.github
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Redis
+dump.rdb
+*.rdb
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation (except required)
+*.md
+!README.md
+
+# Tests
+test/
+tests/
+*.test.js
+*.spec.js
+coverage/
+
+# CI/CD
+.gitlab-ci.yml
+.travis.yml
+azure-pipelines.yml
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Kubernetes
+kubernetes/
+
+# Monitoring
+prometheus.yml
+grafana/
+
+# Scripts
+*.sh
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Build artifacts
+dist/
+build/

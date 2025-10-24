@@ -1,0 +1,37 @@
+# Dockerfile for Queue Worker
+FROM node:20-alpine
+
+LABEL maintainer="OBENTCHI Bot"
+LABEL service="queue-worker"
+LABEL version="2.0"
+
+RUN apk add --no-cache \
+    curl \
+    ca-certificates \
+    tzdata
+
+ENV TZ=UTC
+
+WORKDIR /app
+
+COPY package*.json ./
+
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+RUN npm ci --only=production && npm cache clean --force
+
+COPY . .
+
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /app
+
+USER nodejs
+
+# لا يوجد port للـ queue worker (background service)
+
+# Health check عبر Redis connection
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "const Redis=require('ioredis');const r=new Redis({host:process.env.REDIS_HOST||'redis'});r.ping().then(()=>{r.quit();process.exit(0)}).catch(()=>process.exit(1))"
+
+CMD ["node", "services/queue-worker.js"]

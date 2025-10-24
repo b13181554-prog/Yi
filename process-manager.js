@@ -22,33 +22,75 @@ const logger = pino({
   }
 });
 
-// تعريف الخدمات
+// تحديد الخدمات المتاحة
 const SERVICES = {
   'http': {
     name: 'HTTP Server',
     script: 'services/http-server.js',
     color: '\x1b[36m', // Cyan
-    required: true
+    required: true,
+    modes: ['all', 'standalone', 'docker']
   },
   'bot': {
-    name: 'Bot Worker',
+    name: 'Bot Worker (Polling)',
     script: 'services/bot-worker.js',
     color: '\x1b[35m', // Magenta
-    required: true
+    required: true,
+    modes: ['all', 'standalone', 'polling'],
+    conflictsWith: ['bot-webhook']
+  },
+  'bot-webhook': {
+    name: 'Bot Webhook Worker',
+    script: 'services/bot-webhook-worker.js',
+    color: '\x1b[95m', // Bright Magenta
+    required: false,
+    modes: ['webhook', 'docker'],
+    conflictsWith: ['bot']
   },
   'queue': {
     name: 'Queue Worker',
     script: 'services/queue-worker.js',
     color: '\x1b[33m', // Yellow
-    required: true
+    required: true,
+    modes: ['all', 'standalone', 'docker']
+  },
+  'queue-improved': {
+    name: 'Queue Worker (Improved)',
+    script: 'improved-queue-worker.js',
+    color: '\x1b[93m', // Bright Yellow
+    required: false,
+    modes: ['production'],
+    conflictsWith: ['queue']
   },
   'scheduler': {
     name: 'Scheduler',
     script: 'services/scheduler.js',
     color: '\x1b[32m', // Green
-    required: false
+    required: false,
+    modes: ['all', 'standalone', 'docker']
   }
 };
+
+// تحديد الوضع التلقائي
+function determineMode() {
+  // webhook mode إذا كان PUBLIC_URL موجود
+  if (process.env.PUBLIC_URL || process.env.WEBHOOK_URL) {
+    return 'webhook';
+  }
+  
+  // production mode إذا كان في بيئة production
+  if (process.env.NODE_ENV === 'production') {
+    return 'production';
+  }
+  
+  // docker mode إذا كان يعمل في container
+  if (process.env.DEPLOYMENT_MODE === 'docker') {
+    return 'docker';
+  }
+  
+  // الوضع الافتراضي
+  return 'standalone';
+}
 
 const processes = new Map();
 const RESTART_DELAY = 5000; // 5 ثوانٍ قبل إعادة التشغيل
@@ -147,12 +189,17 @@ async function stopAllServices() {
 /**
  * بدء جميع الخدمات أو خدمات محددة
  */
-function startServices(servicesToStart = null) {
-  const services = servicesToStart || Object.keys(SERVICES);
+function startServices(servicesToStart = null, mode = null) {
+  const deployMode = mode || determineMode();
+  let services = servicesToStart || getServicesForMode(deployMode);
   
   logger.info('🚀 OBENTCHI Trading Bot - Process Manager');
   logger.info('==========================================');
+  logger.info(`🌍 Mode: ${deployMode}`);
   logger.info('');
+  
+  // التحقق من التعارضات
+  validateServices(services);
   
   // بدء Redis أولاً
   logger.info('📡 Ensuring Redis is running...');
@@ -176,14 +223,72 @@ function startServices(servicesToStart = null) {
     logger.info('✅ All services started successfully!');
     logger.info('');
     logger.info('📊 Status:');
-    Object.entries(SERVICES).forEach(([key, service]) => {
-      const status = processes.has(key) ? '✅ Running' : '⏸️ Not started';
-      logger.info(`  ${service.name}: ${status}`);
+    services.forEach(key => {
+      const service = SERVICES[key];
+      if (service) {
+        const status = processes.has(key) ? '✅ Running' : '⏸️ Not started';
+        logger.info(`  ${service.name}: ${status}`);
+      }
     });
     logger.info('');
     logger.info('Press Ctrl+C to stop all services');
     logger.info('');
   }, 2000);
+}
+
+/**
+ * الحصول على الخدمات المناسبة للوضع
+ */
+function getServicesForMode(mode) {
+  const services = [];
+  
+  switch (mode) {
+    case 'webhook':
+      services.push('http', 'bot-webhook', 'queue', 'scheduler');
+      break;
+    case 'polling':
+      services.push('http', 'bot', 'queue', 'scheduler');
+      break;
+    case 'production':
+      services.push('http', 'bot-webhook', 'queue-improved', 'scheduler');
+      break;
+    case 'docker':
+      // في Docker، كل خدمة تعمل في container منفصل
+      // لذا نختار بناءً على SERVICE_NAME
+      const serviceName = process.env.SERVICE_NAME;
+      if (serviceName) {
+        services.push(serviceName);
+      }
+      break;
+    default: // standalone
+      services.push('http', 'bot', 'queue', 'scheduler');
+  }
+  
+  return services;
+}
+
+/**
+ * التحقق من عدم وجود تعارضات بين الخدمات
+ */
+function validateServices(services) {
+  const conflicts = [];
+  
+  services.forEach(serviceKey => {
+    const service = SERVICES[serviceKey];
+    if (service && service.conflictsWith) {
+      service.conflictsWith.forEach(conflictKey => {
+        if (services.includes(conflictKey)) {
+          conflicts.push(`${serviceKey} conflicts with ${conflictKey}`);
+        }
+      });
+    }
+  });
+  
+  if (conflicts.length > 0) {
+    logger.error('❌ Service conflicts detected:');
+    conflicts.forEach(conflict => logger.error(`  - ${conflict}`));
+    throw new Error('Cannot start services with conflicts');
+  }
 }
 
 // معالجة الإيقاف السلس
@@ -218,10 +323,46 @@ process.on('unhandledRejection', (reason, promise) => {
 const args = process.argv.slice(2);
 
 if (args.length === 0) {
-  // تشغيل جميع الخدمات
+  // تشغيل جميع الخدمات بالوضع التلقائي
   startServices();
 } else if (args[0] === '--help' || args[0] === '-h') {
   console.log(`
+OBENTCHI Process Manager - Enhanced Edition
+
+Usage:
+  node process-manager.js [options] [services...]
+
+Options:
+  --mode <mode>     Deployment mode: standalone | webhook | polling | production | docker
+  --help, -h        Show this help message
+
+Modes:
+  standalone        Default mode with polling bot (للتطوير المحلي)
+  webhook           Webhook mode for production (يتطلب PUBLIC_URL)
+  polling           Force polling mode
+  production        Production mode with webhooks + improved queue workers
+  docker            Auto-detect service from SERVICE_NAME env variable
+
+Services:
+  http              HTTP Server
+  bot               Bot Worker (Polling mode)
+  bot-webhook       Bot Webhook Worker (Webhook mode)
+  queue             Queue Worker
+  queue-improved    Improved Queue Worker with auto-scaling
+  scheduler         Scheduler Service
+
+Examples:
+  node process-manager.js                    # Start all in auto mode
+  node process-manager.js --mode webhook     # Start in webhook mode
+  node process-manager.js http bot queue     # Start specific services
+  node process-manager.js --mode production  # Start in production mode
+
+Environment Variables:
+  PUBLIC_URL        URL for webhooks (auto-enables webhook mode)
+  NODE_ENV          Environment (development | production)
+  DEPLOYMENT_MODE   Deployment mode override
+  SERVICE_NAME      Service name for docker mode
+
 OBENTCHI Process Manager
 
 Usage:
