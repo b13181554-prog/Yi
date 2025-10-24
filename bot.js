@@ -818,62 +818,67 @@ ID: ${userId}
         }
         
         const expiryDate = result.expiryDate;
+        const userLang = user.language || 'ar';
         console.log(`✅ اشتراك ناجح للمستخدم ${userId} - صالح حتى ${expiryDate.toLocaleDateString('ar')}`);
         
         await safeSendMessage(bot, chatId, `
-✅ <b>تم تفعيل الاشتراك بنجاح!</b>
+✅ <b>${t(userLang, 'subscription_activated')}</b>
 
-💳 <b>المبلغ المخصوم:</b> ${config.SUBSCRIPTION_PRICE} USDT
-📅 <b>صالح حتى:</b> ${expiryDate.toLocaleDateString('ar')}
-💰 <b>رصيدك الحالي:</b> ${(user.balance - config.SUBSCRIPTION_PRICE).toFixed(2)} USDT
+💳 <b>${t(userLang, 'amount_deducted')}</b> ${config.SUBSCRIPTION_PRICE} USDT
+📅 <b>${t(userLang, 'valid_until')}</b> ${expiryDate.toLocaleDateString(userLang === 'ar' ? 'ar' : 'en')}
+💰 <b>${t(userLang, 'current_balance')}</b> ${(user.balance - config.SUBSCRIPTION_PRICE).toFixed(2)} USDT
 
-🎉 استمتع بجميع ميزات البوت!
+🎉 ${t(userLang, 'enjoy_features')}
 `, { parse_mode: 'HTML' });
         
         await safeSendMessage(bot, config.OWNER_ID, `
-💰 <b>اشتراك جديد</b>
+💰 <b>${t('ar', 'new_subscription')}</b>
 
-👤 المستخدم: ${user.first_name} (@${user.username || 'بدون معرف'})
-🆔 ID: ${userId}
-💵 المبلغ: ${config.SUBSCRIPTION_PRICE} USDT
-📅 صالح حتى: ${expiryDate.toLocaleDateString('ar')}
-${referrerId ? `🎁 عمولة إحالة: ${referralCommission} USDT` : ''}
+👤 ${t('ar', 'user_label')} ${user.first_name} (@${user.username || t('ar', 'no_username')})
+🆔 ${t('ar', 'id_label')} ${userId}
+💵 ${t('ar', 'amount_label')} ${config.SUBSCRIPTION_PRICE} USDT
+📅 ${t('ar', 'valid_until')} ${expiryDate.toLocaleDateString('ar')}
+${referrerId ? `🎁 ${t('ar', 'referral_commission_label')} ${referralCommission} USDT` : ''}
 `, { parse_mode: 'HTML' });
         
       } catch (error) {
         console.error(`❌ خطأ في عملية الاشتراك للمستخدم ${userId}:`, error);
+        const userLang = user.language || 'ar';
         
         await safeSendMessage(bot, chatId, `
-❌ <b>حدث خطأ في معالجة الاشتراك</b>
+❌ <b>${t(userLang, 'subscription_error')}</b>
 
-${error.message || 'خطأ غير متوقع'}
+${error.message || t(userLang, 'error_occurred')}
 
-يرجى المحاولة مرة أخرى أو التواصل مع الدعم.
-💰 في حالة خصم أي مبلغ، سيتم إرجاعه تلقائياً.
+${t(userLang, 'try_again_or_contact')}
+💰 ${t(userLang, 'refund_notice')}
 `, { parse_mode: 'HTML' });
         
         await safeSendMessage(bot, config.OWNER_ID, `
-⚠️ <b>فشل في عملية الاشتراك</b>
+⚠️ <b>${t('ar', 'subscription_failed')}</b>
 
-المستخدم: ${user.first_name} (@${user.username || 'بدون معرف'})
-ID: ${userId}
-الخطأ: ${error.message}
+${t('ar', 'user_label')} ${user.first_name} (@${user.username || t('ar', 'no_username')})
+${t('ar', 'id_label')} ${userId}
+${t('ar', 'error_label')} ${error.message}
 `, { parse_mode: 'HTML' });
       }
     }
     
     else if (data.action === 'register_analyst') {
+      const user = await db.getUser(userId);
+      const lang = user ? (user.language || 'ar') : 'ar';
+      
       await db.updateUser(userId, { temp_withdrawal_address: 'analyst_registration' });
       await safeSendMessage(bot, chatId, `
-📝 <b>التسجيل كمحلل</b>
+📝 <b>${t(lang, 'analyst_registration')}</b>
 
-أرسل البيانات التالية (كل في سطر منفصل):
+${t(lang, 'send_following_data')}
 
-1️⃣ الاسم
-2️⃣ الوصف
-3️⃣ السعر الشهري (USDT)
+1️⃣ ${t(lang, 'name_field')}
+2️⃣ ${t(lang, 'description_field')}
+3️⃣ ${t(lang, 'monthly_price')}
 
-مثال:
+${t(lang, 'example_label')}
 أحمد المحلل
 خبرة 5 سنوات في التحليل الفني
 20
@@ -881,7 +886,9 @@ ID: ${userId}
     }
   } catch (error) {
     console.error('Error handling web_app_data:', error);
-    await safeSendMessage(bot, chatId, '❌ حدث خطأ في معالجة الطلب');
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+    await safeSendMessage(bot, chatId, t(lang, 'request_processing_error'));
   }
 });
 
@@ -897,16 +904,17 @@ bot.on('message', async (msg) => {
     if (!user) return;
     
     if (user.temp_withdrawal_address === 'analyst_registration') {
+      const lang = user.language || 'ar';
       const lines = text.trim().split('\n').filter(line => line.trim());
       
       if (lines.length !== 3) {
         return safeSendMessage(bot, chatId, `
-❌ <b>بيانات غير صحيحة!</b>
+❌ <b>${t(lang, 'invalid_data')}</b>
 
-يجب إرسال 3 أسطر فقط:
-1️⃣ الاسم
-2️⃣ الوصف
-3️⃣ السعر الشهري (USDT)
+${t(lang, 'must_send_three_lines')}
+1️⃣ ${t(lang, 'name_field')}
+2️⃣ ${t(lang, 'description_field')}
+3️⃣ ${t(lang, 'monthly_price')}
 `, { parse_mode: 'HTML' });
       }
       
@@ -914,7 +922,7 @@ bot.on('message', async (msg) => {
       const price = parseFloat(priceStr);
       
       if (isNaN(price) || price < 1) {
-        return safeSendMessage(bot, chatId, '❌ السعر يجب أن يكون رقم صحيح (1 USDT على الأقل)');
+        return safeSendMessage(bot, chatId, `❌ ${t(lang, 'price_must_be_number')}`);
       }
       
       try {
@@ -923,22 +931,22 @@ bot.on('message', async (msg) => {
         await db.updateUser(userId, { temp_withdrawal_address: null });
         
         await safeSendMessage(bot, chatId, `
-✅ <b>تم التسجيل كمحلل بنجاح!</b>
+✅ <b>${t(lang, 'analyst_registered')}</b>
 
-الاسم: ${analyst.name}
-السعر: ${price} USDT/شهر
+${t(lang, 'name_label')} ${analyst.name}
+${t(lang, 'price_label')} ${price} USDT${t(lang, 'per_month')}
 
-يمكن للمستخدمين الآن الاشتراك في خدماتك!
+${t(lang, 'users_can_subscribe')}
 `, { parse_mode: 'HTML' });
         
         await safeSendMessage(bot, config.OWNER_ID, `
-📝 <b>محلل جديد</b>
+📝 <b>${t('ar', 'new_analyst')}</b>
 
-الاسم: ${analyst.name}
-المستخدم: @${user.username}
-ID: ${userId}
-السعر: ${price} USDT/شهر
-الوصف: ${analyst.description}
+${t('ar', 'name_label')} ${analyst.name}
+${t('ar', 'user_label')} @${user.username}
+${t('ar', 'id_label')} ${userId}
+${t('ar', 'price_label')} ${price} USDT${t('ar', 'per_month')}
+${t('ar', 'description_label')} ${analyst.description}
 `, { parse_mode: 'HTML' });
       } catch (createError) {
         return safeSendMessage(bot, chatId, `❌ ${createError.message}`);
