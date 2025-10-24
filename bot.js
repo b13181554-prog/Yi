@@ -414,11 +414,13 @@ ${isEnabled ? `<b>${t(lang, 'selected_markets')}</b>\n${marketsText}` : ''}
       });
     } else if (user.awaitingCustomerServiceMessage) {
       const config = require('./config');
+      // إرسال للمالك بالعربية + لغة المستخدم للسياق
       await safeSendMessage(bot, config.OWNER_ID, `
 📞 <b>${t('ar', 'customer_service_new_message')}</b>
 
 👤 <b>${t('ar', 'user_label')}</b> ${msg.from.first_name} ${msg.from.last_name || ''}
 🆔 <b>${t('ar', 'id_label')}</b> <code>${userId}</code>
+🌐 <b>لغة المستخدم:</b> ${lang === 'ar' ? 'العربية' : lang === 'en' ? 'English' : lang === 'fr' ? 'Français' : lang === 'es' ? 'Español' : lang === 'de' ? 'Deutsch' : lang === 'ru' ? 'Русский' : '中文'}
 📝 <b>${t('ar', 'message_label')}</b>
 
 ${text}
@@ -473,8 +475,9 @@ ${statusMessage}
       });
     } catch (error) {
       console.error('Error changing language:', error);
+      const userLang = selectedLang || 'ar';
       await safeAnswerCallbackQuery(bot, query.id, {
-        text: t('ar', 'generic_error'),
+        text: t(userLang, 'generic_error'),
         show_alert: true
       });
     }
@@ -508,8 +511,10 @@ ${statusMessage}
       });
     } catch (error) {
       console.error('Error in start_action:', error);
+      const user = await db.getUser(userId);
+      const userLang = user ? (user.language || 'ar') : 'ar';
       await safeAnswerCallbackQuery(bot, query.id, {
-        text: t('ar', 'generic_error'),
+        text: t(userLang, 'generic_error'),
         show_alert: true
       });
     }
@@ -831,11 +836,13 @@ ID: ${userId}
 🎉 ${t(userLang, 'enjoy_features')}
 `, { parse_mode: 'HTML' });
         
+        // إرسال للمالك بالعربية (لغة المالك)
         await safeSendMessage(bot, config.OWNER_ID, `
 💰 <b>${t('ar', 'new_subscription')}</b>
 
 👤 ${t('ar', 'user_label')} ${user.first_name} (@${user.username || t('ar', 'no_username')})
 🆔 ${t('ar', 'id_label')} ${userId}
+🌐 <b>اللغة:</b> ${userLang === 'ar' ? 'العربية' : userLang === 'en' ? 'English' : userLang === 'fr' ? 'Français' : userLang === 'es' ? 'Español' : userLang === 'de' ? 'Deutsch' : userLang === 'ru' ? 'Русский' : '中文'}
 💵 ${t('ar', 'amount_label')} ${config.SUBSCRIPTION_PRICE} USDT
 📅 ${t('ar', 'valid_until')} ${expiryDate.toLocaleDateString('ar')}
 ${referrerId ? `🎁 ${t('ar', 'referral_commission_label')} ${referralCommission} USDT` : ''}
@@ -854,11 +861,13 @@ ${t(userLang, 'try_again_or_contact')}
 💰 ${t(userLang, 'refund_notice')}
 `, { parse_mode: 'HTML' });
         
+        // إرسال للمالك بالعربية (لغة المالك)
         await safeSendMessage(bot, config.OWNER_ID, `
 ⚠️ <b>${t('ar', 'subscription_failed')}</b>
 
 ${t('ar', 'user_label')} ${user.first_name} (@${user.username || t('ar', 'no_username')})
 ${t('ar', 'id_label')} ${userId}
+🌐 <b>اللغة:</b> ${userLang === 'ar' ? 'العربية' : userLang === 'en' ? 'English' : userLang === 'fr' ? 'Français' : userLang === 'es' ? 'Español' : userLang === 'de' ? 'Deutsch' : userLang === 'ru' ? 'Русский' : '中文'}
 ${t('ar', 'error_label')} ${error.message}
 `, { parse_mode: 'HTML' });
       }
@@ -939,12 +948,14 @@ ${t(lang, 'price_label')} ${price} USDT${t(lang, 'per_month')}
 ${t(lang, 'users_can_subscribe')}
 `, { parse_mode: 'HTML' });
         
+        // إرسال للمالك بالعربية (لغة المالك)
         await safeSendMessage(bot, config.OWNER_ID, `
 📝 <b>${t('ar', 'new_analyst')}</b>
 
 ${t('ar', 'name_label')} ${analyst.name}
 ${t('ar', 'user_label')} @${user.username}
 ${t('ar', 'id_label')} ${userId}
+🌐 <b>اللغة:</b> ${lang === 'ar' ? 'العربية' : lang === 'en' ? 'English' : lang === 'fr' ? 'Français' : lang === 'es' ? 'Español' : lang === 'de' ? 'Deutsch' : lang === 'ru' ? 'Русский' : '中文'}
 ${t('ar', 'price_label')} ${price} USDT${t('ar', 'per_month')}
 ${t('ar', 'description_label')} ${analyst.description}
 `, { parse_mode: 'HTML' });

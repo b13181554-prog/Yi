@@ -4417,10 +4417,11 @@ async function saveNotificationMarkets() {
 }
 
 function openSupportChat() {
+    const currentLang = localStorage.getItem('language') || 'ar';
     document.getElementById('support-modal').style.display = 'flex';
     document.getElementById('support-messages').innerHTML = `
         <div class="message bot">
-            مرحباً! 👋 أنا مساعدك الذكي لمشروع OBENTCHI. كيف يمكنني مساعدتك؟
+            ${t(currentLang, 'support_chat_welcome')}
         </div>
     `;
 }
@@ -4432,6 +4433,7 @@ function closeSupportChat() {
 async function sendSupportMessage() {
     const input = document.getElementById('support-message-input');
     const message = input.value.trim();
+    const currentLang = localStorage.getItem('language') || 'ar';
     
     if (!message) return;
     
@@ -4440,7 +4442,7 @@ async function sendSupportMessage() {
     messagesDiv.innerHTML += `<div class="message user">${message}</div>`;
     input.value = '';
     
-    messagesDiv.innerHTML += `<div class="message loading">جاري الكتابة...</div>`;
+    messagesDiv.innerHTML += `<div class="message loading">${t(currentLang, 'ai_typing')}</div>`;
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
     
     try {
@@ -4449,7 +4451,7 @@ async function sendSupportMessage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 message, 
-                language: localStorage.getItem('language') || 'ar' 
+                language: currentLang
             })
         });
         
@@ -4461,14 +4463,14 @@ async function sendSupportMessage() {
         if (data.reply) {
             messagesDiv.innerHTML += `<div class="message bot">${data.reply}</div>`;
         } else {
-            messagesDiv.innerHTML += `<div class="message bot">عذراً، حدث خطأ. حاول مرة أخرى.</div>`;
+            messagesDiv.innerHTML += `<div class="message bot">${t(currentLang, 'support_error')}</div>`;
         }
         
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
     } catch (error) {
         const loadingMsg = messagesDiv.querySelector('.loading');
         if (loadingMsg) loadingMsg.remove();
-        messagesDiv.innerHTML += `<div class="message bot">عذراً، فشل الاتصال. حاول مرة أخرى.</div>`;
+        messagesDiv.innerHTML += `<div class="message bot">${t(currentLang, 'connection_failed')}</div>`;
     }
 }
 

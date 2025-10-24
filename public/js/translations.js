@@ -324,7 +324,11 @@ const translations = {
     support_btn: 'خدمة العملاء',
     support_title: 'خدمة العملاء',
     support_placeholder: 'اكتب رسالتك...',
-    send: 'إرسال'
+    send: 'إرسال',
+    support_chat_welcome: 'مرحباً! 👋 أنا مساعدك الذكي لمشروع OBENTCHI. كيف يمكنني مساعدتك؟',
+    ai_typing: 'جاري الكتابة...',
+    support_error: 'عذراً، حدث خطأ. حاول مرة أخرى.',
+    connection_failed: 'عذراً، فشل الاتصال. حاول مرة أخرى.'
   },
   
   en: {
@@ -649,7 +653,11 @@ const translations = {
     support_btn: 'Customer Support',
     support_title: 'Customer Support',
     support_placeholder: 'Type your message...',
-    send: 'Send'
+    send: 'Send',
+    support_chat_welcome: 'Hello! 👋 I\'m your AI assistant for OBENTCHI project. How can I help you?',
+    ai_typing: 'Typing...',
+    support_error: 'Sorry, an error occurred. Please try again.',
+    connection_failed: 'Sorry, connection failed. Please try again.'
   },
   
   fr: {
@@ -840,7 +848,11 @@ const translations = {
     support_btn: 'Service Client',
     support_title: 'Service Client',
     support_placeholder: 'Tapez votre message...',
-    send: 'Envoyer'
+    send: 'Envoyer',
+    support_chat_welcome: 'Bonjour! 👋 Je suis votre assistant IA pour le projet OBENTCHI. Comment puis-je vous aider?',
+    ai_typing: 'En cours de frappe...',
+    support_error: 'Désolé, une erreur s\'est produite. Veuillez réessayer.',
+    connection_failed: 'Désolé, la connexion a échoué. Veuillez réessayer.'
   },
   
   es: {
@@ -1030,7 +1042,11 @@ const translations = {
     support_btn: 'Atención al Cliente',
     support_title: 'Atención al Cliente',
     support_placeholder: 'Escribe tu mensaje...',
-    send: 'Enviar'
+    send: 'Enviar',
+    support_chat_welcome: '¡Hola! 👋 Soy tu asistente de IA para el proyecto OBENTCHI. ¿Cómo puedo ayudarte?',
+    ai_typing: 'Escribiendo...',
+    support_error: 'Lo siento, ocurrió un error. Por favor, inténtalo de nuevo.',
+    connection_failed: 'Lo siento, la conexión falló. Por favor, inténtalo de nuevo.'
   },
   
   de: {
@@ -1220,7 +1236,11 @@ const translations = {
     support_btn: 'Kundendienst',
     support_title: 'Kundendienst',
     support_placeholder: 'Geben Sie Ihre Nachricht ein...',
-    send: 'Senden'
+    send: 'Senden',
+    support_chat_welcome: 'Hallo! 👋 Ich bin Ihr KI-Assistent für das OBENTCHI-Projekt. Wie kann ich Ihnen helfen?',
+    ai_typing: 'Tippt...',
+    support_error: 'Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.',
+    connection_failed: 'Entschuldigung, Verbindung fehlgeschlagen. Bitte versuchen Sie es erneut.'
   },
   
   ru: {
@@ -1410,7 +1430,11 @@ const translations = {
     support_btn: 'Служба поддержки',
     support_title: 'Служба поддержки',
     support_placeholder: 'Введите ваше сообщение...',
-    send: 'Отправить'
+    send: 'Отправить',
+    support_chat_welcome: 'Здравствуйте! 👋 Я ваш ИИ-помощник для проекта OBENTCHI. Как я могу вам помочь?',
+    ai_typing: 'Печатает...',
+    support_error: 'Извините, произошла ошибка. Пожалуйста, попробуйте снова.',
+    connection_failed: 'Извините, соединение не удалось. Пожалуйста, попробуйте снова.'
   },
   
   zh: {
@@ -1600,7 +1624,11 @@ const translations = {
     support_btn: '客户服务',
     support_title: '客户服务',
     support_placeholder: '输入您的消息...',
-    send: '发送'
+    send: '发送',
+    support_chat_welcome: '您好！👋 我是 OBENTCHI 项目的人工智能助手。我能帮您什么？',
+    ai_typing: '正在输入...',
+    support_error: '抱歉，发生错误。请重试。',
+    connection_failed: '抱歉，连接失败。请重试。'
   }
 };
 
