@@ -1130,7 +1130,35 @@ const translations = {
     support_chat_welcome: '¡Hola! 👋 Soy tu asistente de IA para el proyecto OBENTCHI. ¿Cómo puedo ayudarte?',
     ai_typing: 'Escribiendo...',
     support_error: 'Lo siento, ocurrió un error. Por favor, inténtalo de nuevo.',
-    connection_failed: 'Lo siento, la conexión falló. Por favor, inténtalo de nuevo.'
+    connection_failed: 'Lo siento, la conexión falló. Por favor, inténtalo de nuevo.',
+    
+    // Admin Additional Keys
+    admin_broadcast_message_label: 'Texto del mensaje (HTML soportado):',
+    admin_broadcast_placeholder: 'Escribe tu mensaje aquí...\n\nPuedes usar:\n<b>Texto en negrita</b>\n<i>Texto en cursiva</i>\n<code>Código</code>',
+    admin_broadcast_warning: '⚠️ Advertencia: El mensaje se enviará a todos los usuarios. Verifica el mensaje antes de enviarlo.',
+    admin_broadcast_send_btn: '📨 Enviar mensaje',
+    admin_search_placeholder: '🔍 Buscar por ID de usuario o nombre...',
+    admin_search_btn: 'Buscar',
+    admin_search_result_title: 'Resultado de búsqueda:',
+    admin_db_status_title: '🗄️ Estado de la base de datos',
+    admin_db_users: '👥 Usuarios',
+    admin_db_analysts: '👨‍💼 Analistas',
+    admin_db_transactions: '💰 Transacciones',
+    admin_db_withdrawals: '💸 Retiros',
+    admin_db_analyst_subs: '📊 Suscripciones de analistas',
+    admin_db_active_subs: '✅ Activo',
+    admin_system_info_title: '🖥️ Información del sistema',
+    admin_system_uptime: '⏱️ Tiempo de actividad',
+    admin_system_memory: '💾 Uso de memoria',
+    admin_system_node_version: '🔢 Versión de Node.js',
+    admin_system_platform: '🖥️ Plataforma',
+    admin_transaction_filter_all: 'Todas las transacciones',
+    admin_transaction_filter_deposit: 'Depósito',
+    admin_transaction_filter_withdrawal: 'Retiro',
+    admin_transaction_filter_subscription: 'Suscripción',
+    admin_transaction_filter_referral: 'Referido',
+    analyst_registration_form_title: '💼 Registrarse como analista profesional',
+    analyst_registration_note: 'Tu nombre y foto se obtendrán automáticamente de tu cuenta de Telegram'
   },
   
   de: {
