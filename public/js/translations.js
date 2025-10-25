@@ -328,7 +328,35 @@ const translations = {
     support_chat_welcome: 'مرحباً! 👋 أنا مساعدك الذكي لمشروع OBENTCHI. كيف يمكنني مساعدتك؟',
     ai_typing: 'جاري الكتابة...',
     support_error: 'عذراً، حدث خطأ. حاول مرة أخرى.',
-    connection_failed: 'عذراً، فشل الاتصال. حاول مرة أخرى.'
+    connection_failed: 'عذراً، فشل الاتصال. حاول مرة أخرى.',
+    
+    // Admin Additional Keys
+    admin_broadcast_message_label: 'نص الرسالة (يدعم HTML):',
+    admin_broadcast_placeholder: 'اكتب رسالتك هنا...\n\nيمكنك استخدام:\n<b>نص عريض</b>\n<i>نص مائل</i>\n<code>كود</code>',
+    admin_broadcast_warning: '⚠️ تنبيه: سيتم إرسال الرسالة إلى جميع المستخدمين. تأكد من صحة الرسالة قبل الإرسال.',
+    admin_broadcast_send_btn: '📨 إرسال الرسالة',
+    admin_search_placeholder: '🔍 ابحث بمعرف المستخدم أو الاسم...',
+    admin_search_btn: 'بحث',
+    admin_search_result_title: 'نتيجة البحث:',
+    admin_db_status_title: '🗄️ حالة قاعدة البيانات',
+    admin_db_users: '👥 المستخدمين',
+    admin_db_analysts: '👨‍💼 المحللين',
+    admin_db_transactions: '💰 المعاملات',
+    admin_db_withdrawals: '💸 السحوبات',
+    admin_db_analyst_subs: '📊 اشتراكات محللين',
+    admin_db_active_subs: '✅ نشطة',
+    admin_system_info_title: '🖥️ معلومات النظام',
+    admin_system_uptime: '⏱️ وقت التشغيل',
+    admin_system_memory: '💾 استخدام الذاكرة',
+    admin_system_node_version: '🔢 إصدار Node.js',
+    admin_system_platform: '🖥️ المنصة',
+    admin_transaction_filter_all: 'جميع المعاملات',
+    admin_transaction_filter_deposit: 'إيداع',
+    admin_transaction_filter_withdrawal: 'سحب',
+    admin_transaction_filter_subscription: 'اشتراك',
+    admin_transaction_filter_referral: 'إحالة',
+    analyst_registration_form_title: '💼 التسجيل كمحلل محترف',
+    analyst_registration_note: 'سيتم استخدام اسمك وصورتك من حساب تلجرام الخاص بك تلقائياً'
   },
   
   en: {
@@ -657,7 +685,35 @@ const translations = {
     support_chat_welcome: 'Hello! 👋 I\'m your AI assistant for OBENTCHI project. How can I help you?',
     ai_typing: 'Typing...',
     support_error: 'Sorry, an error occurred. Please try again.',
-    connection_failed: 'Sorry, connection failed. Please try again.'
+    connection_failed: 'Sorry, connection failed. Please try again.',
+    
+    // Admin Additional Keys
+    admin_broadcast_message_label: 'Message Text (HTML supported):',
+    admin_broadcast_placeholder: 'Write your message here...\n\nYou can use:\n<b>Bold text</b>\n<i>Italic text</i>\n<code>Code</code>',
+    admin_broadcast_warning: '⚠️ Warning: Message will be sent to all users. Verify message before sending.',
+    admin_broadcast_send_btn: '📨 Send Message',
+    admin_search_placeholder: '🔍 Search by user ID or name...',
+    admin_search_btn: 'Search',
+    admin_search_result_title: 'Search Result:',
+    admin_db_status_title: '🗄️ Database Status',
+    admin_db_users: '👥 Users',
+    admin_db_analysts: '👨‍💼 Analysts',
+    admin_db_transactions: '💰 Transactions',
+    admin_db_withdrawals: '💸 Withdrawals',
+    admin_db_analyst_subs: '📊 Analyst Subscriptions',
+    admin_db_active_subs: '✅ Active',
+    admin_system_info_title: '🖥️ System Information',
+    admin_system_uptime: '⏱️ Uptime',
+    admin_system_memory: '💾 Memory Usage',
+    admin_system_node_version: '🔢 Node.js Version',
+    admin_system_platform: '🖥️ Platform',
+    admin_transaction_filter_all: 'All Transactions',
+    admin_transaction_filter_deposit: 'Deposit',
+    admin_transaction_filter_withdrawal: 'Withdrawal',
+    admin_transaction_filter_subscription: 'Subscription',
+    admin_transaction_filter_referral: 'Referral',
+    analyst_registration_form_title: '💼 Register as Professional Analyst',
+    analyst_registration_note: 'Your name and photo will be automatically fetched from your Telegram account'
   },
   
   fr: {
