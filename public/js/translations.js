@@ -1796,7 +1796,35 @@ const translations = {
     support_chat_welcome: '您好！👋 我是 OBENTCHI 项目的人工智能助手。我能帮您什么？',
     ai_typing: '正在输入...',
     support_error: '抱歉，发生错误。请重试。',
-    connection_failed: '抱歉，连接失败。请重试。'
+    connection_failed: '抱歉，连接失败。请重试。',
+    
+    // Admin Additional Keys
+    admin_broadcast_message_label: '消息文本（支持HTML）：',
+    admin_broadcast_placeholder: '在此输入您的消息...\n\n您可以使用：\n<b>粗体文本</b>\n<i>斜体文本</i>\n<code>代码</code>',
+    admin_broadcast_warning: '⚠️ 警告：消息将发送给所有用户。发送前请验证消息。',
+    admin_broadcast_send_btn: '📨 发送消息',
+    admin_search_placeholder: '🔍 按用户ID或名称搜索...',
+    admin_search_btn: '搜索',
+    admin_search_result_title: '搜索结果：',
+    admin_db_status_title: '🗄️ 数据库状态',
+    admin_db_users: '👥 用户',
+    admin_db_analysts: '👨‍💼 分析师',
+    admin_db_transactions: '💰 交易',
+    admin_db_withdrawals: '💸 提款',
+    admin_db_analyst_subs: '📊 分析师订阅',
+    admin_db_active_subs: '✅ 活跃',
+    admin_system_info_title: '🖥️ 系统信息',
+    admin_system_uptime: '⏱️ 运行时间',
+    admin_system_memory: '💾 内存使用',
+    admin_system_node_version: '🔢 Node.js 版本',
+    admin_system_platform: '🖥️ 平台',
+    admin_transaction_filter_all: '所有交易',
+    admin_transaction_filter_deposit: '存款',
+    admin_transaction_filter_withdrawal: '提款',
+    admin_transaction_filter_subscription: '订阅',
+    admin_transaction_filter_referral: '推荐',
+    analyst_registration_form_title: '💼 注册为专业分析师',
+    analyst_registration_note: '您的姓名和照片将自动从您的Telegram账户获取'
   }
 };
 
