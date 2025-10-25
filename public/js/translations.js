@@ -1352,7 +1352,35 @@ const translations = {
     support_chat_welcome: 'Hallo! 👋 Ich bin Ihr KI-Assistent für das OBENTCHI-Projekt. Wie kann ich Ihnen helfen?',
     ai_typing: 'Tippt...',
     support_error: 'Entschuldigung, ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.',
-    connection_failed: 'Entschuldigung, Verbindung fehlgeschlagen. Bitte versuchen Sie es erneut.'
+    connection_failed: 'Entschuldigung, Verbindung fehlgeschlagen. Bitte versuchen Sie es erneut.',
+    
+    // Admin Additional Keys
+    admin_broadcast_message_label: 'Nachrichtentext (HTML unterstützt):',
+    admin_broadcast_placeholder: 'Schreiben Sie hier Ihre Nachricht...\n\nSie können verwenden:\n<b>Fetter Text</b>\n<i>Kursiver Text</i>\n<code>Code</code>',
+    admin_broadcast_warning: '⚠️ Warnung: Die Nachricht wird an alle Benutzer gesendet. Überprüfen Sie die Nachricht vor dem Senden.',
+    admin_broadcast_send_btn: '📨 Nachricht senden',
+    admin_search_placeholder: '🔍 Nach Benutzer-ID oder Name suchen...',
+    admin_search_btn: 'Suchen',
+    admin_search_result_title: 'Suchergebnis:',
+    admin_db_status_title: '🗄️ Datenbankstatus',
+    admin_db_users: '👥 Benutzer',
+    admin_db_analysts: '👨‍💼 Analysten',
+    admin_db_transactions: '💰 Transaktionen',
+    admin_db_withdrawals: '💸 Abhebungen',
+    admin_db_analyst_subs: '📊 Analysten-Abonnements',
+    admin_db_active_subs: '✅ Aktiv',
+    admin_system_info_title: '🖥️ Systeminformationen',
+    admin_system_uptime: '⏱️ Betriebszeit',
+    admin_system_memory: '💾 Speichernutzung',
+    admin_system_node_version: '🔢 Node.js-Version',
+    admin_system_platform: '🖥️ Plattform',
+    admin_transaction_filter_all: 'Alle Transaktionen',
+    admin_transaction_filter_deposit: 'Einzahlung',
+    admin_transaction_filter_withdrawal: 'Abhebung',
+    admin_transaction_filter_subscription: 'Abonnement',
+    admin_transaction_filter_referral: 'Empfehlung',
+    analyst_registration_form_title: '💼 Als professioneller Analyst registrieren',
+    analyst_registration_note: 'Ihr Name und Foto werden automatisch von Ihrem Telegram-Konto abgerufen'
   },
   
   ru: {
