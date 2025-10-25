@@ -908,7 +908,35 @@ const translations = {
     support_chat_welcome: 'Bonjour! 👋 Je suis votre assistant IA pour le projet OBENTCHI. Comment puis-je vous aider?',
     ai_typing: 'En cours de frappe...',
     support_error: 'Désolé, une erreur s\'est produite. Veuillez réessayer.',
-    connection_failed: 'Désolé, la connexion a échoué. Veuillez réessayer.'
+    connection_failed: 'Désolé, la connexion a échoué. Veuillez réessayer.',
+    
+    // Admin Additional Keys
+    admin_broadcast_message_label: 'Texte du message (HTML supporté):',
+    admin_broadcast_placeholder: 'Écrivez votre message ici...\n\nVous pouvez utiliser:\n<b>Texte gras</b>\n<i>Texte italique</i>\n<code>Code</code>',
+    admin_broadcast_warning: '⚠️ Attention: Le message sera envoyé à tous les utilisateurs. Vérifiez le message avant l\'envoi.',
+    admin_broadcast_send_btn: '📨 Envoyer le message',
+    admin_search_placeholder: '🔍 Rechercher par ID utilisateur ou nom...',
+    admin_search_btn: 'Rechercher',
+    admin_search_result_title: 'Résultat de recherche:',
+    admin_db_status_title: '🗄️ État de la base de données',
+    admin_db_users: '👥 Utilisateurs',
+    admin_db_analysts: '👨‍💼 Analystes',
+    admin_db_transactions: '💰 Transactions',
+    admin_db_withdrawals: '💸 Retraits',
+    admin_db_analyst_subs: '📊 Abonnements analystes',
+    admin_db_active_subs: '✅ Actif',
+    admin_system_info_title: '🖥️ Informations système',
+    admin_system_uptime: '⏱️ Temps de fonctionnement',
+    admin_system_memory: '💾 Utilisation mémoire',
+    admin_system_node_version: '🔢 Version Node.js',
+    admin_system_platform: '🖥️ Plateforme',
+    admin_transaction_filter_all: 'Toutes les transactions',
+    admin_transaction_filter_deposit: 'Dépôt',
+    admin_transaction_filter_withdrawal: 'Retrait',
+    admin_transaction_filter_subscription: 'Abonnement',
+    admin_transaction_filter_referral: 'Parrainage',
+    analyst_registration_form_title: '💼 S\'inscrire comme analyste professionnel',
+    analyst_registration_note: 'Votre nom et photo seront automatiquement récupérés de votre compte Telegram'
   },
   
   es: {
