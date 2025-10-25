@@ -223,19 +223,8 @@ ${t(userLang, 'feature_referrals')}
       });
     } else {
       const subscription = await db.checkSubscription(userId);
-      let statusMessage = '';
-      
-      if (subscription.active) {
-        if (subscription.type === 'trial') {
-          statusMessage = `🎁 الفترة التجريبية: ${subscription.daysLeft} يوم متبقي`;
-        } else {
-          statusMessage = `✅ الاشتراك نشط حتى: ${new Date(subscription.expiresAt).toLocaleDateString('ar')}`;
-        }
-      } else {
-        statusMessage = `❌ لا يوجد اشتراك نشط`;
-      }
-      
       const userLang = user.language || 'ar';
+      let statusMessage = '';
       
       if (subscription.active) {
         if (subscription.type === 'trial') {
@@ -415,12 +404,25 @@ ${isEnabled ? `<b>${t(lang, 'selected_markets')}</b>\n${marketsText}` : ''}
     } else if (user.awaitingCustomerServiceMessage) {
       const config = require('./config');
       // إرسال للمالك بالعربية + لغة المستخدم للسياق
+      const getLanguageName = (langCode) => {
+        const languageNames = {
+          'ar': t('ar', 'language_name_arabic'),
+          'en': 'English',
+          'fr': 'Français',
+          'es': 'Español',
+          'de': 'Deutsch',
+          'ru': 'Русский',
+          'zh': '中文'
+        };
+        return languageNames[langCode] || langCode;
+      };
+      
       await safeSendMessage(bot, config.OWNER_ID, `
 📞 <b>${t('ar', 'customer_service_new_message')}</b>
 
 👤 <b>${t('ar', 'user_label')}</b> ${msg.from.first_name} ${msg.from.last_name || ''}
 🆔 <b>${t('ar', 'id_label')}</b> <code>${userId}</code>
-🌐 <b>لغة المستخدم:</b> ${lang === 'ar' ? 'العربية' : lang === 'en' ? 'English' : lang === 'fr' ? 'Français' : lang === 'es' ? 'Español' : lang === 'de' ? 'Deutsch' : lang === 'ru' ? 'Русский' : '中文'}
+🌐 <b>${t('ar', 'label_user_language')}</b> ${getLanguageName(lang)}
 📝 <b>${t('ar', 'message_label')}</b>
 
 ${text}
@@ -543,24 +545,20 @@ ${statusMessage}
         'indices': '📊'
       };
       
-      const marketNames = {
-        'crypto': 'العملات الرقمية',
-        'forex': 'الفوركس',
-        'stocks': 'الأسهم',
-        'commodities': 'السلع',
-        'indices': 'المؤشرات'
+      const getMarketName = (market) => {
+        return t(lang, `market_${market}`);
       };
       
-      let marketsText = markets.map(m => `${marketEmojis[m]} ${marketNames[m]}`).join('\n');
+      let marketsText = markets.map(m => `${marketEmojis[m]} ${getMarketName(m)}`).join('\n');
       
       await safeEditMessageText(bot, `
 🔔 <b>${t(lang, 'notifications_settings')}</b>
 
-📊 <b>الحالة:</b> ${enabled ? t(lang, 'notifications_enabled') : t(lang, 'notifications_disabled')}
+📊 <b>${t(lang, 'status_label')}</b> ${enabled ? t(lang, 'notifications_enabled') : t(lang, 'notifications_disabled')}
 
-${enabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
+${enabled ? `<b>${t(lang, 'selected_markets')}</b>\n${marketsText}` : ''}
 
-💡 <b>ملاحظة:</b> لتعديل إعدادات الإشعارات والأسواق، افتح التطبيق واذهب إلى قسم "حسابي" ثم "إعدادات الإشعارات"
+💡 <b>${t(lang, 'notification_note')}</b>
       `, {
         chat_id: chatId,
         message_id: query.message.message_id,
@@ -568,8 +566,10 @@ ${enabled ? `<b>الأسواق المختارة:</b>\n${marketsText}` : ''}
       });
     } catch (error) {
       console.error('Error toggling notifications:', error);
+      const user = await db.getUser(userId);
+      const lang = user ? (user.language || 'ar') : 'ar';
       await safeAnswerCallbackQuery(bot, query.id, {
-        text: '❌ حدث خطأ',
+        text: t(lang, 'error_generic'),
         show_alert: true
       });
     }
@@ -584,8 +584,10 @@ bot.on('web_app_data', async (msg) => {
   try {
     const user = await db.getUser(userId);
     if (!user) {
-      return safeSendMessage(bot, chatId, 'يرجى البدء بالضغط على /start');
+      return safeSendMessage(bot, chatId, t('ar', 'prompt_please_start'));
     }
+    
+    const lang = user.language || 'ar';
 
     if (data.action === 'withdraw') {
       const okx = require('./okx');
@@ -600,32 +602,32 @@ bot.on('web_app_data', async (msg) => {
         
         if (balance.available_balance < totalWithFee) {
           return safeSendMessage(bot, chatId, `
-❌ <b>الرصيد المتاح للسحب غير كافٍ!</b>
+❌ <b>${t(lang, 'error_insufficient_withdrawal_balance')}</b>
 
-💰 رصيدك المتاح للسحب: ${balance.available_balance.toFixed(2)} USDT
-🔒 رصيد الضمان: ${balance.escrow_balance.toFixed(2)} USDT (سيتم تحريره نهاية الشهر)
+${t(lang, 'wallet_available_withdrawal_balance').replace('{balance}', balance.available_balance.toFixed(2))}
+${t(lang, 'wallet_escrow_balance_info').replace('{balance}', balance.escrow_balance.toFixed(2))}
 
-المبلغ المطلوب (مع الرسوم): ${totalWithFee.toFixed(2)} USDT
+${t(lang, 'wallet_required_amount_with_fees').replace('{amount}', totalWithFee.toFixed(2))}
 `, { parse_mode: 'HTML' });
         }
         
         await db.deductFromAnalystAvailableBalance(analyst._id, totalWithFee);
       } else {
         if (user.balance < totalWithFee) {
-          return safeSendMessage(bot, chatId, '❌ رصيدك غير كافٍ!');
+          return safeSendMessage(bot, chatId, t(lang, 'error_insufficient_balance'));
         }
         
         await db.updateUserBalance(userId, -totalWithFee);
       }
       
       const processingMsg = await safeSendMessage(bot, chatId, `
-⏳ <b>جاري معالجة السحب...</b>
+⏳ <b>${t(lang, 'withdrawal_processing')}</b>
 
-المبلغ: ${amount} USDT
-الرسوم: ${config.WITHDRAWAL_FEE} USDT
-العنوان: <code>${address}</code>
+${t(lang, 'amount_label')} ${amount} USDT
+${t(lang, 'label_fees')} ${config.WITHDRAWAL_FEE} USDT
+${t(lang, 'label_address')} <code>${address}</code>
 
-⏳ يرجى الانتظار...
+${t(lang, 'please_wait')}
 `, { parse_mode: 'HTML' });
       
       if (!okx.isConfigured()) {
@@ -637,15 +639,15 @@ bot.on('web_app_data', async (msg) => {
         });
         
         await safeEditMessageText(bot, `
-⚠️ <b>السحب التلقائي غير متاح حالياً</b>
+⚠️ <b>${t(lang, 'withdrawal_auto_unavailable')}</b>
 
-تم إنشاء طلب السحب وسيتم معالجته يدوياً خلال 24 ساعة.
+${t(lang, 'withdrawal_manual_request_created')}
 
-المبلغ المحجوز: ${amount} USDT
-الرسوم: ${config.WITHDRAWAL_FEE} USDT
-العنوان: <code>${address}</code>
+${t(lang, 'withdrawal_reserved_amount').replace('{amount}', amount)}
+${t(lang, 'label_fees')} ${config.WITHDRAWAL_FEE} USDT
+${t(lang, 'label_address')} <code>${address}</code>
 
-سيتم إعلامك فور المعالجة 📬
+${t(lang, 'withdrawal_will_notify')}
 `, {
           chat_id: chatId,
           message_id: processingMsg.message_id,
@@ -653,14 +655,14 @@ bot.on('web_app_data', async (msg) => {
         });
         
         await safeSendMessage(bot, config.OWNER_ID, `
-💸 <b>طلب سحب جديد (يدوي)</b>
+💸 <b>${t('ar', 'admin_new_manual_withdrawal')}</b>
 
-المستخدم: ${user.first_name} (@${user.username})
-ID: ${userId}
-المبلغ: ${amount} USDT
-العنوان: <code>${address}</code>
+${t('ar', 'user_label')} ${user.first_name} (@${user.username})
+${t('ar', 'id_label')} ${userId}
+${t('ar', 'amount_label')} ${amount} USDT
+${t('ar', 'label_address')} <code>${address}</code>
 
-⚠️ الأموال محجوزة - يجب المعالجة يدوياً
+⚠️ ${t('ar', 'admin_funds_reserved')}
 `, { parse_mode: 'HTML' });
         
         return;
@@ -687,14 +689,14 @@ ID: ${userId}
           );
           
           await safeEditMessageText(bot, `
-✅ <b>تم السحب بنجاح!</b>
+✅ <b>${t(lang, 'withdrawal_success')}</b>
 
-💸 المبلغ: ${amount} USDT
-📍 العنوان: <code>${address}</code>
-🆔 معرف السحب: <code>${result.data.withdrawId}</code>
-⚡ الشبكة: TRC20
+${t(lang, 'success_amount_display').replace('{amount}', amount)}
+${t(lang, 'withdrawal_address_display').replace('{address}', address)}
+🆔 ${t(lang, 'label_withdrawal_id')} <code>${result.data.withdrawId}</code>
+⚡ ${t(lang, 'label_network')} TRC20
 
-سيصل المبلغ خلال دقائق قليلة 🎉
+${t(lang, 'withdrawal_will_arrive_soon')}
 `, {
             chat_id: chatId,
             message_id: processingMsg.message_id,
@@ -702,13 +704,13 @@ ID: ${userId}
           });
           
           await safeSendMessage(bot, config.OWNER_ID, `
-✅ <b>سحب تلقائي ناجح</b>
+✅ <b>${t('ar', 'admin_auto_withdrawal_success')}</b>
 
-المستخدم: ${user.first_name} (@${user.username})
-ID: ${userId}
-المبلغ: ${amount} USDT
-العنوان: <code>${address}</code>
-معرف السحب: <code>${result.data.withdrawId}</code>
+${t('ar', 'user_label')} ${user.first_name} (@${user.username})
+${t('ar', 'id_label')} ${userId}
+${t('ar', 'amount_label')} ${amount} USDT
+${t('ar', 'label_address')} <code>${address}</code>
+${t('ar', 'label_withdrawal_id')} <code>${result.data.withdrawId}</code>
 `, { parse_mode: 'HTML' });
           
         } else {
@@ -726,12 +728,12 @@ ID: ${userId}
           });
           
           await safeEditMessageText(bot, `
-❌ <b>فشل السحب</b>
+❌ <b>${t(lang, 'error_withdrawal_failed')}</b>
 
-السبب: ${result.error}
+${t(lang, 'label_reason')} ${result.error}
 
-تم إرجاع المبلغ لرصيدك: ${totalWithFee} USDT
-يرجى المحاولة مرة أخرى أو التواصل مع الدعم.
+${t(lang, 'notification_amount_refunded').replace('{amount}', totalWithFee)}
+${t(lang, 'try_again_or_contact')}
 `, {
             chat_id: chatId,
             message_id: processingMsg.message_id,
@@ -739,15 +741,15 @@ ID: ${userId}
           });
           
           await safeSendMessage(bot, config.OWNER_ID, `
-❌ <b>فشل سحب تلقائي</b>
+❌ <b>${t('ar', 'admin_auto_withdrawal_failed')}</b>
 
-المستخدم: ${user.first_name} (@${user.username})
-ID: ${userId}
-المبلغ: ${amount} USDT
-العنوان: <code>${address}</code>
-السبب: ${result.error}
+${t('ar', 'user_label')} ${user.first_name} (@${user.username})
+${t('ar', 'id_label')} ${userId}
+${t('ar', 'amount_label')} ${amount} USDT
+${t('ar', 'label_address')} <code>${address}</code>
+${t('ar', 'label_reason')} ${result.error}
 
-تم إرجاع المبلغ للمستخدم.
+${t('ar', 'notification_amount_refunded_to_user')}
 `, { parse_mode: 'HTML' });
         }
         
@@ -761,12 +763,12 @@ ID: ${userId}
         }
         
         await safeEditMessageText(bot, `
-❌ <b>خطأ في معالجة السحب</b>
+❌ <b>${t(lang, 'error_processing_withdrawal')}</b>
 
-حدث خطأ غير متوقع. تم إرجاع المبلغ لرصيدك.
-يرجى المحاولة مرة أخرى لاحقاً.
+${t(lang, 'notification_unexpected_error_refunded')}
+${t(lang, 'notification_try_again_later')}
 
-الرصيد المُرجع: ${totalWithFee} USDT
+${t(lang, 'label_refunded_balance')} ${totalWithFee} USDT
 `, {
           chat_id: chatId,
           message_id: processingMsg.message_id,
@@ -774,13 +776,13 @@ ID: ${userId}
         });
         
         await safeSendMessage(bot, config.OWNER_ID, `
-⚠️ <b>خطأ في نظام السحب</b>
+⚠️ <b>${t('ar', 'admin_withdrawal_system_error')}</b>
 
-المستخدم: ${user.first_name}
-المبلغ: ${amount} USDT
-الخطأ: ${error.message}
+${t('ar', 'user_label')} ${user.first_name}
+${t('ar', 'amount_label')} ${amount} USDT
+${t('ar', 'label_error')} ${error.message}
 
-تم إرجاع المبلغ للمستخدم.
+${t('ar', 'notification_amount_refunded_to_user')}
 `, { parse_mode: 'HTML' });
       }
     }
@@ -790,7 +792,7 @@ ID: ${userId}
       
       if (user.balance < config.SUBSCRIPTION_PRICE) {
         console.log(`❌ رصيد غير كافٍ للمستخدم ${userId}`);
-        return safeSendMessage(bot, chatId, '❌ رصيدك غير كافٍ للاشتراك!');
+        return safeSendMessage(bot, chatId, t(lang, 'error_insufficient_balance_subscription'));
       }
       
       try {
@@ -819,7 +821,7 @@ ID: ${userId}
         });
         
         if (!result.success) {
-          throw new Error('فشل في معالجة الاشتراك');
+          throw new Error(t(lang, 'error_subscription_processing_failed'));
         }
         
         const expiryDate = result.expiryDate;
@@ -836,13 +838,26 @@ ID: ${userId}
 🎉 ${t(userLang, 'enjoy_features')}
 `, { parse_mode: 'HTML' });
         
+        const getLanguageName = (langCode) => {
+          const languageNames = {
+            'ar': t('ar', 'language_name_arabic'),
+            'en': 'English',
+            'fr': 'Français',
+            'es': 'Español',
+            'de': 'Deutsch',
+            'ru': 'Русский',
+            'zh': '中文'
+          };
+          return languageNames[langCode] || langCode;
+        };
+        
         // إرسال للمالك بالعربية (لغة المالك)
         await safeSendMessage(bot, config.OWNER_ID, `
 💰 <b>${t('ar', 'new_subscription')}</b>
 
 👤 ${t('ar', 'user_label')} ${user.first_name} (@${user.username || t('ar', 'no_username')})
 🆔 ${t('ar', 'id_label')} ${userId}
-🌐 <b>اللغة:</b> ${userLang === 'ar' ? 'العربية' : userLang === 'en' ? 'English' : userLang === 'fr' ? 'Français' : userLang === 'es' ? 'Español' : userLang === 'de' ? 'Deutsch' : userLang === 'ru' ? 'Русский' : '中文'}
+🌐 <b>${t('ar', 'label_language')}</b> ${getLanguageName(userLang)}
 💵 ${t('ar', 'amount_label')} ${config.SUBSCRIPTION_PRICE} USDT
 📅 ${t('ar', 'valid_until')} ${expiryDate.toLocaleDateString('ar')}
 ${referrerId ? `🎁 ${t('ar', 'referral_commission_label')} ${referralCommission} USDT` : ''}
@@ -861,13 +876,26 @@ ${t(userLang, 'try_again_or_contact')}
 💰 ${t(userLang, 'refund_notice')}
 `, { parse_mode: 'HTML' });
         
+        const getLanguageName = (langCode) => {
+          const languageNames = {
+            'ar': t('ar', 'language_name_arabic'),
+            'en': 'English',
+            'fr': 'Français',
+            'es': 'Español',
+            'de': 'Deutsch',
+            'ru': 'Русский',
+            'zh': '中文'
+          };
+          return languageNames[langCode] || langCode;
+        };
+        
         // إرسال للمالك بالعربية (لغة المالك)
         await safeSendMessage(bot, config.OWNER_ID, `
 ⚠️ <b>${t('ar', 'subscription_failed')}</b>
 
 ${t('ar', 'user_label')} ${user.first_name} (@${user.username || t('ar', 'no_username')})
 ${t('ar', 'id_label')} ${userId}
-🌐 <b>اللغة:</b> ${userLang === 'ar' ? 'العربية' : userLang === 'en' ? 'English' : userLang === 'fr' ? 'Français' : userLang === 'es' ? 'Español' : userLang === 'de' ? 'Deutsch' : userLang === 'ru' ? 'Русский' : '中文'}
+🌐 <b>${t('ar', 'label_language')}</b> ${getLanguageName(userLang)}
 ${t('ar', 'error_label')} ${error.message}
 `, { parse_mode: 'HTML' });
       }
@@ -948,6 +976,19 @@ ${t(lang, 'price_label')} ${price} USDT${t(lang, 'per_month')}
 ${t(lang, 'users_can_subscribe')}
 `, { parse_mode: 'HTML' });
         
+        const getLanguageName = (langCode) => {
+          const languageNames = {
+            'ar': t('ar', 'language_name_arabic'),
+            'en': 'English',
+            'fr': 'Français',
+            'es': 'Español',
+            'de': 'Deutsch',
+            'ru': 'Русский',
+            'zh': '中文'
+          };
+          return languageNames[langCode] || langCode;
+        };
+        
         // إرسال للمالك بالعربية (لغة المالك)
         await safeSendMessage(bot, config.OWNER_ID, `
 📝 <b>${t('ar', 'new_analyst')}</b>
@@ -955,7 +996,7 @@ ${t(lang, 'users_can_subscribe')}
 ${t('ar', 'name_label')} ${analyst.name}
 ${t('ar', 'user_label')} @${user.username}
 ${t('ar', 'id_label')} ${userId}
-🌐 <b>اللغة:</b> ${lang === 'ar' ? 'العربية' : lang === 'en' ? 'English' : lang === 'fr' ? 'Français' : lang === 'es' ? 'Español' : lang === 'de' ? 'Deutsch' : lang === 'ru' ? 'Русский' : '中文'}
+🌐 <b>${t('ar', 'label_language')}</b> ${getLanguageName(lang)}
 ${t('ar', 'price_label')} ${price} USDT${t('ar', 'per_month')}
 ${t('ar', 'description_label')} ${analyst.description}
 `, { parse_mode: 'HTML' });
