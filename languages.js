@@ -179,6 +179,66 @@ const translations = {
     // رسائل أخطاء عامة
     generic_error: 'حدث خطأ',
     request_processing_error: 'حدث خطأ في معالجة الطلب',
+    
+    // رسائل الحالة الإضافية
+    trial_period_days_left: '🎁 الفترة التجريبية: {days} يوم متبقي',
+    subscription_active_until_date: '✅ الاشتراك نشط حتى: {date}',
+    
+    // تسميات إضافية
+    label_user_language: 'لغة المستخدم:',
+    language_name_arabic: 'العربية',
+    label_my_account: 'حسابي',
+    label_notification_settings: 'إعدادات الإشعارات',
+    label_fees: 'الرسوم:',
+    label_address: 'العنوان:',
+    label_withdrawal_id: 'معرف السحب:',
+    label_network: 'الشبكة:',
+    label_reason: 'السبب:',
+    label_language: 'اللغة:',
+    label_refunded_balance: 'الرصيد المُرجع:',
+    
+    // رسائل المحفظة
+    error_insufficient_withdrawal_balance: '❌ الرصيد المتاح للسحب غير كافٍ!',
+    wallet_available_withdrawal_balance: '💰 رصيدك المتاح للسحب: {balance} USDT',
+    wallet_escrow_balance_info: '🔒 رصيد الضمان: {balance} USDT (سيتم تحريره نهاية الشهر)',
+    wallet_required_amount_with_fees: 'المبلغ المطلوب (مع الرسوم): {amount} USDT',
+    
+    // رسائل السحب
+    withdrawal_processing: '⏳ جاري معالجة السحب...',
+    please_wait: '⏳ يرجى الانتظار...',
+    withdrawal_auto_unavailable: '⚠️ السحب التلقائي غير متاح حالياً',
+    withdrawal_manual_request_created: 'تم إنشاء طلب السحب وسيتم معالجته يدوياً خلال 24 ساعة.',
+    withdrawal_reserved_amount: 'المبلغ المحجوز: {amount} USDT',
+    withdrawal_will_notify: 'سيتم إعلامك فور المعالجة 📬',
+    withdrawal_address_display: '📍 العنوان: <code>{address}</code>',
+    withdrawal_will_arrive_soon: 'سيصل المبلغ خلال دقائق قليلة 🎉',
+    
+    // رسائل النجاح
+    withdrawal_success: '✅ تم السحب بنجاح!',
+    success_amount_display: '💸 المبلغ: {amount} USDT',
+    
+    // رسائل أخطاء إضافية
+    error_insufficient_balance: '❌ رصيدك غير كافٍ!',
+    error_withdrawal_failed: '❌ فشل السحب',
+    error_processing_withdrawal: '❌ خطأ في معالجة السحب',
+    error_insufficient_balance_subscription: '❌ رصيدك غير كافٍ للاشتراك!',
+    error_subscription_processing_failed: 'فشل في معالجة الاشتراك',
+    
+    // إشعارات إضافية
+    notification_amount_refunded: 'تم إرجاع المبلغ لرصيدك: {amount} USDT',
+    notification_unexpected_error_refunded: 'حدث خطأ غير متوقع. تم إرجاع المبلغ لرصيدك.',
+    notification_try_again_later: 'يرجى المحاولة مرة أخرى لاحقاً.',
+    notification_amount_refunded_to_user: 'تم إرجاع المبلغ للمستخدم.',
+    
+    // مطالبات
+    prompt_please_start: 'يرجى البدء بالضغط على /start',
+    
+    // إشعارات إدارية
+    admin_new_manual_withdrawal: '💸 طلب سحب جديد (يدوي)',
+    admin_funds_reserved: '⚠️ الأموال محجوزة - يجب المعالجة يدوياً',
+    admin_auto_withdrawal_success: '✅ سحب تلقائي ناجح',
+    admin_auto_withdrawal_failed: '❌ فشل سحب تلقائي',
+    admin_withdrawal_system_error: '⚠️ خطأ في نظام السحب',
   },
   
   en: {
@@ -361,6 +421,66 @@ const translations = {
     // General error messages
     generic_error: 'An error occurred',
     request_processing_error: 'An error occurred while processing the request',
+    
+    // Additional status messages
+    trial_period_days_left: '🎁 Trial Period: {days} days remaining',
+    subscription_active_until_date: '✅ Subscription active until: {date}',
+    
+    // Additional labels
+    label_user_language: 'User language:',
+    language_name_arabic: 'Arabic',
+    label_my_account: 'My Account',
+    label_notification_settings: 'Notification Settings',
+    label_fees: 'Fees:',
+    label_address: 'Address:',
+    label_withdrawal_id: 'Withdrawal ID:',
+    label_network: 'Network:',
+    label_reason: 'Reason:',
+    label_language: 'Language:',
+    label_refunded_balance: 'Refunded balance:',
+    
+    // Wallet messages
+    error_insufficient_withdrawal_balance: '❌ Insufficient withdrawal balance!',
+    wallet_available_withdrawal_balance: '💰 Your available withdrawal balance: {balance} USDT',
+    wallet_escrow_balance_info: '🔒 Escrow balance: {balance} USDT (will be released at month end)',
+    wallet_required_amount_with_fees: 'Required amount (including fees): {amount} USDT',
+    
+    // Withdrawal messages
+    withdrawal_processing: '⏳ Processing withdrawal...',
+    please_wait: '⏳ Please wait...',
+    withdrawal_auto_unavailable: '⚠️ Automatic withdrawal is currently unavailable',
+    withdrawal_manual_request_created: 'Withdrawal request created and will be processed manually within 24 hours.',
+    withdrawal_reserved_amount: 'Reserved amount: {amount} USDT',
+    withdrawal_will_notify: 'You will be notified upon processing 📬',
+    withdrawal_address_display: '📍 Address: <code>{address}</code>',
+    withdrawal_will_arrive_soon: 'The amount will arrive in a few minutes 🎉',
+    
+    // Success messages
+    withdrawal_success: '✅ Withdrawal successful!',
+    success_amount_display: '💸 Amount: {amount} USDT',
+    
+    // Additional error messages
+    error_insufficient_balance: '❌ Insufficient balance!',
+    error_withdrawal_failed: '❌ Withdrawal failed',
+    error_processing_withdrawal: '❌ Error processing withdrawal',
+    error_insufficient_balance_subscription: '❌ Insufficient balance for subscription!',
+    error_subscription_processing_failed: 'Subscription processing failed',
+    
+    // Additional notifications
+    notification_amount_refunded: 'Amount refunded to your balance: {amount} USDT',
+    notification_unexpected_error_refunded: 'An unexpected error occurred. Amount refunded to your balance.',
+    notification_try_again_later: 'Please try again later.',
+    notification_amount_refunded_to_user: 'Amount refunded to user.',
+    
+    // Prompts
+    prompt_please_start: 'Please start by pressing /start',
+    
+    // Admin notifications
+    admin_new_manual_withdrawal: '💸 New manual withdrawal request',
+    admin_funds_reserved: '⚠️ Funds reserved - manual processing required',
+    admin_auto_withdrawal_success: '✅ Automatic withdrawal successful',
+    admin_auto_withdrawal_failed: '❌ Automatic withdrawal failed',
+    admin_withdrawal_system_error: '⚠️ Withdrawal system error',
   },
   
   fr: {
@@ -521,6 +641,66 @@ const translations = {
     // Messages d\'erreur généraux
     generic_error: 'Une erreur s\'est produite',
     request_processing_error: 'Une erreur s\'est produite lors du traitement de la demande',
+    
+    // Messages de statut supplémentaires
+    trial_period_days_left: '🎁 Période d\'essai : {days} jours restants',
+    subscription_active_until_date: '✅ Abonnement actif jusqu\'au : {date}',
+    
+    // Étiquettes supplémentaires
+    label_user_language: 'Langue de l\'utilisateur :',
+    language_name_arabic: 'Arabe',
+    label_my_account: 'Mon compte',
+    label_notification_settings: 'Paramètres de notification',
+    label_fees: 'Frais :',
+    label_address: 'Adresse :',
+    label_withdrawal_id: 'ID de retrait :',
+    label_network: 'Réseau :',
+    label_reason: 'Raison :',
+    label_language: 'Langue :',
+    label_refunded_balance: 'Solde remboursé :',
+    
+    // Messages de portefeuille
+    error_insufficient_withdrawal_balance: '❌ Solde de retrait insuffisant !',
+    wallet_available_withdrawal_balance: '💰 Votre solde de retrait disponible : {balance} USDT',
+    wallet_escrow_balance_info: '🔒 Solde de garantie : {balance} USDT (sera libéré à la fin du mois)',
+    wallet_required_amount_with_fees: 'Montant requis (frais inclus) : {amount} USDT',
+    
+    // Messages de retrait
+    withdrawal_processing: '⏳ Traitement du retrait...',
+    please_wait: '⏳ Veuillez patienter...',
+    withdrawal_auto_unavailable: '⚠️ Le retrait automatique n\'est actuellement pas disponible',
+    withdrawal_manual_request_created: 'Demande de retrait créée et sera traitée manuellement dans les 24 heures.',
+    withdrawal_reserved_amount: 'Montant réservé : {amount} USDT',
+    withdrawal_will_notify: 'Vous serez notifié lors du traitement 📬',
+    withdrawal_address_display: '📍 Adresse : <code>{address}</code>',
+    withdrawal_will_arrive_soon: 'Le montant arrivera dans quelques minutes 🎉',
+    
+    // Messages de succès
+    withdrawal_success: '✅ Retrait réussi !',
+    success_amount_display: '💸 Montant : {amount} USDT',
+    
+    // Messages d\'erreur supplémentaires
+    error_insufficient_balance: '❌ Solde insuffisant !',
+    error_withdrawal_failed: '❌ Échec du retrait',
+    error_processing_withdrawal: '❌ Erreur lors du traitement du retrait',
+    error_insufficient_balance_subscription: '❌ Solde insuffisant pour l\'abonnement !',
+    error_subscription_processing_failed: 'Échec du traitement de l\'abonnement',
+    
+    // Notifications supplémentaires
+    notification_amount_refunded: 'Montant remboursé sur votre solde : {amount} USDT',
+    notification_unexpected_error_refunded: 'Une erreur inattendue s\'est produite. Montant remboursé sur votre solde.',
+    notification_try_again_later: 'Veuillez réessayer plus tard.',
+    notification_amount_refunded_to_user: 'Montant remboursé à l\'utilisateur.',
+    
+    // Invites
+    prompt_please_start: 'Veuillez commencer en appuyant sur /start',
+    
+    // Notifications administrateur
+    admin_new_manual_withdrawal: '💸 Nouvelle demande de retrait manuel',
+    admin_funds_reserved: '⚠️ Fonds réservés - traitement manuel requis',
+    admin_auto_withdrawal_success: '✅ Retrait automatique réussi',
+    admin_auto_withdrawal_failed: '❌ Échec du retrait automatique',
+    admin_withdrawal_system_error: '⚠️ Erreur du système de retrait',
   },
   
   es: {
@@ -681,6 +861,66 @@ const translations = {
     // Mensajes de error generales
     generic_error: 'Ocurrió un error',
     request_processing_error: 'Ocurrió un error al procesar la solicitud',
+    
+    // Mensajes de estado adicionales
+    trial_period_days_left: '🎁 Período de prueba: {days} días restantes',
+    subscription_active_until_date: '✅ Suscripción activa hasta: {date}',
+    
+    // Etiquetas adicionales
+    label_user_language: 'Idioma del usuario:',
+    language_name_arabic: 'Árabe',
+    label_my_account: 'Mi cuenta',
+    label_notification_settings: 'Configuración de notificaciones',
+    label_fees: 'Tarifas:',
+    label_address: 'Dirección:',
+    label_withdrawal_id: 'ID de retiro:',
+    label_network: 'Red:',
+    label_reason: 'Razón:',
+    label_language: 'Idioma:',
+    label_refunded_balance: 'Saldo reembolsado:',
+    
+    // Mensajes de billetera
+    error_insufficient_withdrawal_balance: '❌ ¡Saldo de retiro insuficiente!',
+    wallet_available_withdrawal_balance: '💰 Tu saldo de retiro disponible: {balance} USDT',
+    wallet_escrow_balance_info: '🔒 Saldo de garantía: {balance} USDT (se liberará a fin de mes)',
+    wallet_required_amount_with_fees: 'Monto requerido (incluidas tarifas): {amount} USDT',
+    
+    // Mensajes de retiro
+    withdrawal_processing: '⏳ Procesando retiro...',
+    please_wait: '⏳ Por favor espera...',
+    withdrawal_auto_unavailable: '⚠️ El retiro automático no está disponible actualmente',
+    withdrawal_manual_request_created: 'Solicitud de retiro creada y será procesada manualmente en 24 horas.',
+    withdrawal_reserved_amount: 'Monto reservado: {amount} USDT',
+    withdrawal_will_notify: 'Serás notificado al procesar 📬',
+    withdrawal_address_display: '📍 Dirección: <code>{address}</code>',
+    withdrawal_will_arrive_soon: 'El monto llegará en unos minutos 🎉',
+    
+    // Mensajes de éxito
+    withdrawal_success: '✅ ¡Retiro exitoso!',
+    success_amount_display: '💸 Monto: {amount} USDT',
+    
+    // Mensajes de error adicionales
+    error_insufficient_balance: '❌ ¡Saldo insuficiente!',
+    error_withdrawal_failed: '❌ Retiro fallido',
+    error_processing_withdrawal: '❌ Error al procesar el retiro',
+    error_insufficient_balance_subscription: '❌ ¡Saldo insuficiente para la suscripción!',
+    error_subscription_processing_failed: 'Falló el procesamiento de la suscripción',
+    
+    // Notificaciones adicionales
+    notification_amount_refunded: 'Monto reembolsado a tu saldo: {amount} USDT',
+    notification_unexpected_error_refunded: 'Ocurrió un error inesperado. Monto reembolsado a tu saldo.',
+    notification_try_again_later: 'Por favor, inténtalo de nuevo más tarde.',
+    notification_amount_refunded_to_user: 'Monto reembolsado al usuario.',
+    
+    // Solicitudes
+    prompt_please_start: 'Por favor comienza presionando /start',
+    
+    // Notificaciones de administrador
+    admin_new_manual_withdrawal: '💸 Nueva solicitud de retiro manual',
+    admin_funds_reserved: '⚠️ Fondos reservados - procesamiento manual requerido',
+    admin_auto_withdrawal_success: '✅ Retiro automático exitoso',
+    admin_auto_withdrawal_failed: '❌ Retiro automático fallido',
+    admin_withdrawal_system_error: '⚠️ Error del sistema de retiro',
   },
   
   de: {
@@ -841,6 +1081,66 @@ const translations = {
     // Allgemeine Fehlermeldungen
     generic_error: 'Ein Fehler ist aufgetreten',
     request_processing_error: 'Bei der Verarbeitung der Anfrage ist ein Fehler aufgetreten',
+    
+    // Zusätzliche Statusmeldungen
+    trial_period_days_left: '🎁 Testzeitraum: {days} Tage verbleibend',
+    subscription_active_until_date: '✅ Abonnement aktiv bis: {date}',
+    
+    // Zusätzliche Bezeichnungen
+    label_user_language: 'Benutzersprache:',
+    language_name_arabic: 'Arabisch',
+    label_my_account: 'Mein Konto',
+    label_notification_settings: 'Benachrichtigungseinstellungen',
+    label_fees: 'Gebühren:',
+    label_address: 'Adresse:',
+    label_withdrawal_id: 'Auszahlungs-ID:',
+    label_network: 'Netzwerk:',
+    label_reason: 'Grund:',
+    label_language: 'Sprache:',
+    label_refunded_balance: 'Erstattetes Guthaben:',
+    
+    // Wallet-Meldungen
+    error_insufficient_withdrawal_balance: '❌ Unzureichendes Auszahlungsguthaben!',
+    wallet_available_withdrawal_balance: '💰 Ihr verfügbares Auszahlungsguthaben: {balance} USDT',
+    wallet_escrow_balance_info: '🔒 Treuhandguthaben: {balance} USDT (wird am Monatsende freigegeben)',
+    wallet_required_amount_with_fees: 'Erforderlicher Betrag (inkl. Gebühren): {amount} USDT',
+    
+    // Auszahlungsmeldungen
+    withdrawal_processing: '⏳ Auszahlung wird verarbeitet...',
+    please_wait: '⏳ Bitte warten...',
+    withdrawal_auto_unavailable: '⚠️ Automatische Auszahlung ist derzeit nicht verfügbar',
+    withdrawal_manual_request_created: 'Auszahlungsanfrage erstellt und wird innerhalb von 24 Stunden manuell bearbeitet.',
+    withdrawal_reserved_amount: 'Reservierter Betrag: {amount} USDT',
+    withdrawal_will_notify: 'Sie werden nach der Bearbeitung benachrichtigt 📬',
+    withdrawal_address_display: '📍 Adresse: <code>{address}</code>',
+    withdrawal_will_arrive_soon: 'Der Betrag wird in wenigen Minuten eintreffen 🎉',
+    
+    // Erfolgsmeldungen
+    withdrawal_success: '✅ Auszahlung erfolgreich!',
+    success_amount_display: '💸 Betrag: {amount} USDT',
+    
+    // Zusätzliche Fehlermeldungen
+    error_insufficient_balance: '❌ Unzureichendes Guthaben!',
+    error_withdrawal_failed: '❌ Auszahlung fehlgeschlagen',
+    error_processing_withdrawal: '❌ Fehler bei der Verarbeitung der Auszahlung',
+    error_insufficient_balance_subscription: '❌ Unzureichendes Guthaben für Abonnement!',
+    error_subscription_processing_failed: 'Abonnementverarbeitung fehlgeschlagen',
+    
+    // Zusätzliche Benachrichtigungen
+    notification_amount_refunded: 'Betrag auf Ihr Guthaben zurückerstattet: {amount} USDT',
+    notification_unexpected_error_refunded: 'Ein unerwarteter Fehler ist aufgetreten. Betrag auf Ihr Guthaben zurückerstattet.',
+    notification_try_again_later: 'Bitte versuchen Sie es später erneut.',
+    notification_amount_refunded_to_user: 'Betrag an Benutzer zurückerstattet.',
+    
+    // Aufforderungen
+    prompt_please_start: 'Bitte beginnen Sie, indem Sie /start drücken',
+    
+    // Admin-Benachrichtigungen
+    admin_new_manual_withdrawal: '💸 Neue manuelle Auszahlungsanfrage',
+    admin_funds_reserved: '⚠️ Mittel reserviert - manuelle Verarbeitung erforderlich',
+    admin_auto_withdrawal_success: '✅ Automatische Auszahlung erfolgreich',
+    admin_auto_withdrawal_failed: '❌ Automatische Auszahlung fehlgeschlagen',
+    admin_withdrawal_system_error: '⚠️ Auszahlungssystemfehler',
   },
   
   ru: {
@@ -1001,6 +1301,66 @@ const translations = {
     // Общие сообщения об ошибках
     generic_error: 'Произошла ошибка',
     request_processing_error: 'Произошла ошибка при обработке запроса',
+    
+    // Дополнительные статусные сообщения
+    trial_period_days_left: '🎁 Пробный период: {days} дней осталось',
+    subscription_active_until_date: '✅ Подписка активна до: {date}',
+    
+    // Дополнительные ярлыки
+    label_user_language: 'Язык пользователя:',
+    language_name_arabic: 'Арабский',
+    label_my_account: 'Мой аккаунт',
+    label_notification_settings: 'Настройки уведомлений',
+    label_fees: 'Комиссия:',
+    label_address: 'Адрес:',
+    label_withdrawal_id: 'ID вывода:',
+    label_network: 'Сеть:',
+    label_reason: 'Причина:',
+    label_language: 'Язык:',
+    label_refunded_balance: 'Возвращенный баланс:',
+    
+    // Сообщения кошелька
+    error_insufficient_withdrawal_balance: '❌ Недостаточный баланс для вывода!',
+    wallet_available_withdrawal_balance: '💰 Ваш доступный баланс для вывода: {balance} USDT',
+    wallet_escrow_balance_info: '🔒 Баланс в депозите: {balance} USDT (будет освобожден в конце месяца)',
+    wallet_required_amount_with_fees: 'Требуемая сумма (с комиссией): {amount} USDT',
+    
+    // Сообщения о выводе
+    withdrawal_processing: '⏳ Обработка вывода...',
+    please_wait: '⏳ Пожалуйста, подождите...',
+    withdrawal_auto_unavailable: '⚠️ Автоматический вывод в настоящее время недоступен',
+    withdrawal_manual_request_created: 'Запрос на вывод создан и будет обработан вручную в течение 24 часов.',
+    withdrawal_reserved_amount: 'Зарезервированная сумма: {amount} USDT',
+    withdrawal_will_notify: 'Вы будете уведомлены при обработке 📬',
+    withdrawal_address_display: '📍 Адрес: <code>{address}</code>',
+    withdrawal_will_arrive_soon: 'Сумма поступит через несколько минут 🎉',
+    
+    // Сообщения об успехе
+    withdrawal_success: '✅ Вывод успешен!',
+    success_amount_display: '💸 Сумма: {amount} USDT',
+    
+    // Дополнительные сообщения об ошибках
+    error_insufficient_balance: '❌ Недостаточный баланс!',
+    error_withdrawal_failed: '❌ Вывод не удался',
+    error_processing_withdrawal: '❌ Ошибка при обработке вывода',
+    error_insufficient_balance_subscription: '❌ Недостаточный баланс для подписки!',
+    error_subscription_processing_failed: 'Обработка подписки не удалась',
+    
+    // Дополнительные уведомления
+    notification_amount_refunded: 'Сумма возвращена на ваш баланс: {amount} USDT',
+    notification_unexpected_error_refunded: 'Произошла непредвиденная ошибка. Сумма возвращена на ваш баланс.',
+    notification_try_again_later: 'Пожалуйста, попробуйте еще раз позже.',
+    notification_amount_refunded_to_user: 'Сумма возвращена пользователю.',
+    
+    // Подсказки
+    prompt_please_start: 'Пожалуйста, начните, нажав /start',
+    
+    // Уведомления администратора
+    admin_new_manual_withdrawal: '💸 Новый запрос на ручной вывод',
+    admin_funds_reserved: '⚠️ Средства зарезервированы - требуется ручная обработка',
+    admin_auto_withdrawal_success: '✅ Автоматический вывод успешен',
+    admin_auto_withdrawal_failed: '❌ Автоматический вывод не удался',
+    admin_withdrawal_system_error: '⚠️ Ошибка системы вывода',
   },
   
   zh: {
@@ -1161,6 +1521,66 @@ const translations = {
     // 通用错误消息
     generic_error: '发生错误',
     request_processing_error: '处理请求时发生错误',
+    
+    // 附加状态消息
+    trial_period_days_left: '🎁 试用期：剩余 {days} 天',
+    subscription_active_until_date: '✅ 订阅有效期至：{date}',
+    
+    // 附加标签
+    label_user_language: '用户语言：',
+    language_name_arabic: '阿拉伯语',
+    label_my_account: '我的账户',
+    label_notification_settings: '通知设置',
+    label_fees: '费用：',
+    label_address: '地址：',
+    label_withdrawal_id: '提现ID：',
+    label_network: '网络：',
+    label_reason: '原因：',
+    label_language: '语言：',
+    label_refunded_balance: '退款余额：',
+    
+    // 钱包消息
+    error_insufficient_withdrawal_balance: '❌ 提现余额不足！',
+    wallet_available_withdrawal_balance: '💰 您的可用提现余额：{balance} USDT',
+    wallet_escrow_balance_info: '🔒 托管余额：{balance} USDT（将在月底释放）',
+    wallet_required_amount_with_fees: '所需金额（含费用）：{amount} USDT',
+    
+    // 提现消息
+    withdrawal_processing: '⏳ 正在处理提现...',
+    please_wait: '⏳ 请稍候...',
+    withdrawal_auto_unavailable: '⚠️ 自动提现目前不可用',
+    withdrawal_manual_request_created: '提现请求已创建，将在24小时内手动处理。',
+    withdrawal_reserved_amount: '保留金额：{amount} USDT',
+    withdrawal_will_notify: '处理完成后将通知您 📬',
+    withdrawal_address_display: '📍 地址：<code>{address}</code>',
+    withdrawal_will_arrive_soon: '金额将在几分钟内到达 🎉',
+    
+    // 成功消息
+    withdrawal_success: '✅ 提现成功！',
+    success_amount_display: '💸 金额：{amount} USDT',
+    
+    // 附加错误消息
+    error_insufficient_balance: '❌ 余额不足！',
+    error_withdrawal_failed: '❌ 提现失败',
+    error_processing_withdrawal: '❌ 处理提现时出错',
+    error_insufficient_balance_subscription: '❌ 订阅余额不足！',
+    error_subscription_processing_failed: '订阅处理失败',
+    
+    // 附加通知
+    notification_amount_refunded: '金额已退还到您的余额：{amount} USDT',
+    notification_unexpected_error_refunded: '发生意外错误。金额已退还到您的余额。',
+    notification_try_again_later: '请稍后再试。',
+    notification_amount_refunded_to_user: '金额已退还给用户。',
+    
+    // 提示
+    prompt_please_start: '请按 /start 开始',
+    
+    // 管理员通知
+    admin_new_manual_withdrawal: '💸 新的手动提现请求',
+    admin_funds_reserved: '⚠️ 资金已保留 - 需要手动处理',
+    admin_auto_withdrawal_success: '✅ 自动提现成功',
+    admin_auto_withdrawal_failed: '❌ 自动提现失败',
+    admin_withdrawal_system_error: '⚠️ 提现系统错误',
   }
 };
 
