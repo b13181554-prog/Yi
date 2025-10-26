@@ -15,8 +15,8 @@ if (!tg) {
     console.error('Telegram WebApp not loaded');
     document.getElementById('loading').innerHTML = `
         <div style="text-align: center; padding: 40px 20px;">
-            <h2 style="color: #ee0979;">❌ خطأ</h2>
-            <p>يجب فتح التطبيق من خلال Telegram</p>
+            <h2 style="color: #ee0979;">${t('error_title')}</h2>
+            <p>${t('error_must_open_from_telegram')}</p>
         </div>
     `;
 } else {
@@ -323,21 +323,21 @@ async function loadUserData() {
         
         document.getElementById('loading').innerHTML = `
             <div style="text-align: center; padding: 40px 20px;">
-                <h2 style="color: #ee0979; margin-bottom: 15px;">❌ خطأ في الاتصال</h2>
+                <h2 style="color: #ee0979; margin-bottom: 15px;">${t('connection_error_title')}</h2>
                 <p style="color: #666; margin-bottom: 20px;">${error.message}</p>
 
                 <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin: 20px 0; text-align: right;">
-                    <h3 style="color: #856404; margin-bottom: 10px;">📝 الحلول المقترحة:</h3>
+                    <h3 style="color: #856404; margin-bottom: 10px;">📝 ${t('suggested_solutions_title')}</h3>
                     <ol style="color: #856404; font-size: 14px; line-height: 2;">
-                        <li><strong>تأكد من فتح التطبيق من Telegram:</strong> يجب الضغط على زر "🚀 Open App" في البوت</li>
-                        <li><strong>تحديث Telegram:</strong> تأكد من أن لديك أحدث نسخة من Telegram</li>
-                        <li><strong>إعادة تشغيل البوت:</strong> أرسل /start للبوت مرة أخرى</li>
-                        <li><strong>مسح الكاش:</strong> حاول مسح كاش التطبيق وإعادة المحاولة</li>
+                        <li><strong>${t('ensure_open_from_telegram')}</strong> ${t('press_open_app_button')}</li>
+                        <li><strong>${t('update_telegram')}</strong> ${t('ensure_latest_version')}</li>
+                        <li><strong>${t('restart_bot')}</strong> ${t('send_start_again')}</li>
+                        <li><strong>${t('clear_cache')}</strong> ${t('try_clear_cache')}</li>
                     </ol>
                 </div>
 
                 <button onclick="location.reload()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 30px; border-radius: 25px; font-size: 16px; cursor: pointer; margin-top: 20px;">
-                    🔄 إعادة المحاولة
+                    ${t('retry_button')}
                 </button>
             </div>
         `;
@@ -1297,9 +1297,9 @@ async function getAnalystPromoterLink(analystId, analystName) {
         
         if (data.success && data.referral_link) {
             navigator.clipboard.writeText(data.referral_link).then(() => {
-                tg.showAlert(`✅ تم نسخ رابط الإحالة للمحلل ${analystName}!\n\nشارك هذا الرابط واحصل على ${data.commission_rate}% عمولة من كل اشتراك! 💰`);
+                tg.showAlert(t('alert_analyst_promoter_link_copied').replace('{analyst}', analystName).replace('{rate}', data.commission_rate));
             }).catch(() => {
-                tg.showAlert(`رابط الإحالة: ${data.referral_link}\n\nاحصل على ${data.commission_rate}% عمولة!`);
+                tg.showAlert(t('alert_analyst_promoter_link_text').replace('{link}', data.referral_link).replace('{rate}', data.commission_rate));
             });
         } else {
             tg.showAlert('❌ ' + (data.error || t('error_get_link_failed')));
@@ -1569,12 +1569,12 @@ async function submitWithdraw() {
     const totalWithFee = amount + 1;
 
     if (totalWithFee > userBalance) {
-        tg.showAlert(`رصيدك غير كافٍ! الرصيد الحالي: ${userBalance.toFixed(2)} USDT`);
+        tg.showAlert(t('alert_insufficient_balance').replace('{balance}', userBalance.toFixed(2)));
         return;
     }
 
     tg.showConfirm(
-        `⚡ سحب تلقائي\n\nالمبلغ: ${amount} USDT\nالرسوم: 1 USDT\nالإجمالي: ${totalWithFee} USDT\n\nسيتم معالجة السحب فوراً تلقائياً\nهل أنت متأكد؟`,
+        t('confirm_withdraw_auto').replace('{amount}', amount).replace('{total}', totalWithFee),
         async (confirmed) => {
             if (confirmed) {
                 tg.sendData(JSON.stringify({
@@ -1591,12 +1591,12 @@ async function submitWithdraw() {
 
 async function subscribe() {
     if (userBalance < 10) {
-        tg.showAlert('❌ رصيدك غير كافٍ للاشتراك!\n\nالرصيد الحالي: ' + userBalance.toFixed(2) + ' USDT\nالمطلوب: 10 USDT\n\nقم بإيداع المبلغ المطلوب من قسم المحفظة أولاً.');
+        tg.showAlert(t('alert_insufficient_balance_subscription_full').replace('{balance}', userBalance.toFixed(2)));
         return;
     }
 
     tg.showConfirm(
-        '💳 الاشتراك الشهري\n\nالسعر: 10 USDT\nالمدة: 30 يوم\n\nرصيدك بعد الاشتراك: ' + (userBalance - 10).toFixed(2) + ' USDT\n\nهل تريد المتابعة؟',
+        t('confirm_subscribe_monthly').replace('{balance}', (userBalance - 10).toFixed(2)),
         async (confirmed) => {
             if (confirmed) {
                 try {
@@ -1617,7 +1617,7 @@ async function subscribe() {
                     console.log('📊 Subscription result:', result);
                     
                     if (result.success) {
-                        tg.showAlert('✅ تم تفعيل الاشتراك بنجاح!\n\n💳 المبلغ المخصوم: 10 USDT\n📅 صالح حتى: ' + new Date(result.expiry_date).toLocaleDateString('ar'));
+                        tg.showAlert(t('alert_subscription_activated_full').replace('{date}', new Date(result.expiry_date).toLocaleDateString('ar')));
                         
                         setTimeout(async () => {
                             await loadUserData();
@@ -1637,7 +1637,7 @@ async function subscribe() {
 
 async function loadTransactions() {
     if (!userId) {
-        console.warn('⚠️ لا يوجد userId لتحميل المعاملات');
+        console.warn('⚠️ ' + t('no_userid_for_transactions'));
         return;
     }
 
@@ -1977,9 +1977,9 @@ function selectPaymentMode(mode) {
         
         if (userBalance < 0.1) {
             if (tg.showAlert) {
-                tg.showAlert('⚠️ رصيدك الحالي: ' + userBalance.toFixed(2) + ' USDT\nيلزم 0.1 USDT على الأقل للتحليل');
+                tg.showAlert(t('alert_insufficient_balance_analysis').replace('{balance}', userBalance.toFixed(2)));
             } else {
-                alert('⚠️ رصيدك الحالي: ' + userBalance.toFixed(2) + ' USDT\nيلزم 0.1 USDT على الأقل للتحليل');
+                alert(t('alert_insufficient_balance_analysis').replace('{balance}', userBalance.toFixed(2)));
             }
         }
     }
@@ -2183,7 +2183,7 @@ async function analyzeMarketAdvanced() {
                 await loadUserData();
                 
                 let message = `❌ ${data.error}\n\n`;
-                message += `📥 يرجى الإيداع من قسم "المحفظة"`;
+                message += t('deposit_instruction_message');
                 
                 if (tg.showAlert) {
                     tg.showAlert(message);
@@ -2201,11 +2201,10 @@ async function analyzeMarketAdvanced() {
                 
                 if (needsDeposit) {
                     message += `⚠️ رصيدك غير كافٍ!\n`;
-                    message += `📥 المطلوب: قم بالإيداع أولاً من قسم "المحفظة"\n`;
-                    message += `ثم اذهب إلى "حسابي" للاشتراك`;
+                    message += t('deposit_instruction_message') + `\n`;
+                    message += t('deposit_then_subscribe');
                 } else {
-                    message += `✅ رصيدك كافٍ!\n`;
-                    message += `اضغط "موافق" للذهاب إلى صفحة الاشتراك`;
+                    message += t('subscription_balance_ok');
                 }
                 
                 if (tg.showAlert) {
@@ -2233,7 +2232,7 @@ async function analyzeMarketAdvanced() {
     } catch (error) {
         loadingMsg.remove();
         console.error('Error in analysis:', error);
-        alert('❌ حدث خطأ أثناء التحليل: ' + error.message);
+        alert(t('error_analysis_unexpected').replace('{error}', error.message));
     }
 }
 
@@ -2247,7 +2246,7 @@ async function scanBestSignals() {
     
     const loadingMsg = document.createElement('div');
     loadingMsg.className = 'loading';
-    loadingMsg.innerHTML = '<div class="spinner"></div><p>🔍 جاري البحث عن أفضل الصفقات...</p>';
+    loadingMsg.innerHTML = `<div class="spinner"></div><p>${t('loading_scan_best_signals')}</p>`;
     document.getElementById('analysis-section').appendChild(loadingMsg);
     
     try {
@@ -2269,12 +2268,12 @@ async function scanBestSignals() {
         if (data.success && data.signals && data.signals.length > 0) {
             displayBestSignalsResult(data.signals, data.scanned_market, data.analysis_type, data.timeframe);
         } else {
-            alert('⚠️ لم يتم العثور على صفقات قوية حالياً\n\nجرب:\n• تغيير نوع السوق\n• تغيير نوع التحليل\n• تغيير الإطار الزمني');
+            alert(t('alert_no_strong_signals'));
         }
     } catch (error) {
         loadingMsg.remove();
         console.error('Error scanning signals:', error);
-        alert('❌ حدث خطأ أثناء البحث: ' + error.message);
+        alert(t('error_scan_signals').replace('{error}', error.message));
     }
 }
 
@@ -2299,7 +2298,7 @@ function displayBestSignalsResult(signals, marketType, analysisType, timeframe) 
     
     let html = `
         <div class="rec-header" style="background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px;">
-            <h2>🔍 أفضل ${signals.length} صفقات</h2>
+            <h2>${t('best_signals_title').replace('{count}', signals.length)}</h2>
             <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">
                 ${marketEmoji} ${marketText} | ${analysisText} | ⏰ ${timeframe}
             </p>
@@ -2345,13 +2344,13 @@ function displayBestSignalsResult(signals, marketType, analysisType, timeframe) 
                         <strong>📊 الاتفاق:</strong> ${agreementText}
                     </div>
                     <div>
-                        <strong>💰 الدخول:</strong> $${parseFloat(signal.entryPrice).toFixed(2)}
+                        <strong>${t('signal_entry_label')}:</strong> $${parseFloat(signal.entryPrice).toFixed(2)}
                     </div>
                     <div>
-                        <strong>🎯 الهدف:</strong> $${parseFloat(signal.takeProfit).toFixed(2)}
+                        <strong>${t('signal_target_label')}:</strong> $${parseFloat(signal.takeProfit).toFixed(2)}
                     </div>
                     <div>
-                        <strong>🛑 الإيقاف:</strong> $${parseFloat(signal.stopLoss).toFixed(2)}
+                        <strong>${t('signal_stop_label')}:</strong> $${parseFloat(signal.stopLoss).toFixed(2)}
                     </div>
                     <div>
                         <strong>⚖️ R/R:</strong> ${signal.riskReward || 'N/A'}
@@ -2368,7 +2367,7 @@ function displayBestSignalsResult(signals, marketType, analysisType, timeframe) 
                 ` : ''}
                 
                 <button onclick="copySignalToClipboard('${signal.symbol}', '${actionText}', '${signal.entryPrice}', '${signal.stopLoss}', '${signal.takeProfit}')" style="margin-top: 10px; width: 100%; padding: 10px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; cursor: pointer; font-weight: bold;">
-                    📋 نسخ الصفقة
+                    ${t('copy_signal_btn')}
                 </button>
             </div>
         `;
@@ -2385,15 +2384,15 @@ function copySignalToClipboard(symbol, action, entry, sl, tp) {
 📊 ${symbol}
 ${action === 'شراء' ? '🟢' : '🔴'} ${action}
 
-💰 الدخول: $${entry}
-🛑 الإيقاف: $${sl}
-🎯 الهدف: $${tp}
+${t('signal_entry_label')}: $${entry}
+${t('signal_stop_label')}: $${sl}
+${t('signal_target_label')}: $${tp}
     `.trim();
     
     navigator.clipboard.writeText(text).then(() => {
-        alert('✅ تم نسخ الصفقة!');
+        alert(t('alert_signal_copied'));
     }).catch(() => {
-        alert('❌ فشل النسخ');
+        alert(t('alert_copy_failed'));
     });
 }
 
@@ -2494,7 +2493,7 @@ function displayAdvancedAnalysisResult(analysis, symbol, timeframe, analysisType
                                 </div>
                             `).join('')}
                         </div>
-                    ` : '<p style="color: #888;">لم يتم اكتشاف أنماط واضحة</p>'}
+                    ` : `<p style="color: #888;">${t('no_patterns_detected')}</p>`}
                 </div>
             `;
         }
@@ -2554,7 +2553,7 @@ function displayUltraAnalysisResult(analysis, symbol, timeframe) {
         ${analysis.shouldTrade ? `
             <div style="background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); padding: 15px; border-radius: 12px; margin-bottom: 20px; color: white; text-align: center;">
                 <h3 style="margin: 0 0 10px 0;">✅ يفي بجميع المعايير الصارمة</h3>
-                <p style="margin: 0; font-size: 14px;">هذه إشارة عالية الجودة - يمكن الاعتماد عليها</p>
+                <p style="margin: 0; font-size: 14px;">${t('high_quality_signal_note')}</p>
             </div>
         ` : ``}
 
@@ -2663,14 +2662,14 @@ function displayZeroReversalResult(analysis, symbol, timeframe) {
                 <strong>مستوى الثقة:</strong> ${analysis.confidence}
             </div>
             <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; font-weight: bold;">
-                احتمال الانعكاس: ${analysis.reversalProbability || '0%'}
+                ${t('reversal_probability')}: ${analysis.reversalProbability || '0%'}
             </div>
         </div>
 
         ${analysis.shouldTrade ? `
             <div style="background: linear-gradient(135deg, #00FF00 0%, #00CC00 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px; color: white; text-align: center; border: 3px solid #00FF00;">
                 <h2 style="margin: 0 0 10px 0;">✅ صفقة مضمونة 100%</h2>
-                <h3 style="margin: 0; font-size: 18px;">جميع الشروط الصارمة متحققة - احتمال انعكاس 0%</h3>
+                <h3 style="margin: 0; font-size: 18px;">${t('all_conditions_met')}</h3>
                 <p style="margin: 10px 0 0 0; font-size: 14px;">هذه إشارة موثوقة بأعلى معايير الجودة</p>
             </div>
         ` : `
@@ -2786,9 +2785,9 @@ function displayPumpAnalysisResult(analysis, symbol, timeframe) {
         <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #FF6B00 0%, #FFA500 100%); border-radius: 12px; color: white; margin-bottom: 20px; border: 3px solid #FF6B00;">
             <h1 style="font-size: 48px; margin: 0;">${actionEmoji}</h1>
             <h2 style="margin: 10px 0;">🚀 PUMP ANALYSIS</h2>
-            <h3 style="margin: 10px 0; font-size: 24px;">${analysis.potential || 'تحليل احتمال الارتفاع السريع'}</h3>
+            <h3 style="margin: 10px 0; font-size: 24px;">${analysis.potential || t('pump_potential_analysis')}</h3>
             <div style="background: rgba(255,255,255,0.3); padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 16px;">
-                <strong>احتمال الارتفاع:</strong> ${analysis.potentialPercent || '-'}
+                <strong>${t('pump_potential_label')}:</strong> ${analysis.potentialPercent || '-'}
             </div>
             <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 14px; font-weight: bold;">
                 مستوى الثقة: ${analysis.confidence || 'متوسط'}
@@ -4171,11 +4170,11 @@ async function loadAdminReferrals() {
                 </div>
             `).join('');
         } else {
-            container.innerHTML = '<p class="empty-state">لا توجد إحالات</p>';
+            container.innerHTML = `<p class="empty-state">${t('no_referrals_found')}</p>`;
         }
     } catch (error) {
         console.error('Error loading referrals:', error);
-        container.innerHTML = '<p class="empty-state">حدث خطأ في التحميل</p>';
+        container.innerHTML = `<p class="empty-state">${t('loading_error_generic')}</p>`;
     }
 }
 
@@ -4183,16 +4182,16 @@ async function sendBroadcastMessage() {
     const message = document.getElementById('broadcast-message').value.trim();
     
     if (!message) {
-        tg.showAlert('❌ الرسالة فارغة');
+        tg.showAlert(t('alert_message_empty'));
         return;
     }
     
-    if (!confirm('⚠️ هل أنت متأكد من إرسال هذه الرسالة لجميع المستخدمين؟')) {
+    if (!confirm(t('broadcast_confirm'))) {
         return;
     }
     
     try {
-        tg.showAlert('⏳ جاري الإرسال...');
+        tg.showAlert(t('alert_sending'));
         
         const response = await fetch('/api/admin/broadcast', {
             method: 'POST',
@@ -4206,10 +4205,10 @@ async function sendBroadcastMessage() {
         
         const data = await response.json();
         if (data.success) {
-            tg.showAlert(`✅ ${data.message}`);
+            tg.showAlert(t('alert_broadcast_success').replace('{message}', data.message));
             document.getElementById('broadcast-message').value = '';
         } else {
-            tg.showAlert('❌ ' + (data.error || 'فشل الإرسال'));
+            tg.showAlert(t('alert_broadcast_failed').replace('{error}', data.error || t('broadcast_failed_text')));
         }
     } catch (error) {
         console.error('Error broadcasting:', error);
@@ -4223,12 +4222,12 @@ async function searchUserAdvanced() {
     const detailsDiv = document.getElementById('search-user-details');
     
     if (!query) {
-        tg.showAlert('❌ يرجى إدخال معرف المستخدم أو الاسم');
+        tg.showAlert(t('search_user_prompt'));
         return;
     }
     
     resultDiv.style.display = 'none';
-    detailsDiv.innerHTML = '<p class="empty-state">جاري البحث...</p>';
+    detailsDiv.innerHTML = `<p class="empty-state">${t('searching_text')}</p>`;
     
     try {
         const response = await fetch('/api/admin/search', {
