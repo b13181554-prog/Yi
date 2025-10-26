@@ -713,9 +713,9 @@ async function analyzeMarket() {
 
     if (indicators.length === 0) {
         if (tg.showAlert) {
-            tg.showAlert('يرجى اختيار مؤشر واحد على الأقل');
+            tg.showAlert(t('at_least_one_indicator'));
         } else {
-            alert('يرجى اختيار مؤشر واحد على الأقل');
+            alert(t('at_least_one_indicator'));
         }
         return;
     }
@@ -744,16 +744,16 @@ async function analyzeMarket() {
             displayAnalysisResult(data.analysis, symbol, timeframe);
         } else {
             if (tg.showAlert) {
-                tg.showAlert(data.error || 'فشل التحليل');
+                tg.showAlert(data.error || t('error_analysis_failed'));
             } else {
-                alert(data.error || 'فشل التحليل');
+                alert(data.error || t('error_analysis_failed'));
             }
         }
     } catch (error) {
         if (tg.showAlert) {
-            tg.showAlert('حدث خطأ في التحليل');
+            tg.showAlert(t('error_analysis_error'));
         } else {
-            alert('حدث خطأ في التحليل');
+            alert(t('error_analysis_error'));
         }
     } finally {
         if (tg.MainButton && tg.MainButton.hideProgress) {
@@ -1014,7 +1014,7 @@ async function loadAnalysts() {
 async function subscribeToAnalyst(analystId) {
     if (!userId) {
         if (tg.showAlert) {
-            tg.showAlert('خطأ: لا يمكن تحديد هوية المستخدم');
+            tg.showAlert(t('error_identify_user'));
         }
         return;
     }
@@ -1033,14 +1033,14 @@ async function subscribeToAnalyst(analystId) {
         const data = await response.json();
 
         if (data.success) {
-            tg.showAlert('✅ تم الاشتراك بنجاح!');
+            tg.showAlert(t('alert_subscribe_success'));
             loadAnalysts();
             loadUserData();
         } else {
-            tg.showAlert('❌ ' + (data.error || 'فشل الاشتراك'));
+            tg.showAlert('❌ ' + (data.error || t('alert_subscribe_failed')));
         }
     } catch (error) {
-        tg.showAlert('حدث خطأ في الاشتراك');
+        tg.showAlert(t('subscription_error'));
     }
 }
 
@@ -1048,7 +1048,7 @@ async function subscribeToAnalyst(analystId) {
 async function rateAnalyst(analystId, isLike) {
     if (!userId) {
         if (tg.showAlert) {
-            tg.showAlert('خطأ: لا يمكن تحديد هوية المستخدم');
+            tg.showAlert(t('error_identify_user'));
         }
         return;
     }
@@ -1068,15 +1068,15 @@ async function rateAnalyst(analystId, isLike) {
         const data = await response.json();
 
         if (data.success) {
-            tg.showAlert(isLike ? '✅ شكراً على تقييمك الإيجابي!' : '✅ شكراً على تقييمك!');
+            tg.showAlert(isLike ? t('alert_rating_thanks_positive') : t('alert_rating_thanks'));
             loadAnalysts();
             loadAnalystsByMarket(currentAnalystMarket);
         } else {
-            tg.showAlert('❌ ' + (data.error || 'فشل التقييم'));
+            tg.showAlert('❌ ' + (data.error || t('error_rating_failed')));
         }
     } catch (error) {
         console.error('Error rating analyst:', error);
-        tg.showAlert('حدث خطأ في التقييم');
+        tg.showAlert(t('rating_error'));
     }
 }
 
@@ -1147,17 +1147,17 @@ async function submitAnalystRegistration() {
     if (document.getElementById('market-indices').checked) markets.push('indices');
 
     if (!description || !price) {
-        tg.showAlert('❌ يرجى ملء جميع الحقول');
+        tg.showAlert(t('alert_fill_all_fields'));
         return;
     }
 
     if (markets.length === 0) {
-        tg.showAlert('❌ يرجى اختيار سوق واحد على الأقل');
+        tg.showAlert(t('alert_select_one_market'));
         return;
     }
 
     if (price < 1) {
-        tg.showAlert('❌ السعر يجب أن يكون 1 USDT على الأقل');
+        tg.showAlert(t('alert_price_min_1_usdt'));
         return;
     }
 
@@ -1178,16 +1178,16 @@ async function submitAnalystRegistration() {
         const data = await response.json();
 
         if (data.success) {
-            tg.showAlert(isEditingAnalyst ? '✅ تم تحديث البيانات بنجاح!' : '✅ تم التسجيل كمحلل بنجاح!');
+            tg.showAlert(isEditingAnalyst ? t('alert_analyst_updated') : t('alert_analyst_registered'));
             hideAnalystRegistrationForm();
             await loadMyAnalystProfile();
             loadAnalysts();
         } else {
-            tg.showAlert('❌ ' + (data.error || 'فشل العملية'));
+            tg.showAlert('❌ ' + (data.error || t('alert_operation_error')));
         }
     } catch (error) {
         console.error('Error with analyst registration:', error);
-        tg.showAlert('❌ حدث خطأ في العملية');
+        tg.showAlert(t('alert_operation_error'));
     }
 }
 
@@ -1269,16 +1269,16 @@ function copyAnalystReferralLink() {
     linkInput.setSelectionRange(0, 99999);
     
     navigator.clipboard.writeText(linkInput.value).then(() => {
-        tg.showAlert('✅ تم نسخ الرابط! شاركه مع أصدقائك واحصل على 20% عمولة 💰');
+        tg.showAlert(t('alert_link_copied_with_commission'));
     }).catch(() => {
         document.execCommand('copy');
-        tg.showAlert('✅ تم نسخ الرابط!');
+        tg.showAlert(t('alert_link_copied'));
     });
 }
 
 async function getAnalystPromoterLink(analystId, analystName) {
     if (!userId) {
-        tg.showAlert('خطأ: لا يمكن تحديد هوية المستخدم');
+        tg.showAlert(t('error_identify_user'));
         return;
     }
     
@@ -1314,7 +1314,7 @@ async function toggleAnalystStatus() {
     if (!myAnalystData) return;
     
     const newStatus = !myAnalystData.is_active;
-    const confirmMsg = newStatus ? 'هل تريد تفعيل حسابك كمحلل؟' : 'هل تريد إيقاف حسابك كمحلل مؤقتاً؟';
+    const confirmMsg = newStatus ? t('confirm_analyst_activate') : t('confirm_analyst_pause');
     
     tg.showConfirm(confirmMsg, async (confirmed) => {
         if (confirmed) {
@@ -1332,15 +1332,15 @@ async function toggleAnalystStatus() {
                 const data = await response.json();
 
                 if (data.success) {
-                    tg.showAlert(newStatus ? '✅ تم تفعيل الحساب!' : '⏸️ تم إيقاف الحساب مؤقتاً!');
+                    tg.showAlert(newStatus ? t('alert_analyst_activated') : t('alert_analyst_paused'));
                     await loadMyAnalystProfile();
                     loadAnalysts();
                 } else {
-                    tg.showAlert('❌ ' + (data.error || 'فشل العملية'));
+                    tg.showAlert('❌ ' + (data.error || t('alert_operation_failed')));
                 }
             } catch (error) {
                 console.error('Error toggling analyst status:', error);
-                tg.showAlert('❌ حدث خطأ');
+                tg.showAlert(t('alert_error_occurred'));
             }
         }
     });
@@ -1349,7 +1349,7 @@ async function toggleAnalystStatus() {
 async function deleteAnalystProfile() {
     if (!myAnalystData) return;
     
-    tg.showConfirm('⚠️ هل أنت متأكد من حذف حسابك كمحلل؟ لا يمكن التراجع عن هذا الإجراء!', async (confirmed) => {
+    tg.showConfirm(t('confirm_delete_analyst'), async (confirmed) => {
         if (confirmed) {
             try {
                 const response = await fetch('/api/delete-analyst', {
@@ -1364,17 +1364,17 @@ async function deleteAnalystProfile() {
                 const data = await response.json();
 
                 if (data.success) {
-                    tg.showAlert('🗑️ تم حذف حسابك كمحلل');
+                    tg.showAlert(t('alert_analyst_deleted'));
                     myAnalystData = null;
                     document.getElementById('my-analyst-profile').style.display = 'none';
                     document.getElementById('analyst-register-card').style.display = 'block';
                     loadAnalysts();
                 } else {
-                    tg.showAlert('❌ ' + (data.error || 'فشل الحذف'));
+                    tg.showAlert('❌ ' + (data.error || t('alert_analyst_delete_failed')));
                 }
             } catch (error) {
                 console.error('Error deleting analyst:', error);
-                tg.showAlert('❌ حدث خطأ في الحذف');
+                tg.showAlert(t('alert_error_occurred'));
             }
         }
     });
@@ -1426,7 +1426,7 @@ async function submitTrade() {
     const analysis = document.getElementById('trade-analysis').value.trim();
 
     if (!symbol || !entryPrice) {
-        tg.showAlert('❌ يرجى تحديد الرمز وسعر الدخول على الأقل');
+        tg.showAlert(t('alert_trade_fields_required'));
         return;
     }
 
@@ -1455,14 +1455,14 @@ async function submitTrade() {
         const data = await response.json();
 
         if (data.success) {
-            tg.showAlert('✅ تم نشر الصفقة بنجاح! تم إرسالها لجميع المشتركين');
+            tg.showAlert(t('alert_trade_published'));
             hidePostTradeForm();
         } else {
-            tg.showAlert('❌ ' + (data.error || 'فشل نشر الصفقة'));
+            tg.showAlert('❌ ' + (data.error || t('alert_trade_publish_failed')));
         }
     } catch (error) {
         console.error('Error posting trade:', error);
-        tg.showAlert('❌ حدث خطأ في نشر الصفقة');
+        tg.showAlert(t('alert_trade_publish_error'));
     }
 }
 
@@ -1507,7 +1507,7 @@ async function submitDeposit() {
     const amount = parseFloat(document.getElementById('deposit-amount').value);
 
     if (!amount || amount < 5) {
-        tg.showAlert('الحد الأدنى للإيداع هو 5 USDT');
+        tg.showAlert(t('alert_min_deposit_5'));
         return;
     }
 
@@ -1542,13 +1542,13 @@ async function submitDeposit() {
         } else {
             document.getElementById('deposit-loading-section').style.display = 'none';
             document.getElementById('deposit-amount-section').style.display = 'block';
-            tg.showAlert('❌ ' + (data.error || 'فشل إنشاء عنوان الدفع'));
+            tg.showAlert('❌ ' + (data.error || t('alert_payment_address_failed')));
         }
     } catch (error) {
         console.error('Error creating payment:', error);
         document.getElementById('deposit-loading-section').style.display = 'none';
         document.getElementById('deposit-amount-section').style.display = 'block';
-        tg.showAlert('❌ حدث خطأ في إنشاء عنوان الدفع');
+        tg.showAlert(t('alert_payment_address_error'));
     }
 }
 
@@ -1557,12 +1557,12 @@ async function submitWithdraw() {
     const amount = parseFloat(document.getElementById('withdraw-amount').value);
 
     if (!address || !address.match(/^T[A-Za-z1-9]{33}$/)) {
-        tg.showAlert('يرجى إدخال عنوان TRC20 صحيح');
+        tg.showAlert(t('alert_invalid_trc20'));
         return;
     }
 
     if (isNaN(amount) || amount < 1) {
-        tg.showAlert('يرجى إدخال مبلغ صحيح (1 USDT على الأقل)');
+        tg.showAlert(t('alert_invalid_amount'));
         return;
     }
 
@@ -1582,7 +1582,7 @@ async function submitWithdraw() {
                     address: address,
                     amount: amount
                 }));
-                tg.showAlert('⏳ جاري معالجة السحب... سيصلك إشعار بالنتيجة!');
+                tg.showAlert(t('alert_withdrawal_processing'));
                 hideWithdraw();
             }
         }
@@ -1624,11 +1624,11 @@ async function subscribe() {
                             await loadSubscription();
                         }, 1000);
                     } else {
-                        tg.showAlert('❌ ' + (result.error || 'حدث خطأ في معالجة الاشتراك'));
+                        tg.showAlert('❌ ' + (result.error || t('alert_subscription_error')));
                     }
                 } catch (error) {
                     console.error('Error processing subscription:', error);
-                    tg.showAlert('❌ حدث خطأ في معالجة الاشتراك. يرجى المحاولة مرة أخرى.');
+                    tg.showAlert(t('alert_subscription_error_retry'));
                 }
             }
         }
@@ -1795,7 +1795,7 @@ async function changeLanguage() {
     const lang = document.getElementById('language-select').value;
     
     if (!userId) {
-        tg.showAlert('❌ خطأ: لا يمكن تغيير اللغة');
+        tg.showAlert(t('alert_cannot_change_language'));
         return;
     }
     
@@ -1826,7 +1826,7 @@ async function changeLanguage() {
                 applyTranslations();
             }
             
-            tg.showAlert('✅ تم تغيير اللغة بنجاح!');
+            tg.showAlert(t('alert_language_changed'));
             
             // إعادة تحميل الصفحة لتطبيق اللغة الجديدة
             setTimeout(() => {
@@ -1837,7 +1837,7 @@ async function changeLanguage() {
         }
     } catch (error) {
         console.error('Error changing language:', error);
-        tg.showAlert('❌ حدث خطأ أثناء تغيير اللغة');
+        tg.showAlert(t('alert_language_change_error'));
     }
 }
 
@@ -1845,13 +1845,13 @@ function copyPaymentAddress() {
     const address = currentPaymentAddress;
     
     if (!address) {
-        tg.showAlert('❌ لا يوجد عنوان للنسخ');
+        tg.showAlert(t('alert_no_address_to_copy'));
         return;
     }
 
     if (navigator.clipboard) {
         navigator.clipboard.writeText(address).then(() => {
-            tg.showAlert('✅ تم نسخ عنوان الدفع!');
+            tg.showAlert(t('alert_payment_address_copied'));
         });
     } else {
         const input = document.createElement('input');
@@ -1860,7 +1860,7 @@ function copyPaymentAddress() {
         input.select();
         document.execCommand('copy');
         document.body.removeChild(input);
-        tg.showAlert('✅ تم نسخ عنوان الدفع!');
+        tg.showAlert(t('alert_payment_address_copied'));
     }
 }
 
@@ -1900,7 +1900,7 @@ async function checkPaymentStatus(paymentAddress) {
 
                 await loadSubscription();
 
-                tg.showAlert('✅ تم تأكيد الإيداع بنجاح! تم تحديث رصيدك.');
+                tg.showAlert(t('alert_deposit_confirmed'));
                 
                 setTimeout(() => {
                     hideDeposit();
@@ -1917,7 +1917,7 @@ function copyReferralLink() {
 
     if (navigator.clipboard) {
         navigator.clipboard.writeText(link).then(() => {
-            tg.showAlert('تم نسخ رابط الإحالة!');
+            tg.showAlert(t('alert_referral_link_copied'));
         });
     } else {
         const input = document.createElement('input');
@@ -1926,7 +1926,7 @@ function copyReferralLink() {
         input.select();
         document.execCommand('copy');
         document.body.removeChild(input);
-        tg.showAlert('تم نسخ رابط الإحالة!');
+        tg.showAlert(t('alert_referral_link_copied'));
     }
 }
 
@@ -3736,13 +3736,13 @@ async function banUserAction(targetUserId, reason, duration) {
         
         const data = await response.json();
         if (data.success) {
-            tg.showAlert('✅ تم حظر المستخدم بنجاح');
+            tg.showAlert(t('alert_user_banned'));
             loadAllUsers();
         } else {
-            tg.showAlert('❌ ' + (data.error || 'فشل الحظر'));
+            tg.showAlert('❌ ' + (data.error || t('alert_ban_failed')));
         }
     } catch (error) {
-        tg.showAlert('حدث خطأ');
+        tg.showAlert(t('alert_error_occurred'));
     }
 }
 
@@ -3762,14 +3762,14 @@ async function unbanUser(targetUserId) {
         
         const data = await response.json();
         if (data.success) {
-            tg.showAlert('✅ تم إلغاء الحظر بنجاح');
+            tg.showAlert(t('alert_unban_success'));
             loadBannedUsers();
             loadAllUsers();
         } else {
-            tg.showAlert('❌ ' + (data.error || 'فشل إلغاء الحظر'));
+            tg.showAlert('❌ ' + (data.error || t('alert_unban_failed')));
         }
     } catch (error) {
-        tg.showAlert('حدث خطأ');
+        tg.showAlert(t('alert_error_occurred'));
     }
 }
 
@@ -3793,13 +3793,13 @@ async function deleteUserAction(targetUserId) {
         
         const data = await response.json();
         if (data.success) {
-            tg.showAlert('✅ تم حذف المستخدم بنجاح');
+            tg.showAlert(t('alert_user_deleted'));
             loadAllUsers();
         } else {
-            tg.showAlert('❌ ' + (data.error || 'فشل الحذف'));
+            tg.showAlert('❌ ' + (data.error || t('alert_operation_failed')));
         }
     } catch (error) {
-        tg.showAlert('حدث خطأ');
+        tg.showAlert(t('alert_error_occurred'));
     }
 }
 
@@ -4037,15 +4037,15 @@ async function approveWithdrawal(withdrawalId) {
         
         const data = await response.json();
         if (data.success) {
-            tg.showAlert('✅ تمت الموافقة على طلب السحب');
+            tg.showAlert(t('alert_withdrawal_approved'));
             loadAdminWithdrawals();
             loadAdminStats();
         } else {
-            tg.showAlert('❌ ' + (data.error || 'فشلت العملية'));
+            tg.showAlert('❌ ' + (data.error || t('alert_operation_failed')));
         }
     } catch (error) {
         console.error('Error approving withdrawal:', error);
-        tg.showAlert('حدث خطأ');
+        tg.showAlert(t('alert_error_occurred'));
     }
 }
 
@@ -4070,15 +4070,15 @@ async function rejectWithdrawal(withdrawalId, reason) {
         
         const data = await response.json();
         if (data.success) {
-            tg.showAlert('✅ تم رفض طلب السحب');
+            tg.showAlert(t('alert_withdrawal_rejected'));
             loadAdminWithdrawals();
             loadAdminStats();
         } else {
-            tg.showAlert('❌ ' + (data.error || 'فشلت العملية'));
+            tg.showAlert('❌ ' + (data.error || t('alert_operation_failed')));
         }
     } catch (error) {
         console.error('Error rejecting withdrawal:', error);
-        tg.showAlert('حدث خطأ');
+        tg.showAlert(t('alert_error_occurred'));
     }
 }
 
@@ -4213,7 +4213,7 @@ async function sendBroadcastMessage() {
         }
     } catch (error) {
         console.error('Error broadcasting:', error);
-        tg.showAlert('حدث خطأ');
+        tg.showAlert(t('alert_error_occurred'));
     }
 }
 
@@ -4299,7 +4299,7 @@ async function searchUserAdvanced() {
         }
     } catch (error) {
         console.error('Error searching user:', error);
-        tg.showAlert('حدث خطأ في البحث');
+        tg.showAlert(t('alert_error_occurred'));
     }
 }
 
@@ -4488,7 +4488,7 @@ async function changeLanguageFromMore() {
     const lang = document.getElementById('more-language-select').value;
     
     if (!userId) {
-        tg.showAlert('❌ خطأ: لا يمكن تغيير اللغة');
+        tg.showAlert(t('alert_cannot_change_language'));
         return;
     }
     
@@ -4516,7 +4516,7 @@ async function changeLanguageFromMore() {
                 applyTranslations();
             }
             
-            tg.showAlert('✅ تم تغيير اللغة بنجاح!');
+            tg.showAlert(t('alert_language_changed'));
             
             setTimeout(() => {
                 window.location.reload();
@@ -4526,7 +4526,7 @@ async function changeLanguageFromMore() {
         }
     } catch (error) {
         console.error('Error changing language:', error);
-        tg.showAlert('❌ حدث خطأ أثناء تغيير اللغة');
+        tg.showAlert(t('alert_language_change_error'));
     }
 }
 
