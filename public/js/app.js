@@ -311,7 +311,7 @@ async function loadUserData() {
             updateUI();
             loadAdminPanel();
         } else {
-            throw new Error(data.error || 'فشل تحميل بيانات المستخدم');
+            throw new Error(data.error || t('error_load_user_data'));
         }
     } catch (error) {
         console.error('❌ خطأ في تحميل البيانات:', error);
@@ -349,7 +349,7 @@ async function init() {
 
     if (!tg) {
         console.error('❌ Telegram WebApp غير متوفر');
-        showError('يجب فتح التطبيق من خلال Telegram Bot');
+        showError(t('error_must_open_from_telegram'));
         return;
     }
 
@@ -1302,11 +1302,11 @@ async function getAnalystPromoterLink(analystId, analystName) {
                 tg.showAlert(`رابط الإحالة: ${data.referral_link}\n\nاحصل على ${data.commission_rate}% عمولة!`);
             });
         } else {
-            tg.showAlert('❌ ' + (data.error || 'فشل الحصول على الرابط'));
+            tg.showAlert('❌ ' + (data.error || t('error_get_link_failed')));
         }
     } catch (error) {
         console.error('Error getting analyst promoter link:', error);
-        tg.showAlert('❌ حدث خطأ في الحصول على الرابط');
+        tg.showAlert(t('alert_operation_error'));
     }
 }
 
@@ -1833,7 +1833,7 @@ async function changeLanguage() {
                 window.location.reload();
             }, 500);
         } else {
-            tg.showAlert('❌ فشل تغيير اللغة: ' + (data.error || 'خطأ غير معروف'));
+            tg.showAlert('❌ ' + t('alert_language_change_error') + ': ' + (data.error || ''));
         }
     } catch (error) {
         console.error('Error changing language:', error);
@@ -2227,7 +2227,7 @@ async function analyzeMarketAdvanced() {
                     }
                 }
             } else {
-                alert('❌ خطأ: ' + (data.error || 'فشل التحليل'));
+                alert('❌ ' + t('error') + ': ' + (data.error || t('error_analysis_failed')));
             }
         }
     } catch (error) {
@@ -4522,7 +4522,7 @@ async function changeLanguageFromMore() {
                 window.location.reload();
             }, 500);
         } else {
-            tg.showAlert('❌ فشل تغيير اللغة: ' + (data.error || 'خطأ غير معروف'));
+            tg.showAlert('❌ ' + t('alert_language_change_error') + ': ' + (data.error || ''));
         }
     } catch (error) {
         console.error('Error changing language:', error);
