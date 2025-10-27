@@ -1,4 +1,5 @@
 const TechnicalAnalysis = require('./analysis');
+const { t } = require('./languages');
 
 class UltraAnalysis {
   constructor(candles) {
@@ -6,7 +7,7 @@ class UltraAnalysis {
     this.candles = candles;
   }
 
-  getUltraRecommendation(marketType = 'spot', tradingType = 'spot', timeframe = '1h') {
+  getUltraRecommendation(marketType = 'spot', tradingType = 'spot', timeframe = '1h', lang = 'ar') {
     const currentPrice = this.candles[this.candles.length - 1].close;
     
     const normalizedTimeframe = timeframe?.toLowerCase().trim() || '1h';
@@ -40,10 +41,10 @@ class UltraAnalysis {
     const reasons = [];
     const warnings = [];
 
-    const rangingMarket = this.detectRangingMarket(adxValue, bb, ema20Value, ema50Value, currentPriceFloat);
+    const rangingMarket = this.detectRangingMarket(adxValue, bb, ema20Value, ema50Value, currentPriceFloat, lang);
     if (rangingMarket.isRanging) {
-      warnings.push('⚠️ السوق في حالة جانبية - مخاطر عالية للتداول');
-      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType, rangingMarket.reason);
+      warnings.push('⚠️ ' + t(lang, 'analysis_warning_ranging_market'));
+      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType, rangingMarket.reason, lang);
     }
 
     const indicatorWeights = {
@@ -61,31 +62,31 @@ class UltraAnalysis {
 
     if (rsiValue < 30) {
       buyScore += 2.5 * indicatorWeights.rsi;
-      reasons.push('RSI تشبع بيعي قوي');
+      reasons.push(t(lang, 'analysis_rsi_strong_oversold'));
     } else if (rsiValue < 45) {
       buyScore += 1.5 * indicatorWeights.rsi;
-      reasons.push('RSI في منطقة الشراء');
+      reasons.push(t(lang, 'analysis_rsi_buy_zone'));
     } else if (rsiValue > 70) {
       sellScore += 2.5 * indicatorWeights.rsi;
-      reasons.push('RSI تشبع شرائي قوي');
+      reasons.push(t(lang, 'analysis_rsi_strong_overbought'));
     } else if (rsiValue > 55) {
       sellScore += 1.5 * indicatorWeights.rsi;
-      reasons.push('RSI في منطقة البيع');
+      reasons.push(t(lang, 'analysis_rsi_sell_zone'));
     }
     totalIndicators++;
 
     if (macd.signal.includes('صاعد قوي')) {
       buyScore += 2.5 * indicatorWeights.macd;
-      reasons.push('MACD إشارة صعودية قوية');
+      reasons.push(t(lang, 'analysis_macd_strong_bullish'));
     } else if (macd.signal.includes('صاعد')) {
       buyScore += 1.5 * indicatorWeights.macd;
-      reasons.push('MACD إشارة صعودية');
+      reasons.push(t(lang, 'analysis_macd_bullish'));
     } else if (macd.signal.includes('هابط قوي')) {
       sellScore += 2.5 * indicatorWeights.macd;
-      reasons.push('MACD إشارة هبوطية قوية');
+      reasons.push(t(lang, 'analysis_macd_strong_bearish'));
     } else if (macd.signal.includes('هابط')) {
       sellScore += 1.5 * indicatorWeights.macd;
-      reasons.push('MACD إشارة هبوطية');
+      reasons.push(t(lang, 'analysis_macd_bearish'));
     }
     totalIndicators++;
 

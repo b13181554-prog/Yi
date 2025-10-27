@@ -549,6 +549,227 @@ const translations = {
     analyst_stop_loss: 'وقف الخسارة',
     analyst_analysis: 'التحليل',
 
+    // Technical Analysis - RSI
+    analysis_rsi_strong_oversold: 'RSI تشبع بيعي قوي',
+    analysis_rsi_buy_zone: 'RSI في منطقة الشراء',
+    analysis_rsi_strong_overbought: 'RSI تشبع شرائي قوي',
+    analysis_rsi_sell_zone: 'RSI في منطقة البيع',
+    analysis_rsi_excellent_buy: 'RSI ممتاز للشراء ({value}) - في منطقة مثالية',
+    analysis_rsi_good_buy: 'RSI جيد للشراء ({value}) - في منطقة مقبولة',
+    analysis_rsi_very_low: 'RSI منخفض جداً ({value}) - قد يكون تشبع بيعي مفرط',
+    analysis_rsi_high_warning: 'RSI مرتفع ({value}) - احتمال تصحيح',
+    analysis_rsi_excellent_sell: 'RSI ممتاز للبيع ({value}) - في منطقة مثالية',
+    analysis_rsi_good_sell: 'RSI جيد للبيع ({value}) - في منطقة مقبولة',
+    analysis_rsi_very_high: 'RSI مرتفع جداً ({value}) - قد يكون تشبع شرائي مفرط',
+    analysis_rsi_low_warning: 'RSI منخفض ({value}) - احتمال ارتداد',
+
+    // Technical Analysis - MACD
+    analysis_macd_strong_bullish: 'MACD إشارة صعودية قوية',
+    analysis_macd_bullish: 'MACD إشارة صعودية',
+    analysis_macd_strong_bearish: 'MACD إشارة هبوطية قوية',
+    analysis_macd_bearish: 'MACD إشارة هبوطية',
+    analysis_macd_confirms_bullish: 'MACD صعودي قوي - يؤكد الاتجاه بقوة',
+    analysis_macd_confirms_bearish: 'MACD هبوطي قوي - يؤكد الاتجاه بقوة',
+    analysis_macd_bullish_confirms: 'MACD صعودي - يؤكد الاتجاه',
+    analysis_macd_bearish_confirms: 'MACD هبوطي - يؤكد الاتجاه',
+    analysis_macd_no_match: 'MACD لا يتوافق مع الاتجاه',
+
+    // Technical Analysis - Bollinger Bands
+    analysis_bb_oversold: 'Bollinger Bands - تشبع بيعي',
+    analysis_bb_overbought: 'Bollinger Bands - تشبع شرائي',
+    analysis_bb_upper_warning: 'السعر عند الحد العلوي لـ Bollinger - احتمال انعكاس',
+    analysis_bb_lower_warning: 'السعر عند الحد السفلي لـ Bollinger - احتمال انعكاس',
+    analysis_bb_good_position: 'السعر في منطقة مناسبة من Bollinger Bands',
+    analysis_bb_narrow_weak: 'Bollinger Bands ضيقة و ADX ضعيف - سوق جانبي',
+
+    // Technical Analysis - Stochastic
+    analysis_stoch_oversold: 'Stochastic تشبع بيعي',
+    analysis_stoch_overbought: 'Stochastic تشبع شرائي',
+    analysis_stoch_perfect_buy: 'Stochastic مثالي للشراء ({value})',
+    analysis_stoch_good_buy: 'Stochastic جيد للشراء ({value})',
+    analysis_stoch_high_warning: 'Stochastic مرتفع ({value}) - قد يعيق الدخول',
+    analysis_stoch_perfect_sell: 'Stochastic مثالي للبيع ({value})',
+    analysis_stoch_good_sell: 'Stochastic جيد للبيع ({value})',
+    analysis_stoch_low_warning: 'Stochastic منخفض ({value}) - قد يعيق الدخول',
+
+    // Technical Analysis - EMA
+    analysis_ema_golden_cross: 'EMA Golden Cross - اتجاه صعودي قوي',
+    analysis_ema_death_cross: 'EMA Death Cross - اتجاه هبوطي قوي',
+
+    // Technical Analysis - ADX
+    analysis_adx_strong_bullish: 'ADX قوي ({value}) - اتجاه صعودي قوي',
+    analysis_adx_strong_bearish: 'ADX قوي ({value}) - اتجاه هبوطي قوي',
+    analysis_adx_medium_bullish: 'ADX متوسط ({value}) - اتجاه صعودي',
+    analysis_adx_medium_bearish: 'ADX متوسط ({value}) - اتجاه هبوطي',
+    analysis_adx_very_weak: 'ADX ضعيف جداً ({value}) - السوق في حالة جانبية',
+    analysis_adx_very_strong: 'ADX قوي جداً ({value}) - اتجاه قوي ومستمر',
+    analysis_adx_strong: 'ADX قوي ({value}) - اتجاه جيد',
+    analysis_adx_medium: 'ADX متوسط ({value}) - اتجاه متوسط القوة',
+    analysis_adx_weak: 'ADX ضعيف ({value}) - اتجاه ضعيف',
+    analysis_adx_matches_trend: 'ADX يتوافق مع الاتجاه الرئيسي',
+    analysis_adx_no_match: 'ADX لا يتوافق تماماً مع الاتجاه',
+
+    // Technical Analysis - Volume
+    analysis_volume_huge_bullish: 'حجم تداول ضخم يدعم الاتجاه الصعودي',
+    analysis_volume_huge_bearish: 'حجم تداول ضخم يدعم الاتجاه الهبوطي',
+    analysis_volume_high: 'حجم تداول عالي',
+    analysis_volume_huge_support: 'حجم التداول ضخم - يدعم الاتجاه بقوة',
+    analysis_volume_high_support: 'حجم التداول عالي - يدعم الاتجاه',
+    analysis_volume_medium: 'حجم التداول متوسط',
+    analysis_volume_low: 'حجم التداول منخفض',
+
+    // Technical Analysis - Fibonacci
+    analysis_fib_strong_support: 'Fibonacci - منطقة دعم قوية',
+    analysis_fib_strong_resistance: 'Fibonacci - منطقة مقاومة قوية',
+    analysis_fib_supports_trend: 'Fibonacci يدعم الاتجاه',
+
+    // Technical Analysis - Candle Patterns
+    analysis_pattern_bullish_candles: 'أنماط شموع صعودية: {patterns}',
+    analysis_pattern_bearish_candles: 'أنماط شموع هبوطية: {patterns}',
+    analysis_pattern_inverse_hs: 'نموذج Inverse H&S - إشارة صعودية قوية',
+    analysis_pattern_hs: 'نموذج H&S - إشارة هبوطية قوية',
+    analysis_pattern_very_strong: 'أنماط شموع قوية جداً: {patterns}',
+    analysis_pattern_strong: 'أنماط شموع قوية: {patterns}',
+    analysis_pattern_medium: 'أنماط شموع متوسطة',
+    analysis_pattern_no_match: 'أنماط الشموع لا تتوافق مع الاتجاه',
+
+    // Technical Analysis - Support/Resistance
+    analysis_sr_near_support: 'السعر قريب من مستوى الدعم',
+    analysis_sr_near_resistance: 'السعر قريب من مستوى المقاومة',
+    analysis_sr_close_convergence: 'السعر والمتوسطات متقاربة جداً - سوق جانبي',
+    analysis_sr_near_strong_support: 'السعر قرب دعم قوي',
+    analysis_sr_near_strong_resistance: 'السعر قرب مقاومة قوية',
+    analysis_sr_no_clear_level: 'السعر ليس عند مستوى دعم/مقاومة واضح',
+
+    // Technical Analysis - Trend
+    analysis_trend_very_strong_bullish: 'اتجاه صعودي قوي جداً - السعر فوق جميع المتوسطات المتحركة',
+    analysis_trend_medium_bullish: 'اتجاه صعودي متوسط - السعر فوق المتوسطات القصيرة',
+    analysis_trend_very_strong_bearish: 'اتجاه هبوطي قوي جداً - السعر تحت جميع المتوسطات المتحركة',
+    analysis_trend_medium_bearish: 'اتجاه هبوطي متوسط - السعر تحت المتوسطات القصيرة',
+    analysis_trend_no_clear: 'لا يوجد اتجاه واضح - السعر متداخل مع المتوسطات',
+    analysis_trend_last5_confirm: 'آخر 5 شموع تؤكد الاتجاه بقوة ({count}/5)',
+    analysis_trend_last5_support: 'آخر 5 شموع تؤكد الاتجاه ({count}/5)',
+    analysis_trend_last5_weak: 'آخر 5 شموع ليست قوية ({count}/5)',
+
+    // Technical Analysis - Conditions & Quality
+    analysis_conditions_all_met: 'جميع الشروط محققة - صفقة قوية جداً',
+    analysis_conditions_met: 'الشروط محققة - صفقة جيدة',
+    analysis_conditions_medium: 'صفقة متوسطة القوة - تداول بحذر',
+    analysis_conditions_not_met: 'الإشارة لا تحقق المعايير - يُنصح بالانتظار',
+    analysis_conditions_conflicting: 'إشارات متضاربة - لا تتداول',
+    analysis_conditions_insufficient: 'نقاط القوة غير كافية - يُنصح بالانتظار',
+
+    // Technical Analysis - Warnings
+    analysis_warning_ranging_market: 'السوق في حالة جانبية - مخاطر عالية للتداول',
+    analysis_warning_conflicting: 'إشارات متعارضة - الفرق بين الشراء والبيع ضئيل جداً',
+    analysis_warning_weak_signals: 'إشارات ضعيفة - توخى الحذر',
+    analysis_warning_low_probability: 'احتمالية نجاح منخفضة',
+
+    // Technical Analysis - Risk/Reward
+    analysis_rr_excellent: 'نسبة ممتازة للمخاطرة/العائد (1:{ratio})',
+    analysis_rr_good: 'نسبة جيدة للمخاطرة/العائد (1:{ratio})',
+    analysis_rr_acceptable: 'نسبة المخاطرة/العائد مقبولة (1:{ratio})',
+
+    // Technical Analysis - Reasons/Results
+    analysis_reason_prefix: 'السبب: {reason}',
+    analysis_reason_insufficient: 'السبب: نقاط القوة غير كافية للتداول الآمن',
+
+    // Confidence Levels
+    confidence_very_high_ultra: 'عالية جداً (Ultra High)',
+    confidence_very_high: 'عالية جداً',
+    confidence_high: 'عالية',
+    confidence_high_strong_trend: 'عالية جداً - اتجاه قوي',
+    confidence_high_good_trend: 'عالية - اتجاه جيد',
+    confidence_medium: 'متوسطة',
+    confidence_medium_trend: 'متوسطة - اتجاه متوسط',
+    confidence_low: 'منخفضة',
+    confidence_very_low: 'منخفضة جداً',
+    confidence_do_not_trade: 'منخفضة - لا تتداول',
+    confidence_no_trade: 'لا تتداول',
+    confidence_high_reversal_risk: 'لا تتداول - احتمال الانعكاس مرتفع',
+
+    // Risk Levels
+    risk_very_low: 'منخفض جداً',
+    risk_low: 'منخفض',
+    risk_medium: 'متوسط',
+    risk_high: 'مرتفع',
+    risk_very_high: 'مرتفع جداً',
+
+    // Actions
+    action_buy: 'شراء',
+    action_sell: 'بيع',
+    action_wait: 'انتظار',
+    action_strong_buy: 'شراء قوي',
+    action_strong_sell: 'بيع قوي',
+    action_possible_buy: 'شراء محتمل',
+    action_possible_sell: 'بيع محتمل',
+    action_immediate_buy: 'شراء فوري',
+    action_watch: 'راقب',
+
+    // Condition Labels
+    condition_strong: 'قوي',
+    condition_good: 'جيد',
+    condition_weak: 'ضعيف',
+    condition_excellent: 'ممتاز',
+    condition_high: 'عالي',
+    condition_low: 'منخفض',
+    condition_acceptable: 'مقبول',
+    condition_yes: 'نعم',
+    condition_no: 'لا',
+    condition_not_available: 'غير متاح',
+
+    // Reversal Probability
+    reversal_very_low: '0-5%',
+    reversal_low: '5-10%',
+    reversal_medium: '10-20%',
+    reversal_high: 'مرتفع (20%+)',
+    reversal_very_high: 'مرتفع (25%+)',
+
+    // Pump Analysis
+    pump_potential_very_high: 'مرتفع جداً - احتمال 100%+',
+    pump_potential_high: 'مرتفع - احتمال 100%+',
+    pump_potential_medium_high: 'متوسط إلى مرتفع',
+    pump_potential_medium: 'متوسط',
+    pump_potential_low: 'منخفض',
+    pump_reason_all_indicators: 'جميع المؤشرات تشير إلى فرصة Pump قوية',
+    pump_reason_most_indicators: 'معظم المؤشرات إيجابية لفرصة Pump',
+    pump_reason_some_indicators: 'بعض المؤشرات تشير إلى احتمال Pump',
+    pump_reason_mixed: 'مؤشرات مختلطة - حذر مطلوب',
+    pump_reason_no_signals: 'لا توجد إشارات قوية لـ Pump',
+    pump_reason_volume_exceptional: 'ارتفاع حجم التداول بشكل استثنائي',
+    pump_reason_volume_high: 'حجم تداول أعلى من المتوسط',
+    pump_reason_consolidation: 'نمط تجميع قوي - احتمال انفجار سعري',
+    pump_reason_momentum: 'زخم صعودي قوي',
+    pump_reason_breakout: 'كسر مستويات مقاومة مهمة',
+    pump_reason_price_action: 'حركة سعرية إيجابية قوية',
+    pump_reason_very_strong: 'فرصة بامب قوية جداً - دخول فوري',
+    pump_reason_good: 'فرصة بامب جيدة - دخول موصى به',
+    pump_reason_watch: 'احتمال بامب - راقب للدخول',
+    pump_warning_overbought: 'السعر في منطقة تشبع - انتظر تصحيح',
+
+    // Master Analysis
+    master_grade_legendary: 'فرصة أسطورية نادرة',
+    master_grade_excellent_plus: 'فرصة ممتازة جداً',
+    master_grade_excellent: 'فرصة ممتازة',
+    master_grade_very_good: 'فرصة جيدة جداً',
+    master_grade_good_plus: 'فرصة جيدة',
+    master_grade_good: 'فرصة متوسطة إلى جيدة',
+    master_grade_average: 'فرصة متوسطة',
+    master_grade_weak: 'فرصة ضعيفة',
+    master_grade_no_opportunity: 'لا توجد فرصة واضحة',
+    master_probability_excellent: 'احتمالية نجاح ممتازة',
+    master_probability_good: 'احتمالية نجاح جيدة',
+    master_probability_medium_high: 'احتمالية نجاح متوسطة',
+    master_probability_medium: 'احتمالية نجاح متوسطة',
+    master_probability_weak: 'احتمالية نجاح ضعيفة',
+    master_direction_bullish: 'صعودية',
+    master_direction_bearish: 'هبوطية',
+    master_trend_very_strong_bull: 'صعودي قوي',
+    master_trend_strong_bull: 'صعودي',
+    master_trend_very_strong_bear: 'هبوطي قوي',
+    master_trend_strong_bear: 'هبوطي',
+    master_trend_neutral: 'محايد',
+
     // Subscription & Trial Notifications
     notif_subscription_warning: 'تنبيه اشتراك',
     notif_subscription_expires_3days: 'اشتراكك سينتهي خلال 3 أيام!',
@@ -1075,6 +1296,227 @@ const translations = {
     analyst_target: 'Target',
     analyst_stop_loss: 'Stop Loss',
     analyst_analysis: 'Analysis',
+
+    // Technical Analysis - RSI
+    analysis_rsi_strong_oversold: 'RSI strong oversold',
+    analysis_rsi_buy_zone: 'RSI in buy zone',
+    analysis_rsi_strong_overbought: 'RSI strong overbought',
+    analysis_rsi_sell_zone: 'RSI in sell zone',
+    analysis_rsi_excellent_buy: 'RSI excellent for buy ({value}) - in ideal zone',
+    analysis_rsi_good_buy: 'RSI good for buy ({value}) - in acceptable zone',
+    analysis_rsi_very_low: 'RSI very low ({value}) - may be excessive oversold',
+    analysis_rsi_high_warning: 'RSI high ({value}) - correction likely',
+    analysis_rsi_excellent_sell: 'RSI excellent for sell ({value}) - in ideal zone',
+    analysis_rsi_good_sell: 'RSI good for sell ({value}) - in acceptable zone',
+    analysis_rsi_very_high: 'RSI very high ({value}) - may be excessive overbought',
+    analysis_rsi_low_warning: 'RSI low ({value}) - bounce likely',
+
+    // Technical Analysis - MACD
+    analysis_macd_strong_bullish: 'MACD strong bullish signal',
+    analysis_macd_bullish: 'MACD bullish signal',
+    analysis_macd_strong_bearish: 'MACD strong bearish signal',
+    analysis_macd_bearish: 'MACD bearish signal',
+    analysis_macd_confirms_bullish: 'MACD strong bullish - confirms trend strongly',
+    analysis_macd_confirms_bearish: 'MACD strong bearish - confirms trend strongly',
+    analysis_macd_bullish_confirms: 'MACD bullish - confirms trend',
+    analysis_macd_bearish_confirms: 'MACD bearish - confirms trend',
+    analysis_macd_no_match: 'MACD doesn\'t match trend',
+
+    // Technical Analysis - Bollinger Bands
+    analysis_bb_oversold: 'Bollinger Bands - oversold',
+    analysis_bb_overbought: 'Bollinger Bands - overbought',
+    analysis_bb_upper_warning: 'Price at Bollinger upper band - reversal likely',
+    analysis_bb_lower_warning: 'Price at Bollinger lower band - reversal likely',
+    analysis_bb_good_position: 'Price in good position within Bollinger Bands',
+    analysis_bb_narrow_weak: 'Bollinger Bands narrow & ADX weak - ranging market',
+
+    // Technical Analysis - Stochastic
+    analysis_stoch_oversold: 'Stochastic oversold',
+    analysis_stoch_overbought: 'Stochastic overbought',
+    analysis_stoch_perfect_buy: 'Stochastic perfect for buy ({value})',
+    analysis_stoch_good_buy: 'Stochastic good for buy ({value})',
+    analysis_stoch_high_warning: 'Stochastic high ({value}) - may hinder entry',
+    analysis_stoch_perfect_sell: 'Stochastic perfect for sell ({value})',
+    analysis_stoch_good_sell: 'Stochastic good for sell ({value})',
+    analysis_stoch_low_warning: 'Stochastic low ({value}) - may hinder entry',
+
+    // Technical Analysis - EMA
+    analysis_ema_golden_cross: 'EMA Golden Cross - strong uptrend',
+    analysis_ema_death_cross: 'EMA Death Cross - strong downtrend',
+
+    // Technical Analysis - ADX
+    analysis_adx_strong_bullish: 'ADX strong ({value}) - strong uptrend',
+    analysis_adx_strong_bearish: 'ADX strong ({value}) - strong downtrend',
+    analysis_adx_medium_bullish: 'ADX medium ({value}) - uptrend',
+    analysis_adx_medium_bearish: 'ADX medium ({value}) - downtrend',
+    analysis_adx_very_weak: 'ADX very weak ({value}) - market ranging',
+    analysis_adx_very_strong: 'ADX very strong ({value}) - strong persistent trend',
+    analysis_adx_strong: 'ADX strong ({value}) - good trend',
+    analysis_adx_medium: 'ADX medium ({value}) - medium strength trend',
+    analysis_adx_weak: 'ADX weak ({value}) - weak trend',
+    analysis_adx_matches_trend: 'ADX matches main trend',
+    analysis_adx_no_match: 'ADX doesn\'t fully match trend',
+
+    // Technical Analysis - Volume
+    analysis_volume_huge_bullish: 'Huge volume supporting uptrend',
+    analysis_volume_huge_bearish: 'Huge volume supporting downtrend',
+    analysis_volume_high: 'High volume',
+    analysis_volume_huge_support: 'Volume huge - strongly supports trend',
+    analysis_volume_high_support: 'Volume high - supports trend',
+    analysis_volume_medium: 'Volume medium',
+    analysis_volume_low: 'Volume low',
+
+    // Technical Analysis - Fibonacci
+    analysis_fib_strong_support: 'Fibonacci - strong support zone',
+    analysis_fib_strong_resistance: 'Fibonacci - strong resistance zone',
+    analysis_fib_supports_trend: 'Fibonacci supports trend',
+
+    // Technical Analysis - Candle Patterns
+    analysis_pattern_bullish_candles: 'Bullish candle patterns: {patterns}',
+    analysis_pattern_bearish_candles: 'Bearish candle patterns: {patterns}',
+    analysis_pattern_inverse_hs: 'Inverse H&S pattern - strong bullish signal',
+    analysis_pattern_hs: 'H&S pattern - strong bearish signal',
+    analysis_pattern_very_strong: 'Very strong candle patterns: {patterns}',
+    analysis_pattern_strong: 'Strong candle patterns: {patterns}',
+    analysis_pattern_medium: 'Medium candle patterns',
+    analysis_pattern_no_match: 'Candle patterns don\'t match trend',
+
+    // Technical Analysis - Support/Resistance
+    analysis_sr_near_support: 'Price near support level',
+    analysis_sr_near_resistance: 'Price near resistance level',
+    analysis_sr_close_convergence: 'Price and MA converging - ranging market',
+    analysis_sr_near_strong_support: 'Price near strong support',
+    analysis_sr_near_strong_resistance: 'Price near strong resistance',
+    analysis_sr_no_clear_level: 'Price not at clear support/resistance level',
+
+    // Technical Analysis - Trend
+    analysis_trend_very_strong_bullish: 'Very strong uptrend - price above all MA',
+    analysis_trend_medium_bullish: 'Medium uptrend - price above short MA',
+    analysis_trend_very_strong_bearish: 'Very strong downtrend - price below all MA',
+    analysis_trend_medium_bearish: 'Medium downtrend - price below short MA',
+    analysis_trend_no_clear: 'No clear trend - price intertwined with MA',
+    analysis_trend_last5_confirm: 'Last 5 candles strongly confirm trend ({count}/5)',
+    analysis_trend_last5_support: 'Last 5 candles confirm trend ({count}/5)',
+    analysis_trend_last5_weak: 'Last 5 candles not strong ({count}/5)',
+
+    // Technical Analysis - Conditions & Quality
+    analysis_conditions_all_met: 'All conditions met - very strong trade',
+    analysis_conditions_met: 'Conditions met - good trade',
+    analysis_conditions_medium: 'Medium strength trade - trade carefully',
+    analysis_conditions_not_met: 'Signal doesn\'t meet criteria - wait recommended',
+    analysis_conditions_conflicting: 'Conflicting signals - don\'t trade',
+    analysis_conditions_insufficient: 'Strength points insufficient - wait recommended',
+
+    // Technical Analysis - Warnings
+    analysis_warning_ranging_market: 'Market ranging - high trading risk',
+    analysis_warning_conflicting: 'Conflicting signals - buy/sell difference minimal',
+    analysis_warning_weak_signals: 'Weak signals - be cautious',
+    analysis_warning_low_probability: 'Low success probability',
+
+    // Technical Analysis - Risk/Reward
+    analysis_rr_excellent: 'Excellent risk/reward ratio (1:{ratio})',
+    analysis_rr_good: 'Good risk/reward ratio (1:{ratio})',
+    analysis_rr_acceptable: 'Acceptable risk/reward ratio (1:{ratio})',
+
+    // Technical Analysis - Reasons/Results
+    analysis_reason_prefix: 'Reason: {reason}',
+    analysis_reason_insufficient: 'Reason: Strength points insufficient for safe trade',
+
+    // Confidence Levels
+    confidence_very_high_ultra: 'Very High (Ultra High)',
+    confidence_very_high: 'Very High',
+    confidence_high: 'High',
+    confidence_high_strong_trend: 'Very High - Strong Trend',
+    confidence_high_good_trend: 'High - Good Trend',
+    confidence_medium: 'Medium',
+    confidence_medium_trend: 'Medium - Medium Trend',
+    confidence_low: 'Low',
+    confidence_very_low: 'Very Low',
+    confidence_do_not_trade: 'Low - Don\'t Trade',
+    confidence_no_trade: 'Don\'t Trade',
+    confidence_high_reversal_risk: 'Don\'t Trade - High Reversal Risk',
+
+    // Risk Levels
+    risk_very_low: 'Very Low',
+    risk_low: 'Low',
+    risk_medium: 'Medium',
+    risk_high: 'High',
+    risk_very_high: 'Very High',
+
+    // Actions
+    action_buy: 'Buy',
+    action_sell: 'Sell',
+    action_wait: 'Wait',
+    action_strong_buy: 'Strong Buy',
+    action_strong_sell: 'Strong Sell',
+    action_possible_buy: 'Possible Buy',
+    action_possible_sell: 'Possible Sell',
+    action_immediate_buy: 'Immediate Buy',
+    action_watch: 'Watch',
+
+    // Condition Labels
+    condition_strong: 'Strong',
+    condition_good: 'Good',
+    condition_weak: 'Weak',
+    condition_excellent: 'Excellent',
+    condition_high: 'High',
+    condition_low: 'Low',
+    condition_acceptable: 'Acceptable',
+    condition_yes: 'Yes',
+    condition_no: 'No',
+    condition_not_available: 'Not Available',
+
+    // Reversal Probability
+    reversal_very_low: '0-5%',
+    reversal_low: '5-10%',
+    reversal_medium: '10-20%',
+    reversal_high: 'High (20%+)',
+    reversal_very_high: 'High (25%+)',
+
+    // Pump Analysis
+    pump_potential_very_high: 'Very High - 100%+ potential',
+    pump_potential_high: 'High - 100%+ potential',
+    pump_potential_medium_high: 'Medium to High',
+    pump_potential_medium: 'Medium',
+    pump_potential_low: 'Low',
+    pump_reason_all_indicators: 'All indicators point to strong Pump opportunity',
+    pump_reason_most_indicators: 'Most indicators positive for Pump',
+    pump_reason_some_indicators: 'Some indicators suggest Pump possibility',
+    pump_reason_mixed: 'Mixed indicators - caution required',
+    pump_reason_no_signals: 'No strong Pump signals',
+    pump_reason_volume_exceptional: 'Exceptional volume increase',
+    pump_reason_volume_high: 'Above average volume',
+    pump_reason_consolidation: 'Strong consolidation pattern - breakout likely',
+    pump_reason_momentum: 'Strong bullish momentum',
+    pump_reason_breakout: 'Breaking important resistance levels',
+    pump_reason_price_action: 'Strong positive price action',
+    pump_reason_very_strong: 'Very strong Pump opportunity - immediate entry',
+    pump_reason_good: 'Good Pump opportunity - entry recommended',
+    pump_reason_watch: 'Pump possibility - watch for entry',
+    pump_warning_overbought: 'Price in overbought zone - wait for correction',
+
+    // Master Analysis
+    master_grade_legendary: 'Legendary rare opportunity',
+    master_grade_excellent_plus: 'Excellent plus opportunity',
+    master_grade_excellent: 'Excellent opportunity',
+    master_grade_very_good: 'Very good opportunity',
+    master_grade_good_plus: 'Good opportunity',
+    master_grade_good: 'Medium to good opportunity',
+    master_grade_average: 'Average opportunity',
+    master_grade_weak: 'Weak opportunity',
+    master_grade_no_opportunity: 'No clear opportunity',
+    master_probability_excellent: 'Excellent success probability',
+    master_probability_good: 'Good success probability',
+    master_probability_medium_high: 'Medium success probability',
+    master_probability_medium: 'Medium success probability',
+    master_probability_weak: 'Weak success probability',
+    master_direction_bullish: 'Bullish',
+    master_direction_bearish: 'Bearish',
+    master_trend_very_strong_bull: 'Strong Bullish',
+    master_trend_strong_bull: 'Bullish',
+    master_trend_very_strong_bear: 'Strong Bearish',
+    master_trend_strong_bear: 'Bearish',
+    master_trend_neutral: 'Neutral',
 
     // Subscription & Trial Notifications
     notif_subscription_warning: 'Subscription Warning',
