@@ -2,6 +2,8 @@ const bot = require('./bot');
 const config = require('./config');
 const pino = require('pino');
 const { safeSendMessage } = require('./safe-message');
+const { t } = require('./languages');
+const db = require('./database');
 
 const logger = pino({
   level: 'info',
@@ -20,15 +22,16 @@ const logger = pino({
  */
 async function notifyOwnerSuccess(userId, userName, amount, address, withdrawId) {
   try {
+    const lang = 'ar';
     const message = `
-✅ <b>سحب ناجح تلقائياً</b>
+✅ <b>${t(lang, 'withdrawal_owner_success_title')}</b>
 
-👤 <b>المستخدم:</b> ${userName} (<code>${userId}</code>)
-💰 <b>المبلغ:</b> ${amount} USDT
-📍 <b>العنوان:</b> <code>${address}</code>
-🆔 <b>معرف السحب:</b> <code>${withdrawId}</code>
+👤 <b>${t(lang, 'user_label')}</b> ${userName} (<code>${userId}</code>)
+💰 <b>${t(lang, 'amount_label')}</b> ${amount} USDT
+📍 <b>${t(lang, 'label_address')}</b> <code>${address}</code>
+🆔 <b>${t(lang, 'label_withdrawal_id')}</b> <code>${withdrawId}</code>
 
-⏰ <b>الوقت:</b> ${new Date().toLocaleString('ar-SA')}
+⏰ <b>${t(lang, 'withdrawal_owner_success_time')}</b> ${new Date().toLocaleString('ar-SA')}
 `;
 
     await safeSendMessage(bot, config.OWNER_ID, message, { parse_mode: 'HTML' });
@@ -43,14 +46,17 @@ async function notifyOwnerSuccess(userId, userName, amount, address, withdrawId)
  */
 async function notifyUserSuccess(userId, amount, address, withdrawId) {
   try {
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+    
     const message = `
-✅ <b>تم إتمام السحب بنجاح!</b>
+✅ <b>${t(lang, 'withdrawal_user_success_title')}</b>
 
-💰 <b>المبلغ:</b> ${amount} USDT
-📍 <b>العنوان:</b> <code>${address}</code>
-🆔 <b>معرف المعاملة:</b> <code>${withdrawId}</code>
+💰 <b>${t(lang, 'amount_label')}</b> ${amount} USDT
+📍 <b>${t(lang, 'label_address')}</b> <code>${address}</code>
+🆔 <b>${t(lang, 'withdrawal_user_transaction_id')}</b> <code>${withdrawId}</code>
 
-⏰ سيصل المبلغ خلال دقائق قليلة
+⏰ ${t(lang, 'withdrawal_user_arrival_message')}
 `;
 
     await safeSendMessage(bot, userId, message, { parse_mode: 'HTML' });
@@ -65,30 +71,31 @@ async function notifyUserSuccess(userId, amount, address, withdrawId) {
  */
 async function notifyOwnerFailedWithdrawal(requestId, userId, userName, amount, address, errorMessage, attemptsMade) {
   try {
+    const lang = 'ar';
     const message = `
-🚨 <b>تنبيه: سحب فاشل - يحتاج تدخل يدوي!</b>
+🚨 <b>${t(lang, 'withdrawal_owner_failed_alert')}</b>
 
-❌ <b>فشل بعد ${attemptsMade} محاولات</b>
-
-━━━━━━━━━━━━━━━━━━━━
-📋 <b>تفاصيل الطلب:</b>
-• <b>معرف الطلب:</b> <code>${requestId}</code>
-• <b>المستخدم:</b> ${userName} (<code>${userId}</code>)
-• <b>المبلغ:</b> ${amount} USDT
-• <b>العنوان:</b> <code>${address}</code>
+❌ <b>${t(lang, 'withdrawal_owner_failed_after_attempts').replace('{attempts}', attemptsMade)}</b>
 
 ━━━━━━━━━━━━━━━━━━━━
-⚠️ <b>سبب الفشل:</b>
-<code>${errorMessage || 'غير محدد'}</code>
+📋 <b>${t(lang, 'withdrawal_owner_request_details')}</b>
+• <b>${t(lang, 'withdrawal_owner_request_id')}</b> <code>${requestId}</code>
+• <b>${t(lang, 'user_label')}</b> ${userName} (<code>${userId}</code>)
+• <b>${t(lang, 'amount_label')}</b> ${amount} USDT
+• <b>${t(lang, 'label_address')}</b> <code>${address}</code>
 
 ━━━━━━━━━━━━━━━━━━━━
-📌 <b>الإجراءات المطلوبة:</b>
-1️⃣ تحقق من رصيد OKX
-2️⃣ تحقق من صحة العنوان
-3️⃣ قم بالسحب يدوياً من OKX
-4️⃣ قم بتأكيد الطلب في لوحة التحكم
+⚠️ <b>${t(lang, 'withdrawal_owner_failed_reason')}</b>
+<code>${errorMessage || t(lang, 'withdrawal_owner_unknown_reason')}</code>
 
-⏰ <b>الوقت:</b> ${new Date().toLocaleString('ar-SA')}
+━━━━━━━━━━━━━━━━━━━━
+📌 <b>${t(lang, 'withdrawal_owner_required_actions')}</b>
+1️⃣ ${t(lang, 'withdrawal_owner_action_1')}
+2️⃣ ${t(lang, 'withdrawal_owner_action_2')}
+3️⃣ ${t(lang, 'withdrawal_owner_action_3')}
+4️⃣ ${t(lang, 'withdrawal_owner_action_4')}
+
+⏰ <b>${t(lang, 'withdrawal_owner_success_time')}</b> ${new Date().toLocaleString('ar-SA')}
 `;
 
     const keyboard = {
@@ -122,17 +129,20 @@ async function notifyOwnerFailedWithdrawal(requestId, userId, userName, amount, 
  */
 async function notifyUserDelayedWithdrawal(userId, amount) {
   try {
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+    
     const message = `
-⏳ <b>طلب السحب قيد المعالجة</b>
+⏳ <b>${t(lang, 'withdrawal_user_delayed_title')}</b>
 
-💰 <b>المبلغ:</b> ${amount} USDT
+💰 <b>${t(lang, 'amount_label')}</b> ${amount} USDT
 
-نواجه تأخيراً مؤقتاً في معالجة طلب السحب الخاص بك.
-سيتم إتمام العملية قريباً، وسنرسل لك إشعاراً فور الانتهاء.
+${t(lang, 'withdrawal_user_delayed_message_1')}
+${t(lang, 'withdrawal_user_delayed_message_2')}
 
-⚠️ إذا استمر التأخير، سيتم معالجة الطلب يدوياً من قبل الإدارة.
+⚠️ ${t(lang, 'withdrawal_user_delayed_warning')}
 
-نعتذر عن الإزعاج! 🙏
+${t(lang, 'withdrawal_user_apology')}
 `;
 
     await safeSendMessage(bot, userId, message, { parse_mode: 'HTML' });
@@ -187,28 +197,29 @@ async function checkAndNotifyFailedWithdrawals() {
  */
 async function sendDailyWithdrawalReport(stats) {
   try {
+    const lang = 'ar';
     const message = `
-📊 <b>تقرير السحوبات اليومي</b>
+📊 <b>${t(lang, 'withdrawal_daily_report_title')}</b>
 
 ━━━━━━━━━━━━━━━━━━━━
-📈 <b>الإحصائيات:</b>
-• ✅ سحوبات ناجحة: ${stats.completed || 0}
-• ⏳ قيد المعالجة: ${stats.active || 0}
-• ⏰ في الانتظار: ${stats.waiting || 0}
-• ❌ فاشلة (تحتاج تدخل): ${stats.failed || 0}
+📈 <b>${t(lang, 'withdrawal_daily_report_stats')}</b>
+• ✅ ${t(lang, 'withdrawal_daily_report_completed')} ${stats.completed || 0}
+• ⏳ ${t(lang, 'withdrawal_daily_report_active')} ${stats.active || 0}
+• ⏰ ${t(lang, 'withdrawal_daily_report_waiting')} ${stats.waiting || 0}
+• ❌ ${t(lang, 'withdrawal_daily_report_failed')} ${stats.failed || 0}
 
 ━━━━━━━━━━━━━━━━━━━━
-⏰ <b>التاريخ:</b> ${new Date().toLocaleString('ar-SA', { dateStyle: 'full' })}
+⏰ <b>${t(lang, 'withdrawal_daily_report_date')}</b> ${new Date().toLocaleString('ar-SA', { dateStyle: 'full' })}
 `;
 
     const keyboard = stats.failed > 0 ? {
       inline_keyboard: [
-        [{ text: '🚨 عرض السحوبات الفاشلة', callback_data: 'admin_failed_withdrawals' }],
-        [{ text: '📊 لوحة التحكم', callback_data: 'admin_withdrawals' }]
+        [{ text: `🚨 ${t(lang, 'withdrawal_daily_report_view_failed')}`, callback_data: 'admin_failed_withdrawals' }],
+        [{ text: `📊 ${t(lang, 'withdrawal_daily_report_dashboard')}`, callback_data: 'admin_withdrawals' }]
       ]
     } : {
       inline_keyboard: [
-        [{ text: '📊 لوحة التحكم', callback_data: 'admin_withdrawals' }]
+        [{ text: `📊 ${t(lang, 'withdrawal_daily_report_dashboard')}`, callback_data: 'admin_withdrawals' }]
       ]
     };
 

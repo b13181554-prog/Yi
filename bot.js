@@ -916,9 +916,9 @@ ${t(lang, 'send_following_data')}
 3️⃣ ${t(lang, 'monthly_price')}
 
 ${t(lang, 'example_label')}
-أحمد المحلل
-خبرة 5 سنوات في التحليل الفني
-20
+${t(lang, 'analyst_example_name')}
+${t(lang, 'analyst_example_description')}
+${t(lang, 'analyst_example_price')}
 `, { parse_mode: 'HTML' });
     }
   } catch (error) {
