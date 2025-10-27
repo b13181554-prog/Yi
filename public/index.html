@@ -685,11 +685,11 @@
                 <!-- إعدادات الإشعارات المحسّنة -->
                 <div style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15); border: 2px solid #e8ecff;">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                        <h3 style="margin: 0; color: #333; font-size: 18px;">🔔 إعدادات الإشعارات</h3>
-                        <span id="notification-status-badge" style="padding: 6px 12px; background: #ef4444; color: white; border-radius: 20px; font-size: 12px; font-weight: bold;">غير مفعل</span>
+                        <h3 style="margin: 0; color: #333; font-size: 18px;" data-i18n="notifications_settings_title">🔔 إعدادات الإشعارات</h3>
+                        <span id="notification-status-badge" style="padding: 6px 12px; background: #ef4444; color: white; border-radius: 20px; font-size: 12px; font-weight: bold;" data-i18n="notification_status_inactive">غير مفعل</span>
                     </div>
                     
-                    <p class="info-text" style="color: #666; font-size: 14px; margin: 0 0 20px 0; line-height: 1.6;">
+                    <p class="info-text" style="color: #666; font-size: 14px; margin: 0 0 20px 0; line-height: 1.6;" data-i18n="notifications_desc">
                         📢 احصل على إشعارات فورية عند اكتشاف صفقات قوية في الأسواق التي تختارها
                     </p>
                     
@@ -697,8 +697,8 @@
                     <div style="background: white; padding: 18px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 2px solid #f0f0f0;">
                         <div style="display: flex; align-items: center; justify-content: space-between;">
                             <div style="flex: 1;">
-                                <strong style="display: block; margin-bottom: 5px; color: #333; font-size: 15px;">تفعيل الإشعارات</strong>
-                                <span style="color: #999; font-size: 13px;">تلقي إشعارات عن الفرص القوية في الأسواق المختارة</span>
+                                <strong style="display: block; margin-bottom: 5px; color: #333; font-size: 15px;" data-i18n="enable_notifications">تفعيل الإشعارات</strong>
+                                <span style="color: #999; font-size: 13px;" data-i18n="notification_desc">تلقي إشعارات عن الفرص القوية في الأسواق المختارة</span>
                             </div>
                             <label class="switch" style="margin-right: 15px;">
                                 <input type="checkbox" id="more-notifications-toggle" onchange="toggleNotificationsFromMore()">
@@ -711,48 +711,48 @@
                     <div id="more-notification-markets" style="display: none;">
                         <div style="background: #f0f7ff; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-right: 4px solid #3b82f6;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-                                <p style="margin: 0; font-weight: bold; color: #1e40af; font-size: 15px;">اختر الأسواق التي تريد متابعتها:</p>
+                                <p style="margin: 0; font-weight: bold; color: #1e40af; font-size: 15px;" data-i18n="select_markets">اختر الأسواق:</p>
                                 <span id="selected-markets-count" style="background: #3b82f6; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;">0/5</span>
                             </div>
-                            <p style="margin: 0; color: #64748b; font-size: 12px;">💡 يُنصح باختيار من 2-3 أسواق للحصول على أفضل النتائج</p>
+                            <p style="margin: 0; color: #64748b; font-size: 12px;" data-i18n="markets_recommendation">💡 يُنصح باختيار من 2-3 أسواق للحصول على أفضل النتائج</p>
                         </div>
                         
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
                             <label class="market-checkbox-label" style="display: flex; align-items: center; padding: 14px; background: white; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.3s;">
                                 <input type="checkbox" class="more-market-checkbox" value="crypto" style="margin-left: 10px; width: 18px; height: 18px; cursor: pointer;" checked onchange="updateMarketCount()">
-                                <span style="font-size: 14px; font-weight: 500;">💎 عملات رقمية</span>
+                                <span style="font-size: 14px; font-weight: 500;" data-i18n="market_crypto_short">💎 عملات رقمية</span>
                             </label>
                             <label class="market-checkbox-label" style="display: flex; align-items: center; padding: 14px; background: white; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.3s;">
                                 <input type="checkbox" class="more-market-checkbox" value="forex" style="margin-left: 10px; width: 18px; height: 18px; cursor: pointer;" checked onchange="updateMarketCount()">
-                                <span style="font-size: 14px; font-weight: 500;">💱 فوركس</span>
+                                <span style="font-size: 14px; font-weight: 500;" data-i18n="market_forex_short">💱 فوركس</span>
                             </label>
                             <label class="market-checkbox-label" style="display: flex; align-items: center; padding: 14px; background: white; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.3s;">
                                 <input type="checkbox" class="more-market-checkbox" value="stocks" style="margin-left: 10px; width: 18px; height: 18px; cursor: pointer;" checked onchange="updateMarketCount()">
-                                <span style="font-size: 14px; font-weight: 500;">📈 أسهم</span>
+                                <span style="font-size: 14px; font-weight: 500;" data-i18n="market_stocks_short">📈 أسهم</span>
                             </label>
                             <label class="market-checkbox-label" style="display: flex; align-items: center; padding: 14px; background: white; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.3s;">
                                 <input type="checkbox" class="more-market-checkbox" value="commodities" style="margin-left: 10px; width: 18px; height: 18px; cursor: pointer;" checked onchange="updateMarketCount()">
-                                <span style="font-size: 14px; font-weight: 500;">🥇 سلع</span>
+                                <span style="font-size: 14px; font-weight: 500;" data-i18n="market_commodities_short">🥇 سلع</span>
                             </label>
                             <label class="market-checkbox-label" style="display: flex; align-items: center; padding: 14px; background: white; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.3s;">
                                 <input type="checkbox" class="more-market-checkbox" value="indices" style="margin-left: 10px; width: 18px; height: 18px; cursor: pointer;" checked onchange="updateMarketCount()">
-                                <span style="font-size: 14px; font-weight: 500;">📊 مؤشرات</span>
+                                <span style="font-size: 14px; font-weight: 500;" data-i18n="market_indices_short">📊 مؤشرات</span>
                             </label>
                         </div>
                         
                         <!-- رسالة تأكيدية -->
-                        <div id="notification-save-status" style="display: none; padding: 12px; background: #d1fae5; border-radius: 8px; margin-bottom: 15px; color: #065f46; font-size: 13px; text-align: center;">
+                        <div id="notification-save-status" style="display: none; padding: 12px; background: #d1fae5; border-radius: 8px; margin-bottom: 15px; color: #065f46; font-size: 13px; text-align: center;" data-i18n="notification_save_success">
                             ✅ تم حفظ إعداداتك بنجاح!
                         </div>
                         
-                        <button onclick="saveNotificationMarketsFromMore()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 15px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s;">
+                        <button onclick="saveNotificationMarketsFromMore()" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 15px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); transition: all 0.3s;" data-i18n="save_preferences">
                             💾 حفظ التفضيلات
                         </button>
                     </div>
 
                     <!-- معلومات إضافية عند إيقاف التفعيل -->
                     <div id="notification-info-disabled" style="display: block; background: #fef3c7; padding: 12px; border-radius: 8px; border-right: 4px solid #f59e0b; margin-top: 15px;">
-                        <p style="margin: 0; color: #92400e; font-size: 13px; line-height: 1.6;">
+                        <p style="margin: 0; color: #92400e; font-size: 13px; line-height: 1.6;" data-i18n="notification_disabled_hint">
                             ℹ️ قم بتفعيل الإشعارات للحصول على تنبيهات فورية عند اكتشاف فرص تداول قوية
                         </p>
                     </div>

@@ -4493,7 +4493,7 @@ async function toggleNotificationsFromMore() {
             
             // تحديث شارة الحالة
             if (statusBadge) {
-                statusBadge.textContent = enabled ? 'مفعّل' : 'غير مفعل';
+                statusBadge.textContent = enabled ? t('notification_status_active') : t('notification_status_inactive');
                 statusBadge.style.background = enabled ? '#10b981' : '#ef4444';
             }
             
@@ -4627,7 +4627,7 @@ async function loadMoreSectionSettings() {
             
             // تحديث شارة الحالة
             if (statusBadge) {
-                statusBadge.textContent = isEnabled ? 'مفعّل' : 'غير مفعل';
+                statusBadge.textContent = isEnabled ? t('notification_status_active') : t('notification_status_inactive');
                 statusBadge.style.background = isEnabled ? '#10b981' : '#ef4444';
             }
             
