@@ -54,6 +54,11 @@ The Telegram Web App features a dark theme, providing a professional, modern, an
   - Centralized prompt selection via `getSystemPrompt(language)` function with fallback to Arabic
   - Integration with Groq API customer support endpoint ensures AI responds in user's selected language
   - All languages receive identical information (features, pricing, analysis types, system specs) in their native language
+- **Complete Translation Coverage for Withdrawal System** (October 2025):
+  - Added button translation keys (button_manual_approve, button_retry, button_reject, button_dashboard, button_view_failed_withdrawals) across all 7 languages in `languages.js`
+  - Updated `withdrawal-notifier.js` to use translation keys for all inline keyboard buttons
+  - Eliminated all hardcoded Arabic text from withdrawal notification buttons
+  - Ensures complete language consistency throughout the withdrawal notification flow
 
 **Feature Specifications**:
 The platform offers a Web App for technical analysis, top movers, a wallet for USDT TRC20, and account management. Trading features include technical analysis for diverse asset classes and trending cryptocurrency tracking. Financial features include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management includes analyst subscriptions and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, and withdrawal processing. Automated trade signal monitoring and a blockchain-based pump detection system are integrated.
