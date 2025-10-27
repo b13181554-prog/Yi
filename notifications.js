@@ -3,6 +3,7 @@ const db = require('./database');
 const config = require('./config');
 const blockchainPumpScanner = require('./blockchain-pump-scanner');
 const { safeSendMessage } = require('./safe-message');
+const { t } = require('./languages');
 
 let bot = null;
 const sentPumpAlerts = new Map();
@@ -105,19 +106,24 @@ async function scanAndNotifyMarketOpportunities() {
         
         // إرسال التنبيهات
         if (opportunities.length > 0) {
-          let message = '🔔 <b>فرص تداول قوية جديدة!</b>\n\n';
+          const lang = user.language || 'ar';
+          let message = `🔔 <b>${t(lang, 'notif_new_trading_opportunities')}</b>\n\n`;
           
           for (const opp of opportunities.slice(0, 5)) {
-            const action = opp.recommendation === 'buy' ? '🟢 شراء' : opp.recommendation === 'sell' ? '🔴 بيع' : '⚪ محايد';
-            message += `${action} <b>${opp.symbol}</b> (${opp.market})\n`;
-            message += `💪 الثقة: ${opp.confidence}%\n`;
-            message += `💵 السعر: ${opp.price}\n`;
-            if (opp.stopLoss) message += `🛑 وقف الخسارة: ${opp.stopLoss}\n`;
-            if (opp.takeProfit) message += `🎯 جني الأرباح: ${opp.takeProfit}\n`;
+            const actionText = opp.recommendation === 'buy' ? t(lang, 'notif_buy') : 
+                              opp.recommendation === 'sell' ? t(lang, 'notif_sell') : 
+                              t(lang, 'notif_neutral');
+            const actionEmoji = opp.recommendation === 'buy' ? '🟢' : 
+                               opp.recommendation === 'sell' ? '🔴' : '⚪';
+            message += `${actionEmoji} ${actionText} <b>${opp.symbol}</b> (${opp.market})\n`;
+            message += `💪 ${t(lang, 'notif_confidence')}: ${opp.confidence}%\n`;
+            message += `💵 ${t(lang, 'notif_price')}: ${opp.price}\n`;
+            if (opp.stopLoss) message += `🛑 ${t(lang, 'notif_stop_loss')}: ${opp.stopLoss}\n`;
+            if (opp.takeProfit) message += `🎯 ${t(lang, 'notif_take_profit')}: ${opp.takeProfit}\n`;
             message += '\n';
           }
           
-          message += '💡 افتح البوت للمزيد من التفاصيل';
+          message += `💡 ${t(lang, 'notif_open_bot_for_details')}`;
           
           await safeSendMessage(bot, user.user_id, message, { parse_mode: 'HTML' });
           notifiedUsers.set(user.user_id, opportunities.length);
@@ -146,38 +152,40 @@ async function checkExpiringSubscriptions() {
         const expiryDate = new Date(user.subscription_expires);
         const now = new Date();
         const daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+        const lang = user.language || 'ar';
+        const localeDateString = expiryDate.toLocaleDateString(lang === 'ar' ? 'ar-SA' : lang === 'zh' ? 'zh-CN' : lang === 'ru' ? 'ru-RU' : lang === 'de' ? 'de-DE' : lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : 'en-US');
         
         if (daysLeft === 3) {
           await safeSendMessage(bot, user.user_id, `
-⚠️ <b>تنبيه اشتراك</b>
+⚠️ <b>${t(lang, 'notif_subscription_warning')}</b>
 
-اشتراكك سينتهي خلال 3 أيام!
+${t(lang, 'notif_subscription_expires_3days')}
 
-📅 تاريخ الانتهاء: ${expiryDate.toLocaleDateString('ar')}
+📅 ${t(lang, 'notif_expiry_date')}: ${localeDateString}
 
-جدد اشتراكك الآن لتستمر في الحصول على التحليلات والتوصيات.
+${t(lang, 'notif_renew_now')}
 `, { parse_mode: 'HTML' });
         } else if (daysLeft === 1) {
           await safeSendMessage(bot, user.user_id, `
-⏰ <b>تذكير عاجل!</b>
+⏰ <b>${t(lang, 'notif_urgent_reminder')}</b>
 
-اشتراكك سينتهي غداً!
+${t(lang, 'notif_subscription_expires_tomorrow')}
 
-📅 تاريخ الانتهاء: ${expiryDate.toLocaleDateString('ar')}
+📅 ${t(lang, 'notif_expiry_date')}: ${localeDateString}
 
-جدد الآن لعدم فقدان الوصول للخدمات.
-💰 السعر: ${config.SUBSCRIPTION_PRICE} USDT
+${t(lang, 'notif_renew_now_no_access')}
+💰 ${t(lang, 'notif_price')}: ${config.SUBSCRIPTION_PRICE} USDT
 `, { parse_mode: 'HTML' });
         } else if (daysLeft === 0) {
           await safeSendMessage(bot, user.user_id, `
-❌ <b>انتهى الاشتراك</b>
+❌ <b>${t(lang, 'notif_subscription_ended')}</b>
 
-انتهى اشتراكك اليوم.
+${t(lang, 'notif_subscription_ended_today')}
 
-للاستمرار في استخدام البوت، يرجى تجديد الاشتراك:
-💰 السعر: ${config.SUBSCRIPTION_PRICE} USDT
+${t(lang, 'notif_continue_using')}
+💰 ${t(lang, 'notif_price')}: ${config.SUBSCRIPTION_PRICE} USDT
 
-اضغط على "💰 المحفظة" للتجديد
+${t(lang, 'notif_press_wallet')}
 `, { parse_mode: 'HTML' });
         }
       }
@@ -198,30 +206,32 @@ async function checkExpiringTrials() {
         
         const now = new Date();
         const daysLeft = Math.ceil((trialEnd - now) / (1000 * 60 * 60 * 24));
+        const lang = user.language || 'ar';
+        const localeDateString = trialEnd.toLocaleDateString(lang === 'ar' ? 'ar-SA' : lang === 'zh' ? 'zh-CN' : lang === 'ru' ? 'ru-RU' : lang === 'de' ? 'de-DE' : lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : 'en-US');
         
         if (daysLeft === 2) {
           await safeSendMessage(bot, user.user_id, `
-🎁 <b>تنبيه الفترة التجريبية</b>
+🎁 <b>${t(lang, 'notif_trial_warning')}</b>
 
-فترتك التجريبية المجانية ستنتهي خلال يومين!
+${t(lang, 'notif_trial_ends_2days')}
 
-📅 تاريخ الانتهاء: ${trialEnd.toLocaleDateString('ar')}
+📅 ${t(lang, 'notif_expiry_date')}: ${localeDateString}
 
-للاستمرار في استخدام البوت بعد انتهاء الفترة التجريبية:
-💰 اشترك مقابل ${config.SUBSCRIPTION_PRICE} USDT شهرياً
+${t(lang, 'notif_trial_continue')}
+💰 ${t(lang, 'notif_subscribe_for')} ${config.SUBSCRIPTION_PRICE} USDT ${t(lang, 'notif_monthly')}
 
-استمتع بآخر أيام التجربة! 🚀
+${t(lang, 'notif_enjoy_trial')}
 `, { parse_mode: 'HTML' });
         } else if (daysLeft === 0) {
           await safeSendMessage(bot, user.user_id, `
-⏰ <b>آخر يوم في الفترة التجريبية!</b>
+⏰ <b>${t(lang, 'notif_trial_last_day')}</b>
 
-فترتك التجريبية المجانية تنتهي اليوم.
+${t(lang, 'notif_trial_ends_today')}
 
-للاستمرار غداً، جدد اشتراكك الآن:
-💰 السعر: ${config.SUBSCRIPTION_PRICE} USDT شهرياً
+${t(lang, 'notif_continue_tomorrow')}
+💰 ${t(lang, 'notif_price')}: ${config.SUBSCRIPTION_PRICE} USDT ${t(lang, 'notif_monthly')}
 
-اضغط على "💰 المحفظة" للتجديد
+${t(lang, 'notif_press_wallet')}
 `, { parse_mode: 'HTML' });
         }
       }
@@ -233,13 +243,16 @@ async function checkExpiringTrials() {
 
 async function notifyDeposit(userId, amount, txId) {
   try {
+    const user = await db.getUser(userId);
+    const lang = user ? user.language : 'ar';
+    
     await safeSendMessage(bot, userId, `
-✅ <b>تم الإيداع بنجاح!</b>
+✅ <b>${t(lang, 'notif_deposit_success')}</b>
 
-💵 المبلغ: ${amount} USDT
-🔗 معرف المعاملة: <code>${txId}</code>
+💵 ${t(lang, 'notif_amount')}: ${amount} USDT
+🔗 ${t(lang, 'notif_tx_id')}: <code>${txId}</code>
 
-تم إضافة الرصيد إلى حسابك.
+${t(lang, 'notif_balance_added')}
 `, { parse_mode: 'HTML' });
   } catch (error) {
     console.error('Error notifying deposit:', error);
@@ -248,13 +261,16 @@ async function notifyDeposit(userId, amount, txId) {
 
 async function notifyWithdrawal(userId, amount, address) {
   try {
+    const user = await db.getUser(userId);
+    const lang = user ? user.language : 'ar';
+    
     await safeSendMessage(bot, userId, `
-✅ <b>تم السحب بنجاح!</b>
+✅ <b>${t(lang, 'notif_withdrawal_success')}</b>
 
-💸 المبلغ: ${amount} USDT
-📍 العنوان: <code>${address}</code>
+💸 ${t(lang, 'notif_amount')}: ${amount} USDT
+📍 ${t(lang, 'notif_address')}: <code>${address}</code>
 
-تم إرسال المبلغ إلى محفظتك.
+${t(lang, 'notif_sent_to_wallet')}
 `, { parse_mode: 'HTML' });
   } catch (error) {
     console.error('Error notifying withdrawal:', error);
