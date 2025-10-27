@@ -59,6 +59,17 @@ The Telegram Web App features a dark theme, providing a professional, modern, an
   - Updated `withdrawal-notifier.js` to use translation keys for all inline keyboard buttons
   - Eliminated all hardcoded Arabic text from withdrawal notification buttons
   - Ensures complete language consistency throughout the withdrawal notification flow
+- **Enhanced Notification System UI/UX** (October 2025):
+  - Centralized notification system exclusively in "More" section (more-section) with no duplication in profile section
+  - Redesigned notification interface with modern gradient styling and enhanced visual feedback
+  - Added dynamic status badge showing "Active/Inactive" with color-coded indicators (green/red)
+  - Implemented market counter displaying selected markets (X/5) with dynamic color coding
+  - Added success confirmation message with smooth slideIn animation
+  - Enhanced market selection with hover effects and visual feedback for selected items
+  - Improved user guidance with recommendation messages and informative hints
+  - Full multi-language support with complete translation coverage across all 7 languages (ar, en, fr, es, de, ru, zh)
+  - All UI text uses data-i18n attributes and t() function for seamless language switching
+  - CSS animations including pulse effects for status badge and smooth transitions for all interactive elements
 
 **Feature Specifications**:
 The platform offers a Web App for technical analysis, top movers, a wallet for USDT TRC20, and account management. Trading features include technical analysis for diverse asset classes and trending cryptocurrency tracking. Financial features include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management includes analyst subscriptions and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, and withdrawal processing. Automated trade signal monitoring and a blockchain-based pump detection system are integrated.
