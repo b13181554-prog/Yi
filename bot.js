@@ -5,6 +5,8 @@ const db = require('./database');
 const { t, getLanguageKeyboard } = require('./languages');
 const { safeSendMessage, safeSendPhoto, safeEditMessageText, safeAnswerCallbackQuery } = require('./safe-message');
 const { BatchLoader } = require('./utils/batch-loader');
+const groqService = require('./groq-service');
+const { getSystemPrompt } = require('./ai-system-prompts');
 
 // تحديد الوضع: webhook أو polling
 const USE_WEBHOOK = process.env.USE_WEBHOOK === 'true';
@@ -428,7 +430,35 @@ ${isEnabled ? `<b>${t(lang, 'selected_markets')}</b>\n${marketsText}` : ''}
 ${text}
       `, { parse_mode: 'HTML' });
       
-      await safeSendMessage(bot, chatId, t(lang, 'message_sent'), { parse_mode: 'HTML' });
+      // استخدام الذكاء الاصطناعي للرد على المستخدم بلغته
+      try {
+        if (groqService.enabled) {
+          const typingInterval = setInterval(() => {
+            bot.sendChatAction(chatId, 'typing').catch(() => {});
+          }, 3000);
+          
+          const systemPrompt = getSystemPrompt(lang);
+          const aiResponse = await groqService.chat([
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: text }
+          ], {
+            model: 'llama-3.3-70b-versatile',
+            max_tokens: 500,
+            temperature: 0.7
+          });
+          
+          clearInterval(typingInterval);
+          
+          const reply = aiResponse.choices[0].message.content;
+          await safeSendMessage(bot, chatId, reply, { parse_mode: 'HTML' });
+        } else {
+          await safeSendMessage(bot, chatId, t(lang, 'message_sent'), { parse_mode: 'HTML' });
+        }
+      } catch (error) {
+        console.error('Error in AI customer service:', error);
+        await safeSendMessage(bot, chatId, t(lang, 'message_sent'), { parse_mode: 'HTML' });
+      }
+      
       await db.updateUser(userId, { awaitingCustomerServiceMessage: false });
     }
   } catch (error) {

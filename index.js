@@ -30,6 +30,7 @@ const aiMonitor = require('./ai-monitor');
 const analysisFeeManager = require('./analysis-fee-manager');
 const memoryOptimizer = require('./memory-optimizer');
 const { getSystemPrompt } = require('./ai-system-prompts');
+const { t } = require('./languages');
 
 // Groq AI - Free and fast alternative to OpenAI
 let groq = null;
@@ -838,7 +839,7 @@ app.post('/api/subscribe', async (req, res) => {
     
     const user = await db.getUser(user_id);
     if (!user) {
-      return res.json({ success: false, error: 'المستخدم غير موجود' });
+      return res.json({ success: false, error: t('ar', 'user_not_found') });
     }
     
     if (user.subscription_expires && new Date(user.subscription_expires) > new Date()) {
@@ -1655,7 +1656,7 @@ app.post('/api/register-analyst', async (req, res) => {
     // الحصول على بيانات المستخدم من قاعدة البيانات
     const user = await db.getUser(user_id);
     if (!user) {
-      return res.json({ success: false, error: 'المستخدم غير موجود' });
+      return res.json({ success: false, error: t('ar', 'user_not_found') });
     }
     
     // إنشاء اسم المحلل - استخدام username إن وُجد لضمان التفرد
@@ -3875,7 +3876,7 @@ app.post('/api/admin/search', async (req, res) => {
     }
     
     if (!user) {
-      return res.json({ success: false, error: 'المستخدم غير موجود' });
+      return res.json({ success: false, error: t('ar', 'user_not_found') });
     }
     
     const transactions = await db.getUserTransactions(user.user_id);
@@ -3903,7 +3904,7 @@ app.post('/api/admin/search', async (req, res) => {
 app.post('/api/customer-support', async (req, res) => {
   if (!groq) {
     return res.status(503).json({ 
-      error: 'خدمة العملاء غير متاحة حالياً. يرجى المحاولة لاحقاً.',
+      error: t('ar', 'customer_support_unavailable'),
       error_en: 'Customer support is currently unavailable. Please try again later.' 
     });
   }
@@ -3933,7 +3934,7 @@ app.post('/api/customer-support', async (req, res) => {
 
   } catch (error) {
     console.error('Customer support error:', error);
-    res.status(500).json({ error: 'فشل في الحصول على رد' });
+    res.status(500).json({ error: t('ar', 'failed_to_get_reply') });
   }
 });
 

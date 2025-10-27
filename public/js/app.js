@@ -181,7 +181,7 @@ function generateAllForexPairs() {
     }
 
     FOREX_PAIRS.push(...pairs);
-    console.log(`✅ تم إنشاء ${FOREX_PAIRS.length} زوج فوركس`);
+    console.log(`✅ Generated ${FOREX_PAIRS.length} forex pairs`);
     return FOREX_PAIRS;
 }
 
@@ -364,16 +364,16 @@ async function init() {
         console.log('🔍 Telegram WebApp Info:', {
             version: tg.version,
             platform: tg.platform,
-            initData: tg.initData ? 'موجود' : 'فارغ',
+            initData: tg.initData ? t('initdata_present') : t('initdata_empty'),
             initDataUnsafe: tg.initDataUnsafe,
             user: tg.initDataUnsafe?.user
         });
         
         if (!tg.initDataUnsafe?.user?.id) {
-            console.error('❌ لا يوجد معرف مستخدم من Telegram');
-            console.error('📋 تفاصيل التشخيص:', {
-                'tg موجود': !!tg,
-                'initData': tg.initData || 'فارغ',
+            console.error('❌ No user ID from Telegram');
+            console.error('📋 Diagnostic details:', {
+                'tg present': !!tg,
+                'initData': tg.initData || t('initdata_empty'),
                 'initDataUnsafe': JSON.stringify(tg.initDataUnsafe),
                 'platform': tg.platform,
                 'version': tg.version
@@ -382,21 +382,21 @@ async function init() {
             document.getElementById('loading').innerHTML = `
                 <div style="text-align: center; padding: 40px 20px; max-width: 500px; margin: 0 auto;">
                     <div style="font-size: 80px; margin-bottom: 20px;">🔒</div>
-                    <h2 style="color: #ee0979; margin-bottom: 10px;">التطبيق يعمل فقط من خلال Telegram</h2>
-                    <p style="color: #666; margin-bottom: 30px;">لا يمكن فتح هذا التطبيق مباشرة من المتصفح</p>
+                    <h2 style="color: #ee0979; margin-bottom: 10px;">${t('app_works_only_from_telegram')}</h2>
+                    <p style="color: #666; margin-bottom: 30px;">${t('cannot_open_directly')}</p>
                     
                     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; text-align: right;">
-                        <h3 style="margin: 0 0 15px 0; font-size: 18px;">✅ الطريقة الصحيحة:</h3>
+                        <h3 style="margin: 0 0 15px 0; font-size: 18px;">✅ ${t('correct_way_title')}</h3>
                         <ol style="margin: 0; padding-right: 20px; text-align: right; line-height: 2;">
-                            <li>افتح تطبيق <strong>Telegram</strong></li>
-                            <li>ابحث عن بوت <strong>@OBENTCHI_Bot</strong></li>
-                            <li>أرسل <strong>/start</strong></li>
-                            <li>اضغط على زر <strong>🚀 فتح التطبيق</strong></li>
+                            <li>${t('open_telegram_app')} <strong>Telegram</strong></li>
+                            <li>${t('search_bot')} <strong>@OBENTCHI_Bot</strong></li>
+                            <li>${t('send_start')}</li>
+                            <li>${t('click_open_app')}</li>
                         </ol>
                     </div>
                     
                     <div style="background: #f5f5f5; padding: 15px; border-radius: 10px; font-size: 14px; color: #666;">
-                        💡 <strong>نصيحة:</strong> يجب فتح التطبيق من داخل Telegram فقط للحفاظ على أمان حسابك
+                        💡 <strong>${t('security_tip').split(':')[0]}:</strong> ${t('security_tip')}
                     </div>
                 </div>
             `;
@@ -446,10 +446,10 @@ async function init() {
         document.getElementById('loading').style.display = 'none';
 
     } catch (error) {
-        console.error('❌ خطأ في التهيئة:', error);
-        console.error('❌ رسالة الخطأ:', error.message);
+        console.error('❌ Initialization error:', error);
+        console.error('❌ Error message:', error.message);
         console.error('❌ Stack:', error.stack);
-        showError('حدث خطأ في تحميل التطبيق: ' + (error.message || error.toString()));
+        showError(t('app_loading_error') + ' ' + (error.message || error.toString()));
     }
 }
 
@@ -481,7 +481,7 @@ function updateUI() {
             const refLink = `https://t.me/${botUsername}?start=ref_${user.id}`;
             refLinkEl.textContent = refLink;
         } else {
-            refLinkEl.textContent = 'جاري التحميل...';
+            refLinkEl.textContent = t('loading');
         }
     }
 }
@@ -494,7 +494,7 @@ async function updateSymbolsList() {
     let symbols = [];
 
     try {
-        select.innerHTML = '<option>⏳ جاري التحميل...</option>';
+        select.innerHTML = `<option>⏳ ${t('loading')}</option>`;
 
         if (marketType === 'crypto') {
             symbols = await loadAllCryptoSymbols();
@@ -512,7 +512,7 @@ async function updateSymbolsList() {
         }
 
         if (symbols.length === 0) {
-            select.innerHTML = '<option>❌ لا توجد أصول متاحة</option>';
+            select.innerHTML = `<option>❌ ${t('loading_assets_error')}</option>`;
             return;
         }
 
@@ -529,7 +529,7 @@ async function updateSymbolsList() {
         console.log(`✅ Loaded ${symbols.length} symbols for ${marketType}`);
     } catch (error) {
         console.error('❌ Error updating symbols list:', error);
-        select.innerHTML = '<option>❌ حدث خطأ في التحميل</option>';
+        select.innerHTML = `<option>❌ ${t('loading_error_generic')}</option>`;
     }
 }
 
