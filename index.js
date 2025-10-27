@@ -1706,9 +1706,11 @@ ID: ${user_id}
       res.json({ success: true, analyst });
     } catch (createError) {
       if (createError.message.includes('مستخدم بالفعل') || createError.message.includes('duplicate')) {
+        const user = await db.getUser(user_id);
+        const lang = user ? (user.language || 'ar') : 'ar';
         const errorMessage = user.username 
-          ? 'هذا الاسم مستخدم بالفعل، يرجى اختيار اسم آخر'
-          : `⚠️ هذا الاسم مستخدم بالفعل من قبل محلل آخر.\n\n💡 للحل:\n• قم بتعيين username في حساب تلجرام الخاص بك\n• ثم حاول التسجيل مرة أخرى\n\nهذا سيضمن تفرد اسمك كمحلل.`;
+          ? t(lang, 'error_analyst_name_taken')
+          : t(lang, 'error_analyst_name_taken_solution');
         
         return res.json({ success: false, error: errorMessage });
       }

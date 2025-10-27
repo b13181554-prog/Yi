@@ -30,7 +30,7 @@ const translations = {
     analyst_commission: 'ستحصل على 20% من جميع مدفوعاته 💰',
     new_analyst_specific_referral: '🎉 إحالة جديدة لمحلل!',
     analyst_specific_commission: 'ستحصل على 15% من اشتراكه في هذا المحلل 💰',
-    
+
     // القائمة الرئيسية - الأزرار
     open_app: '🚀 فتح التطبيق',
     settings_menu: '⚙️ الإعدادات',
@@ -57,7 +57,7 @@ const translations = {
     customer_service_btn: '📞 خدمة العملاء',
     notifications_btn: '🔔 الإشعارات',
     back_to_main: '🔙 العودة للقائمة الرئيسية',
-    
+
     // تحليل فني
     technical_analysis: '📊 تحليل فني شامل',
     currency: 'العملة:',
@@ -68,7 +68,7 @@ const translations = {
     high_price: 'أعلى سعر:',
     low_price: 'أقل سعر:',
     technical_indicators: '📈 المؤشرات الفنية:',
-    
+
     // إشارات التداول
     neutral: 'محايد',
     overbought: 'تشبع شرائي',
@@ -79,27 +79,27 @@ const translations = {
     potential_buy: 'فرصة شراء محتملة',
     uptrend: 'اتجاه صعودي',
     downtrend: 'اتجاه هبوطي',
-    
+
     // المحفظة
     balance: 'الرصيد:',
     deposit: 'إيداع',
     withdraw: 'سحب',
-    
+
     // الإعدادات
     language_settings: '🌐 إعدادات اللغة',
     select_language: 'اختر اللغة المفضلة:',
     language_changed: '✅ تم تغيير اللغة بنجاح!',
-    
+
     // خدمة العملاء
     customer_service: '📞 خدمة العملاء',
     customer_service_msg: 'مرحباً بك في خدمة العملاء! 👋\n\nكيف يمكننا مساعدتك؟ اكتب رسالتك وسنرد عليك في أقرب وقت.',
     message_sent: '✅ تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.',
-    
+
     // الإشعارات
     notifications_settings: '🔔 إعدادات الإشعارات',
     notifications_enabled: '✅ الإشعارات مفعلة',
     notifications_disabled: '❌ الإشعارات معطلة',
-    
+
     // توصية التداول
     trade_recommendation: '🎯 توصية التداول',
     entry_points: '📍 نقاط الدخول والخروج:',
@@ -117,21 +117,21 @@ const translations = {
     amount_distribution: '📊 توزيع المبلغ:',
     owner_share: '• حصة المالك',
     referral_commission: '• عمولة إحالة',
-    
+
     // أسواق التداول
     market_crypto: 'العملات الرقمية',
     market_forex: 'الفوركس',
     market_stocks: 'الأسهم',
     market_commodities: 'السلع',
     market_indices: 'المؤشرات',
-    
+
     // رسائل الحالة
     status_label: 'الحالة:',
     enabled_label: 'مفعلة',
     disabled_label: 'معطلة',
     selected_markets: 'الأسواق المختارة:',
     notification_note: 'ملاحظة: لتعديل إعدادات الإشعارات والأسواق، افتح التطبيق واذهب إلى قسم "حسابي" ثم "إعدادات الإشعارات"',
-    
+
     // رسائل الاشتراك
     subscription_activated: 'تم تفعيل الاشتراك بنجاح!',
     amount_deducted: 'المبلغ المخصوم:',
@@ -148,7 +148,7 @@ const translations = {
     refund_notice: 'في حالة خصم أي مبلغ، سيتم إرجاعه تلقائياً.',
     subscription_failed: 'فشل في عملية الاشتراك',
     error_label: 'الخطأ:',
-    
+
     // تسجيل المحللين
     analyst_registration: 'التسجيل كمحلل',
     send_following_data: 'أرسل البيانات التالية (كل في سطر منفصل):',
@@ -169,24 +169,24 @@ const translations = {
     users_can_subscribe: 'يمكن للمستخدمين الآن الاشتراك في خدماتك!',
     new_analyst: 'محلل جديد',
     description_label: 'الوصف:',
-    
+
     // رسائل خدمة العملاء
     customer_service_new_message: 'رسالة جديدة من خدمة العملاء',
     message_label: 'الرسالة:',
     no_username: 'بدون معرف',
-    
+
     // رسائل تبديل الإشعارات
     notifications_toggled_on: 'تم تفعيل الإشعارات',
     notifications_toggled_off: 'تم إيقاف الإشعارات',
-    
+
     // رسائل أخطاء عامة
     generic_error: 'حدث خطأ',
     request_processing_error: 'حدث خطأ في معالجة الطلب',
-    
+
     // رسائل الحالة الإضافية
     trial_period_days_left: '🎁 الفترة التجريبية: {days} يوم متبقي',
     subscription_active_until_date: '✅ الاشتراك نشط حتى: {date}',
-    
+
     // تسميات إضافية
     label_user_language: 'لغة المستخدم:',
     language_name_arabic: 'العربية',
@@ -199,13 +199,13 @@ const translations = {
     label_reason: 'السبب:',
     label_language: 'اللغة:',
     label_refunded_balance: 'الرصيد المُرجع:',
-    
+
     // رسائل المحفظة
     error_insufficient_withdrawal_balance: '❌ الرصيد المتاح للسحب غير كافٍ!',
     wallet_available_withdrawal_balance: '💰 رصيدك المتاح للسحب: {balance} USDT',
     wallet_escrow_balance_info: '🔒 رصيد الضمان: {balance} USDT (سيتم تحريره نهاية الشهر)',
     wallet_required_amount_with_fees: 'المبلغ المطلوب (مع الرسوم): {amount} USDT',
-    
+
     // رسائل السحب
     withdrawal_processing: '⏳ جاري معالجة السحب...',
     please_wait: '⏳ يرجى الانتظار...',
@@ -215,34 +215,34 @@ const translations = {
     withdrawal_will_notify: 'سيتم إعلامك فور المعالجة 📬',
     withdrawal_address_display: '📍 العنوان: <code>{address}</code>',
     withdrawal_will_arrive_soon: 'سيصل المبلغ خلال دقائق قليلة 🎉',
-    
+
     // رسائل النجاح
     withdrawal_success: '✅ تم السحب بنجاح!',
     success_amount_display: '💸 المبلغ: {amount} USDT',
-    
+
     // رسائل أخطاء إضافية
     error_insufficient_balance: '❌ رصيدك غير كافٍ!',
     error_withdrawal_failed: '❌ فشل السحب',
     error_processing_withdrawal: '❌ خطأ في معالجة السحب',
     error_insufficient_balance_subscription: '❌ رصيدك غير كافٍ للاشتراك!',
     error_subscription_processing_failed: 'فشل في معالجة الاشتراك',
-    
+
     // إشعارات إضافية
     notification_amount_refunded: 'تم إرجاع المبلغ لرصيدك: {amount} USDT',
     notification_unexpected_error_refunded: 'حدث خطأ غير متوقع. تم إرجاع المبلغ لرصيدك.',
     notification_try_again_later: 'يرجى المحاولة مرة أخرى لاحقاً.',
     notification_amount_refunded_to_user: 'تم إرجاع المبلغ للمستخدم.',
-    
+
     // مطالبات
     prompt_please_start: 'يرجى البدء بالضغط على /start',
-    
+
     // إشعارات إدارية
     admin_new_manual_withdrawal: '💸 طلب سحب جديد (يدوي)',
     admin_funds_reserved: '⚠️ الأموال محجوزة - يجب المعالجة يدوياً',
     admin_auto_withdrawal_success: '✅ سحب تلقائي ناجح',
     admin_auto_withdrawal_failed: '❌ فشل سحب تلقائي',
     admin_withdrawal_system_error: '⚠️ خطأ في نظام السحب',
-    
+
     // إشعارات السحب - المالك
     withdrawal_owner_success_title: '✅ سحب ناجح تلقائياً',
     withdrawal_owner_success_time: 'الوقت:',
@@ -257,7 +257,7 @@ const translations = {
     withdrawal_owner_action_2: 'تحقق من صحة العنوان',
     withdrawal_owner_action_3: 'قم بالسحب يدوياً من OKX',
     withdrawal_owner_action_4: 'قم بتأكيد الطلب في لوحة التحكم',
-    
+
     // إشعارات السحب - المستخدم
     withdrawal_user_success_title: 'تم إتمام السحب بنجاح!',
     withdrawal_user_transaction_id: 'معرف المعاملة:',
@@ -267,7 +267,7 @@ const translations = {
     withdrawal_user_delayed_message_2: 'سيتم إتمام العملية قريباً، وسنرسل لك إشعاراً فور الانتهاء.',
     withdrawal_user_delayed_warning: 'إذا استمر التأخير، سيتم معالجة الطلب يدوياً من قبل الإدارة.',
     withdrawal_user_apology: 'نعتذر عن الإزعاج! 🙏',
-    
+
     // تقرير السحوبات اليومي
     withdrawal_daily_report_title: 'تقرير السحوبات اليومي',
     withdrawal_daily_report_stats: 'الإحصائيات:',
@@ -278,14 +278,14 @@ const translations = {
     withdrawal_daily_report_date: 'التاريخ:',
     withdrawal_daily_report_view_failed: 'عرض السحوبات الفاشلة',
     withdrawal_daily_report_dashboard: 'لوحة التحكم',
-    
+
     // أزرار الإجراءات
     button_manual_approve: '✅ تم السحب يدوياً',
     button_retry: '🔄 إعادة المحاولة',
     button_reject: '❌ رفض الطلب',
     button_dashboard: '📊 لوحة التحكم',
     button_view_failed_withdrawals: '🚨 عرض السحوبات الفاشلة',
-    
+
     // نصوص الواجهة الأمامية (app.js)
     loading: 'جاري التحميل...',
     buy_action: 'شراء',
@@ -327,12 +327,12 @@ const translations = {
     transaction_type_referral: 'إحالة',
     status_confirmed: 'مؤكد',
     status_unconfirmed: 'غير مؤكد',
-    
+
     // رسائل index.js
     user_not_found: 'المستخدم غير موجود',
     customer_support_unavailable: 'خدمة العملاء غير متاحة حالياً. يرجى المحاولة لاحقاً.',
     failed_to_get_reply: 'فشل في الحصول على رد',
-    
+
     // Admin Panel
     admin_unauthorized: 'غير مصرح لك بالوصول لهذا الأمر',
     admin_unauthorized_short: 'غير مصرح لك',
@@ -503,10 +503,19 @@ const translations = {
     admin_no_username_text: 'لا يوجد',
     admin_error_generic: 'حدث خطأ!',
     admin_search_user_button: 'بحث عن مستخدم',
-    
+
+    // Analyst Registration Errors
+    error_analyst_name_taken: 'هذا الاسم مستخدم بالفعل، يرجى اختيار اسم آخر',
+    error_analyst_name_taken_solution: `⚠️ هذا الاسم مستخدم بالفعل من قبل محلل آخر.
+
+💡 للحل:
+• قم بتعيين username في حساب تلجرام الخاص بك
+• ثم حاول التسجيل مرة أخرى
+
+هذا سيضمن تفرد اسمك كمحلل.`,
+
     // CryptAPI & Database Errors
     cryptapi_failed_create_address: 'فشل إنشاء عنوان الدفع من CryptAPI',
-    cryptapi_error_create_payment: 'حدث خطأ في إنشاء عنوان الدفع',
     cryptapi_failed_convert_price: 'فشل تحويل السعر',
     cryptapi_failed_get_logs: 'فشل جلب سجلات الدفع',
     cryptapi_failed_estimate_fees: 'فشل تقدير الرسوم',
@@ -514,7 +523,7 @@ const translations = {
     database_error_deduct_analysis_fee: 'حدث خطأ أثناء خصم رسوم التحليل',
     database_failed_update_balance_refund: 'فشل تحديث الرصيد أثناء الاسترجاع',
     database_error_refund_fee: 'حدث خطأ أثناء استرجاع الرسوم',
-    
+
     // Notifications
     notif_new_trading_opportunities: 'فرص تداول قوية جديدة!',
     notif_open_bot_for_details: 'افتح البوت للمزيد من التفاصيل',
@@ -525,7 +534,7 @@ const translations = {
     notif_price: 'السعر',
     notif_stop_loss: 'وقف الخسارة',
     notif_take_profit: 'جني الأرباح',
-    
+
     // Analyst Signals
     analyst_new_signal: 'إشارة جديدة',
     analyst_signal_buy: 'شراء',
@@ -539,7 +548,7 @@ const translations = {
     analyst_target: 'الهدف',
     analyst_stop_loss: 'وقف الخسارة',
     analyst_analysis: 'التحليل',
-    
+
     // Subscription & Trial Notifications
     notif_subscription_warning: 'تنبيه اشتراك',
     notif_subscription_expires_3days: 'اشتراكك سينتهي خلال 3 أيام!',
@@ -548,7 +557,6 @@ const translations = {
     notif_urgent_reminder: 'تذكير عاجل!',
     notif_subscription_expires_tomorrow: 'اشتراكك سينتهي غداً!',
     notif_renew_now_no_access: 'جدد الآن لعدم فقدان الوصول للخدمات.',
-    notif_price: 'السعر',
     notif_subscription_ended: 'انتهى الاشتراك',
     notif_subscription_ended_today: 'انتهى اشتراكك اليوم.',
     notif_continue_using: 'للاستمرار في استخدام البوت، يرجى تجديد الاشتراك:',
@@ -570,7 +578,7 @@ const translations = {
     notif_address: 'العنوان',
     notif_sent_to_wallet: 'تم إرسال المبلغ إلى محفظتك.',
   },
-  
+
   en: {
     // General messages
     palestine_free: 'Free Palestine',
@@ -602,7 +610,7 @@ const translations = {
     analyst_commission: 'You will get 20% from all their payments 💰',
     new_analyst_specific_referral: '🎉 New Analyst-Specific Referral!',
     analyst_specific_commission: 'You will get 15% from their subscription to this analyst 💰',
-    
+
     // Main menu - Buttons
     open_app: '🚀 Open App',
     settings_menu: '⚙️ Settings',
@@ -629,7 +637,7 @@ const translations = {
     customer_service_btn: '📞 Customer Service',
     notifications_btn: '🔔 Notifications',
     back_to_main: '🔙 Back to Main Menu',
-    
+
     // Technical analysis
     technical_analysis: '📊 Comprehensive Technical Analysis',
     currency: 'Currency:',
@@ -640,7 +648,7 @@ const translations = {
     high_price: 'High Price:',
     low_price: 'Low Price:',
     technical_indicators: '📈 Technical Indicators:',
-    
+
     // Trading signals
     neutral: 'Neutral',
     overbought: 'Overbought',
@@ -651,27 +659,27 @@ const translations = {
     potential_buy: 'Potential Buy Opportunity',
     uptrend: 'Uptrend',
     downtrend: 'Downtrend',
-    
+
     // Wallet
     balance: 'Balance:',
     deposit: 'Deposit',
     withdraw: 'Withdraw',
-    
+
     // Settings
     language_settings: '🌐 Language Settings',
     select_language: 'Select your preferred language:',
     language_changed: '✅ Language changed successfully!',
-    
+
     // Customer Service
     customer_service: '📞 Customer Service',
     customer_service_msg: 'Welcome to Customer Service! 👋\n\nHow can we help you? Write your message and we will respond as soon as possible.',
     message_sent: '✅ Your message has been sent successfully! We will contact you soon.',
-    
+
     // Notifications
     notifications_settings: '🔔 Notification Settings',
     notifications_enabled: '✅ Notifications enabled',
     notifications_disabled: '❌ Notifications disabled',
-    
+
     // Trade Recommendation
     trade_recommendation: '🎯 Trade Recommendation',
     entry_points: '📍 Entry and Exit Points:',
@@ -689,21 +697,21 @@ const translations = {
     amount_distribution: '📊 Amount Distribution:',
     owner_share: '• Owner share',
     referral_commission: '• Referral commission',
-    
+
     // Trading markets
     market_crypto: 'Cryptocurrency',
     market_forex: 'Forex',
     market_stocks: 'Stocks',
     market_commodities: 'Commodities',
     market_indices: 'Indices',
-    
+
     // Status messages
     status_label: 'Status:',
     enabled_label: 'Enabled',
     disabled_label: 'Disabled',
     selected_markets: 'Selected Markets:',
     notification_note: 'Note: To modify notification and market settings, open the app and go to "My Account" then "Notification Settings"',
-    
+
     // Subscription messages
     subscription_activated: 'Subscription activated successfully!',
     amount_deducted: 'Amount deducted:',
@@ -720,7 +728,7 @@ const translations = {
     refund_notice: 'If any amount was deducted, it will be refunded automatically.',
     subscription_failed: 'Subscription process failed',
     error_label: 'Error:',
-    
+
     // Analyst registration
     analyst_registration: 'Analyst Registration',
     send_following_data: 'Send the following data (each on a separate line):',
@@ -741,24 +749,24 @@ const translations = {
     users_can_subscribe: 'Users can now subscribe to your services!',
     new_analyst: 'New Analyst',
     description_label: 'Description:',
-    
+
     // Customer service messages
     customer_service_new_message: 'New message from customer service',
     message_label: 'Message:',
     no_username: 'No username',
-    
+
     // Notification toggle messages
     notifications_toggled_on: 'Notifications enabled',
     notifications_toggled_off: 'Notifications disabled',
-    
+
     // General error messages
     generic_error: 'An error occurred',
     request_processing_error: 'An error occurred while processing the request',
-    
+
     // Additional status messages
     trial_period_days_left: '🎁 Trial Period: {days} days remaining',
     subscription_active_until_date: '✅ Subscription active until: {date}',
-    
+
     // Additional labels
     label_user_language: 'User language:',
     language_name_arabic: 'Arabic',
@@ -771,13 +779,13 @@ const translations = {
     label_reason: 'Reason:',
     label_language: 'Language:',
     label_refunded_balance: 'Refunded balance:',
-    
+
     // Wallet messages
     error_insufficient_withdrawal_balance: '❌ Insufficient withdrawal balance!',
     wallet_available_withdrawal_balance: '💰 Your available withdrawal balance: {balance} USDT',
     wallet_escrow_balance_info: '🔒 Escrow balance: {balance} USDT (will be released at month end)',
     wallet_required_amount_with_fees: 'Required amount (including fees): {amount} USDT',
-    
+
     // Withdrawal messages
     withdrawal_processing: '⏳ Processing withdrawal...',
     please_wait: '⏳ Please wait...',
@@ -787,34 +795,34 @@ const translations = {
     withdrawal_will_notify: 'You will be notified upon processing 📬',
     withdrawal_address_display: '📍 Address: <code>{address}</code>',
     withdrawal_will_arrive_soon: 'The amount will arrive in a few minutes 🎉',
-    
+
     // Success messages
     withdrawal_success: '✅ Withdrawal successful!',
     success_amount_display: '💸 Amount: {amount} USDT',
-    
+
     // Additional error messages
     error_insufficient_balance: '❌ Insufficient balance!',
     error_withdrawal_failed: '❌ Withdrawal failed',
     error_processing_withdrawal: '❌ Error processing withdrawal',
     error_insufficient_balance_subscription: '❌ Insufficient balance for subscription!',
     error_subscription_processing_failed: 'Subscription processing failed',
-    
+
     // Additional notifications
     notification_amount_refunded: 'Amount refunded to your balance: {amount} USDT',
     notification_unexpected_error_refunded: 'An unexpected error occurred. Amount refunded to your balance.',
     notification_try_again_later: 'Please try again later.',
     notification_amount_refunded_to_user: 'Amount refunded to user.',
-    
+
     // Prompts
     prompt_please_start: 'Please start by pressing /start',
-    
+
     // Admin notifications
     admin_new_manual_withdrawal: '💸 New manual withdrawal request',
     admin_funds_reserved: '⚠️ Funds reserved - manual processing required',
     admin_auto_withdrawal_success: '✅ Automatic withdrawal successful',
     admin_auto_withdrawal_failed: '❌ Automatic withdrawal failed',
     admin_withdrawal_system_error: '⚠️ Withdrawal system error',
-    
+
     // Withdrawal notifications - Owner
     withdrawal_owner_success_title: '✅ Automatic withdrawal successful',
     withdrawal_owner_success_time: 'Time:',
@@ -829,7 +837,7 @@ const translations = {
     withdrawal_owner_action_2: 'Verify address validity',
     withdrawal_owner_action_3: 'Process withdrawal manually from OKX',
     withdrawal_owner_action_4: 'Confirm request in dashboard',
-    
+
     // Withdrawal notifications - User
     withdrawal_user_success_title: 'Withdrawal completed successfully!',
     withdrawal_user_transaction_id: 'Transaction ID:',
@@ -839,7 +847,7 @@ const translations = {
     withdrawal_user_delayed_message_2: 'The operation will be completed soon, and we will send you a notification upon completion.',
     withdrawal_user_delayed_warning: 'If the delay continues, the request will be processed manually by management.',
     withdrawal_user_apology: 'We apologize for the inconvenience! 🙏',
-    
+
     // Daily withdrawal report
     withdrawal_daily_report_title: 'Daily Withdrawal Report',
     withdrawal_daily_report_stats: 'Statistics:',
@@ -850,14 +858,14 @@ const translations = {
     withdrawal_daily_report_date: 'Date:',
     withdrawal_daily_report_view_failed: 'View failed withdrawals',
     withdrawal_daily_report_dashboard: 'Dashboard',
-    
+
     // Action buttons
     button_manual_approve: '✅ Manually withdrawn',
     button_retry: '🔄 Retry',
     button_reject: '❌ Reject request',
     button_dashboard: '📊 Dashboard',
     button_view_failed_withdrawals: '🚨 View failed withdrawals',
-    
+
     // Frontend texts (app.js)
     loading: 'Loading...',
     buy_action: 'Buy',
@@ -899,12 +907,12 @@ const translations = {
     transaction_type_referral: 'Referral',
     status_confirmed: 'Confirmed',
     status_unconfirmed: 'Unconfirmed',
-    
+
     // index.js messages
     user_not_found: 'User not found',
     customer_support_unavailable: 'Customer support is currently unavailable. Please try again later.',
     failed_to_get_reply: 'Failed to get reply',
-    
+
     // Admin Panel
     admin_unauthorized: 'You are not authorized to access this command',
     admin_unauthorized_short: 'Not authorized',
@@ -1031,51 +1039,7 @@ const translations = {
     admin_all_transactions: 'All transactions',
     admin_analyst_subscriptions: 'Analyst subscriptions',
     admin_yes_delete_account: 'Yes, delete account',
-    admin_no_referrals_yet: 'No referrals yet',
-    admin_user_info_title: 'User Information',
-    admin_basic_info_section: 'Basic Information',
-    admin_name_with_colon: 'Name:',
-    admin_username_with_colon: 'Username:',
-    admin_user_id_with_colon: 'User ID:',
-    admin_registration_date: 'Registration Date:',
-    admin_financial_info_section: 'Financial',
-    admin_balance_with_colon: 'Balance:',
-    admin_referral_earnings_with_colon: 'Referral Earnings:',
-    admin_status_section: 'Status',
-    admin_status_with_colon: 'Status:',
-    admin_subscription_with_colon: 'Subscription:',
-    admin_subscription_active_status: 'Active',
-    admin_subscription_expired: 'Expired',
-    admin_ban_reason_with_colon: 'Ban Reason:',
-    admin_referrals_section: 'Referrals',
-    admin_referral_count_with_colon: 'Referral Count:',
-    admin_total_earnings_with_colon: 'Total Earnings:',
-    admin_settings_section: 'Settings',
-    admin_language_with_colon: 'Language:',
-    admin_notifications_with_colon: 'Notifications:',
-    admin_notifications_enabled_status: 'Enabled',
-    admin_notifications_disabled_status: 'Disabled',
-    admin_user_status_active: 'Active',
-    admin_user_status_banned: 'Banned',
-    admin_user_status_banned_until: 'Banned until',
-    admin_user_status_banned_permanently_text: 'Permanently banned',
-    admin_invalid_user_id_number: 'User ID must be a number',
-    admin_user_not_found_with_id: 'User not found with this ID',
-    admin_unban_user_button: 'Unban User',
-    admin_ban_user_button: 'Ban User',
-    admin_restrict_user_button: 'Restrict User',
-    admin_delete_account_button: 'Delete Account',
-    admin_back_button: 'Back',
-    admin_broadcasting_progress: 'Sending message...',
-    admin_broadcast_complete: 'Broadcast Message Sent!',
-    admin_broadcast_stats_section: 'Statistics:',
-    admin_total_users_count: 'Total Users:',
-    admin_broadcast_success_count: 'Successful:',
-    admin_broadcast_failed_count: 'Failed:',
-    admin_no_username_text: 'None',
-    admin_error_generic: 'An error occurred!',
-    admin_search_user_button: 'Search for User',
-    
+
     // CryptAPI & Database Errors
     cryptapi_failed_create_address: 'Failed to create payment address from CryptAPI',
     cryptapi_error_create_payment: 'Error creating payment address',
@@ -1086,7 +1050,7 @@ const translations = {
     database_error_deduct_analysis_fee: 'Error occurred while deducting analysis fee',
     database_failed_update_balance_refund: 'Failed to update balance during refund',
     database_error_refund_fee: 'Error occurred while refunding fee',
-    
+
     // Notifications
     notif_new_trading_opportunities: 'New Strong Trading Opportunities!',
     notif_open_bot_for_details: 'Open the bot for more details',
@@ -1097,7 +1061,7 @@ const translations = {
     notif_price: 'Price',
     notif_stop_loss: 'Stop Loss',
     notif_take_profit: 'Take Profit',
-    
+
     // Analyst Signals
     analyst_new_signal: 'New Signal',
     analyst_signal_buy: 'Buy',
@@ -1111,7 +1075,7 @@ const translations = {
     analyst_target: 'Target',
     analyst_stop_loss: 'Stop Loss',
     analyst_analysis: 'Analysis',
-    
+
     // Subscription & Trial Notifications
     notif_subscription_warning: 'Subscription Warning',
     notif_subscription_expires_3days: 'Your subscription expires in 3 days!',
@@ -1141,7 +1105,7 @@ const translations = {
     notif_address: 'Address',
     notif_sent_to_wallet: 'Amount has been sent to your wallet.',
   },
-  
+
   fr: {
     // Messages généraux
     palestine_free: 'Palestine Libre',
@@ -1173,7 +1137,7 @@ const translations = {
     analyst_commission: 'Vous recevrez 20% de tous leurs paiements 💰',
     new_analyst_specific_referral: '🎉 Nouveau Parrainage d\'Analyste Spécifique!',
     analyst_specific_commission: 'Vous recevrez 15% de leur abonnement à cet analyste 💰',
-    
+
     // Menu principal - Boutons
     open_app: '🚀 Ouvrir l\'application',
     settings_menu: '⚙️ Paramètres',
@@ -1200,7 +1164,7 @@ const translations = {
     customer_service_btn: '📞 Service client',
     notifications_btn: '🔔 Notifications',
     back_to_main: '🔙 Retour au menu principal',
-    
+
     // Analyse technique
     technical_analysis: '📊 Analyse technique complète',
     currency: 'Devise:',
@@ -1211,7 +1175,7 @@ const translations = {
     high_price: 'Prix le plus haut:',
     low_price: 'Prix le plus bas:',
     technical_indicators: '📈 Indicateurs techniques:',
-    
+
     // Signaux de trading
     neutral: 'Neutre',
     overbought: 'Suracheté',
@@ -1222,27 +1186,27 @@ const translations = {
     potential_buy: 'Opportunité d\'achat potentielle',
     uptrend: 'Tendance haussière',
     downtrend: 'Tendance baissière',
-    
+
     // Portefeuille
     balance: 'Solde:',
     deposit: 'Dépôt',
     withdraw: 'Retrait',
-    
+
     // Paramètres
     language_settings: '🌐 Paramètres de langue',
     select_language: 'Sélectionnez votre langue préférée:',
     language_changed: '✅ Langue changée avec succès!',
-    
+
     // Service client
     customer_service: '📞 Service client',
     customer_service_msg: 'Bienvenue au service client! 👋\n\nComment pouvons-nous vous aider? Écrivez votre message et nous vous répondrons dès que possible.',
     message_sent: '✅ Votre message a été envoyé avec succès! Nous vous contacterons bientôt.',
-    
+
     // Notifications
     notifications_settings: '🔔 Paramètres de notification',
     notifications_enabled: '✅ Notifications activées',
     notifications_disabled: '❌ Notifications désactivées',
-    
+
     // Recommandation de trading
     trade_recommendation: '🎯 Recommandation de trading',
     entry_points: '📍 Points d\'entrée et de sortie:',
@@ -1260,21 +1224,21 @@ const translations = {
     amount_distribution: '📊 Distribution du montant:',
     owner_share: '• Part du propriétaire',
     referral_commission: '• Commission de parrainage',
-    
+
     // Marchés de trading
     market_crypto: 'Cryptomonnaie',
     market_forex: 'Forex',
     market_stocks: 'Actions',
     market_commodities: 'Matières premières',
     market_indices: 'Indices',
-    
+
     // Messages de statut
     status_label: 'Statut:',
     enabled_label: 'Activé',
     disabled_label: 'Désactivé',
     selected_markets: 'Marchés sélectionnés:',
     notification_note: 'Note: Pour modifier les paramètres de notification et de marché, ouvrez l\'application et allez dans "Mon compte" puis "Paramètres de notification"',
-    
+
     // Messages d\'abonnement
     subscription_activated: 'Abonnement activé avec succès!',
     amount_deducted: 'Montant déduit:',
@@ -1291,7 +1255,7 @@ const translations = {
     refund_notice: 'Si un montant a été déduit, il sera remboursé automatiquement.',
     subscription_failed: 'Le processus d\'abonnement a échoué',
     error_label: 'Erreur:',
-    
+
     // Inscription analyste
     analyst_registration: 'Inscription d\'analyste',
     send_following_data: 'Envoyez les données suivantes (chacune sur une ligne séparée):',
@@ -1312,24 +1276,24 @@ const translations = {
     users_can_subscribe: 'Les utilisateurs peuvent maintenant s\'abonner à vos services!',
     new_analyst: 'Nouvel analyste',
     description_label: 'Description:',
-    
+
     // Messages du service client
     customer_service_new_message: 'Nouveau message du service client',
     message_label: 'Message:',
     no_username: 'Pas de nom d\'utilisateur',
-    
+
     // Messages de basculement des notifications
     notifications_toggled_on: 'Notifications activées',
     notifications_toggled_off: 'Notifications désactivées',
-    
+
     // Messages d\'erreur généraux
     generic_error: 'Une erreur s\'est produite',
     request_processing_error: 'Une erreur s\'est produite lors du traitement de la demande',
-    
+
     // Messages de statut supplémentaires
     trial_period_days_left: '🎁 Période d\'essai : {days} jours restants',
     subscription_active_until_date: '✅ Abonnement actif jusqu\'au : {date}',
-    
+
     // Étiquettes supplémentaires
     label_user_language: 'Langue de l\'utilisateur :',
     language_name_arabic: 'Arabe',
@@ -1342,13 +1306,13 @@ const translations = {
     label_reason: 'Raison :',
     label_language: 'Langue :',
     label_refunded_balance: 'Solde remboursé :',
-    
+
     // Messages de portefeuille
     error_insufficient_withdrawal_balance: '❌ Solde de retrait insuffisant !',
     wallet_available_withdrawal_balance: '💰 Votre solde de retrait disponible : {balance} USDT',
     wallet_escrow_balance_info: '🔒 Solde de garantie : {balance} USDT (sera libéré à la fin du mois)',
     wallet_required_amount_with_fees: 'Montant requis (frais inclus) : {amount} USDT',
-    
+
     // Messages de retrait
     withdrawal_processing: '⏳ Traitement du retrait...',
     please_wait: '⏳ Veuillez patienter...',
@@ -1358,34 +1322,34 @@ const translations = {
     withdrawal_will_notify: 'Vous serez notifié lors du traitement 📬',
     withdrawal_address_display: '📍 Adresse : <code>{address}</code>',
     withdrawal_will_arrive_soon: 'Le montant arrivera dans quelques minutes 🎉',
-    
+
     // Messages de succès
     withdrawal_success: '✅ Retrait réussi !',
     success_amount_display: '💸 Montant : {amount} USDT',
-    
+
     // Messages d\'erreur supplémentaires
     error_insufficient_balance: '❌ Solde insuffisant !',
     error_withdrawal_failed: '❌ Échec du retrait',
     error_processing_withdrawal: '❌ Erreur lors du traitement du retrait',
     error_insufficient_balance_subscription: '❌ Solde insuffisant pour l\'abonnement !',
     error_subscription_processing_failed: 'Échec du traitement de l\'abonnement',
-    
+
     // Notifications supplémentaires
     notification_amount_refunded: 'Montant remboursé sur votre solde : {amount} USDT',
     notification_unexpected_error_refunded: 'Une erreur inattendue s\'est produite. Montant remboursé sur votre solde.',
     notification_try_again_later: 'Veuillez réessayer plus tard.',
     notification_amount_refunded_to_user: 'Montant remboursé à l\'utilisateur.',
-    
+
     // Invites
     prompt_please_start: 'Veuillez commencer en appuyant sur /start',
-    
+
     // Notifications administrateur
     admin_new_manual_withdrawal: '💸 Nouvelle demande de retrait manuel',
     admin_funds_reserved: '⚠️ Fonds réservés - traitement manuel requis',
     admin_auto_withdrawal_success: '✅ Retrait automatique réussi',
     admin_auto_withdrawal_failed: '❌ Échec du retrait automatique',
     admin_withdrawal_system_error: '⚠️ Erreur du système de retrait',
-    
+
     // Notifications de retrait - Propriétaire
     withdrawal_owner_success_title: '✅ Retrait automatique réussi',
     withdrawal_owner_success_time: 'Heure:',
@@ -1400,7 +1364,7 @@ const translations = {
     withdrawal_owner_action_2: 'Vérifier la validité de l\'adresse',
     withdrawal_owner_action_3: 'Traiter le retrait manuellement depuis OKX',
     withdrawal_owner_action_4: 'Confirmer la demande dans le tableau de bord',
-    
+
     // Notifications de retrait - Utilisateur
     withdrawal_user_success_title: 'Retrait effectué avec succès!',
     withdrawal_user_transaction_id: 'ID de transaction:',
@@ -1410,7 +1374,7 @@ const translations = {
     withdrawal_user_delayed_message_2: 'L\'opération sera terminée bientôt, et nous vous enverrons une notification dès qu\'elle sera terminée.',
     withdrawal_user_delayed_warning: 'Si le retard persiste, la demande sera traitée manuellement par la direction.',
     withdrawal_user_apology: 'Nous nous excusons pour le désagrément! 🙏',
-    
+
     // Rapport quotidien des retraits
     withdrawal_daily_report_title: 'Rapport quotidien des retraits',
     withdrawal_daily_report_stats: 'Statistiques:',
@@ -1421,14 +1385,14 @@ const translations = {
     withdrawal_daily_report_date: 'Date:',
     withdrawal_daily_report_view_failed: 'Voir les retraits échoués',
     withdrawal_daily_report_dashboard: 'Tableau de bord',
-    
+
     // Boutons d'action
     button_manual_approve: '✅ Retiré manuellement',
     button_retry: '🔄 Réessayer',
     button_reject: '❌ Rejeter la demande',
     button_dashboard: '📊 Tableau de bord',
     button_view_failed_withdrawals: '🚨 Voir les retraits échoués',
-    
+
     // Textes du frontend (app.js)
     loading: 'Chargement...',
     buy_action: 'Acheter',
@@ -1470,12 +1434,12 @@ const translations = {
     transaction_type_referral: 'Parrainage',
     status_confirmed: 'Confirmé',
     status_unconfirmed: 'Non confirmé',
-    
+
     // Messages index.js
     user_not_found: 'Utilisateur non trouvé',
     customer_support_unavailable: 'Le support client est actuellement indisponible. Veuillez réessayer plus tard.',
     failed_to_get_reply: 'Échec de la réception de la réponse',
-    
+
     // Admin Panel
     admin_unauthorized: 'Vous n\'êtes pas autorisé à accéder à cette commande',
     admin_unauthorized_short: 'Non autorisé',
@@ -1602,7 +1566,7 @@ const translations = {
     admin_all_transactions: 'Toutes les transactions',
     admin_analyst_subscriptions: 'Abonnements d\'analystes',
     admin_yes_delete_account: 'Oui, supprimer le compte',
-    
+
     // CryptAPI & Database Errors
     cryptapi_failed_create_address: 'Échec de la création de l\'adresse de paiement depuis CryptAPI',
     cryptapi_error_create_payment: 'Erreur lors de la création de l\'adresse de paiement',
@@ -1613,7 +1577,7 @@ const translations = {
     database_error_deduct_analysis_fee: 'Erreur lors de la déduction des frais d\'analyse',
     database_failed_update_balance_refund: 'Échec de la mise à jour du solde lors du remboursement',
     database_error_refund_fee: 'Erreur lors du remboursement des frais',
-    
+
     // Notifications
     notif_new_trading_opportunities: 'Nouvelles Opportunités de Trading Fortes!',
     notif_open_bot_for_details: 'Ouvrez le bot pour plus de détails',
@@ -1624,7 +1588,7 @@ const translations = {
     notif_price: 'Prix',
     notif_stop_loss: 'Stop Loss',
     notif_take_profit: 'Prendre les Bénéfices',
-    
+
     // Analyst Signals
     analyst_new_signal: 'Nouveau Signal',
     analyst_signal_buy: 'Acheter',
@@ -1638,7 +1602,7 @@ const translations = {
     analyst_target: 'Objectif',
     analyst_stop_loss: 'Stop Loss',
     analyst_analysis: 'Analyse',
-    
+
     // Subscription & Trial Notifications
     notif_subscription_warning: 'Avertissement d\'Abonnement',
     notif_subscription_expires_3days: 'Votre abonnement expire dans 3 jours!',
@@ -1668,7 +1632,7 @@ const translations = {
     notif_address: 'Adresse',
     notif_sent_to_wallet: 'Le montant a été envoyé à votre portefeuille.',
   },
-  
+
   es: {
     // Mensajes generales
     palestine_free: 'Palestina Libre',
@@ -1700,7 +1664,7 @@ const translations = {
     analyst_commission: 'Recibirás el 20% de todos sus pagos 💰',
     new_analyst_specific_referral: '🎉 ¡Nuevo Referido de Analista Específico!',
     analyst_specific_commission: 'Recibirás el 15% de su suscripción a este analista 💰',
-    
+
     // Menú principal - Botones
     open_app: '🚀 Abrir aplicación',
     settings_menu: '⚙️ Configuración',
@@ -1727,7 +1691,7 @@ const translations = {
     customer_service_btn: '📞 Servicio al cliente',
     notifications_btn: '🔔 Notificaciones',
     back_to_main: '🔙 Volver al menú principal',
-    
+
     // Análisis técnico
     technical_analysis: '📊 Análisis técnico completo',
     currency: 'Moneda:',
@@ -1738,7 +1702,7 @@ const translations = {
     high_price: 'Precio máximo:',
     low_price: 'Precio mínimo:',
     technical_indicators: '📈 Indicadores técnicos:',
-    
+
     // Señales de trading
     neutral: 'Neutral',
     overbought: 'Sobrecomprado',
@@ -1749,27 +1713,27 @@ const translations = {
     potential_buy: 'Oportunidad de compra potencial',
     uptrend: 'Tendencia alcista',
     downtrend: 'Tendencia bajista',
-    
+
     // Cartera
     balance: 'Saldo:',
     deposit: 'Depósito',
     withdraw: 'Retirar',
-    
+
     // Configuración
     language_settings: '🌐 Configuración de idioma',
     select_language: 'Selecciona tu idioma preferido:',
     language_changed: '✅ ¡Idioma cambiado con éxito!',
-    
+
     // Servicio al cliente
     customer_service: '📞 Servicio al cliente',
     customer_service_msg: '¡Bienvenido al servicio al cliente! 👋\n\n¿Cómo podemos ayudarte? Escribe tu mensaje y te responderemos lo antes posible.',
     message_sent: '✅ ¡Tu mensaje ha sido enviado con éxito! Nos pondremos en contacto contigo pronto.',
-    
+
     // Notificaciones
     notifications_settings: '🔔 Configuración de notificaciones',
     notifications_enabled: '✅ Notificaciones activadas',
     notifications_disabled: '❌ Notificaciones desactivadas',
-    
+
     // Recomendación de trading
     trade_recommendation: '🎯 Recomendación de trading',
     entry_points: '📍 Puntos de entrada y salida:',
@@ -1787,21 +1751,21 @@ const translations = {
     amount_distribution: '📊 Distribución del monto:',
     owner_share: '• Parte del propietario',
     referral_commission: '• Comisión de referencia',
-    
+
     // Mercados de trading
     market_crypto: 'Criptomonedas',
     market_forex: 'Forex',
     market_stocks: 'Acciones',
     market_commodities: 'Materias primas',
     market_indices: 'Índices',
-    
+
     // Mensajes de estado
     status_label: 'Estado:',
     enabled_label: 'Activado',
     disabled_label: 'Desactivado',
     selected_markets: 'Mercados seleccionados:',
     notification_note: 'Nota: Para modificar la configuración de notificaciones y mercados, abre la aplicación y ve a "Mi cuenta" y luego a "Configuración de notificaciones"',
-    
+
     // Mensajes de suscripción
     subscription_activated: '¡Suscripción activada con éxito!',
     amount_deducted: 'Monto deducido:',
@@ -1818,7 +1782,7 @@ const translations = {
     refund_notice: 'Si se dedujo algún monto, será reembolsado automáticamente.',
     subscription_failed: 'El proceso de suscripción falló',
     error_label: 'Error:',
-    
+
     // Registro de analista
     analyst_registration: 'Registro de analista',
     send_following_data: 'Envía los siguientes datos (cada uno en una línea separada):',
@@ -1839,24 +1803,24 @@ const translations = {
     users_can_subscribe: '¡Los usuarios ahora pueden suscribirse a tus servicios!',
     new_analyst: 'Nuevo analista',
     description_label: 'Descripción:',
-    
+
     // Mensajes de servicio al cliente
     customer_service_new_message: 'Nuevo mensaje del servicio al cliente',
     message_label: 'Mensaje:',
     no_username: 'Sin nombre de usuario',
-    
+
     // Mensajes de activación de notificaciones
     notifications_toggled_on: 'Notificaciones activadas',
     notifications_toggled_off: 'Notificaciones desactivadas',
-    
+
     // Mensajes de error generales
     generic_error: 'Ocurrió un error',
     request_processing_error: 'Ocurrió un error al procesar la solicitud',
-    
+
     // Mensajes de estado adicionales
     trial_period_days_left: '🎁 Período de prueba: {days} días restantes',
     subscription_active_until_date: '✅ Suscripción activa hasta: {date}',
-    
+
     // Etiquetas adicionales
     label_user_language: 'Idioma del usuario:',
     language_name_arabic: 'Árabe',
@@ -1869,13 +1833,13 @@ const translations = {
     label_reason: 'Razón:',
     label_language: 'Idioma:',
     label_refunded_balance: 'Saldo reembolsado:',
-    
+
     // Mensajes de billetera
     error_insufficient_withdrawal_balance: '❌ ¡Saldo de retiro insuficiente!',
     wallet_available_withdrawal_balance: '💰 Tu saldo de retiro disponible: {balance} USDT',
     wallet_escrow_balance_info: '🔒 Saldo de garantía: {balance} USDT (se liberará a fin de mes)',
     wallet_required_amount_with_fees: 'Monto requerido (incluidas tarifas): {amount} USDT',
-    
+
     // Mensajes de retiro
     withdrawal_processing: '⏳ Procesando retiro...',
     please_wait: '⏳ Por favor espera...',
@@ -1885,34 +1849,34 @@ const translations = {
     withdrawal_will_notify: 'Serás notificado al procesar 📬',
     withdrawal_address_display: '📍 Dirección: <code>{address}</code>',
     withdrawal_will_arrive_soon: 'El monto llegará en unos minutos 🎉',
-    
+
     // Mensajes de éxito
     withdrawal_success: '✅ ¡Retiro exitoso!',
     success_amount_display: '💸 Monto: {amount} USDT',
-    
+
     // Mensajes de error adicionales
     error_insufficient_balance: '❌ ¡Saldo insuficiente!',
     error_withdrawal_failed: '❌ Retiro fallido',
     error_processing_withdrawal: '❌ Error al procesar el retiro',
     error_insufficient_balance_subscription: '❌ ¡Saldo insuficiente para la suscripción!',
     error_subscription_processing_failed: 'Falló el procesamiento de la suscripción',
-    
+
     // Notificaciones adicionales
     notification_amount_refunded: 'Monto reembolsado a tu saldo: {amount} USDT',
     notification_unexpected_error_refunded: 'Ocurrió un error inesperado. Monto reembolsado a tu saldo.',
     notification_try_again_later: 'Por favor, inténtalo de nuevo más tarde.',
     notification_amount_refunded_to_user: 'Monto reembolsado al usuario.',
-    
+
     // Solicitudes
     prompt_please_start: 'Por favor comienza presionando /start',
-    
+
     // Notificaciones de administrador
     admin_new_manual_withdrawal: '💸 Nueva solicitud de retiro manual',
     admin_funds_reserved: '⚠️ Fondos reservados - procesamiento manual requerido',
     admin_auto_withdrawal_success: '✅ Retiro automático exitoso',
     admin_auto_withdrawal_failed: '❌ Retiro automático fallido',
     admin_withdrawal_system_error: '⚠️ Error del sistema de retiro',
-    
+
     // Notificaciones de retiro - Propietario
     withdrawal_owner_success_title: '✅ Retiro automático exitoso',
     withdrawal_owner_success_time: 'Hora:',
@@ -1927,7 +1891,7 @@ const translations = {
     withdrawal_owner_action_2: 'Verificar validez de la dirección',
     withdrawal_owner_action_3: 'Procesar retiro manualmente desde OKX',
     withdrawal_owner_action_4: 'Confirmar solicitud en el panel de control',
-    
+
     // Notificaciones de retiro - Usuario
     withdrawal_user_success_title: '¡Retiro completado con éxito!',
     withdrawal_user_transaction_id: 'ID de transacción:',
@@ -1937,7 +1901,7 @@ const translations = {
     withdrawal_user_delayed_message_2: 'La operación se completará pronto y le enviaremos una notificación una vez finalizada.',
     withdrawal_user_delayed_warning: 'Si el retraso continúa, la solicitud será procesada manualmente por la administración.',
     withdrawal_user_apology: '¡Disculpa las molestias! 🙏',
-    
+
     // Informe diario de retiros
     withdrawal_daily_report_title: 'Informe Diario de Retiros',
     withdrawal_daily_report_stats: 'Estadísticas:',
@@ -1948,14 +1912,14 @@ const translations = {
     withdrawal_daily_report_date: 'Fecha:',
     withdrawal_daily_report_view_failed: 'Ver retiros fallidos',
     withdrawal_daily_report_dashboard: 'Panel de control',
-    
+
     // Botones de acción
     button_manual_approve: '✅ Retirado manualmente',
     button_retry: '🔄 Reintentar',
     button_reject: '❌ Rechazar solicitud',
     button_dashboard: '📊 Panel de control',
     button_view_failed_withdrawals: '🚨 Ver retiros fallidos',
-    
+
     // Textos del frontend (app.js)
     loading: 'Cargando...',
     buy_action: 'Comprar',
@@ -1997,12 +1961,12 @@ const translations = {
     transaction_type_referral: 'Referencia',
     status_confirmed: 'Confirmado',
     status_unconfirmed: 'No confirmado',
-    
+
     // Mensajes de index.js
     user_not_found: 'Usuario no encontrado',
     customer_support_unavailable: 'El soporte al cliente no está disponible actualmente. Por favor, inténtelo más tarde.',
     failed_to_get_reply: 'Error al obtener respuesta',
-    
+
     // Admin Panel
     admin_unauthorized: 'No está autorizado para acceder a este comando',
     admin_unauthorized_short: 'No autorizado',
@@ -2129,7 +2093,7 @@ const translations = {
     admin_all_transactions: 'Todas las transacciones',
     admin_analyst_subscriptions: 'Suscripciones de analistas',
     admin_yes_delete_account: 'Sí, eliminar cuenta',
-    
+
     // CryptAPI & Database Errors
     cryptapi_failed_create_address: 'Error al crear dirección de pago desde CryptAPI',
     cryptapi_error_create_payment: 'Error al crear dirección de pago',
@@ -2140,7 +2104,7 @@ const translations = {
     database_error_deduct_analysis_fee: 'Error al deducir tarifa de análisis',
     database_failed_update_balance_refund: 'Error al actualizar saldo durante reembolso',
     database_error_refund_fee: 'Error al reembolsar tarifa',
-    
+
     // Notifications
     notif_new_trading_opportunities: '¡Nuevas Oportunidades de Trading Fuertes!',
     notif_open_bot_for_details: 'Abra el bot para más detalles',
@@ -2151,7 +2115,7 @@ const translations = {
     notif_price: 'Precio',
     notif_stop_loss: 'Stop Loss',
     notif_take_profit: 'Tomar Ganancias',
-    
+
     // Analyst Signals
     analyst_new_signal: 'Nueva Señal',
     analyst_signal_buy: 'Comprar',
@@ -2165,7 +2129,7 @@ const translations = {
     analyst_target: 'Objetivo',
     analyst_stop_loss: 'Stop Loss',
     analyst_analysis: 'Análisis',
-    
+
     // Subscription & Trial Notifications
     notif_subscription_warning: 'Advertencia de Suscripción',
     notif_subscription_expires_3days: '¡Tu suscripción expira en 3 días!',
@@ -2195,7 +2159,7 @@ const translations = {
     notif_address: 'Dirección',
     notif_sent_to_wallet: 'El monto ha sido enviado a tu billetera.',
   },
-  
+
   de: {
     // Allgemeine Nachrichten
     palestine_free: 'Freies Palästina',
@@ -2227,7 +2191,7 @@ const translations = {
     analyst_commission: 'Sie erhalten 20% von allen ihren Zahlungen 💰',
     new_analyst_specific_referral: '🎉 Neue Spezifische Analysten-Empfehlung!',
     analyst_specific_commission: 'Sie erhalten 15% von ihrem Abonnement bei diesem Analysten 💰',
-    
+
     // Hauptmenü - Schaltflächen
     open_app: '🚀 App öffnen',
     settings_menu: '⚙️ Einstellungen',
@@ -2254,7 +2218,7 @@ const translations = {
     customer_service_btn: '📞 Kundendienst',
     notifications_btn: '🔔 Benachrichtigungen',
     back_to_main: '🔙 Zurück zum Hauptmenü',
-    
+
     // Technische Analyse
     technical_analysis: '📊 Umfassende technische Analyse',
     currency: 'Währung:',
@@ -2265,7 +2229,7 @@ const translations = {
     high_price: 'Höchstpreis:',
     low_price: 'Niedrigster Preis:',
     technical_indicators: '📈 Technische Indikatoren:',
-    
+
     // Handelssignale
     neutral: 'Neutral',
     overbought: 'Überkauft',
@@ -2276,27 +2240,27 @@ const translations = {
     potential_buy: 'Potenzielle Kaufgelegenheit',
     uptrend: 'Aufwärtstrend',
     downtrend: 'Abwärtstrend',
-    
+
     // Wallet
     balance: 'Guthaben:',
     deposit: 'Einzahlung',
     withdraw: 'Abheben',
-    
+
     // Einstellungen
     language_settings: '🌐 Spracheinstellungen',
     select_language: 'Wählen Sie Ihre bevorzugte Sprache:',
     language_changed: '✅ Sprache erfolgreich geändert!',
-    
+
     // Kundendienst
     customer_service: '📞 Kundendienst',
     customer_service_msg: 'Willkommen beim Kundendienst! 👋\n\nWie können wir Ihnen helfen? Schreiben Sie Ihre Nachricht und wir werden uns so schnell wie möglich bei Ihnen melden.',
     message_sent: '✅ Ihre Nachricht wurde erfolgreich gesendet! Wir werden Sie bald kontaktieren.',
-    
+
     // Benachrichtigungen
     notifications_settings: '🔔 Benachrichtigungseinstellungen',
     notifications_enabled: '✅ Benachrichtigungen aktiviert',
     notifications_disabled: '❌ Benachrichtigungen deaktiviert',
-    
+
     // Handelsempfehlung
     trade_recommendation: '🎯 Handelsempfehlung',
     entry_points: '📍 Ein- und Ausstiegspunkte:',
@@ -2314,21 +2278,21 @@ const translations = {
     amount_distribution: '📊 Betragsverteilung:',
     owner_share: '• Besitzeranteil',
     referral_commission: '• Empfehlungsprovision',
-    
+
     // Handelsmärkte
     market_crypto: 'Kryptowährung',
     market_forex: 'Forex',
     market_stocks: 'Aktien',
     market_commodities: 'Rohstoffe',
     market_indices: 'Indizes',
-    
+
     // Statusnachrichten
     status_label: 'Status:',
     enabled_label: 'Aktiviert',
     disabled_label: 'Deaktiviert',
     selected_markets: 'Ausgewählte Märkte:',
     notification_note: 'Hinweis: Um Benachrichtigungs- und Markteinstellungen zu ändern, öffnen Sie die App und gehen Sie zu "Mein Konto" und dann zu "Benachrichtigungseinstellungen"',
-    
+
     // Abonnement-Nachrichten
     subscription_activated: 'Abonnement erfolgreich aktiviert!',
     amount_deducted: 'Abgezogener Betrag:',
@@ -2345,7 +2309,7 @@ const translations = {
     refund_notice: 'Wenn ein Betrag abgezogen wurde, wird er automatisch erstattet.',
     subscription_failed: 'Abonnementvorgang fehlgeschlagen',
     error_label: 'Fehler:',
-    
+
     // Analysten-Registrierung
     analyst_registration: 'Analysten-Registrierung',
     send_following_data: 'Senden Sie die folgenden Daten (jeweils in einer separaten Zeile):',
@@ -2366,24 +2330,24 @@ const translations = {
     users_can_subscribe: 'Benutzer können sich jetzt für Ihre Dienste anmelden!',
     new_analyst: 'Neuer Analyst',
     description_label: 'Beschreibung:',
-    
+
     // Kundenservice-Nachrichten
     customer_service_new_message: 'Neue Nachricht vom Kundenservice',
     message_label: 'Nachricht:',
     no_username: 'Kein Benutzername',
-    
+
     // Benachrichtigungs-Toggle-Nachrichten
     notifications_toggled_on: 'Benachrichtigungen aktiviert',
     notifications_toggled_off: 'Benachrichtigungen deaktiviert',
-    
+
     // Allgemeine Fehlermeldungen
     generic_error: 'Ein Fehler ist aufgetreten',
     request_processing_error: 'Bei der Verarbeitung der Anfrage ist ein Fehler aufgetreten',
-    
+
     // Zusätzliche Statusmeldungen
     trial_period_days_left: '🎁 Testzeitraum: {days} Tage verbleibend',
     subscription_active_until_date: '✅ Abonnement aktiv bis: {date}',
-    
+
     // Zusätzliche Bezeichnungen
     label_user_language: 'Benutzersprache:',
     language_name_arabic: 'Arabisch',
@@ -2396,13 +2360,13 @@ const translations = {
     label_reason: 'Grund:',
     label_language: 'Sprache:',
     label_refunded_balance: 'Erstattetes Guthaben:',
-    
+
     // Wallet-Meldungen
     error_insufficient_withdrawal_balance: '❌ Unzureichendes Auszahlungsguthaben!',
     wallet_available_withdrawal_balance: '💰 Ihr verfügbares Auszahlungsguthaben: {balance} USDT',
     wallet_escrow_balance_info: '🔒 Treuhandguthaben: {balance} USDT (wird am Monatsende freigegeben)',
     wallet_required_amount_with_fees: 'Erforderlicher Betrag (inkl. Gebühren): {amount} USDT',
-    
+
     // Auszahlungsmeldungen
     withdrawal_processing: '⏳ Auszahlung wird verarbeitet...',
     please_wait: '⏳ Bitte warten...',
@@ -2412,34 +2376,34 @@ const translations = {
     withdrawal_will_notify: 'Sie werden nach der Bearbeitung benachrichtigt 📬',
     withdrawal_address_display: '📍 Adresse: <code>{address}</code>',
     withdrawal_will_arrive_soon: 'Der Betrag wird in wenigen Minuten eintreffen 🎉',
-    
+
     // Erfolgsmeldungen
     withdrawal_success: '✅ Auszahlung erfolgreich!',
     success_amount_display: '💸 Betrag: {amount} USDT',
-    
+
     // Zusätzliche Fehlermeldungen
     error_insufficient_balance: '❌ Unzureichendes Guthaben!',
     error_withdrawal_failed: '❌ Auszahlung fehlgeschlagen',
     error_processing_withdrawal: '❌ Fehler bei der Verarbeitung der Auszahlung',
     error_insufficient_balance_subscription: '❌ Unzureichendes Guthaben für Abonnement!',
     error_subscription_processing_failed: 'Abonnementverarbeitung fehlgeschlagen',
-    
+
     // Zusätzliche Benachrichtigungen
     notification_amount_refunded: 'Betrag auf Ihr Guthaben zurückerstattet: {amount} USDT',
     notification_unexpected_error_refunded: 'Ein unerwarteter Fehler ist aufgetreten. Betrag auf Ihr Guthaben zurückerstattet.',
     notification_try_again_later: 'Bitte versuchen Sie es später erneut.',
     notification_amount_refunded_to_user: 'Betrag an Benutzer zurückerstattet.',
-    
+
     // Aufforderungen
     prompt_please_start: 'Bitte beginnen Sie, indem Sie /start drücken',
-    
+
     // Admin-Benachrichtigungen
     admin_new_manual_withdrawal: '💸 Neue manuelle Auszahlungsanfrage',
     admin_funds_reserved: '⚠️ Mittel reserviert - manuelle Verarbeitung erforderlich',
     admin_auto_withdrawal_success: '✅ Automatische Auszahlung erfolgreich',
     admin_auto_withdrawal_failed: '❌ Automatische Auszahlung fehlgeschlagen',
     admin_withdrawal_system_error: '⚠️ Auszahlungssystemfehler',
-    
+
     // Auszahlungsbenachrichtigungen - Eigentümer
     withdrawal_owner_success_title: '✅ Automatische Auszahlung erfolgreich',
     withdrawal_owner_success_time: 'Zeit:',
@@ -2454,7 +2418,7 @@ const translations = {
     withdrawal_owner_action_2: 'Adressgültigkeit prüfen',
     withdrawal_owner_action_3: 'Auszahlung manuell von OKX verarbeiten',
     withdrawal_owner_action_4: 'Anfrage im Dashboard bestätigen',
-    
+
     // Auszahlungsbenachrichtigungen - Benutzer
     withdrawal_user_success_title: 'Auszahlung erfolgreich abgeschlossen!',
     withdrawal_user_transaction_id: 'Transaktions-ID:',
@@ -2464,7 +2428,7 @@ const translations = {
     withdrawal_user_delayed_message_2: 'Der Vorgang wird bald abgeschlossen sein, und wir senden Ihnen eine Benachrichtigung nach Abschluss.',
     withdrawal_user_delayed_warning: 'Wenn die Verzögerung anhält, wird die Anfrage manuell von der Verwaltung bearbeitet.',
     withdrawal_user_apology: 'Wir entschuldigen uns für die Unannehmlichkeiten! 🙏',
-    
+
     // Täglicher Auszahlungsbericht
     withdrawal_daily_report_title: 'Täglicher Auszahlungsbericht',
     withdrawal_daily_report_stats: 'Statistiken:',
@@ -2475,14 +2439,14 @@ const translations = {
     withdrawal_daily_report_date: 'Datum:',
     withdrawal_daily_report_view_failed: 'Fehlgeschlagene Auszahlungen anzeigen',
     withdrawal_daily_report_dashboard: 'Dashboard',
-    
+
     // Aktionsschaltflächen
     button_manual_approve: '✅ Manuell ausgezahlt',
     button_retry: '🔄 Erneut versuchen',
     button_reject: '❌ Anfrage ablehnen',
     button_dashboard: '📊 Dashboard',
     button_view_failed_withdrawals: '🚨 Fehlgeschlagene Auszahlungen anzeigen',
-    
+
     // Frontend-Texte (app.js)
     loading: 'Lädt...',
     buy_action: 'Kaufen',
@@ -2524,12 +2488,12 @@ const translations = {
     transaction_type_referral: 'Empfehlung',
     status_confirmed: 'Bestätigt',
     status_unconfirmed: 'Unbestätigt',
-    
+
     // index.js Nachrichten
     user_not_found: 'Benutzer nicht gefunden',
     customer_support_unavailable: 'Kundensupport ist derzeit nicht verfügbar. Bitte versuchen Sie es später erneut.',
     failed_to_get_reply: 'Antwort konnte nicht abgerufen werden',
-    
+
     // Admin Panel
     admin_unauthorized: 'Sie sind nicht berechtigt, auf diesen Befehl zuzugreifen',
     admin_unauthorized_short: 'Nicht berechtigt',
@@ -2656,7 +2620,7 @@ const translations = {
     admin_all_transactions: 'Alle Transaktionen',
     admin_analyst_subscriptions: 'Analysten-Abonnements',
     admin_yes_delete_account: 'Ja, Konto löschen',
-    
+
     // CryptAPI & Database Errors
     cryptapi_failed_create_address: 'Fehler beim Erstellen der Zahlungsadresse von CryptAPI',
     cryptapi_error_create_payment: 'Fehler beim Erstellen der Zahlungsadresse',
@@ -2667,7 +2631,7 @@ const translations = {
     database_error_deduct_analysis_fee: 'Fehler beim Abzug der Analysegebühr',
     database_failed_update_balance_refund: 'Fehler beim Aktualisieren des Guthabens während der Rückerstattung',
     database_error_refund_fee: 'Fehler beim Rückerstatten der Gebühr',
-    
+
     // Notifications
     notif_new_trading_opportunities: 'Neue Starke Trading-Möglichkeiten!',
     notif_open_bot_for_details: 'Öffnen Sie den Bot für weitere Details',
@@ -2678,7 +2642,7 @@ const translations = {
     notif_price: 'Preis',
     notif_stop_loss: 'Stop Loss',
     notif_take_profit: 'Gewinn Mitnehmen',
-    
+
     // Analyst Signals
     analyst_new_signal: 'Neues Signal',
     analyst_signal_buy: 'Kaufen',
@@ -2692,7 +2656,7 @@ const translations = {
     analyst_target: 'Ziel',
     analyst_stop_loss: 'Stop Loss',
     analyst_analysis: 'Analyse',
-    
+
     // Subscription & Trial Notifications
     notif_subscription_warning: 'Abonnement-Warnung',
     notif_subscription_expires_3days: 'Ihr Abonnement läuft in 3 Tagen ab!',
@@ -2722,7 +2686,7 @@ const translations = {
     notif_address: 'Adresse',
     notif_sent_to_wallet: 'Betrag wurde an Ihre Wallet gesendet.',
   },
-  
+
   ru: {
     // Общие сообщения
     palestine_free: 'Свободная Палестина',
@@ -2754,7 +2718,7 @@ const translations = {
     analyst_commission: 'Вы получите 20% от всех их платежей 💰',
     new_analyst_specific_referral: '🎉 Новый Специфический Реферал Аналитика!',
     analyst_specific_commission: 'Вы получите 15% от их подписки на этого аналитика 💰',
-    
+
     // Главное меню - Кнопки
     open_app: '🚀 Открыть приложение',
     settings_menu: '⚙️ Настройки',
@@ -2781,7 +2745,7 @@ const translations = {
     customer_service_btn: '📞 Служба поддержки',
     notifications_btn: '🔔 Уведомления',
     back_to_main: '🔙 Вернуться в главное меню',
-    
+
     // Технический анализ
     technical_analysis: '📊 Комплексный технический анализ',
     currency: 'Валюта:',
@@ -2792,7 +2756,7 @@ const translations = {
     high_price: 'Максимальная цена:',
     low_price: 'Минимальная цена:',
     technical_indicators: '📈 Технические индикаторы:',
-    
+
     // Торговые сигналы
     neutral: 'Нейтрально',
     overbought: 'Перекупленность',
@@ -2803,27 +2767,27 @@ const translations = {
     potential_buy: 'Потенциальная возможность покупки',
     uptrend: 'Восходящий тренд',
     downtrend: 'Нисходящий тренд',
-    
+
     // Кошелек
     balance: 'Баланс:',
     deposit: 'Депозит',
     withdraw: 'Вывод',
-    
+
     // Настройки
     language_settings: '🌐 Настройки языка',
     select_language: 'Выберите предпочитаемый язык:',
     language_changed: '✅ Язык успешно изменен!',
-    
+
     // Служба поддержки
     customer_service: '📞 Служба поддержки',
     customer_service_msg: 'Добро пожаловать в службу поддержки! 👋\n\nКак мы можем вам помочь? Напишите ваше сообщение, и мы ответим как можно скорее.',
     message_sent: '✅ Ваше сообщение успешно отправлено! Мы свяжемся с вами в ближайшее время.',
-    
+
     // Уведомления
     notifications_settings: '🔔 Настройки уведомлений',
     notifications_enabled: '✅ Уведомления включены',
     notifications_disabled: '❌ Уведомления отключены',
-    
+
     // Торговая рекомендация
     trade_recommendation: '🎯 Торговая рекомендация',
     entry_points: '📍 Точки входа и выхода:',
@@ -2841,21 +2805,21 @@ const translations = {
     amount_distribution: '📊 Распределение суммы:',
     owner_share: '• Доля владельца',
     referral_commission: '• Реферальная комиссия',
-    
+
     // Торговые рынки
     market_crypto: 'Криптовалюта',
     market_forex: 'Форекс',
     market_stocks: 'Акции',
     market_commodities: 'Товары',
     market_indices: 'Индексы',
-    
+
     // Статусные сообщения
     status_label: 'Статус:',
     enabled_label: 'Включено',
     disabled_label: 'Отключено',
     selected_markets: 'Выбранные рынки:',
     notification_note: 'Примечание: Чтобы изменить настройки уведомлений и рынков, откройте приложение и перейдите в "Мой аккаунт", затем в "Настройки уведомлений"',
-    
+
     // Сообщения о подписке
     subscription_activated: 'Подписка успешно активирована!',
     amount_deducted: 'Сумма списана:',
@@ -2872,7 +2836,7 @@ const translations = {
     refund_notice: 'Если была списана какая-либо сумма, она будет возвращена автоматически.',
     subscription_failed: 'Процесс подписки не удался',
     error_label: 'Ошибка:',
-    
+
     // Регистрация аналитика
     analyst_registration: 'Регистрация аналитика',
     send_following_data: 'Отправьте следующие данные (каждая в отдельной строке):',
@@ -2893,24 +2857,24 @@ const translations = {
     users_can_subscribe: 'Пользователи теперь могут подписаться на ваши услуги!',
     new_analyst: 'Новый аналитик',
     description_label: 'Описание:',
-    
+
     // Сообщения службы поддержки
     customer_service_new_message: 'Новое сообщение от службы поддержки',
     message_label: 'Сообщение:',
     no_username: 'Нет имени пользователя',
-    
+
     // Сообщения переключения уведомлений
     notifications_toggled_on: 'Уведомления включены',
     notifications_toggled_off: 'Уведомления отключены',
-    
+
     // Общие сообщения об ошибках
     generic_error: 'Произошла ошибка',
     request_processing_error: 'Произошла ошибка при обработке запроса',
-    
+
     // Дополнительные статусные сообщения
     trial_period_days_left: '🎁 Пробный период: {days} дней осталось',
     subscription_active_until_date: '✅ Подписка активна до: {date}',
-    
+
     // Дополнительные ярлыки
     label_user_language: 'Язык пользователя:',
     language_name_arabic: 'Арабский',
@@ -2923,13 +2887,13 @@ const translations = {
     label_reason: 'Причина:',
     label_language: 'Язык:',
     label_refunded_balance: 'Возвращенный баланс:',
-    
+
     // Сообщения кошелька
     error_insufficient_withdrawal_balance: '❌ Недостаточный баланс для вывода!',
     wallet_available_withdrawal_balance: '💰 Ваш доступный баланс для вывода: {balance} USDT',
     wallet_escrow_balance_info: '🔒 Баланс в депозите: {balance} USDT (будет освобожден в конце месяца)',
     wallet_required_amount_with_fees: 'Требуемая сумма (с комиссией): {amount} USDT',
-    
+
     // Сообщения о выводе
     withdrawal_processing: '⏳ Обработка вывода...',
     please_wait: '⏳ Пожалуйста, подождите...',
@@ -2939,34 +2903,34 @@ const translations = {
     withdrawal_will_notify: 'Вы будете уведомлены при обработке 📬',
     withdrawal_address_display: '📍 Адрес: <code>{address}</code>',
     withdrawal_will_arrive_soon: 'Сумма поступит через несколько минут 🎉',
-    
+
     // Сообщения об успехе
     withdrawal_success: '✅ Вывод успешен!',
     success_amount_display: '💸 Сумма: {amount} USDT',
-    
+
     // Дополнительные сообщения об ошибках
     error_insufficient_balance: '❌ Недостаточный баланс!',
     error_withdrawal_failed: '❌ Вывод не удался',
     error_processing_withdrawal: '❌ Ошибка при обработке вывода',
     error_insufficient_balance_subscription: '❌ Недостаточный баланс для подписки!',
     error_subscription_processing_failed: 'Обработка подписки не удалась',
-    
+
     // Дополнительные уведомления
     notification_amount_refunded: 'Сумма возвращена на ваш баланс: {amount} USDT',
     notification_unexpected_error_refunded: 'Произошла непредвиденная ошибка. Сумма возвращена на ваш баланс.',
     notification_try_again_later: 'Пожалуйста, попробуйте еще раз позже.',
     notification_amount_refunded_to_user: 'Сумма возвращена пользователю.',
-    
+
     // Подсказки
     prompt_please_start: 'Пожалуйста, начните, нажав /start',
-    
+
     // Уведомления администратора
     admin_new_manual_withdrawal: '💸 Новый запрос на ручной вывод',
     admin_funds_reserved: '⚠️ Средства зарезервированы - требуется ручная обработка',
     admin_auto_withdrawal_success: '✅ Автоматический вывод успешен',
     admin_auto_withdrawal_failed: '❌ Автоматический вывод не удался',
     admin_withdrawal_system_error: '⚠️ Ошибка системы вывода',
-    
+
     // Уведомления о выводе - Владелец
     withdrawal_owner_success_title: '✅ Автоматический вывод успешен',
     withdrawal_owner_success_time: 'Время:',
@@ -2981,7 +2945,7 @@ const translations = {
     withdrawal_owner_action_2: 'Проверить действительность адреса',
     withdrawal_owner_action_3: 'Обработать вывод вручную из OKX',
     withdrawal_owner_action_4: 'Подтвердить запрос в панели управления',
-    
+
     // Уведомления о выводе - Пользователь
     withdrawal_user_success_title: 'Вывод успешно завершен!',
     withdrawal_user_transaction_id: 'ID транзакции:',
@@ -2991,7 +2955,7 @@ const translations = {
     withdrawal_user_delayed_message_2: 'Операция будет завершена в ближайшее время, и мы отправим вам уведомление после завершения.',
     withdrawal_user_delayed_warning: 'Если задержка продолжится, запрос будет обработан вручную руководством.',
     withdrawal_user_apology: 'Приносим извинения за неудобства! 🙏',
-    
+
     // Ежедневный отчет о выводах
     withdrawal_daily_report_title: 'Ежедневный отчет о выводах',
     withdrawal_daily_report_stats: 'Статистика:',
@@ -3002,14 +2966,14 @@ const translations = {
     withdrawal_daily_report_date: 'Дата:',
     withdrawal_daily_report_view_failed: 'Просмотреть неудавшиеся выводы',
     withdrawal_daily_report_dashboard: 'Панель управления',
-    
+
     // Кнопки действий
     button_manual_approve: '✅ Выведено вручную',
     button_retry: '🔄 Повторить попытку',
     button_reject: '❌ Отклонить запрос',
     button_dashboard: '📊 Панель управления',
     button_view_failed_withdrawals: '🚨 Просмотреть неудавшиеся выводы',
-    
+
     // Тексты интерфейса (app.js)
     loading: 'Загрузка...',
     buy_action: 'Покупка',
@@ -3051,12 +3015,12 @@ const translations = {
     transaction_type_referral: 'Реферал',
     status_confirmed: 'Подтверждено',
     status_unconfirmed: 'Не подтверждено',
-    
+
     // Сообщения index.js
     user_not_found: 'Пользователь не найден',
     customer_support_unavailable: 'Служба поддержки в настоящее время недоступна. Пожалуйста, попробуйте позже.',
     failed_to_get_reply: 'Не удалось получить ответ',
-    
+
     // Admin Panel
     admin_unauthorized: 'У вас нет доступа к этой команде',
     admin_unauthorized_short: 'Нет доступа',
@@ -3183,7 +3147,7 @@ const translations = {
     admin_all_transactions: 'Все транзакции',
     admin_analyst_subscriptions: 'Подписки на аналитиков',
     admin_yes_delete_account: 'Да, удалить аккаунт',
-    
+
     // CryptAPI & Database Errors
     cryptapi_failed_create_address: 'Не удалось создать платежный адрес из CryptAPI',
     cryptapi_error_create_payment: 'Ошибка создания платежного адреса',
@@ -3194,7 +3158,7 @@ const translations = {
     database_error_deduct_analysis_fee: 'Ошибка при вычете комиссии за анализ',
     database_failed_update_balance_refund: 'Не удалось обновить баланс при возврате',
     database_error_refund_fee: 'Ошибка при возврате комиссии',
-    
+
     // Notifications
     notif_new_trading_opportunities: 'Новые Сильные Торговые Возможности!',
     notif_open_bot_for_details: 'Откройте бота для подробностей',
@@ -3205,7 +3169,7 @@ const translations = {
     notif_price: 'Цена',
     notif_stop_loss: 'Стоп Лосс',
     notif_take_profit: 'Взять Прибыль',
-    
+
     // Analyst Signals
     analyst_new_signal: 'Новый Сигнал',
     analyst_signal_buy: 'Покупка',
@@ -3219,7 +3183,7 @@ const translations = {
     analyst_target: 'Цель',
     analyst_stop_loss: 'Стоп Лосс',
     analyst_analysis: 'Анализ',
-    
+
     // Subscription & Trial Notifications
     notif_subscription_warning: 'Предупреждение о Подписке',
     notif_subscription_expires_3days: 'Ваша подписка истекает через 3 дня!',
@@ -3249,7 +3213,7 @@ const translations = {
     notif_address: 'Адрес',
     notif_sent_to_wallet: 'Сумма была отправлена в ваш кошелек.',
   },
-  
+
   zh: {
     // 通用消息
     palestine_free: '自由巴勒斯坦',
@@ -3281,7 +3245,7 @@ const translations = {
     analyst_commission: '您将从他们的所有付款中获得20% 💰',
     new_analyst_specific_referral: '🎉 新的特定分析师推荐！',
     analyst_specific_commission: '您将从他们订阅此分析师中获得15% 💰',
-    
+
     // 主菜单 - 按钮
     open_app: '🚀 打开应用',
     settings_menu: '⚙️ 设置',
@@ -3308,7 +3272,7 @@ const translations = {
     customer_service_btn: '📞 客户服务',
     notifications_btn: '🔔 通知',
     back_to_main: '🔙 返回主菜单',
-    
+
     // 技术分析
     technical_analysis: '📊 综合技术分析',
     currency: '货币：',
@@ -3319,7 +3283,7 @@ const translations = {
     high_price: '最高价：',
     low_price: '最低价：',
     technical_indicators: '📈 技术指标：',
-    
+
     // 交易信号
     neutral: '中性',
     overbought: '超买',
@@ -3330,27 +3294,27 @@ const translations = {
     potential_buy: '潜在买入机会',
     uptrend: '上升趋势',
     downtrend: '下降趋势',
-    
+
     // 钱包
     balance: '余额：',
     deposit: '存款',
     withdraw: '提现',
-    
+
     // 设置
     language_settings: '🌐 语言设置',
     select_language: '选择您的首选语言：',
     language_changed: '✅ 语言已成功更改！',
-    
+
     // 客户服务
     customer_service: '📞 客户服务',
     customer_service_msg: '欢迎来到客户服务！👋\n\n我们如何帮助您？写下您的消息，我们会尽快回复。',
     message_sent: '✅ 您的消息已成功发送！我们会尽快与您联系。',
-    
+
     // 通知
     notifications_settings: '🔔 通知设置',
     notifications_enabled: '✅ 通知已启用',
     notifications_disabled: '❌ 通知已禁用',
-    
+
     // 交易建议
     trade_recommendation: '🎯 交易建议',
     entry_points: '📍 进出点：',
@@ -3368,21 +3332,21 @@ const translations = {
     amount_distribution: '📊 金额分配：',
     owner_share: '• 所有者份额',
     referral_commission: '• 推荐佣金',
-    
+
     // 交易市场
     market_crypto: '加密货币',
     market_forex: '外汇',
     market_stocks: '股票',
     market_commodities: '商品',
     market_indices: '指数',
-    
+
     // 状态消息
     status_label: '状态：',
     enabled_label: '已启用',
     disabled_label: '已禁用',
     selected_markets: '选定市场：',
     notification_note: '注意：要修改通知和市场设置，请打开应用程序，进入"我的账户"，然后进入"通知设置"',
-    
+
     // 订阅消息
     subscription_activated: '订阅成功激活！',
     amount_deducted: '扣除金额：',
@@ -3399,7 +3363,7 @@ const translations = {
     refund_notice: '如果扣除了任何金额，将自动退款。',
     subscription_failed: '订阅过程失败',
     error_label: '错误：',
-    
+
     // 分析师注册
     analyst_registration: '分析师注册',
     send_following_data: '发送以下数据（每行一个）：',
@@ -3420,24 +3384,24 @@ const translations = {
     users_can_subscribe: '用户现在可以订阅您的服务！',
     new_analyst: '新分析师',
     description_label: '描述：',
-    
+
     // 客户服务消息
     customer_service_new_message: '来自客户服务的新消息',
     message_label: '消息：',
     no_username: '无用户名',
-    
+
     // 通知切换消息
     notifications_toggled_on: '通知已启用',
     notifications_toggled_off: '通知已禁用',
-    
+
     // 通用错误消息
     generic_error: '发生错误',
     request_processing_error: '处理请求时发生错误',
-    
+
     // 附加状态消息
     trial_period_days_left: '🎁 试用期：剩余 {days} 天',
     subscription_active_until_date: '✅ 订阅有效期至：{date}',
-    
+
     // 附加标签
     label_user_language: '用户语言：',
     language_name_arabic: '阿拉伯语',
@@ -3450,13 +3414,13 @@ const translations = {
     label_reason: '原因：',
     label_language: '语言：',
     label_refunded_balance: '退款余额：',
-    
+
     // 钱包消息
     error_insufficient_withdrawal_balance: '❌ 提现余额不足！',
     wallet_available_withdrawal_balance: '💰 您的可用提现余额：{balance} USDT',
     wallet_escrow_balance_info: '🔒 托管余额：{balance} USDT（将在月底释放）',
     wallet_required_amount_with_fees: '所需金额（含费用）：{amount} USDT',
-    
+
     // 提现消息
     withdrawal_processing: '⏳ 正在处理提现...',
     please_wait: '⏳ 请稍候...',
@@ -3466,34 +3430,34 @@ const translations = {
     withdrawal_will_notify: '处理完成后将通知您 📬',
     withdrawal_address_display: '📍 地址：<code>{address}</code>',
     withdrawal_will_arrive_soon: '金额将在几分钟内到达 🎉',
-    
+
     // 成功消息
     withdrawal_success: '✅ 提现成功！',
     success_amount_display: '💸 金额：{amount} USDT',
-    
+
     // 附加错误消息
     error_insufficient_balance: '❌ 余额不足！',
     error_withdrawal_failed: '❌ 提现失败',
     error_processing_withdrawal: '❌ 处理提现时出错',
     error_insufficient_balance_subscription: '❌ 订阅余额不足！',
     error_subscription_processing_failed: '订阅处理失败',
-    
+
     // 附加通知
     notification_amount_refunded: '金额已退还到您的余额：{amount} USDT',
     notification_unexpected_error_refunded: '发生意外错误。金额已退还到您的余额。',
     notification_try_again_later: '请稍后再试。',
     notification_amount_refunded_to_user: '金额已退还给用户。',
-    
+
     // 提示
     prompt_please_start: '请按 /start 开始',
-    
+
     // 管理员通知
     admin_new_manual_withdrawal: '💸 新的手动提现请求',
     admin_funds_reserved: '⚠️ 资金已保留 - 需要手动处理',
     admin_auto_withdrawal_success: '✅ 自动提现成功',
     admin_auto_withdrawal_failed: '❌ 自动提现失败',
     admin_withdrawal_system_error: '⚠️ 提现系统错误',
-    
+
     // 提现通知 - 所有者
     withdrawal_owner_success_title: '✅ 自动提现成功',
     withdrawal_owner_success_time: '时间：',
@@ -3508,7 +3472,7 @@ const translations = {
     withdrawal_owner_action_2: '验证地址有效性',
     withdrawal_owner_action_3: '从OKX手动处理提现',
     withdrawal_owner_action_4: '在仪表板中确认请求',
-    
+
     // 提现通知 - 用户
     withdrawal_user_success_title: '提现成功完成！',
     withdrawal_user_transaction_id: '交易ID：',
@@ -3518,7 +3482,7 @@ const translations = {
     withdrawal_user_delayed_message_2: '操作将很快完成，完成后我们会向您发送通知。',
     withdrawal_user_delayed_warning: '如果延迟继续，请求将由管理人员手动处理。',
     withdrawal_user_apology: '对于给您带来的不便，我们深表歉意！🙏',
-    
+
     // 每日提现报告
     withdrawal_daily_report_title: '每日提现报告',
     withdrawal_daily_report_stats: '统计信息：',
@@ -3529,14 +3493,14 @@ const translations = {
     withdrawal_daily_report_date: '日期：',
     withdrawal_daily_report_view_failed: '查看失败的提现',
     withdrawal_daily_report_dashboard: '仪表板',
-    
+
     // 操作按钮
     button_manual_approve: '✅ 已手动提现',
     button_retry: '🔄 重试',
     button_reject: '❌ 拒绝请求',
     button_dashboard: '📊 仪表板',
     button_view_failed_withdrawals: '🚨 查看失败的提现',
-    
+
     // 前端文本 (app.js)
     loading: '加载中...',
     buy_action: '买入',
@@ -3578,12 +3542,12 @@ const translations = {
     transaction_type_referral: '推荐',
     status_confirmed: '已确认',
     status_unconfirmed: '未确认',
-    
+
     // index.js 消息
     user_not_found: '未找到用户',
     customer_support_unavailable: '客户支持目前不可用。请稍后再试。',
     failed_to_get_reply: '获取回复失败',
-    
+
     // Admin Panel
     admin_unauthorized: '您无权访问此命令',
     admin_unauthorized_short: '无权限',
@@ -3665,7 +3629,7 @@ const translations = {
     admin_manual_processed_by_admin: '由管理员手动处理',
     admin_retry_success: '重试成功',
     admin_withdrawal_rejected_title: '提款请求已拒绝',
-    admin_amount_refunded_to_balance_colon: '金额已退回您的余额：',
+    admin_amount_refunded_to_balance_colon: '金额已退还您的余额：',
     admin_rejection_refund_user_success: '请求已拒绝，金额已退还给用户',
     admin_search_user_title: '搜索用户',
     admin_search_user_prompt: '发送您想要搜索的用户ID：',
@@ -3710,7 +3674,7 @@ const translations = {
     admin_all_transactions: '所有交易',
     admin_analyst_subscriptions: '分析师订阅',
     admin_yes_delete_account: '是的，删除账户',
-    
+
     // CryptAPI & Database Errors
     cryptapi_failed_create_address: '从CryptAPI创建支付地址失败',
     cryptapi_error_create_payment: '创建支付地址时出错',
@@ -3721,7 +3685,7 @@ const translations = {
     database_error_deduct_analysis_fee: '扣除分析费用时出错',
     database_failed_update_balance_refund: '退款时更新余额失败',
     database_error_refund_fee: '退还费用时出错',
-    
+
     // Notifications
     notif_new_trading_opportunities: '新的强势交易机会！',
     notif_open_bot_for_details: '打开机器人查看详情',
@@ -3732,7 +3696,7 @@ const translations = {
     notif_price: '价格',
     notif_stop_loss: '止损',
     notif_take_profit: '止盈',
-    
+
     // Analyst Signals
     analyst_new_signal: '新信号',
     analyst_signal_buy: '买入',
@@ -3746,7 +3710,7 @@ const translations = {
     analyst_target: '目标',
     analyst_stop_loss: '止损',
     analyst_analysis: '分析',
-    
+
     // Subscription & Trial Notifications
     notif_subscription_warning: '订阅警告',
     notif_subscription_expires_3days: '您的订阅将在3天后到期！',
