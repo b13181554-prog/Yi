@@ -795,35 +795,35 @@ function displayAnalysisResult(analysis, symbol, timeframe) {
             <div class="confidence">${t('signal_strength')}: ${analysis.confidence || t('confidence_medium')}</div>
         </div>
         <div class="rec-details">
-            <p><strong>💎 العملة:</strong> ${symbol}</p>
-            <p><strong>⏰ الإطار الزمني:</strong> ${timeframe}</p>
-            <p><strong>💰 السعر الحالي:</strong> $${analysis.currentPrice || analysis.entryPrice || '-'}</p>
+            <p><strong>💎 ${t('symbol')}:</strong> ${symbol}</p>
+            <p><strong>⏰ ${t('timeframe')}:</strong> ${timeframe}</p>
+            <p><strong>💰 ${t('current_price')}:</strong> $${analysis.currentPrice || analysis.entryPrice || '-'}</p>
         </div>
 
         <div class="trade-setup" style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
-            <h3 style="margin: 0 0 15px 0; font-size: 18px;">📊 إعداد الصفقة</h3>
+            <h3 style="margin: 0 0 15px 0; font-size: 18px;">📊 ${t('trade_setup')}</h3>
             <div style="display: grid; gap: 10px;">
                 <div style="display: flex; justify-content: space-between; padding: 8px; background: rgba(255,255,255,0.1); border-radius: 8px;">
-                    <span>🎯 سعر الدخول:</span>
+                    <span>🎯 ${t('entry_price')}:</span>
                     <strong>$${analysis.entryPrice || analysis.currentPrice || '-'}</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 8px; background: rgba(255,0,0,0.2); border-radius: 8px;">
-                    <span>🛑 وقف الخسارة:</span>
+                    <span>🛑 ${t('stop_loss')}:</span>
                     <strong>$${analysis.stopLoss || '-'}</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 8px; background: rgba(0,255,0,0.2); border-radius: 8px;">
-                    <span>🎁 الهدف:</span>
+                    <span>🎁 ${t('take_profit')}:</span>
                     <strong>$${analysis.takeProfit || '-'}</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 8px; background: rgba(255,255,255,0.1); border-radius: 8px;">
-                    <span>📈 نسبة المخاطرة/العائد:</span>
+                    <span>📈 ${t('risk_reward_ratio')}:</span>
                     <strong>1:${analysis.riskRewardRatio || '-'}</strong>
                 </div>
             </div>
         </div>
     `;
 
-    let indicatorsHTML = '<h3 style="margin: 20px 0 15px; color: #fff;">📈 المؤشرات الفنية</h3><div class="indicators-grid">';
+    let indicatorsHTML = `<h3 style="margin: 20px 0 15px; color: #fff;">📈 ${t('technical_indicators')}</h3><div class="indicators-grid">`;
     for (const [key, value] of Object.entries(analysis.indicators || {})) {
         let displayValue = '';
         if (typeof value === 'object' && value !== null) {
@@ -2809,7 +2809,7 @@ function displayPumpAnalysisResult(analysis, symbol, timeframe) {
         </div>
 
         <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
-            <h3 style="color: #FF6B00; margin-bottom: 15px;">📊 معلومات الصفقة</h3>
+            <h3 style="color: #FF6B00; margin-bottom: 15px;">📊 ${t('trade_info')}</h3>
             <div style="display: grid; gap: 10px;">
                 <div style="padding: 10px; background: #f8f9fa; border-radius: 8px; color: #333;">
                     <strong style="color: #000;">💎 العملة:</strong> ${symbol}
@@ -2896,7 +2896,7 @@ function displayV1ProAnalysisResult(analysis, symbol, timeframe) {
         </div>
 
         <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
-            <h3 style="color: #00AA00; margin-bottom: 15px;">📊 معلومات الصفقة</h3>
+            <h3 style="color: #00AA00; margin-bottom: 15px;">📊 ${t('trade_info')}</h3>
             <div style="display: grid; gap: 10px;">
                 <div style="padding: 10px; background: #f8f9fa; border-radius: 8px;">
                     <strong style="color: #000;">💎 الرمز:</strong> ${symbol}
@@ -3019,7 +3019,7 @@ function displayV1ProAnalysisResult(analysis, symbol, timeframe) {
 
         ${analysis.indicators ? `
         <div style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; color: #333;">
-            <h3 style="color: #667eea; margin-bottom: 15px;">📊 المؤشرات الفنية</h3>
+            <h3 style="color: #667eea; margin-bottom: 15px;">📊 ${t('technical_indicators')}</h3>
             <div style="display: grid; gap: 8px; font-size: 14px;">
                 ${analysis.indicators.rsi ? `<div style="padding: 8px; background: #f8f9fa; border-radius: 6px;"><strong>RSI:</strong> ${analysis.indicators.rsi}</div>` : ''}
                 ${analysis.indicators.macd ? `<div style="padding: 8px; background: #f8f9fa; border-radius: 6px;"><strong>MACD:</strong> ${analysis.indicators.macd}</div>` : ''}

@@ -593,7 +593,11 @@ const translations = {
     spot_sell_warning: 'ℹ️ البيع في السبوت يتطلب امتلاك العملة',
     
     // Pattern Names
-    patterns_label: 'أنماط الشموع'
+    patterns_label: 'أنماط الشموع',
+    
+    // Trade Display
+    symbol: 'الرمز',
+    trade_info: 'معلومات الصفقة'
   },
   
   en: {
@@ -1142,6 +1146,10 @@ const translations = {
     // Pattern Names
     patterns_label: 'Candle Patterns',
     
+    // Trade Display
+    symbol: 'Symbol',
+    trade_info: 'Trade Information',
+    
     // Additional App.js Messages
     loading_forex_pairs: 'Generated {count} forex pairs',
     loading_assets_error: 'No assets available',
@@ -1512,7 +1520,50 @@ const translations = {
     // Confirm Messages
     confirm_delete_analyst: '⚠️ Êtes-vous sûr de vouloir supprimer votre compte analyste ? Cette action est irréversible !',
     confirm_withdraw_auto: '⚡ Retrait Automatique\n\nMontant : {amount} USDT\nFrais : 1 USDT\nTotal : {total} USDT\n\nLe retrait sera traité instantanément\nÊtes-vous sûr ?',
-    confirm_subscribe_monthly: '💳 Abonnement Mensuel\n\nPrix : 10 USDT\nDurée : 30 jours\n\nVotre solde après abonnement : {balance} USDT\n\nVoulez-vous continuer ?'
+    confirm_subscribe_monthly: '💳 Abonnement Mensuel\n\nPrix : 10 USDT\nDurée : 30 jours\n\nVotre solde après abonnement : {balance} USDT\n\nVoulez-vous continuer ?',
+    
+    // Market Type Full Names
+    market_type_crypto: 'Crypto',
+    market_type_forex: 'Forex',
+    market_type_stocks: 'Actions',
+    market_type_commodities: 'Matières Premières',
+    market_type_indices: 'Indices',
+    
+    // Trading Type Full Names
+    trading_type_spot: 'Spot 📊',
+    trading_type_futures: 'Futures ⚡',
+    
+    // Action Types
+    action_type_buy: 'Acheter',
+    action_type_sell: 'Vendre',
+    action_wait: 'Attendre',
+    
+    // Confidence Levels
+    confidence_high: 'Élevée',
+    confidence_medium: 'Moyenne',
+    confidence_low: 'Faible',
+    
+    // Admin Prompts
+    admin_prompt_ban_reason: 'Entrez la raison du bannissement:',
+    admin_prompt_ban_hours: 'Entrez la durée du bannissement en heures:',
+    admin_prompt_reject_reason: 'Entrez la raison du rejet (optionnel):',
+    admin_confirm_unban: 'Voulez-vous débannir cet utilisateur?',
+    admin_confirm_approve_withdrawal: 'Voulez-vous approuver la demande de retrait?',
+    analyst_delete_confirm_admin: '⚠️ Êtes-vous sûr de vouloir supprimer cet analyste? Tous ses abonnements seront annulés.',
+    
+    // Trade Display
+    symbol: 'Symbole',
+    trade_info: 'Information de Trade',
+    recommendation: 'Recommandation',
+    signal_strength: 'Force du Signal',
+    current_price: 'Prix Actuel',
+    entry_price: 'Prix d\'Entrée',
+    stop_loss: 'Stop Loss',
+    take_profit: 'Take Profit',
+    risk_reward_ratio: 'Ratio Risque/Rendement',
+    technical_indicators: 'Indicateurs Techniques',
+    trade_setup: 'Configuration de Trade',
+    timeframe: 'Période'
   },
   
   es: {
@@ -1839,7 +1890,50 @@ const translations = {
     // Confirm Messages
     confirm_delete_analyst: '⚠️ ¿Estás seguro de que quieres eliminar tu cuenta de analista? ¡Esta acción no se puede deshacer!',
     confirm_withdraw_auto: '⚡ Retiro Automático\n\nMonto: {amount} USDT\nTarifas: 1 USDT\nTotal: {total} USDT\n\nEl retiro se procesará instantáneamente\n¿Estás seguro?',
-    confirm_subscribe_monthly: '💳 Suscripción Mensual\n\nPrecio: 10 USDT\nDuración: 30 días\n\nTu saldo después de la suscripción: {balance} USDT\n\n¿Quieres continuar?'
+    confirm_subscribe_monthly: '💳 Suscripción Mensual\n\nPrecio: 10 USDT\nDuración: 30 días\n\nTu saldo después de la suscripción: {balance} USDT\n\n¿Quieres continuar?',
+    
+    // Market Type Full Names
+    market_type_crypto: 'Cripto',
+    market_type_forex: 'Forex',
+    market_type_stocks: 'Acciones',
+    market_type_commodities: 'Materias Primas',
+    market_type_indices: 'Índices',
+    
+    // Trading Type Full Names
+    trading_type_spot: 'Spot 📊',
+    trading_type_futures: 'Futuros ⚡',
+    
+    // Action Types
+    action_type_buy: 'Comprar',
+    action_type_sell: 'Vender',
+    action_wait: 'Esperar',
+    
+    // Confidence Levels
+    confidence_high: 'Alta',
+    confidence_medium: 'Media',
+    confidence_low: 'Baja',
+    
+    // Admin Prompts
+    admin_prompt_ban_reason: 'Ingrese la razón del baneo:',
+    admin_prompt_ban_hours: 'Ingrese la duración del baneo en horas:',
+    admin_prompt_reject_reason: 'Ingrese la razón del rechazo (opcional):',
+    admin_confirm_unban: '¿Quieres desbanear a este usuario?',
+    admin_confirm_approve_withdrawal: '¿Quieres aprobar la solicitud de retiro?',
+    analyst_delete_confirm_admin: '⚠️ ¿Estás seguro de eliminar este analista? Todas sus suscripciones serán canceladas.',
+    
+    // Trade Display
+    symbol: 'Símbolo',
+    trade_info: 'Información de Operación',
+    recommendation: 'Recomendación',
+    signal_strength: 'Fuerza de la Señal',
+    current_price: 'Precio Actual',
+    entry_price: 'Precio de Entrada',
+    stop_loss: 'Stop Loss',
+    take_profit: 'Take Profit',
+    risk_reward_ratio: 'Ratio Riesgo/Recompensa',
+    technical_indicators: 'Indicadores Técnicos',
+    trade_setup: 'Configuración de Operación',
+    timeframe: 'Marco Temporal'
   },
   
   de: {
@@ -2166,7 +2260,50 @@ const translations = {
     // Confirm Messages
     confirm_delete_analyst: '⚠️ Sind Sie sicher, dass Sie Ihr Analysten-Konto löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden!',
     confirm_withdraw_auto: '⚡ Automatische Abhebung\n\nBetrag: {amount} USDT\nGebühren: 1 USDT\nGesamt: {total} USDT\n\nDie Abhebung wird sofort verarbeitet\nSind Sie sicher?',
-    confirm_subscribe_monthly: '💳 Monatliches Abonnement\n\nPreis: 10 USDT\nDauer: 30 Tage\n\nIhr Guthaben nach dem Abonnement: {balance} USDT\n\nMöchten Sie fortfahren?'
+    confirm_subscribe_monthly: '💳 Monatliches Abonnement\n\nPreis: 10 USDT\nDauer: 30 Tage\n\nIhr Guthaben nach dem Abonnement: {balance} USDT\n\nMöchten Sie fortfahren?',
+    
+    // Market Type Full Names
+    market_type_crypto: 'Krypto',
+    market_type_forex: 'Forex',
+    market_type_stocks: 'Aktien',
+    market_type_commodities: 'Rohstoffe',
+    market_type_indices: 'Indizes',
+    
+    // Trading Type Full Names
+    trading_type_spot: 'Spot 📊',
+    trading_type_futures: 'Futures ⚡',
+    
+    // Action Types
+    action_type_buy: 'Kaufen',
+    action_type_sell: 'Verkaufen',
+    action_wait: 'Warten',
+    
+    // Confidence Levels
+    confidence_high: 'Hoch',
+    confidence_medium: 'Mittel',
+    confidence_low: 'Niedrig',
+    
+    // Admin Prompts
+    admin_prompt_ban_reason: 'Geben Sie den Grund für die Sperrung ein:',
+    admin_prompt_ban_hours: 'Geben Sie die Sperrdauer in Stunden ein:',
+    admin_prompt_reject_reason: 'Geben Sie den Ablehnungsgrund ein (optional):',
+    admin_confirm_unban: 'Möchten Sie diesen Benutzer entsperren?',
+    admin_confirm_approve_withdrawal: 'Möchten Sie die Auszahlungsanfrage genehmigen?',
+    analyst_delete_confirm_admin: '⚠️ Sind Sie sicher, diesen Analysten zu löschen? Alle Abonnements werden storniert.',
+    
+    // Trade Display
+    symbol: 'Symbol',
+    trade_info: 'Handelsinformationen',
+    recommendation: 'Empfehlung',
+    signal_strength: 'Signalstärke',
+    current_price: 'Aktueller Preis',
+    entry_price: 'Einstiegspreis',
+    stop_loss: 'Stop Loss',
+    take_profit: 'Take Profit',
+    risk_reward_ratio: 'Risiko/Ertrags-Verhältnis',
+    technical_indicators: 'Technische Indikatoren',
+    trade_setup: 'Handelsaufbau',
+    timeframe: 'Zeitrahmen'
   },
   
   ru: {
@@ -2493,7 +2630,50 @@ const translations = {
     // Confirm Messages
     confirm_delete_analyst: '⚠️ Вы уверены, что хотите удалить свой аккаунт аналитика? Это действие нельзя отменить!',
     confirm_withdraw_auto: '⚡ Автоматический Вывод\n\nСумма: {amount} USDT\nКомиссия: 1 USDT\nВсего: {total} USDT\n\nВывод будет обработан мгновенно\nВы уверены?',
-    confirm_subscribe_monthly: '💳 Месячная Подписка\n\nЦена: 10 USDT\nПродолжительность: 30 дней\n\nВаш баланс после подписки: {balance} USDT\n\nВы хотите продолжить?'
+    confirm_subscribe_monthly: '💳 Месячная Подписка\n\nЦена: 10 USDT\nПродолжительность: 30 дней\n\nВаш баланс после подписки: {balance} USDT\n\nВы хотите продолжить?',
+    
+    // Market Type Full Names
+    market_type_crypto: 'Крипто',
+    market_type_forex: 'Форекс',
+    market_type_stocks: 'Акции',
+    market_type_commodities: 'Сырье',
+    market_type_indices: 'Индексы',
+    
+    // Trading Type Full Names
+    trading_type_spot: 'Спот 📊',
+    trading_type_futures: 'Фьючерсы ⚡',
+    
+    // Action Types
+    action_type_buy: 'Купить',
+    action_type_sell: 'Продать',
+    action_wait: 'Ждать',
+    
+    // Confidence Levels
+    confidence_high: 'Высокая',
+    confidence_medium: 'Средняя',
+    confidence_low: 'Низкая',
+    
+    // Admin Prompts
+    admin_prompt_ban_reason: 'Введите причину блокировки:',
+    admin_prompt_ban_hours: 'Введите продолжительность блокировки в часах:',
+    admin_prompt_reject_reason: 'Введите причину отказа (необязательно):',
+    admin_confirm_unban: 'Вы хотите разблокировать этого пользователя?',
+    admin_confirm_approve_withdrawal: 'Вы хотите одобрить запрос на вывод?',
+    analyst_delete_confirm_admin: '⚠️ Вы уверены, что хотите удалить этого аналитика? Все подписки будут отменены.',
+    
+    // Trade Display
+    symbol: 'Символ',
+    trade_info: 'Информация о Сделке',
+    recommendation: 'Рекомендация',
+    signal_strength: 'Сила Сигнала',
+    current_price: 'Текущая Цена',
+    entry_price: 'Цена Входа',
+    stop_loss: 'Стоп Лосс',
+    take_profit: 'Тейк Профит',
+    risk_reward_ratio: 'Соотношение Риска/Прибыли',
+    technical_indicators: 'Технические Индикаторы',
+    trade_setup: 'Настройка Сделки',
+    timeframe: 'Таймфрейм'
   },
   
   zh: {
@@ -2820,7 +3000,50 @@ const translations = {
     // Confirm Messages
     confirm_delete_analyst: '⚠️ 您确定要删除您的分析师账户吗？此操作无法撤销！',
     confirm_withdraw_auto: '⚡ 自动提现\n\n金额：{amount} USDT\n费用：1 USDT\n总计：{total} USDT\n\n提现将立即处理\n您确定吗？',
-    confirm_subscribe_monthly: '💳 月度订阅\n\n价格：10 USDT\n期限：30天\n\n订阅后余额：{balance} USDT\n\n您想继续吗？'
+    confirm_subscribe_monthly: '💳 月度订阅\n\n价格：10 USDT\n期限：30天\n\n订阅后余额：{balance} USDT\n\n您想继续吗？',
+    
+    // Market Type Full Names
+    market_type_crypto: '加密货币',
+    market_type_forex: '外汇',
+    market_type_stocks: '股票',
+    market_type_commodities: '商品',
+    market_type_indices: '指数',
+    
+    // Trading Type Full Names
+    trading_type_spot: '现货 📊',
+    trading_type_futures: '期货 ⚡',
+    
+    // Action Types
+    action_type_buy: '买入',
+    action_type_sell: '卖出',
+    action_wait: '等待',
+    
+    // Confidence Levels
+    confidence_high: '高',
+    confidence_medium: '中',
+    confidence_low: '低',
+    
+    // Admin Prompts
+    admin_prompt_ban_reason: '输入封禁原因：',
+    admin_prompt_ban_hours: '输入封禁时长（小时）：',
+    admin_prompt_reject_reason: '输入拒绝原因（可选）：',
+    admin_confirm_unban: '您想解封此用户吗？',
+    admin_confirm_approve_withdrawal: '您想批准提现请求吗？',
+    analyst_delete_confirm_admin: '⚠️ 您确定要删除此分析师吗？所有订阅将被取消。',
+    
+    // Trade Display
+    symbol: '代码',
+    trade_info: '交易信息',
+    recommendation: '建议',
+    signal_strength: '信号强度',
+    current_price: '当前价格',
+    entry_price: '入场价格',
+    stop_loss: '止损',
+    take_profit: '止盈',
+    risk_reward_ratio: '风险/收益比',
+    technical_indicators: '技术指标',
+    trade_setup: '交易设置',
+    timeframe: '时间周期'
   }
 };
 
