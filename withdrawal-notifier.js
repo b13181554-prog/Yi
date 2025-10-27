@@ -101,14 +101,14 @@ async function notifyOwnerFailedWithdrawal(requestId, userId, userName, amount, 
     const keyboard = {
       inline_keyboard: [
         [
-          { text: '✅ تم السحب يدوياً', callback_data: `manual_approve_${requestId}` },
-          { text: '🔄 إعادة المحاولة', callback_data: `retry_withdrawal_${requestId}` }
+          { text: t(lang, 'button_manual_approve'), callback_data: `manual_approve_${requestId}` },
+          { text: t(lang, 'button_retry'), callback_data: `retry_withdrawal_${requestId}` }
         ],
         [
-          { text: '❌ رفض الطلب', callback_data: `reject_withdrawal_${requestId}` }
+          { text: t(lang, 'button_reject'), callback_data: `reject_withdrawal_${requestId}` }
         ],
         [
-          { text: '📊 لوحة التحكم', callback_data: 'admin_withdrawals' }
+          { text: t(lang, 'button_dashboard'), callback_data: 'admin_withdrawals' }
         ]
       ]
     };
@@ -214,12 +214,12 @@ async function sendDailyWithdrawalReport(stats) {
 
     const keyboard = stats.failed > 0 ? {
       inline_keyboard: [
-        [{ text: `🚨 ${t(lang, 'withdrawal_daily_report_view_failed')}`, callback_data: 'admin_failed_withdrawals' }],
-        [{ text: `📊 ${t(lang, 'withdrawal_daily_report_dashboard')}`, callback_data: 'admin_withdrawals' }]
+        [{ text: t(lang, 'button_view_failed_withdrawals'), callback_data: 'admin_failed_withdrawals' }],
+        [{ text: t(lang, 'button_dashboard'), callback_data: 'admin_withdrawals' }]
       ]
     } : {
       inline_keyboard: [
-        [{ text: `📊 ${t(lang, 'withdrawal_daily_report_dashboard')}`, callback_data: 'admin_withdrawals' }]
+        [{ text: t(lang, 'button_dashboard'), callback_data: 'admin_withdrawals' }]
       ]
     };
 

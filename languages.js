@@ -278,6 +278,13 @@ const translations = {
     withdrawal_daily_report_date: 'التاريخ:',
     withdrawal_daily_report_view_failed: 'عرض السحوبات الفاشلة',
     withdrawal_daily_report_dashboard: 'لوحة التحكم',
+    
+    // أزرار الإجراءات
+    button_manual_approve: '✅ تم السحب يدوياً',
+    button_retry: '🔄 إعادة المحاولة',
+    button_reject: '❌ رفض الطلب',
+    button_dashboard: '📊 لوحة التحكم',
+    button_view_failed_withdrawals: '🚨 عرض السحوبات الفاشلة',
   },
   
   en: {
@@ -559,6 +566,13 @@ const translations = {
     withdrawal_daily_report_date: 'Date:',
     withdrawal_daily_report_view_failed: 'View failed withdrawals',
     withdrawal_daily_report_dashboard: 'Dashboard',
+    
+    // Action buttons
+    button_manual_approve: '✅ Manually withdrawn',
+    button_retry: '🔄 Retry',
+    button_reject: '❌ Reject request',
+    button_dashboard: '📊 Dashboard',
+    button_view_failed_withdrawals: '🚨 View failed withdrawals',
   },
   
   fr: {
@@ -818,6 +832,13 @@ const translations = {
     withdrawal_daily_report_date: 'Date:',
     withdrawal_daily_report_view_failed: 'Voir les retraits échoués',
     withdrawal_daily_report_dashboard: 'Tableau de bord',
+    
+    // Boutons d'action
+    button_manual_approve: '✅ Retiré manuellement',
+    button_retry: '🔄 Réessayer',
+    button_reject: '❌ Rejeter la demande',
+    button_dashboard: '📊 Tableau de bord',
+    button_view_failed_withdrawals: '🚨 Voir les retraits échoués',
   },
   
   es: {
@@ -1077,6 +1098,13 @@ const translations = {
     withdrawal_daily_report_date: 'Fecha:',
     withdrawal_daily_report_view_failed: 'Ver retiros fallidos',
     withdrawal_daily_report_dashboard: 'Panel de control',
+    
+    // Botones de acción
+    button_manual_approve: '✅ Retirado manualmente',
+    button_retry: '🔄 Reintentar',
+    button_reject: '❌ Rechazar solicitud',
+    button_dashboard: '📊 Panel de control',
+    button_view_failed_withdrawals: '🚨 Ver retiros fallidos',
   },
   
   de: {
@@ -1336,6 +1364,13 @@ const translations = {
     withdrawal_daily_report_date: 'Datum:',
     withdrawal_daily_report_view_failed: 'Fehlgeschlagene Auszahlungen anzeigen',
     withdrawal_daily_report_dashboard: 'Dashboard',
+    
+    // Aktionsschaltflächen
+    button_manual_approve: '✅ Manuell ausgezahlt',
+    button_retry: '🔄 Erneut versuchen',
+    button_reject: '❌ Anfrage ablehnen',
+    button_dashboard: '📊 Dashboard',
+    button_view_failed_withdrawals: '🚨 Fehlgeschlagene Auszahlungen anzeigen',
   },
   
   ru: {
@@ -1595,6 +1630,13 @@ const translations = {
     withdrawal_daily_report_date: 'Дата:',
     withdrawal_daily_report_view_failed: 'Просмотреть неудавшиеся выводы',
     withdrawal_daily_report_dashboard: 'Панель управления',
+    
+    // Кнопки действий
+    button_manual_approve: '✅ Выведено вручную',
+    button_retry: '🔄 Повторить попытку',
+    button_reject: '❌ Отклонить запрос',
+    button_dashboard: '📊 Панель управления',
+    button_view_failed_withdrawals: '🚨 Просмотреть неудавшиеся выводы',
   },
   
   zh: {
@@ -1854,6 +1896,13 @@ const translations = {
     withdrawal_daily_report_date: '日期：',
     withdrawal_daily_report_view_failed: '查看失败的提现',
     withdrawal_daily_report_dashboard: '仪表板',
+    
+    // 操作按钮
+    button_manual_approve: '✅ 已手动提现',
+    button_retry: '🔄 重试',
+    button_reject: '❌ 拒绝请求',
+    button_dashboard: '📊 仪表板',
+    button_view_failed_withdrawals: '🚨 查看失败的提现',
   }
 };
 
