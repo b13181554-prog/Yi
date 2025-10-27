@@ -538,7 +538,62 @@ const translations = {
     send_start_again: 'أرسل /start للبوت مرة أخرى',
     clear_cache: 'مسح الكاش:',
     try_clear_cache: 'حاول مسح كاش التطبيق وإعادة المحاولة',
-    retry_button: '🔄 إعادة المحاولة'
+    retry_button: '🔄 إعادة المحاولة',
+    
+    // Additional Dynamic Texts
+    start_typing_asset_name: '🔍 ابدأ بكتابة اسم الأصل...',
+    no_results: '❌ لا توجد نتائج',
+    no_telegram_user_data: '❌ لا توجد بيانات مستخدم من Telegram',
+    initdata_present: 'موجود',
+    initdata_empty: 'فارغ',
+    subscription_active: 'الاشتراك نشط',
+    insufficient_balance_text: 'رصيد غير كافٍ',
+    user_text: 'مستخدم',
+    no_username: 'لا يوجد',
+    analyst_text: 'محلل',
+    no_description: 'لا يوجد وصف',
+    active_status: 'نشط ✅',
+    inactive_status: 'متوقف ⏸️',
+    
+    // Market Type Full Names  
+    market_type_crypto: 'عملات رقمية',
+    market_type_forex: 'فوركس',
+    market_type_stocks: 'أسهم',
+    market_type_commodities: 'سلع',
+    market_type_indices: 'مؤشرات',
+    
+    // Trading Type Full Names
+    trading_type_spot: 'سبوت 📊',
+    trading_type_futures: 'فيوتشر ⚡',
+    
+    // Action Types
+    action_type_buy: 'شراء',
+    action_type_sell: 'بيع',
+    
+    // Confidence Levels
+    confidence_high: 'عالية',
+    confidence_medium: 'متوسطة',
+    confidence_low: 'منخفضة',
+    
+    // Admin Prompts
+    admin_prompt_ban_reason: 'أدخل سبب الحظر:',
+    admin_prompt_ban_hours: 'أدخل مدة الحظر بالساعات:',
+    admin_prompt_reject_reason: 'أدخل سبب الرفض (اختياري):',
+    admin_confirm_unban: 'هل تريد إلغاء حظر هذا المستخدم؟',
+    admin_confirm_approve_withdrawal: 'هل تريد الموافقة على طلب السحب؟',
+    admin_withdrawal_request_from: 'طلب سحب من',
+    admin_no_reason_specified: 'لم يتم تحديد السبب',
+    admin_no_reason: 'لم يحدد',
+    
+    // Transaction Types in Dynamic Display
+    transaction_type_deposit: 'إيداع',
+    transaction_type_withdrawal: 'سحب',
+    
+    // Spot Sell Warning
+    spot_sell_warning: 'ℹ️ البيع في السبوت يتطلب امتلاك العملة',
+    
+    // Pattern Names
+    patterns_label: 'أنماط الشموع'
   },
   
   en: {
@@ -1030,7 +1085,106 @@ const translations = {
     // Confirm Messages
     confirm_delete_analyst: '⚠️ Are you sure you want to delete your analyst account? This action cannot be undone!',
     confirm_withdraw_auto: '⚡ Automatic Withdrawal\n\nAmount: {amount} USDT\nFees: 1 USDT\nTotal: {total} USDT\n\nWithdrawal will be processed instantly\nAre you sure?',
-    confirm_subscribe_monthly: '💳 Monthly Subscription\n\nPrice: 10 USDT\nDuration: 30 days\n\nYour balance after subscription: {balance} USDT\n\nDo you want to continue?'
+    confirm_subscribe_monthly: '💳 Monthly Subscription\n\nPrice: 10 USDT\nDuration: 30 days\n\nYour balance after subscription: {balance} USDT\n\nDo you want to continue?',
+    
+    // Additional Dynamic Texts
+    start_typing_asset_name: '🔍 Start typing asset name...',
+    no_results: '❌ No results',
+    no_telegram_user_data: '❌ No user data from Telegram',
+    initdata_present: 'Present',
+    initdata_empty: 'Empty',
+    subscription_active: 'Subscription Active',
+    insufficient_balance_text: 'Insufficient Balance',
+    user_text: 'User',
+    no_username: 'None',
+    analyst_text: 'Analyst',
+    no_description: 'No description',
+    active_status: 'Active ✅',
+    inactive_status: 'Paused ⏸️',
+    
+    // Market Type Full Names  
+    market_type_crypto: 'Crypto',
+    market_type_forex: 'Forex',
+    market_type_stocks: 'Stocks',
+    market_type_commodities: 'Commodities',
+    market_type_indices: 'Indices',
+    
+    // Trading Type Full Names
+    trading_type_spot: 'Spot 📊',
+    trading_type_futures: 'Futures ⚡',
+    
+    // Action Types
+    action_type_buy: 'Buy',
+    action_type_sell: 'Sell',
+    
+    // Confidence Levels
+    confidence_high: 'High',
+    confidence_medium: 'Medium',
+    confidence_low: 'Low',
+    
+    // Admin Prompts
+    admin_prompt_ban_reason: 'Enter ban reason:',
+    admin_prompt_ban_hours: 'Enter ban duration in hours:',
+    admin_prompt_reject_reason: 'Enter rejection reason (optional):',
+    admin_confirm_unban: 'Do you want to unban this user?',
+    admin_confirm_approve_withdrawal: 'Do you want to approve the withdrawal request?',
+    admin_withdrawal_request_from: 'Withdrawal request from',
+    admin_no_reason_specified: 'No reason specified',
+    admin_no_reason: 'Not specified',
+    
+    // Transaction Types in Dynamic Display
+    transaction_type_deposit: 'Deposit',
+    transaction_type_withdrawal: 'Withdrawal',
+    
+    // Spot Sell Warning
+    spot_sell_warning: 'ℹ️ Selling on Spot requires owning the asset',
+    
+    // Pattern Names
+    patterns_label: 'Candle Patterns',
+    
+    // Additional App.js Messages
+    loading_forex_pairs: 'Generated {count} forex pairs',
+    loading_assets_error: 'No assets available',
+    loading_error_generic: 'Loading error occurred',
+    no_transactions_found: 'No transactions',
+    no_referrals_found: 'No referrals',
+    broadcast_confirm: '⚠️ Are you sure you want to send this message to all users?',
+    search_user_prompt: '❌ Please enter user ID or name',
+    updating_text: '⏳ Updating...',
+    deleting_text: '⏳ Deleting...',
+    analyst_toggle_confirm: 'Do you want to {action} this analyst?',
+    analyst_activate_action: 'activate',
+    analyst_deactivate_action: 'deactivate',
+    analyst_delete_confirm_admin: '⚠️ Are you sure you want to delete this analyst? All subscriptions will be cancelled.',
+    user_not_found: 'User not found',
+    broadcast_failed_text: 'Sending failed',
+    loading_transactions: 'Loading...',
+    no_userid_for_transactions: 'No userId to load transactions',
+    no_userid_for_subscription: 'No userId to load subscription',
+    no_userid_for_referrals: 'No userId to load referral stats',
+    error_loading_app: 'App loading error',
+    telegram_webapp_unavailable: 'Telegram WebApp unavailable',
+    no_telegram_user_id: 'No user ID from Telegram',
+    diagnostics_details: 'Diagnostics Details',
+    app_works_only_from_telegram: 'App works only from Telegram',
+    cannot_open_directly: 'Cannot open this app directly from browser',
+    correct_way_title: 'Correct Way:',
+    open_telegram_app: 'Open Telegram app',
+    search_bot: 'Search for @OBENTCHI_Bot',
+    send_start: 'Send /start',
+    click_open_app: 'Click 🚀 Open App button',
+    security_tip: 'App must be opened from Telegram only to maintain account security',
+    loading_data_error: 'Data loading error',
+    suggested_solutions_title: 'Suggested Solutions:',
+    ensure_open_from_telegram: 'Ensure opening from Telegram:',
+    press_open_app_button: 'Must press "🚀 Open App" button in bot',
+    update_telegram: 'Update Telegram:',
+    ensure_latest_version: 'Make sure you have the latest Telegram version',
+    restart_bot: 'Restart Bot:',
+    send_start_again: 'Send /start to bot again',
+    clear_cache: 'Clear Cache:',
+    try_clear_cache: 'Try clearing app cache and retry',
+    retry_button: '🔄 Retry'
   },
   
   fr: {
