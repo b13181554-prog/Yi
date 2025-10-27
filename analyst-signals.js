@@ -2,6 +2,7 @@
 const db = require('./database');
 const config = require('./config');
 const { safeSendMessage } = require('./safe-message');
+const { t } = require('./languages');
 
 class AnalystSignalsManager {
   // إنشاء إشارة جديدة
@@ -68,7 +69,9 @@ class AnalystSignalsManager {
     const bot = require('./bot');
     
     for (const subscriber of subscribers) {
-      const message = this.formatSignalMessage(signal);
+      const user = await db.getUser(subscriber.user_id);
+      const lang = user ? user.language : 'ar';
+      const message = this.formatSignalMessage(signal, lang);
       try {
         await safeSendMessage(bot, subscriber.user_id, message, { parse_mode: 'HTML' });
       } catch (error) {
@@ -77,26 +80,27 @@ class AnalystSignalsManager {
     }
   }
   
-  formatSignalMessage(signal) {
+  formatSignalMessage(signal, lang = 'ar') {
     const typeEmoji = signal.type === 'buy' ? '🟢' : '🔴';
-    const typeText = signal.type === 'buy' ? 'شراء' : 'بيع';
+    const typeText = signal.type === 'buy' ? t(lang, 'analyst_signal_buy') : t(lang, 'analyst_signal_sell');
+    const marketText = signal.market_type === 'crypto' ? t(lang, 'analyst_market_crypto') : t(lang, 'analyst_market_forex');
     
     return `
-${typeEmoji} <b>إشارة جديدة: ${typeText}</b>
+${typeEmoji} <b>${t(lang, 'analyst_new_signal')}: ${typeText}</b>
 
-📊 <b>العملة:</b> ${signal.symbol}
-💰 <b>السوق:</b> ${signal.market_type === 'crypto' ? 'عملات رقمية' : 'فوركس'}
-⏰ <b>الإطار الزمني:</b> ${signal.timeframe}
-
-<b>━━━━━━━━━━━━━━━━━━</b>
-
-💵 <b>سعر الدخول:</b> ${signal.entry_price}
-🎯 <b>الهدف:</b> ${signal.target_price}
-🛑 <b>وقف الخسارة:</b> ${signal.stop_loss}
+📊 <b>${t(lang, 'analyst_currency')}:</b> ${signal.symbol}
+💰 <b>${t(lang, 'analyst_market')}:</b> ${marketText}
+⏰ <b>${t(lang, 'analyst_timeframe')}:</b> ${signal.timeframe}
 
 <b>━━━━━━━━━━━━━━━━━━</b>
 
-📝 <b>التحليل:</b>
+💵 <b>${t(lang, 'analyst_entry_price')}:</b> ${signal.entry_price}
+🎯 <b>${t(lang, 'analyst_target')}:</b> ${signal.target_price}
+🛑 <b>${t(lang, 'analyst_stop_loss')}:</b> ${signal.stop_loss}
+
+<b>━━━━━━━━━━━━━━━━━━</b>
+
+📝 <b>${t(lang, 'analyst_analysis')}:</b>
 ${signal.analysis}
     `;
   }

@@ -125,43 +125,45 @@ ${t(lang, 'admin_choose_operation')}
           return daysLeft > 0 && daysLeft <= 7;
         }).length;
         
+        const localeStr = lang === 'ar' ? 'ar-SA' : lang === 'zh' ? 'zh-CN' : lang === 'ru' ? 'ru-RU' : lang === 'de' ? 'de-DE' : lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : 'en-US';
+        
         const message = `
-📊 <b>إحصائيات النظام الشاملة</b>
+📊 <b>${t(lang, 'admin_system_stats')}</b>
 
 ━━━━━━━━━━━━━━━━━━━━
-👥 <b>المستخدمين:</b>
-• إجمالي المستخدمين: <b>${users.length}</b>
-• مستخدمين جدد اليوم: <b>${newUsersToday}</b>
-• مستخدمين جدد آخر 7 أيام: <b>${newUsersLast7Days}</b>
-• مستخدمين جدد آخر 30 يوم: <b>${newUsersLast30Days}</b>
+👥 <b>${t(lang, 'admin_users_section')}:</b>
+• ${t(lang, 'admin_total_users')}: <b>${users.length}</b>
+• ${t(lang, 'admin_new_users_today')}: <b>${newUsersToday}</b>
+• ${t(lang, 'admin_new_users_7days')}: <b>${newUsersLast7Days}</b>
+• ${t(lang, 'admin_new_users_30days')}: <b>${newUsersLast30Days}</b>
 
 ━━━━━━━━━━━━━━━━━━━━
-📈 <b>الاشتراكات:</b>
-• اشتراكات نشطة: <b>${activeSubscriptions.length}</b>
-• في الفترة التجريبية: <b>${users.filter(u => !u.free_trial_used).length}</b>
-• تنتهي خلال 7 أيام: <b>${expiringSoon}</b>
-• معدل التحويل: <b>${users.length > 0 ? ((activeSubscriptions.length / users.length) * 100).toFixed(1) : 0}%</b>
+📈 <b>${t(lang, 'admin_subscriptions_section')}:</b>
+• ${t(lang, 'admin_active_subscriptions')}: <b>${activeSubscriptions.length}</b>
+• ${t(lang, 'admin_in_trial')}: <b>${users.filter(u => !u.free_trial_used).length}</b>
+• ${t(lang, 'admin_expires_soon')}: <b>${expiringSoon}</b>
+• ${t(lang, 'admin_conversion_rate')}: <b>${users.length > 0 ? ((activeSubscriptions.length / users.length) * 100).toFixed(1) : 0}%</b>
 
 ━━━━━━━━━━━━━━━━━━━━
-💰 <b>الأرصدة والمعاملات:</b>
-• إجمالي الأرصدة: <b>${totalBalance.toFixed(2)} USDT</b>
-• عدد المستخدمين برصيد: <b>${usersWithBalance}</b>
-• متوسط الرصيد: <b>${avgBalance.toFixed(2)} USDT</b>
-• إجمالي أرباح الإحالات: <b>${totalReferralEarnings.toFixed(2)} USDT</b>
+💰 <b>${t(lang, 'admin_balances_section')}:</b>
+• ${t(lang, 'admin_total_balance')}: <b>${totalBalance.toFixed(2)} USDT</b>
+• ${t(lang, 'admin_users_with_balance')}: <b>${usersWithBalance}</b>
+• ${t(lang, 'admin_avg_balance')}: <b>${avgBalance.toFixed(2)} USDT</b>
+• ${t(lang, 'admin_total_referral_earnings')}: <b>${totalReferralEarnings.toFixed(2)} USDT</b>
 
 ━━━━━━━━━━━━━━━━━━━━
-👨‍💼 <b>المحللين:</b>
-• عدد المحللين: <b>${analysts.length}</b>
-• إجمالي المشتركين: <b>${totalAnalystSubscribers}</b>
-• متوسط المشتركين لكل محلل: <b>${analysts.length > 0 ? (totalAnalystSubscribers / analysts.length).toFixed(1) : 0}</b>
+👨‍💼 <b>${t(lang, 'admin_analysts_section')}:</b>
+• ${t(lang, 'admin_total_analysts')}: <b>${analysts.length}</b>
+• ${t(lang, 'admin_total_subscribers')}: <b>${totalAnalystSubscribers}</b>
+• ${t(lang, 'admin_avg_subscribers')}: <b>${analysts.length > 0 ? (totalAnalystSubscribers / analysts.length).toFixed(1) : 0}</b>
 
 ━━━━━━━━━━━━━━━━━━━━
-📅 <b>آخر تحديث:</b> ${new Date().toLocaleString('ar-SA', { 
+📅 <b>${t(lang, 'admin_last_update')}:</b> ${new Date().toLocaleString(localeStr, { 
   dateStyle: 'full', 
   timeStyle: 'short' 
 })}
 
-🤖 <b>حالة البوت:</b> 🟢 يعمل بشكل طبيعي
+🤖 <b>${t(lang, 'admin_bot_status')}:</b> 🟢 ${t(lang, 'admin_bot_running')}
 `;
         
         await safeEditMessageText(bot, message, {
@@ -182,13 +184,13 @@ ${t(lang, 'admin_choose_operation')}
         const users = await db.getAllUsers();
         const recentUsers = users.slice(0, 10);
         
-        let message = `👥 <b>آخر 10 مستخدمين</b>\n\n`;
+        let message = `👥 <b>${t(lang, 'admin_last_10_users')}</b>\n\n`;
         
         recentUsers.forEach((user, index) => {
           const status = user.subscription_expires && new Date(user.subscription_expires) > new Date() ? '✅' : '❌';
           message += `${index + 1}. ${status} ${user.first_name} (@${user.username || 'N/A'})\n`;
           message += `   ID: <code>${user.user_id}</code>\n`;
-          message += `   الرصيد: ${user.balance} USDT\n\n`;
+          message += `   ${t(lang, 'admin_balance')}: ${user.balance} USDT\n\n`;
         });
         
         const keyboard = {
@@ -224,31 +226,34 @@ ${t(lang, 'admin_choose_operation')}
           .filter(t => t.type === 'withdrawal' && t.status === 'pending')
           .reduce((sum, t) => sum + t.amount, 0);
         
+        const localeStr = lang === 'ar' ? 'ar-SA' : lang === 'zh' ? 'zh-CN' : lang === 'ru' ? 'ru-RU' : lang === 'de' ? 'de-DE' : lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : 'en-US';
+        
         let message = `
-💰 <b>سجل المعاملات</b>
+💰 <b>${t(lang, 'admin_transactions_log')}</b>
 
 ━━━━━━━━━━━━━━━━━━━━
-📊 <b>الإحصائيات:</b>
-• إجمالي الإيداعات: <b>${totalDeposits.toFixed(2)} USDT</b>
-• إجمالي السحوبات: <b>${totalWithdrawals.toFixed(2)} USDT</b>
-• سحوبات معلقة: <b>${pendingWithdrawals.toFixed(2)} USDT</b>
-• الفرق: <b>${(totalDeposits - totalWithdrawals).toFixed(2)} USDT</b>
+📊 <b>${t(lang, 'admin_stats_section')}:</b>
+• ${t(lang, 'admin_total_deposits')}: <b>${totalDeposits.toFixed(2)} USDT</b>
+• ${t(lang, 'admin_total_withdrawals')}: <b>${totalWithdrawals.toFixed(2)} USDT</b>
+• ${t(lang, 'admin_pending_withdrawals_amount')}: <b>${pendingWithdrawals.toFixed(2)} USDT</b>
+• ${t(lang, 'admin_difference')}: <b>${(totalDeposits - totalWithdrawals).toFixed(2)} USDT</b>
 
 ━━━━━━━━━━━━━━━━━━━━
-📜 <b>آخر 15 معاملة:</b>
+📜 <b>${t(lang, 'admin_last_15_transactions')}:</b>
 
 `;
         
         if (recentTransactions.length === 0) {
-          message += 'لا توجد معاملات بعد';
+          message += t(lang, 'admin_no_transactions');
         } else {
-          recentTransactions.forEach((t, index) => {
-            const typeEmoji = t.type === 'deposit' ? '📥' : '📤';
-            const statusEmoji = t.status === 'completed' ? '✅' : 
-                              t.status === 'pending' ? '⏳' : '❌';
-            message += `${index + 1}. ${typeEmoji} <b>${t.type === 'deposit' ? 'إيداع' : 'سحب'}</b> ${statusEmoji}\n`;
-            message += `   المبلغ: ${t.amount} USDT\n`;
-            message += `   التاريخ: ${new Date(t.created_at).toLocaleString('ar')}\n\n`;
+          recentTransactions.forEach((transaction, index) => {
+            const typeEmoji = transaction.type === 'deposit' ? '📥' : '📤';
+            const statusEmoji = transaction.status === 'completed' ? '✅' : 
+                              transaction.status === 'pending' ? '⏳' : '❌';
+            const transactionType = transaction.type === 'deposit' ? 'admin_deposit' : 'admin_withdrawal';
+            message += `${index + 1}. ${typeEmoji} <b>${t(lang, transactionType)}</b> ${statusEmoji}\n`;
+            message += `   ${t(lang, 'notif_amount')}: ${transaction.amount} USDT\n`;
+            message += `   ${t(lang, 'admin_date')}: ${new Date(transaction.created_at).toLocaleString(localeStr)}\n\n`;
           });
         }
         
@@ -270,7 +275,7 @@ ${t(lang, 'admin_choose_operation')}
         const withdrawals = await db.getPendingWithdrawals();
         
         if (withdrawals.length === 0) {
-          await safeEditMessageText(bot, '💸 <b>لا توجد طلبات سحب معلقة</b>', {
+          await safeEditMessageText(bot, `💸 <b>${t(lang, 'admin_no_pending_withdrawals')}</b>`, {
             chat_id: chatId,
             message_id: query.message.message_id,
             parse_mode: 'HTML',
@@ -283,19 +288,21 @@ ${t(lang, 'admin_choose_operation')}
           return;
         }
         
-        let message = `💸 <b>طلبات السحب المعلقة (${withdrawals.length})</b>\n\n`;
+        const localeStr = lang === 'ar' ? 'ar-SA' : lang === 'zh' ? 'zh-CN' : lang === 'ru' ? 'ru-RU' : lang === 'de' ? 'de-DE' : lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : 'en-US';
+        
+        let message = `💸 <b>${t(lang, 'admin_pending_withdrawals_title')} (${withdrawals.length})</b>\n\n`;
         
         const keyboard = [];
         
         withdrawals.forEach((w, index) => {
           message += `${index + 1}. ${w.first_name} (@${w.username || 'N/A'})\n`;
-          message += `   المبلغ: ${w.amount} USDT\n`;
-          message += `   العنوان: <code>${w.wallet_address}</code>\n`;
-          message += `   التاريخ: ${new Date(w.created_at).toLocaleString('ar')}\n\n`;
+          message += `   ${t(lang, 'notif_amount')}: ${w.amount} USDT\n`;
+          message += `   ${t(lang, 'notif_address')}: <code>${w.wallet_address}</code>\n`;
+          message += `   ${t(lang, 'admin_date')}: ${new Date(w.created_at).toLocaleString(localeStr)}\n\n`;
           
           keyboard.push([
-            { text: `✅ موافقة #${index + 1}`, callback_data: `approve_withdrawal_${w._id}` },
-            { text: `❌ رفض #${index + 1}`, callback_data: `reject_withdrawal_${w._id}` }
+            { text: `✅ ${t(lang, 'admin_approve')} #${index + 1}`, callback_data: `approve_withdrawal_${w._id}` },
+            { text: `❌ ${t(lang, 'admin_reject')} #${index + 1}`, callback_data: `reject_withdrawal_${w._id}` }
           ]);
         });
         
@@ -315,7 +322,7 @@ ${t(lang, 'admin_choose_operation')}
         const analysts = await db.getAllAnalysts();
         
         if (analysts.length === 0) {
-          await safeEditMessageText(bot, '👨‍💼 <b>لا يوجد محللين مسجلين</b>', {
+          await safeEditMessageText(bot, `👨‍💼 <b>${t(lang, 'admin_no_analysts')}</b>`, {
             chat_id: chatId,
             message_id: query.message.message_id,
             parse_mode: 'HTML',
@@ -328,13 +335,13 @@ ${t(lang, 'admin_choose_operation')}
           return;
         }
         
-        let message = `👨‍💼 <b>المحللين المسجلين (${analysts.length})</b>\n\n`;
+        let message = `👨‍💼 <b>${t(lang, 'admin_registered_analysts')} (${analysts.length})</b>\n\n`;
         
         analysts.forEach((analyst, index) => {
           message += `${index + 1}. <b>${analyst.name}</b>\n`;
-          message += `   السعر: ${analyst.monthly_price} USDT\n`;
-          message += `   المشتركين: ${analyst.total_subscribers}\n`;
-          message += `   التقييم: ${analyst.rating}/5\n\n`;
+          message += `   ${t(lang, 'admin_price')}: ${analyst.monthly_price} USDT\n`;
+          message += `   ${t(lang, 'admin_subscribers')}: ${analyst.total_subscribers}\n`;
+          message += `   ${t(lang, 'admin_rating')}: ${analyst.rating}/5\n\n`;
         });
         
         await safeEditMessageText(bot, message, {
