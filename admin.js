@@ -195,7 +195,7 @@ ${t(lang, 'admin_choose_operation')}
         
         const keyboard = {
           inline_keyboard: [
-            [{ text: '🔍 بحث عن مستخدم', callback_data: 'admin_search_user' }],
+            [{ text: `🔍 ${t(lang, 'admin_search_user_button')}`, callback_data: 'admin_search_user' }],
             [{ text: `🔙 ${t(lang, 'admin_back')}`, callback_data: 'admin_back' }]
           ]
         };
@@ -366,7 +366,7 @@ ${t(lang, 'admin_choose_operation')}
           .slice(0, 10);
         
         if (topReferrers.length === 0) {
-          await safeEditMessageText(bot, '🎁 <b>لا توجد إحالات بعد</b>', {
+          await safeEditMessageText(bot, `🎁 <b>${t(lang, 'admin_no_referrals_yet')}</b>`, {
             chat_id: chatId,
             message_id: query.message.message_id,
             parse_mode: 'HTML',
@@ -379,13 +379,13 @@ ${t(lang, 'admin_choose_operation')}
           return;
         }
         
-        let message = `🎁 <b>أفضل 10 مُحيلين</b>\n\n`;
+        let message = `🎁 <b>${t(lang, 'admin_top_10_referrers')}</b>\n\n`;
         
         for (const user of topReferrers) {
           const stats = await db.getReferralStats(user.user_id);
           message += `• ${user.first_name} (@${user.username || 'N/A'})\n`;
-          message += `  💰 الأرباح: ${user.referral_earnings.toFixed(2)} USDT\n`;
-          message += `  👥 الإحالات: ${stats.total_referrals}\n\n`;
+          message += `  💰 ${t(lang, 'admin_earnings_colon')} ${user.referral_earnings.toFixed(2)} USDT\n`;
+          message += `  👥 ${t(lang, 'admin_referrals_colon')} ${stats.total_referrals}\n\n`;
         }
         
         await safeEditMessageText(bot, message, {
@@ -404,18 +404,18 @@ ${t(lang, 'admin_choose_operation')}
       else if (data === 'admin_broadcast') {
         await safeAnswerCallbackQuery(bot, query.id);
         await safeEditMessageText(bot, `
-📢 <b>إرسال رسالة جماعية</b>
+📢 <b>${t(lang, 'admin_broadcast_title')}</b>
 
-أرسل الرسالة التي تريد إرسالها لجميع المستخدمين:
+${t(lang, 'admin_broadcast_send_message')}
 
-<i>ملاحظة: يمكنك استخدام HTML في الرسالة</i>
+<i>${t(lang, 'admin_broadcast_html_note')}</i>
 `, {
           chat_id: chatId,
           message_id: query.message.message_id,
           parse_mode: 'HTML',
           reply_markup: {
             inline_keyboard: [
-              [{ text: '❌ إلغاء', callback_data: 'admin_back' }]
+              [{ text: `❌ ${t(lang, 'admin_cancel')}`, callback_data: 'admin_back' }]
             ]
           }
         });
@@ -433,7 +433,7 @@ ${t(lang, 'admin_choose_operation')}
         
         if (!withdrawal) {
           return safeAnswerCallbackQuery(bot, query.id, { 
-            text: '❌ طلب السحب غير موجود', 
+            text: `❌ ${t(lang, 'admin_withdrawal_not_found')}`, 
             show_alert: true 
           });
         }
@@ -446,7 +446,7 @@ ${t(lang, 'admin_choose_operation')}
           
           if (balance.available_balance < totalWithFee) {
             return safeAnswerCallbackQuery(bot, query.id, { 
-              text: `❌ الرصيد المتاح للسحب غير كافٍ! المتاح: ${balance.available_balance.toFixed(2)} USDT`, 
+              text: `❌ ${t(lang, 'admin_insufficient_withdrawal_balance_available')} ${balance.available_balance.toFixed(2)} USDT`, 
               show_alert: true 
             });
           }
@@ -463,26 +463,26 @@ ${t(lang, 'admin_choose_operation')}
           );
           
           await safeSendMessage(bot, chatId, `
-✅ <b>تم إضافة السحب إلى قائمة المعالجة التلقائية</b>
+✅ <b>${t(lang, 'admin_withdrawal_added_to_queue_title')}</b>
 
-المستخدم: ${withdrawal.first_name || withdrawal.username}
-المبلغ: ${withdrawal.amount} USDT
-العنوان: <code>${withdrawal.wallet_address}</code>
+${t(lang, 'admin_user_colon')} ${withdrawal.first_name || withdrawal.username}
+${t(lang, 'notif_amount')}: ${withdrawal.amount} USDT
+${t(lang, 'notif_address')}: <code>${withdrawal.wallet_address}</code>
 
-🔄 سيتم معالجة السحب تلقائياً خلال دقائق قليلة
-📨 سيتم إشعارك فوراً عند النجاح أو الفشل
-♻️ النظام سيحاول 10 مرات قبل طلب التدخل اليدوي
+🔄 ${t(lang, 'admin_withdrawal_auto_process_minutes')}
+📨 ${t(lang, 'admin_withdrawal_notify_on_result')}
+♻️ ${t(lang, 'admin_withdrawal_retry_attempts')}
 `, { parse_mode: 'HTML' });
           
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '✅ تمت إضافة السحب للمعالجة التلقائية', 
+            text: `✅ ${t(lang, 'admin_withdrawal_queue_success_alert')}`, 
             show_alert: true 
           });
           
         } catch (error) {
           console.error('Error adding withdrawal to queue:', error);
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '❌ حدث خطأ: ' + error.message, 
+            text: `❌ ${t(lang, 'admin_error_occurred')} ` + error.message, 
             show_alert: true 
           });
         }
@@ -500,7 +500,7 @@ ${t(lang, 'admin_choose_operation')}
           
           if (!withdrawal) {
             return safeAnswerCallbackQuery(bot, query.id, { 
-              text: '❌ طلب السحب غير موجود', 
+              text: `❌ ${t(lang, 'admin_withdrawal_not_found')}`, 
               show_alert: true 
             });
           }
@@ -509,23 +509,23 @@ ${t(lang, 'admin_choose_operation')}
           await db.approveWithdrawal(withdrawalId);
           
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '✅ تم تأكيد المعالجة اليدوية', 
+            text: `✅ ${t(lang, 'admin_manual_approval_confirmed')}`, 
             show_alert: true 
           });
           
           await safeSendMessage(bot, withdrawal.user_id, `
-✅ <b>تم إتمام السحب بنجاح!</b>
+✅ <b>${t(lang, 'admin_withdrawal_completed_successfully_title')}</b>
 
-💸 المبلغ: ${withdrawal.amount} USDT
-📍 العنوان: <code>${withdrawal.wallet_address}</code>
+💸 ${t(lang, 'notif_amount')}: ${withdrawal.amount} USDT
+📍 ${t(lang, 'notif_address')}: <code>${withdrawal.wallet_address}</code>
 
-تمت المعالجة يدوياً من قبل الإدارة
+${t(lang, 'admin_manual_processed_by_admin')}
 `, { parse_mode: 'HTML' });
           
         } catch (error) {
           console.error('Error manual approving withdrawal:', error);
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '❌ حدث خطأ: ' + error.message, 
+            text: `❌ ${t(lang, 'admin_error_occurred')} ` + error.message, 
             show_alert: true 
           });
         }
@@ -540,7 +540,7 @@ ${t(lang, 'admin_choose_operation')}
           
           if (!withdrawal) {
             return safeAnswerCallbackQuery(bot, query.id, { 
-              text: '❌ طلب السحب غير موجود', 
+              text: `❌ ${t(lang, 'admin_withdrawal_not_found')}`, 
               show_alert: true 
             });
           }
@@ -555,14 +555,14 @@ ${t(lang, 'admin_choose_operation')}
           );
           
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '♻️ تمت إعادة المحاولة', 
+            text: `♻️ ${t(lang, 'admin_retry_success')}`, 
             show_alert: true 
           });
           
         } catch (error) {
           console.error('Error retrying withdrawal:', error);
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '❌ حدث خطأ: ' + error.message, 
+            text: `❌ ${t(lang, 'admin_error_occurred')} ` + error.message, 
             show_alert: true 
           });
         }
@@ -578,23 +578,23 @@ ${t(lang, 'admin_choose_operation')}
           const totalWithFee = withdrawal.amount + config.WITHDRAWAL_FEE;
           
           await safeSendMessage(bot, withdrawal.user_id, `
-❌ <b>تم رفض طلب السحب</b>
+❌ <b>${t(lang, 'admin_withdrawal_rejected_title')}</b>
 
-المبلغ: ${withdrawal.amount} USDT
-العنوان: <code>${withdrawal.wallet_address}</code>
+${t(lang, 'notif_amount')}: ${withdrawal.amount} USDT
+${t(lang, 'notif_address')}: <code>${withdrawal.wallet_address}</code>
 
-تم إرجاع المبلغ لرصيدك: ${totalWithFee} USDT
+${t(lang, 'admin_amount_refunded_to_balance_colon')} ${totalWithFee} USDT
 `, { parse_mode: 'HTML' });
           
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '✅ تم رفض الطلب وإرجاع المبلغ للمستخدم', 
+            text: `✅ ${t(lang, 'admin_rejection_refund_user_success')}`, 
             show_alert: true 
           });
           
         } catch (error) {
           console.error('Error rejecting withdrawal:', error);
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '❌ حدث خطأ: ' + error.message, 
+            text: `❌ ${t(lang, 'admin_error_occurred')} ` + error.message, 
             show_alert: true 
           });
         }
@@ -606,18 +606,18 @@ ${t(lang, 'admin_choose_operation')}
       else if (data === 'admin_search_user') {
         await safeAnswerCallbackQuery(bot, query.id);
         await safeEditMessageText(bot, `
-🔍 <b>البحث عن مستخدم</b>
+🔍 <b>${t(lang, 'admin_search_user_title')}</b>
 
-أرسل معرف المستخدم (User ID) الذي تريد البحث عنه:
+${t(lang, 'admin_search_user_prompt')}
 
-<i>مثال: 123456789</i>
+<i>${t(lang, 'admin_example')} 123456789</i>
 `, {
           chat_id: chatId,
           message_id: query.message.message_id,
           parse_mode: 'HTML',
           reply_markup: {
             inline_keyboard: [
-              [{ text: '❌ إلغاء', callback_data: 'admin_back' }]
+              [{ text: `❌ ${t(lang, 'admin_cancel')}`, callback_data: 'admin_back' }]
             ]
           }
         });
@@ -632,20 +632,20 @@ ${t(lang, 'admin_choose_operation')}
         const targetUserId = parseInt(data.replace('ban_user_', ''));
         const keyboard = [
           [
-            { text: '🕐 1 ساعة', callback_data: `ban_duration_${targetUserId}_1` },
-            { text: '📅 24 ساعة', callback_data: `ban_duration_${targetUserId}_24` }
+            { text: `🕐 ${t(lang, 'admin_1_hour')}`, callback_data: `ban_duration_${targetUserId}_1` },
+            { text: `📅 ${t(lang, 'admin_24_hours')}`, callback_data: `ban_duration_${targetUserId}_24` }
           ],
           [
-            { text: '🗓️ 7 أيام', callback_data: `ban_duration_${targetUserId}_168` },
-            { text: '⛔ دائم', callback_data: `ban_duration_${targetUserId}_permanent` }
+            { text: `🗓️ ${t(lang, 'admin_7_days')}`, callback_data: `ban_duration_${targetUserId}_168` },
+            { text: `⛔ ${t(lang, 'admin_permanent')}`, callback_data: `ban_duration_${targetUserId}_permanent` }
           ],
-          [{ text: '🔙 رجوع', callback_data: 'admin_users' }]
+          [{ text: `🔙 ${t(lang, 'admin_back_button')}`, callback_data: 'admin_users' }]
         ];
         
         await safeEditMessageText(bot, `
-⛔ <b>حظر المستخدم</b>
+⛔ <b>${t(lang, 'admin_ban_user_title')}</b>
 
-اختر مدة الحظر للمستخدم ID: <code>${targetUserId}</code>
+${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
 `, {
           chat_id: chatId,
           message_id: query.message.message_id,
