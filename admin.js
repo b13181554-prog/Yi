@@ -5,6 +5,7 @@ const okx = require('./okx');
 const { addWithdrawalToQueue } = require('./withdrawal-queue');
 const { notifyUserSuccess, notifyOwnerSuccess } = require('./withdrawal-notifier');
 const { safeSendMessage, safeSendPhoto, safeEditMessageText, safeAnswerCallbackQuery } = require('./safe-message');
+const { t } = require('./languages');
 
 async function initAdminCommands(bot) {
   
@@ -14,39 +15,44 @@ async function initAdminCommands(bot) {
     const userId = msg.from.id;
     
     if (userId !== config.OWNER_ID) {
-      return safeSendMessage(bot, chatId, '❌ غير مصرح لك بالوصول لهذا الأمر');
+      const user = await db.getUser(userId);
+      const lang = user ? user.language : 'ar';
+      return safeSendMessage(bot, chatId, `❌ ${t(lang, 'admin_unauthorized')}`);
     }
+    
+    const user = await db.getUser(userId);
+    const lang = user ? user.language : 'ar';
     
     const keyboard = {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '📊 الإحصائيات', callback_data: 'admin_stats' },
-            { text: '👥 المستخدمين', callback_data: 'admin_users' }
+            { text: `📊 ${t(lang, 'admin_stats')}`, callback_data: 'admin_stats' },
+            { text: `👥 ${t(lang, 'admin_users')}`, callback_data: 'admin_users' }
           ],
           [
-            { text: '💸 طلبات السحب', callback_data: 'admin_withdrawals' },
-            { text: '💰 المعاملات', callback_data: 'admin_transactions' }
+            { text: `💸 ${t(lang, 'admin_withdrawals')}`, callback_data: 'admin_withdrawals' },
+            { text: `💰 ${t(lang, 'admin_transactions')}`, callback_data: 'admin_transactions' }
           ],
           [
-            { text: '👨‍💼 المحللين', callback_data: 'admin_analysts' },
-            { text: '🎁 الإحالات', callback_data: 'admin_referrals' }
+            { text: `👨‍💼 ${t(lang, 'admin_analysts')}`, callback_data: 'admin_analysts' },
+            { text: `🎁 ${t(lang, 'admin_referrals')}`, callback_data: 'admin_referrals' }
           ],
           [
-            { text: '📢 إرسال رسالة جماعية', callback_data: 'admin_broadcast' }
+            { text: `📢 ${t(lang, 'admin_broadcast')}`, callback_data: 'admin_broadcast' }
           ],
           [
-            { text: '🔄 تحديث البيانات', callback_data: 'admin_refresh' }
+            { text: `🔄 ${t(lang, 'admin_refresh')}`, callback_data: 'admin_refresh' }
           ]
         ]
       }
     };
     
     await safeSendMessage(bot, chatId, `
-🎛️ <b>لوحة تحكم المالك</b>
+🎛️ <b>${t(lang, 'admin_panel_title')}</b>
 
-مرحباً ${msg.from.first_name}!
-اختر العملية المطلوبة:
+${t(lang, 'admin_welcome')} ${msg.from.first_name}!
+${t(lang, 'admin_choose_operation')}
 `, { parse_mode: 'HTML', ...keyboard });
   });
   
@@ -75,10 +81,15 @@ async function initAdminCommands(bot) {
     
     if (isAdminCallback && userId !== config.OWNER_ID) {
       console.warn(`⚠️ محاولة وصول غير مصرح من ${userId} إلى ${data}`);
-      return safeAnswerCallbackQuery(bot, query.id, { text: '❌ غير مصرح لك', show_alert: true });
+      const user = await db.getUser(userId);
+      const lang = user ? user.language : 'ar';
+      return safeAnswerCallbackQuery(bot, query.id, { text: `❌ ${t(lang, 'admin_unauthorized_short')}`, show_alert: true });
     }
     
     if (!isAdminCallback) return;
+    
+    const user = await db.getUser(userId);
+    const lang = user ? user.language : 'ar';
     
     try {
       // الإحصائيات العامة
@@ -159,7 +170,7 @@ async function initAdminCommands(bot) {
           parse_mode: 'HTML',
           reply_markup: {
             inline_keyboard: [
-              [{ text: '🔙 رجوع', callback_data: 'admin_back' }]
+              [{ text: `🔙 ${t(lang, 'admin_back')}`, callback_data: 'admin_back' }]
             ]
           }
         });
@@ -183,7 +194,7 @@ async function initAdminCommands(bot) {
         const keyboard = {
           inline_keyboard: [
             [{ text: '🔍 بحث عن مستخدم', callback_data: 'admin_search_user' }],
-            [{ text: '🔙 رجوع', callback_data: 'admin_back' }]
+            [{ text: `🔙 ${t(lang, 'admin_back')}`, callback_data: 'admin_back' }]
           ]
         };
         
@@ -247,7 +258,7 @@ async function initAdminCommands(bot) {
           parse_mode: 'HTML',
           reply_markup: {
             inline_keyboard: [
-              [{ text: '🔙 رجوع', callback_data: 'admin_back' }]
+              [{ text: `🔙 ${t(lang, 'admin_back')}`, callback_data: 'admin_back' }]
             ]
           }
         });
@@ -265,7 +276,7 @@ async function initAdminCommands(bot) {
             parse_mode: 'HTML',
             reply_markup: {
               inline_keyboard: [
-                [{ text: '🔙 رجوع', callback_data: 'admin_back' }]
+                [{ text: `🔙 ${t(lang, 'admin_back')}`, callback_data: 'admin_back' }]
               ]
             }
           });
@@ -288,7 +299,7 @@ async function initAdminCommands(bot) {
           ]);
         });
         
-        keyboard.push([{ text: '🔙 رجوع', callback_data: 'admin_back' }]);
+        keyboard.push([{ text: `🔙 ${t(lang, 'admin_back')}`, callback_data: 'admin_back' }]);
         
         await safeEditMessageText(bot, message, {
           chat_id: chatId,
@@ -310,7 +321,7 @@ async function initAdminCommands(bot) {
             parse_mode: 'HTML',
             reply_markup: {
               inline_keyboard: [
-                [{ text: '🔙 رجوع', callback_data: 'admin_back' }]
+                [{ text: `🔙 ${t(lang, 'admin_back')}`, callback_data: 'admin_back' }]
               ]
             }
           });
@@ -332,7 +343,7 @@ async function initAdminCommands(bot) {
           parse_mode: 'HTML',
           reply_markup: {
             inline_keyboard: [
-              [{ text: '🔙 رجوع', callback_data: 'admin_back' }]
+              [{ text: `🔙 ${t(lang, 'admin_back')}`, callback_data: 'admin_back' }]
             ]
           }
         });
@@ -354,7 +365,7 @@ async function initAdminCommands(bot) {
             parse_mode: 'HTML',
             reply_markup: {
               inline_keyboard: [
-                [{ text: '🔙 رجوع', callback_data: 'admin_back' }]
+                [{ text: `🔙 ${t(lang, 'admin_back')}`, callback_data: 'admin_back' }]
               ]
             }
           });
@@ -376,7 +387,7 @@ async function initAdminCommands(bot) {
           parse_mode: 'HTML',
           reply_markup: {
             inline_keyboard: [
-              [{ text: '🔙 رجوع', callback_data: 'admin_back' }]
+              [{ text: `🔙 ${t(lang, 'admin_back')}`, callback_data: 'admin_back' }]
             ]
           }
         });
