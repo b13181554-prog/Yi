@@ -4469,6 +4469,8 @@ async function changeLanguageFromMore() {
 async function toggleNotificationsFromMore() {
     const toggle = document.getElementById('more-notifications-toggle');
     const marketsDiv = document.getElementById('more-notification-markets');
+    const statusBadge = document.getElementById('notification-status-badge');
+    const infoDisabled = document.getElementById('notification-info-disabled');
     const enabled = toggle.checked;
 
     try {
@@ -4485,8 +4487,22 @@ async function toggleNotificationsFromMore() {
         const data = await response.json();
 
         if (data.success) {
+            // تحديث العرض
             marketsDiv.style.display = enabled ? 'block' : 'none';
-            tg.showAlert(enabled ? '✅ تم تفعيل الإشعارات' : '❌ تم إيقاف الإشعارات');
+            infoDisabled.style.display = enabled ? 'none' : 'block';
+            
+            // تحديث شارة الحالة
+            if (statusBadge) {
+                statusBadge.textContent = enabled ? 'مفعّل' : 'غير مفعل';
+                statusBadge.style.background = enabled ? '#10b981' : '#ef4444';
+            }
+            
+            // تحديث عداد الأسواق
+            if (enabled) {
+                updateMarketCount();
+            }
+            
+            tg.showAlert(enabled ? '✅ تم تفعيل الإشعارات بنجاح' : '❌ تم إيقاف الإشعارات');
         } else {
             toggle.checked = !enabled;
             tg.showAlert('❌ حدث خطأ: ' + (data.error || 'غير معروف'));
@@ -4510,6 +4526,8 @@ async function saveNotificationMarketsFromMore() {
     }
 
     try {
+        const saveStatus = document.getElementById('notification-save-status');
+        
         const response = await fetch('/api/update-notification-markets', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -4523,14 +4541,54 @@ async function saveNotificationMarketsFromMore() {
         const data = await response.json();
 
         if (data.success) {
-            tg.showAlert('✅ تم حفظ التفضيلات بنجاح');
+            // عرض رسالة النجاح
+            if (saveStatus) {
+                saveStatus.style.display = 'block';
+                setTimeout(() => {
+                    saveStatus.style.display = 'none';
+                }, 3000);
+            }
+            
+            tg.showAlert('✅ تم حفظ التفضيلات بنجاح - ستتلقى إشعارات من الأسواق المحددة');
         } else {
-            tg.showAlert('❌ ' + (data.error || 'حدث خطأ'));
+            tg.showAlert('❌ ' + (data.error || 'حدث خطأ في الحفظ'));
         }
     } catch (error) {
         console.error('Error saving notification markets:', error);
         tg.showAlert('❌ حدث خطأ في حفظ التفضيلات');
     }
+}
+
+// دالة جديدة لتحديث عداد الأسواق المختارة
+function updateMarketCount() {
+    const checkedCount = document.querySelectorAll('.more-market-checkbox:checked').length;
+    const totalCount = document.querySelectorAll('.more-market-checkbox').length;
+    const countElement = document.getElementById('selected-markets-count');
+    
+    if (countElement) {
+        countElement.textContent = `${checkedCount}/${totalCount}`;
+        
+        // تغيير لون العداد بناءً على العدد
+        if (checkedCount === 0) {
+            countElement.style.background = '#ef4444';
+        } else if (checkedCount <= 3) {
+            countElement.style.background = '#10b981';
+        } else {
+            countElement.style.background = '#3b82f6';
+        }
+    }
+    
+    // تحديث تنسيق الخيارات المحددة
+    document.querySelectorAll('.market-checkbox-label').forEach((label, index) => {
+        const checkbox = label.querySelector('input[type="checkbox"]');
+        if (checkbox && checkbox.checked) {
+            label.style.borderColor = '#667eea';
+            label.style.background = '#f0f7ff';
+        } else {
+            label.style.borderColor = '#e5e7eb';
+            label.style.background = 'white';
+        }
+    });
 }
 
 async function loadMoreSectionSettings() {
@@ -4559,19 +4617,39 @@ async function loadMoreSectionSettings() {
         if (data.success && data.settings) {
             const toggle = document.getElementById('more-notifications-toggle');
             const marketsDiv = document.getElementById('more-notification-markets');
+            const statusBadge = document.getElementById('notification-status-badge');
+            const infoDisabled = document.getElementById('notification-info-disabled');
+            const isEnabled = data.settings.enabled || false;
             
             if (toggle) {
-                toggle.checked = data.settings.enabled || false;
+                toggle.checked = isEnabled;
             }
             
-            if (data.settings.enabled && marketsDiv) {
-                marketsDiv.style.display = 'block';
+            // تحديث شارة الحالة
+            if (statusBadge) {
+                statusBadge.textContent = isEnabled ? 'مفعّل' : 'غير مفعل';
+                statusBadge.style.background = isEnabled ? '#10b981' : '#ef4444';
+            }
+            
+            // تحديث العرض
+            if (marketsDiv) {
+                marketsDiv.style.display = isEnabled ? 'block' : 'none';
+            }
+            
+            if (infoDisabled) {
+                infoDisabled.style.display = isEnabled ? 'none' : 'block';
             }
 
+            // تحديث الأسواق المحددة
             if (data.settings.markets && data.settings.markets.length > 0) {
                 document.querySelectorAll('.more-market-checkbox').forEach(checkbox => {
                     checkbox.checked = data.settings.markets.includes(checkbox.value);
                 });
+            }
+            
+            // تحديث العداد
+            if (isEnabled) {
+                updateMarketCount();
             }
         }
     } catch (error) {
