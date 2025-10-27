@@ -40,6 +40,23 @@ let botUsername = null;
 let currentPaymentAddress = null;
 let paymentPollingInterval = null;
 
+// Helper function to get translated market type text
+function getMarketTypeText(marketType) {
+    const marketMap = {
+        'crypto': t('market_type_crypto'),
+        'forex': t('market_type_forex'),
+        'stocks': t('market_type_stocks'),
+        'commodities': t('market_type_commodities'),
+        'indices': t('market_type_indices')
+    };
+    return marketMap[marketType] || marketType;
+}
+
+// Helper function to get translated trading type text
+function getTradingTypeText(tradingType) {
+    return tradingType === 'futures' ? t('trading_type_futures') : t('trading_type_spot');
+}
+
 function formatPrice(price) {
     if (price === null || price === undefined || isNaN(price)) return 'N/A';
     
@@ -769,13 +786,13 @@ function displayAnalysisResult(analysis, symbol, timeframe) {
 
     const actionEmoji = analysis.recommendation === 'شراء' || analysis.recommendation === 'BUY' ? '🟢' : 
                        analysis.recommendation === 'بيع' || analysis.recommendation === 'SELL' ? '🔴' : '⚪';
-    const actionText = analysis.recommendation === 'شراء' || analysis.recommendation === 'BUY' ? 'شراء' : 
-                      analysis.recommendation === 'بيع' || analysis.recommendation === 'SELL' ? 'بيع' : 'انتظار';
+    const actionText = analysis.recommendation === 'شراء' || analysis.recommendation === 'BUY' ? t('action_type_buy') : 
+                      analysis.recommendation === 'بيع' || analysis.recommendation === 'SELL' ? t('action_type_sell') : t('action_wait');
 
     recCard.innerHTML = `
         <div class="rec-header">
-            <h2>${actionEmoji} توصية ${actionText}</h2>
-            <div class="confidence">قوة الإشارة: ${analysis.confidence || 'متوسطة'}</div>
+            <h2>${actionEmoji} ${t('recommendation')} ${actionText}</h2>
+            <div class="confidence">${t('signal_strength')}: ${analysis.confidence || t('confidence_medium')}</div>
         </div>
         <div class="rec-details">
             <p><strong>💎 العملة:</strong> ${symbol}</p>
@@ -2286,10 +2303,7 @@ function displayBestSignalsResult(signals, marketType, analysisType, timeframe) 
                        marketType === 'stocks' ? '📈' : 
                        marketType === 'commodities' ? '🛢️' : '📊';
     
-    const marketText = marketType === 'crypto' ? 'عملات رقمية' : 
-                      marketType === 'forex' ? 'فوركس' : 
-                      marketType === 'stocks' ? 'أسهم' : 
-                      marketType === 'commodities' ? 'سلع' : 'مؤشرات';
+    const marketText = getMarketTypeText(marketType);
     
     const analysisText = analysisType === 'ultra' ? 'Ultra' : 
                         analysisType === 'zero-reversal' ? 'Zero Reversal' :
@@ -2406,8 +2420,8 @@ function displayAdvancedAnalysisResult(analysis, symbol, timeframe, analysisType
     const actionText = analysis.recommendation === 'شراء' ? 'شراء' : 
                       analysis.recommendation === 'بيع' ? 'بيع' : 'انتظار';
 
-    const tradingTypeText = analysis.tradingType === 'futures' ? 'فيوتشر ⚡' : 'سبوت 📊';
-    const marketTypeText = analysis.marketType === 'forex' ? 'فوركس 💱' : 'عملات رقمية 💎';
+    const tradingTypeText = getTradingTypeText(analysis.tradingType);
+    const marketTypeText = getMarketTypeText(analysis.marketType);
 
     recCard.innerHTML = `
         <div class="rec-header">
@@ -2537,8 +2551,8 @@ function displayUltraAnalysisResult(analysis, symbol, timeframe) {
                        analysis.recommendation === 'بيع' ? '🔴' : '⚪');
     const actionText = analysis.recommendation;
 
-    const tradingTypeText = analysis.tradingType === 'futures' ? 'فيوتشر ⚡' : 'سبوت 📊';
-    const marketTypeText = analysis.marketType === 'forex' ? 'فوركس 💱' : 'عملات رقمية 💎';
+    const tradingTypeText = getTradingTypeText(analysis.tradingType);
+    const marketTypeText = getMarketTypeText(analysis.marketType);
 
     recCard.innerHTML = `
         <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white; margin-bottom: 20px;">
@@ -2650,8 +2664,8 @@ function displayZeroReversalResult(analysis, symbol, timeframe) {
                        analysis.recommendation === 'بيع' ? '❤️' : '⚫');
     const actionText = analysis.recommendation;
 
-    const tradingTypeText = analysis.tradingType === 'futures' ? 'فيوتشر ⚡' : 'سبوت 📊';
-    const marketTypeText = analysis.marketType === 'forex' ? 'فوركس 💱' : 'عملات رقمية 💎';
+    const tradingTypeText = getTradingTypeText(analysis.tradingType);
+    const marketTypeText = getMarketTypeText(analysis.marketType);
 
     recCard.innerHTML = `
         <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #FF0000 0%, #CC0000 100%); border-radius: 12px; color: white; margin-bottom: 20px; border: 3px solid #FF0000;">
@@ -2778,8 +2792,8 @@ function displayPumpAnalysisResult(analysis, symbol, timeframe) {
     const indDetails = document.getElementById('indicators-details');
 
     const actionEmoji = '🚀';
-    const tradingTypeText = analysis.tradingType === 'futures' ? 'فيوتشر ⚡' : 'سبوت 📊';
-    const marketTypeText = analysis.marketType === 'forex' ? 'فوركس 💱' : 'عملات رقمية 💎';
+    const tradingTypeText = getTradingTypeText(analysis.tradingType);
+    const marketTypeText = getMarketTypeText(analysis.marketType);
 
     recCard.innerHTML = `
         <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #FF6B00 0%, #FFA500 100%); border-radius: 12px; color: white; margin-bottom: 20px; border: 3px solid #FF6B00;">
@@ -2865,11 +2879,8 @@ function displayV1ProAnalysisResult(analysis, symbol, timeframe) {
     const actionText = finalAction === 'BUY' ? 'شراء' : finalAction === 'SELL' ? 'بيع' : 'انتظار';
     const confidencePercent = (parseFloat(analysis.finalSignal?.confidence || 0) * 100).toFixed(0);
 
-    const tradingTypeText = analysis.tradingType === 'futures' ? 'فيوتشر ⚡' : 'سبوت 📊';
-    const marketTypeText = analysis.marketType === 'forex' ? 'فوركس 💱' : 
-                          analysis.marketType === 'stocks' ? 'أسهم 📈' :
-                          analysis.marketType === 'commodities' ? 'سلع 🛢️' :
-                          analysis.marketType === 'indices' ? 'مؤشرات 📊' : 'عملات رقمية 💎';
+    const tradingTypeText = getTradingTypeText(analysis.tradingType);
+    const marketTypeText = getMarketTypeText(analysis.marketType);
 
     recCard.innerHTML = `
         <div style="text-align: center; padding: 25px; background: linear-gradient(135deg, #00FF00 0%, #00CC00 100%); border-radius: 16px; color: white; margin-bottom: 20px; border: 3px solid #00FF00; box-shadow: 0 8px 24px rgba(0, 255, 0, 0.3);">
@@ -3061,8 +3072,8 @@ function displayMasterAnalysisResult(analysis, symbol, timeframe) {
             <p><strong style="color: #000;">💎 الرمز:</strong> ${symbol}</p>
             <p><strong style="color: #000;">💰 السعر الحالي:</strong> $${analysis.currentPrice}</p>
             <p><strong style="color: #000;">⏰ الإطار الزمني:</strong> ${timeframe}</p>
-            <p><strong style="color: #000;">📊 نوع السوق:</strong> ${analysis.marketType === 'crypto' ? 'عملات رقمية 💎' : analysis.marketType === 'forex' ? 'فوركس 💱' : analysis.marketType === 'stocks' ? 'أسهم 📈' : analysis.marketType}</p>
-            <p><strong style="color: #000;">🔄 نوع التداول:</strong> ${analysis.tradingType === 'futures' ? 'فيوتشر ⚡' : 'سبوت 📊'}</p>
+            <p><strong style="color: #000;">📊 نوع السوق:</strong> ${getMarketTypeText(analysis.marketType)}</p>
+            <p><strong style="color: #000;">🔄 نوع التداول:</strong> ${getTradingTypeText(analysis.tradingType)}</p>
             <p><strong style="color: #000;">🕐 وقت التحليل:</strong> ${analysis.analysisTime}</p>
         </div>
 
@@ -3706,15 +3717,15 @@ async function loadBannedUsers() {
 }
 
 function banUserPrompt(targetUserId) {
-    const reason = prompt('أدخل سبب الحظر:');
+    const reason = prompt(t('admin_prompt_ban_reason'));
     if (!reason) return;
     banUserAction(targetUserId, reason, null);
 }
 
 function banUserTempPrompt(targetUserId) {
-    const reason = prompt('أدخل سبب الحظر:');
+    const reason = prompt(t('admin_prompt_ban_reason'));
     if (!reason) return;
-    const hours = prompt('أدخل مدة الحظر بالساعات:');
+    const hours = prompt(t('admin_prompt_ban_hours'));
     if (!hours) return;
     banUserAction(targetUserId, reason, parseInt(hours));
 }
@@ -3746,7 +3757,7 @@ async function banUserAction(targetUserId, reason, duration) {
 }
 
 async function unbanUser(targetUserId) {
-    if (!confirm('هل تريد إلغاء حظر هذا المستخدم؟')) return;
+    if (!confirm(t('admin_confirm_unban'))) return;
     
     try {
         const response = await fetch('/api/admin/unban-user', {
@@ -4021,7 +4032,7 @@ async function loadAdminWithdrawals() {
 }
 
 async function approveWithdrawal(withdrawalId) {
-    if (!confirm('هل تريد الموافقة على طلب السحب؟')) return;
+    if (!confirm(t('admin_confirm_approve_withdrawal'))) return;
     
     try {
         const response = await fetch('/api/admin/approve-withdrawal', {
@@ -4049,7 +4060,7 @@ async function approveWithdrawal(withdrawalId) {
 }
 
 function rejectWithdrawalPrompt(withdrawalId) {
-    const reason = prompt('أدخل سبب الرفض (اختياري):');
+    const reason = prompt(t('admin_prompt_reject_reason'));
     if (reason === null) return;
     rejectWithdrawal(withdrawalId, reason);
 }
@@ -4309,7 +4320,7 @@ async function toggleAnalystStatus(analystId, currentStatus) {
 }
 
 async function deleteAnalyst(analystId) {
-    if (!confirm('⚠️ هل أنت متأكد من حذف هذا المحلل؟ سيتم إلغاء جميع اشتراكاته.')) return;
+    if (!confirm(t('analyst_delete_confirm_admin'))) return;
     
     tg.showAlert('⏳ جاري الحذف...');
 }
