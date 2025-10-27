@@ -3748,6 +3748,18 @@ function t(lang, key) {
   return language[key] || translations.ar[key] || key;
 }
 
+// دالة للتحقق من مطابقة النص لمفتاح زر معين في أي لغة
+function matchesButtonKey(text, buttonKey) {
+  if (!text) return false;
+  const supportedLangs = ['ar', 'en', 'fr', 'es', 'de', 'ru', 'zh'];
+  for (const lang of supportedLangs) {
+    if (text === t(lang, buttonKey)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // دالة للحصول على لوحة مفاتيح تبديل اللغة
 function getLanguageKeyboard() {
   return {
@@ -3789,6 +3801,7 @@ function getMainKeyboard(lang) {
 
 module.exports = {
   t,
+  matchesButtonKey,
   getLanguageKeyboard,
   getMainKeyboard,
   translations

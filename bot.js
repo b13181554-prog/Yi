@@ -2,7 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const { LRUCache } = require('lru-cache');
 const config = require('./config');
 const db = require('./database');
-const { t, getLanguageKeyboard } = require('./languages');
+const { t, matchesButtonKey, getLanguageKeyboard } = require('./languages');
 const { safeSendMessage, safeSendPhoto, safeEditMessageText, safeAnswerCallbackQuery } = require('./safe-message');
 const { BatchLoader } = require('./utils/batch-loader');
 const groqService = require('./groq-service');
@@ -314,7 +314,7 @@ bot.on('message', async (msg) => {
 
     const lang = user.language || 'ar';
 
-    if (text === '⚙️ الإعدادات' || text === '⚙️ Settings' || text === '⚙️ Paramètres' || text === '⚙️ Configuración' || text === '⚙️ Einstellungen' || text === '⚙️ Настройки' || text === '⚙️ 设置') {
+    if (matchesButtonKey(text, 'settings_menu')) {
       await safeSendMessage(bot, chatId, `
 <b>${t(lang, 'settings_menu')}</b>
 
@@ -331,7 +331,7 @@ ${t(lang, 'choose_from_menu')}
           resize_keyboard: true
         }
       });
-    } else if (text === '🔙 العودة للقائمة الرئيسية' || text === '🔙 Back to Main Menu' || text === '🔙 Retour au menu principal' || text === '🔙 Volver al menú principal' || text === '🔙 Zurück zum Hauptmenü' || text === '🔙 Вернуться в главное меню' || text === '🔙 返回主菜单') {
+    } else if (matchesButtonKey(text, 'back_to_main')) {
       const firstName = msg.from.first_name;
       const subscription = await db.checkSubscription(userId);
       let statusMessage = '';
@@ -354,7 +354,7 @@ ${statusMessage}
       `, {
         parse_mode: 'HTML'
       });
-    } else if (text === '🌐 إعدادات اللغة' || text === '🌐 Language Settings' || text === '🌐 Paramètres de langue' || text === '🌐 Configuración de idioma' || text === '🌐 Spracheinstellungen' || text === '🌐 Настройки языка' || text === '🌐 语言设置') {
+    } else if (matchesButtonKey(text, 'language_settings_btn')) {
       await safeSendMessage(bot, chatId, `
 <b>${t(lang, 'language_settings')}</b>
 
@@ -363,7 +363,7 @@ ${t(lang, 'select_language')}
         parse_mode: 'HTML',
         reply_markup: getLanguageKeyboard()
       });
-    } else if (text === '📞 خدمة العملاء' || text === '📞 Customer Service' || text === '📞 Service client' || text === '📞 Servicio al cliente' || text === '📞 Kundendienst' || text === '📞 Служба поддержки' || text === '📞 客户服务') {
+    } else if (matchesButtonKey(text, 'customer_service_btn')) {
       await safeSendMessage(bot, chatId, t(lang, 'customer_service_msg'), {
         parse_mode: 'HTML',
         reply_markup: {
@@ -373,7 +373,7 @@ ${t(lang, 'select_language')}
 
       user.awaitingCustomerServiceMessage = true;
       await db.updateUser(userId, { awaitingCustomerServiceMessage: true });
-    } else if (text === '🔔 الإشعارات' || text === '🔔 Notifications' || text === '🔔 Notificaciones' || text === '🔔 Benachrichtigungen' || text === '🔔 Уведомления' || text === '🔔 通知') {
+    } else if (matchesButtonKey(text, 'notifications_btn')) {
       const settings = await db.getNotificationSettings(userId);
       const isEnabled = settings.enabled || false;
       const markets = settings.markets || ['crypto', 'forex', 'stocks', 'commodities', 'indices'];
