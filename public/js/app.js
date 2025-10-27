@@ -348,7 +348,7 @@ async function init() {
     console.log('🎯 init() called');
 
     if (!tg) {
-        console.error('❌ Telegram WebApp غير متوفر');
+        console.error('❌ Telegram WebApp not available');
         showError(t('error_must_open_from_telegram'));
         return;
     }
@@ -455,7 +455,7 @@ async function init() {
 
 function updateUI() {
     if (!tg.initDataUnsafe?.user) {
-        console.error('❌ لا توجد بيانات مستخدم من Telegram');
+        console.error('❌ No user data from Telegram');
         return;
     }
     
@@ -595,11 +595,11 @@ function setupSymbolSearch() {
             if (searchTerm.length < 1) {
                 autocompleteContainer.innerHTML = '';
                 autocompleteContainer.style.display = 'none';
-                select.innerHTML = '<option>🔍 ابدأ بكتابة اسم الأصل...</option>';
+                select.innerHTML = `<option>${t('start_typing_asset_name')}</option>`;
                 return;
             }
 
-            autocompleteContainer.innerHTML = '<div class="autocomplete-item loading">⏳ جاري البحث...</div>';
+            autocompleteContainer.innerHTML = `<div class="autocomplete-item loading">${t('searching_text')}</div>`;
             autocompleteContainer.style.display = 'block';
 
             searchTimeout = setTimeout(async () => {
@@ -624,8 +624,8 @@ function setupSymbolSearch() {
                     }
 
                     if (data.results.length === 0) {
-                        autocompleteContainer.innerHTML = '<div class="autocomplete-item no-results">❌ لا توجد نتائج</div>';
-                        select.innerHTML = '<option>❌ لا توجد نتائج</option>';
+                        autocompleteContainer.innerHTML = `<div class="autocomplete-item no-results">${t('no_results')}</div>`;
+                        select.innerHTML = `<option>${t('no_results')}</option>`;
                         return;
                     }
 
@@ -1085,8 +1085,8 @@ let isEditingAnalyst = false;
 
 function showAnalystRegistrationForm() {
     isEditingAnalyst = false;
-    document.getElementById('analyst-form-title').textContent = '📝 نموذج التسجيل كمحلل';
-    document.getElementById('analyst-submit-btn').textContent = 'تأكيد التسجيل';
+    document.getElementById('analyst-form-title').textContent = t('analyst_registration_form_title');
+    document.getElementById('analyst-submit-btn').textContent = t('confirm_registration');
     document.getElementById('analyst-registration-form').style.display = 'block';
     document.getElementById('analysts-list').style.display = 'none';
     document.getElementById('my-analyst-profile').style.display = 'none';
@@ -1097,8 +1097,8 @@ function showEditAnalystForm() {
     if (!myAnalystData) return;
     
     isEditingAnalyst = true;
-    document.getElementById('analyst-form-title').textContent = '✏️ تعديل بيانات المحلل';
-    document.getElementById('analyst-submit-btn').textContent = 'حفظ التعديلات';
+    document.getElementById('analyst-form-title').textContent = t('edit_analyst_form_title');
+    document.getElementById('analyst-submit-btn').textContent = t('save_changes');
     document.getElementById('analyst-description').value = myAnalystData.description;
     document.getElementById('analyst-price').value = myAnalystData.monthly_price;
     
@@ -1668,7 +1668,7 @@ async function loadTransactions() {
 
                 item.innerHTML = `
                     <div class="transaction-info">
-                        <div class="transaction-type">${icon} ${isDeposit ? 'إيداع' : 'سحب'}</div>
+                        <div class="transaction-type">${icon} ${isDeposit ? t('transaction_type_deposit') : t('transaction_type_withdrawal')}</div>
                         <div class="transaction-date">${new Date(tx.created_at).toLocaleDateString('ar-SA')}</div>
                     </div>
                     <div class="transaction-amount ${amountClass}">${sign}${tx.amount} USDT</div>
@@ -1684,7 +1684,7 @@ async function loadTransactions() {
 
 async function loadSubscription() {
     if (!userId) {
-        console.warn('⚠️ لا يوجد userId لتحميل الاشتراك');
+        console.warn('⚠️ No userId to load subscription');
         return;
     }
 
@@ -1715,7 +1715,7 @@ async function loadSubscription() {
                     detailsEl.innerHTML = `<p style="color: #4CAF50;">صالح حتى: ${new Date(data.subscription.expiresAt).toLocaleDateString('ar-SA')}</p>`;
                 }
                 subscribeBtn.disabled = true;
-                subscribeBtn.textContent = 'الاشتراك نشط';
+                subscribeBtn.textContent = t('subscription_active');
                 subscribeBtn.style.background = '#ccc';
                 if (depositQuickBtn) depositQuickBtn.style.display = 'none';
             } else {
@@ -1736,7 +1736,7 @@ async function loadSubscription() {
                         </div>
                     `;
                     subscribeBtn.disabled = true;
-                    subscribeBtn.textContent = 'رصيد غير كافٍ';
+                    subscribeBtn.textContent = t('insufficient_balance_text');
                     subscribeBtn.style.background = '#ccc';
                     if (depositQuickBtn) {
                         depositQuickBtn.style.display = 'block';
