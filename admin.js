@@ -80,7 +80,7 @@ ${t(lang, 'admin_choose_operation')}
                            data.startsWith('delete_user_');
     
     if (isAdminCallback && userId !== config.OWNER_ID) {
-      console.warn(`⚠️ محاولة وصول غير مصرح من ${userId} إلى ${data}`);
+      console.warn(`⚠️ Unauthorized access attempt from ${userId} to ${data}`);
       const user = await db.getUser(userId);
       const lang = user ? user.language : 'ar';
       return safeAnswerCallbackQuery(bot, query.id, { text: `❌ ${t(lang, 'admin_unauthorized_short')}`, show_alert: true });
@@ -662,25 +662,28 @@ ${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
         
         try {
           const durationHours = duration === 'permanent' ? null : parseInt(duration);
-          await db.banUser(targetUserId, 'تم الحظر من لوحة الإدارة', userId, durationHours);
+          const targetUser = await db.getUser(targetUserId);
+          const targetLang = targetUser ? (targetUser.language || 'ar') : 'ar';
           
-          const durationText = duration === 'permanent' ? 'بشكل دائم' : `لمدة ${duration} ساعة`;
+          await db.banUser(targetUserId, t(targetLang, 'admin_ban_reason_from_admin'), userId, durationHours);
+          
+          const durationText = duration === 'permanent' ? t(lang, 'admin_permanently') : `${t(lang, 'admin_for_duration')} ${duration} ${t(lang, 'admin_hour_singular')}`;
           
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: `✅ تم حظر المستخدم ${durationText}`, 
+            text: `✅ ${t(lang, 'admin_user_banned_success')} ${durationText}`, 
             show_alert: true 
           });
           
           // إرسال إشعار للمستخدم المحظور
           try {
             await safeSendMessage(bot, targetUserId, `
-⛔ <b>تم حظرك من استخدام البوت</b>
+⛔ <b>${t(targetLang, 'admin_you_have_been_banned_title')}</b>
 
-السبب: تم الحظر من لوحة الإدارة
-المدة: ${durationText}
+${t(targetLang, 'admin_reason_colon')} ${t(targetLang, 'admin_ban_reason_from_admin')}
+${t(targetLang, 'admin_duration_colon')} ${duration === 'permanent' ? t(targetLang, 'admin_permanently') : `${duration} ${t(targetLang, 'admin_hour_singular')}`}
 `, { parse_mode: 'HTML' });
           } catch (e) {
-            console.log('لم يتم إرسال إشعار الحظر للمستخدم');
+            console.log('User ban notification not sent');
           }
           
           // العودة لقائمة المستخدمين
@@ -688,7 +691,7 @@ ${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
         } catch (error) {
           console.error('Error banning user:', error);
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '❌ حدث خطأ في حظر المستخدم', 
+            text: `❌ ${t(lang, 'admin_error_banning_user')}`, 
             show_alert: true 
           });
         }
@@ -701,20 +704,23 @@ ${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
         try {
           await db.unbanUser(targetUserId);
           
+          const targetUser = await db.getUser(targetUserId);
+          const targetLang = targetUser ? (targetUser.language || 'ar') : 'ar';
+          
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '✅ تم إلغاء حظر المستخدم', 
+            text: `✅ ${t(lang, 'admin_user_unbanned_success')}`, 
             show_alert: true 
           });
           
           // إرسال إشعار للمستخدم
           try {
             await safeSendMessage(bot, targetUserId, `
-✅ <b>تم إلغاء حظرك</b>
+✅ <b>${t(targetLang, 'admin_unban_notification_title')}</b>
 
-يمكنك الآن استخدام البوت بشكل طبيعي!
+${t(targetLang, 'admin_can_use_normally')}
 `, { parse_mode: 'HTML' });
           } catch (e) {
-            console.log('لم يتم إرسال إشعار إلغاء الحظر للمستخدم');
+            console.log('User unban notification not sent');
           }
           
           // العودة لقائمة المستخدمين
@@ -722,7 +728,7 @@ ${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
         } catch (error) {
           console.error('Error unbanning user:', error);
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '❌ حدث خطأ في إلغاء الحظر', 
+            text: `❌ ${t(lang, 'admin_error_unbanning')}`, 
             show_alert: true 
           });
         }
@@ -734,20 +740,20 @@ ${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
         const targetUserId = parseInt(data.replace('restrict_user_', ''));
         const keyboard = [
           [
-            { text: '🚫 منع التداول', callback_data: `restrict_action_${targetUserId}_no_trading` },
-            { text: '🚫 منع الإيداع', callback_data: `restrict_action_${targetUserId}_no_deposit` }
+            { text: `🚫 ${t(lang, 'admin_restriction_no_trading')}`, callback_data: `restrict_action_${targetUserId}_no_trading` },
+            { text: `🚫 ${t(lang, 'admin_restriction_no_deposit')}`, callback_data: `restrict_action_${targetUserId}_no_deposit` }
           ],
           [
-            { text: '🚫 منع السحب', callback_data: `restrict_action_${targetUserId}_no_withdraw` },
-            { text: '🚫 منع الإحالة', callback_data: `restrict_action_${targetUserId}_no_referral` }
+            { text: `🚫 ${t(lang, 'admin_restriction_no_withdraw')}`, callback_data: `restrict_action_${targetUserId}_no_withdraw` },
+            { text: `🚫 ${t(lang, 'admin_restriction_no_referral')}`, callback_data: `restrict_action_${targetUserId}_no_referral` }
           ],
-          [{ text: '🔙 رجوع', callback_data: 'admin_users' }]
+          [{ text: `🔙 ${t(lang, 'admin_back')}`, callback_data: 'admin_users' }]
         ];
         
         await safeEditMessageText(bot, `
-🚫 <b>تقييد المستخدم</b>
+🚫 <b>${t(lang, 'admin_restrict_user_title')}</b>
 
-اختر نوع التقييد للمستخدم ID: <code>${targetUserId}</code>
+${t(lang, 'admin_select_restriction_type')} <code>${targetUserId}</code>
 `, {
           chat_id: chatId,
           message_id: query.message.message_id,
@@ -764,30 +770,40 @@ ${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
         
         try {
           const restrictions = { [restrictionType]: true };
-          await db.restrictUser(targetUserId, restrictions, 168); // 7 أيام
+          await db.restrictUser(targetUserId, restrictions, 168); // 7 days
+          
+          const targetUser = await db.getUser(targetUserId);
+          const targetLang = targetUser ? (targetUser.language || 'ar') : 'ar';
           
           const restrictionNames = {
-            'no_trading': 'منع التداول',
-            'no_deposit': 'منع الإيداع',
-            'no_withdraw': 'منع السحب',
-            'no_referral': 'منع الإحالة'
+            'no_trading': t(lang, 'admin_restriction_no_trading'),
+            'no_deposit': t(lang, 'admin_restriction_no_deposit'),
+            'no_withdraw': t(lang, 'admin_restriction_no_withdraw'),
+            'no_referral': t(lang, 'admin_restriction_no_referral')
+          };
+          
+          const restrictionNamesTarget = {
+            'no_trading': t(targetLang, 'admin_restriction_no_trading'),
+            'no_deposit': t(targetLang, 'admin_restriction_no_deposit'),
+            'no_withdraw': t(targetLang, 'admin_restriction_no_withdraw'),
+            'no_referral': t(targetLang, 'admin_restriction_no_referral')
           };
           
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: `✅ تم تطبيق: ${restrictionNames[restrictionType]}`, 
+            text: `✅ ${t(lang, 'admin_restriction_applied')}: ${restrictionNames[restrictionType]}`, 
             show_alert: true 
           });
           
           // إرسال إشعار للمستخدم
           try {
             await safeSendMessage(bot, targetUserId, `
-⚠️ <b>تم تقييد حسابك</b>
+⚠️ <b>${t(targetLang, 'admin_account_restricted_title')}</b>
 
-التقييد: ${restrictionNames[restrictionType]}
-المدة: 7 أيام
+${t(targetLang, 'admin_restriction_colon')} ${restrictionNamesTarget[restrictionType]}
+${t(targetLang, 'admin_duration_colon')} 7 ${t(targetLang, 'admin_days')}
 `, { parse_mode: 'HTML' });
           } catch (e) {
-            console.log('لم يتم إرسال إشعار التقييد للمستخدم');
+            console.log('User restriction notification not sent');
           }
           
           // العودة لقائمة المستخدمين
@@ -795,7 +811,7 @@ ${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
         } catch (error) {
           console.error('Error restricting user:', error);
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '❌ حدث خطأ في تقييد المستخدم', 
+            text: `❌ ${t(lang, 'admin_error_restricting_user')}`, 
             show_alert: true 
           });
         }
