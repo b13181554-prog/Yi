@@ -615,7 +615,14 @@ ${description}
     console.log('🤖 AI Monitor started - checking every 5 minutes');
     
     const intelligentCache = require('./intelligent-cache');
+    const cacheManager = require('./cache-manager');
+    
     memoryOptimizer.registerCache('intelligent-cache-memory', intelligentCache.default.memoryCache, 'purge');
+    memoryOptimizer.registerCache('cache-manager-local', {
+      clear: () => cacheManager.clearLocalCache(),
+      size: () => cacheManager.localCache?.size || 0
+    }, 'clear');
+    
     memoryOptimizer.start();
     console.log('🧠 Memory Optimizer started - monitoring every 5 minutes');
     

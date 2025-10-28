@@ -183,18 +183,22 @@ function checkMemoryHealth() {
   let status = 'healthy';
   let message = 'Memory usage normal';
   
-  // عتبات أكثر تساهلاً مع المتوسط المتحرك
-  if (avgUsagePercent > 95) {
+  // عتبات محسّنة وواقعية للذاكرة متوافقة مع AI Monitor
+  // نستخدم المتوسط المتحرك لتجنب الإنذارات الكاذبة من الارتفاعات المؤقتة
+  if (avgUsagePercent >= 95) {
+    // 95%+ نعتبرها حرجة (يسمح بتنبيهات medium/high في AI Monitor)
     status = 'critical';
     message = 'Memory usage critical (sustained high usage)';
-  } else if (avgUsagePercent > 85) {
+  } else if (avgUsagePercent >= 90) {
+    // 90-94% نعتبرها متدهورة (يسمح بتنبيهات low في AI Monitor)
     status = 'degraded';
-    message = 'Memory usage high';
-  } else if (usagePercent > 90 && avgUsagePercent > 75) {
-    // ارتفاع مؤقت لكن المتوسط مرتفع
-    status = 'degraded';
-    message = 'Memory spike detected';
+    message = 'Memory usage high (sustained)';
+  } else if (avgUsagePercent >= 80) {
+    // 80-89% نعتبرها صحية مع ملاحظة
+    status = 'healthy';
+    message = 'Memory usage elevated but acceptable';
   }
+  // أقل من 80% متوسط متحرك = صحي تماماً
   
   // إذا كانت RSS أكثر من 1GB، أضف تحذيراً
   const rssWarning = rssMB > 1024 ? ' (High RSS)' : '';
