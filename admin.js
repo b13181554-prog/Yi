@@ -809,7 +809,7 @@ ${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
           await db.deleteUserAccount(targetUserId);
           
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '✅ تم حذف حساب المستخدم نهائياً', 
+            text: `✅ ${t(lang, 'admin_delete_user_permanently')}`, 
             show_alert: true 
           });
           
@@ -818,7 +818,7 @@ ${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
         } catch (error) {
           console.error('Error deleting user:', error);
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: '❌ حدث خطأ في حذف المستخدم', 
+            text: `❌ ${t(lang, 'admin_error_deleting_user')}`, 
             show_alert: true 
           });
         }
@@ -831,23 +831,23 @@ ${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
         
         const keyboard = [
           [
-            { text: '✅ نعم، احذف الحساب', callback_data: `delete_user_confirm_${targetUserId}` }
+            { text: `✅ ${t(lang, 'admin_yes_delete_account')}`, callback_data: `delete_user_confirm_${targetUserId}` }
           ],
           [
-            { text: '❌ إلغاء', callback_data: 'admin_users' }
+            { text: `❌ ${t(lang, 'admin_cancel')}`, callback_data: 'admin_users' }
           ]
         ];
         
         await safeEditMessageText(bot, `
-⚠️ <b>تحذير: حذف حساب مستخدم</b>
+⚠️ <b>${t(lang, 'admin_confirm_delete_title')}</b>
 
-هل أنت متأكد من حذف حساب المستخدم ID: <code>${targetUserId}</code>؟
+${t(lang, 'admin_confirm_delete_question')} <code>${targetUserId}</code>؟
 
-⚠️ <b>تحذير:</b> هذا الإجراء لا يمكن التراجع عنه!
-سيتم حذف:
-• بيانات المستخدم
-• جميع المعاملات
-• اشتراكات المحللين
+⚠️ <b>${t(lang, 'admin_warning_irreversible')}</b>
+${t(lang, 'admin_will_be_deleted')}
+• ${t(lang, 'admin_user_data')}
+• ${t(lang, 'admin_all_transactions')}
+• ${t(lang, 'admin_analyst_subscriptions')}
 `, {
           chat_id: chatId,
           message_id: query.message.message_id,
@@ -862,31 +862,31 @@ ${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
         const keyboard = {
           inline_keyboard: [
             [
-              { text: '📊 الإحصائيات', callback_data: 'admin_stats' },
-              { text: '👥 المستخدمين', callback_data: 'admin_users' }
+              { text: `📊 ${t(lang, 'admin_stats')}`, callback_data: 'admin_stats' },
+              { text: `👥 ${t(lang, 'admin_users')}`, callback_data: 'admin_users' }
             ],
             [
-              { text: '💸 طلبات السحب', callback_data: 'admin_withdrawals' },
-              { text: '💰 المعاملات', callback_data: 'admin_transactions' }
+              { text: `💸 ${t(lang, 'admin_withdrawals')}`, callback_data: 'admin_withdrawals' },
+              { text: `💰 ${t(lang, 'admin_transactions')}`, callback_data: 'admin_transactions' }
             ],
             [
-              { text: '👨‍💼 المحللين', callback_data: 'admin_analysts' },
-              { text: '🎁 الإحالات', callback_data: 'admin_referrals' }
+              { text: `👨‍💼 ${t(lang, 'admin_analysts')}`, callback_data: 'admin_analysts' },
+              { text: `🎁 ${t(lang, 'admin_referrals')}`, callback_data: 'admin_referrals' }
             ],
             [
-              { text: '📢 إرسال رسالة جماعية', callback_data: 'admin_broadcast' }
+              { text: `📢 ${t(lang, 'admin_broadcast')}`, callback_data: 'admin_broadcast' }
             ],
             [
-              { text: '🔄 تحديث البيانات', callback_data: 'admin_refresh' }
+              { text: `🔄 ${t(lang, 'admin_refresh')}`, callback_data: 'admin_refresh' }
             ]
           ]
         };
         
         await safeEditMessageText(bot, `
-🎛️ <b>لوحة تحكم المالك</b>
+🎛️ <b>${t(lang, 'admin_panel_title')}</b>
 
-مرحباً ${query.from.first_name}!
-اختر العملية المطلوبة:
+${t(lang, 'admin_welcome')} ${query.from.first_name}!
+${t(lang, 'admin_choose_operation')}
 `, {
           chat_id: chatId,
           message_id: query.message.message_id,
@@ -898,7 +898,7 @@ ${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
     } catch (error) {
       console.error('Admin callback error:', error);
       await safeAnswerCallbackQuery(bot, query.id, { 
-        text: '❌ حدث خطأ!', 
+        text: `❌ ${t(lang, 'admin_error_generic')}`, 
         show_alert: true 
       });
     }
@@ -921,76 +921,79 @@ ${t(lang, 'admin_select_ban_duration_user_id')} <code>${targetUserId}</code>
       const searchUserId = parseInt(text.trim());
       
       if (isNaN(searchUserId)) {
-        return safeSendMessage(bot, chatId, '❌ معرف المستخدم يجب أن يكون رقماً');
+        const lang = user.language || 'ar';
+        return safeSendMessage(bot, chatId, `❌ ${t(lang, 'admin_invalid_user_id_number')}`);
       }
       
       const targetUser = await db.getUser(searchUserId);
       
       if (!targetUser) {
         await db.updateUser(userId, { temp_withdrawal_address: null });
-        return safeSendMessage(bot, chatId, '❌ لم يتم العثور على مستخدم بهذا المعرف');
+        const lang = user.language || 'ar';
+        return safeSendMessage(bot, chatId, `❌ ${t(lang, 'admin_user_not_found_with_id')}`);
       }
       
       const banStatus = await db.checkUserBanStatus(searchUserId);
       const subscriptionActive = await db.isSubscriptionActive(searchUserId);
       const referralStats = await db.getReferralStats(searchUserId);
+      const lang = user.language || 'ar';
+      const localeStr = lang === 'ar' ? 'ar-SA' : lang === 'zh' ? 'zh-CN' : lang === 'ru' ? 'ru-RU' : lang === 'de' ? 'de-DE' : lang === 'es' ? 'es-ES' : lang === 'fr' ? 'fr-FR' : 'en-US';
       
       let statusEmoji = '✅';
-      let statusText = 'نشط';
+      let statusText = t(lang, 'admin_user_status_active');
       
       if (banStatus.banned) {
         statusEmoji = '⛔';
-        statusText = 'محظور';
         if (banStatus.expires) {
-          statusText += ` حتى ${new Date(banStatus.expires).toLocaleString('ar')}`;
+          statusText = `${t(lang, 'admin_user_status_banned_until')} ${new Date(banStatus.expires).toLocaleString(localeStr)}`;
         } else {
-          statusText += ' بشكل دائم';
+          statusText = t(lang, 'admin_user_status_banned_permanently_text');
         }
       }
       
       const message = `
-👤 <b>معلومات المستخدم</b>
+👤 <b>${t(lang, 'admin_user_info_title')}</b>
 
 ━━━━━━━━━━━━━━━━━━━━
-📋 <b>البيانات الأساسية:</b>
-• الاسم: ${targetUser.first_name} ${targetUser.last_name || ''}
-• المعرف: @${targetUser.username || 'لا يوجد'}
-• User ID: <code>${targetUser.user_id}</code>
-• تاريخ التسجيل: ${new Date(targetUser.created_at).toLocaleDateString('ar')}
+📋 <b>${t(lang, 'admin_basic_info_section')}:</b>
+• ${t(lang, 'admin_name_with_colon')} ${targetUser.first_name} ${targetUser.last_name || ''}
+• ${t(lang, 'admin_username_with_colon')} @${targetUser.username || t(lang, 'admin_no_username_text')}
+• ${t(lang, 'admin_user_id_with_colon')} <code>${targetUser.user_id}</code>
+• ${t(lang, 'admin_registration_date')}: ${new Date(targetUser.created_at).toLocaleDateString(localeStr)}
 
 ━━━━━━━━━━━━━━━━━━━━
-💰 <b>المالية:</b>
-• الرصيد: ${targetUser.balance || 0} USDT
-• أرباح الإحالات: ${targetUser.referral_earnings || 0} USDT
+💰 <b>${t(lang, 'admin_financial_info_section')}:</b>
+• ${t(lang, 'admin_balance_with_colon')} ${targetUser.balance || 0} USDT
+• ${t(lang, 'admin_referral_earnings_with_colon')} ${targetUser.referral_earnings || 0} USDT
 
 ━━━━━━━━━━━━━━━━━━━━
-📊 <b>الحالة:</b>
-• الحالة: ${statusEmoji} ${statusText}
-• الاشتراك: ${subscriptionActive ? '✅ نشط' : '❌ منتهي'}
-${banStatus.banned && banStatus.reason ? `• سبب الحظر: ${banStatus.reason}` : ''}
+📊 <b>${t(lang, 'admin_status_section')}:</b>
+• ${t(lang, 'admin_status_with_colon')} ${statusEmoji} ${statusText}
+• ${t(lang, 'admin_subscription_with_colon')} ${subscriptionActive ? `✅ ${t(lang, 'admin_subscription_active_status')}` : `❌ ${t(lang, 'admin_subscription_expired')}`}
+${banStatus.banned && banStatus.reason ? `• ${t(lang, 'admin_ban_reason_with_colon')} ${banStatus.reason}` : ''}
 
 ━━━━━━━━━━━━━━━━━━━━
-🎁 <b>الإحالات:</b>
-• عدد الإحالات: ${referralStats.total_referrals}
-• إجمالي الأرباح: ${referralStats.total_earnings.toFixed(2)} USDT
+🎁 <b>${t(lang, 'admin_referrals_section')}:</b>
+• ${t(lang, 'admin_referral_count_with_colon')} ${referralStats.total_referrals}
+• ${t(lang, 'admin_total_earnings_with_colon')} ${referralStats.total_earnings.toFixed(2)} USDT
 
 ━━━━━━━━━━━━━━━━━━━━
-⚙️ <b>إعدادات:</b>
-• اللغة: ${targetUser.language || 'ar'}
-• الإشعارات: ${targetUser.notifications_enabled ? '✅ مفعلة' : '❌ معطلة'}
+⚙️ <b>${t(lang, 'admin_settings_section')}:</b>
+• ${t(lang, 'admin_language_with_colon')} ${targetUser.language || 'ar'}
+• ${t(lang, 'admin_notifications_with_colon')} ${targetUser.notifications_enabled ? `✅ ${t(lang, 'admin_notifications_enabled_status')}` : `❌ ${t(lang, 'admin_notifications_disabled_status')}`}
 `;
       
       const keyboard = [];
       
       if (banStatus.banned) {
-        keyboard.push([{ text: '✅ إلغاء الحظر', callback_data: `unban_user_${searchUserId}` }]);
+        keyboard.push([{ text: `✅ ${t(lang, 'admin_unban_user_button')}`, callback_data: `unban_user_${searchUserId}` }]);
       } else {
-        keyboard.push([{ text: '⛔ حظر المستخدم', callback_data: `ban_user_${searchUserId}` }]);
+        keyboard.push([{ text: `⛔ ${t(lang, 'admin_ban_user_button')}`, callback_data: `ban_user_${searchUserId}` }]);
       }
       
-      keyboard.push([{ text: '🚫 تقييد المستخدم', callback_data: `restrict_user_${searchUserId}` }]);
-      keyboard.push([{ text: '🗑️ حذف الحساب', callback_data: `delete_user_${searchUserId}` }]);
-      keyboard.push([{ text: '🔙 رجوع', callback_data: 'admin_users' }]);
+      keyboard.push([{ text: `🚫 ${t(lang, 'admin_restrict_user_button')}`, callback_data: `restrict_user_${searchUserId}` }]);
+      keyboard.push([{ text: `🗑️ ${t(lang, 'admin_delete_account_button')}`, callback_data: `delete_user_${searchUserId}` }]);
+      keyboard.push([{ text: `🔙 ${t(lang, 'admin_back_button')}`, callback_data: 'admin_users' }]);
       
       await safeSendMessage(bot, chatId, message, {
         parse_mode: 'HTML',
@@ -1009,8 +1012,9 @@ ${banStatus.banned && banStatus.reason ? `• سبب الحظر: ${banStatus.rea
       const users = await db.getAllUsers();
       let successCount = 0;
       let failCount = 0;
+      const lang = user.language || 'ar';
       
-      const statusMsg = await safeSendMessage(bot, chatId, '📤 جاري إرسال الرسالة...\n\n0/' + users.length);
+      const statusMsg = await safeSendMessage(bot, chatId, `📤 ${t(lang, 'admin_broadcasting_progress')}\n\n0/${users.length}`);
       
       for (let i = 0; i < users.length; i++) {
         try {
@@ -1023,7 +1027,7 @@ ${banStatus.banned && banStatus.reason ? `• سبب الحظر: ${banStatus.rea
         // تحديث كل 10 مستخدمين
         if ((i + 1) % 10 === 0 || i === users.length - 1) {
           await safeEditMessageText(bot, 
-            `📤 جاري إرسال الرسالة...\n\n${i + 1}/${users.length}\n✅ نجح: ${successCount}\n❌ فشل: ${failCount}`,
+            `📤 ${t(lang, 'admin_broadcasting_progress')}\n\n${i + 1}/${users.length}\n✅ ${t(lang, 'admin_broadcast_success_count')} ${successCount}\n❌ ${t(lang, 'admin_broadcast_failed_count')} ${failCount}`,
             {
               chat_id: chatId,
               message_id: statusMsg.message_id
@@ -1035,12 +1039,12 @@ ${banStatus.banned && banStatus.reason ? `• سبب الحظر: ${banStatus.rea
       await db.updateUser(userId, { temp_withdrawal_address: null });
       
       await safeSendMessage(bot, chatId, `
-✅ <b>تم إرسال الرسالة الجماعية!</b>
+✅ <b>${t(lang, 'admin_broadcast_complete')}</b>
 
-📊 الإحصائيات:
-• إجمالي المستخدمين: ${users.length}
-• نجح: ${successCount}
-• فشل: ${failCount}
+📊 ${t(lang, 'admin_broadcast_stats_section')}
+• ${t(lang, 'admin_total_users_count')} ${users.length}
+• ${t(lang, 'admin_broadcast_success_count')} ${successCount}
+• ${t(lang, 'admin_broadcast_failed_count')} ${failCount}
 `, { parse_mode: 'HTML' });
     }
   });
