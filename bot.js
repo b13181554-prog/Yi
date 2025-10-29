@@ -5,7 +5,7 @@ const db = require('./database');
 const { t, matchesButtonKey, getLanguageKeyboard } = require('./languages');
 const { safeSendMessage, safeSendPhoto, safeEditMessageText, safeAnswerCallbackQuery } = require('./safe-message');
 const { BatchLoader } = require('./utils/batch-loader');
-const groqService = require('./groq-service');
+const geminiService = require('./gemini-service');
 const { getSystemPrompt } = require('./ai-system-prompts');
 
 // دالة مساعدة لتنظيف HTML من النصوص قبل إرسالها
@@ -462,24 +462,24 @@ ${text}
 
       // استخدام الذكاء الاصطناعي للرد على المستخدم بلغته
       try {
-        if (groqService.enabled) {
+        if (geminiService.enabled) {
           const typingInterval = setInterval(() => {
             bot.sendChatAction(chatId, 'typing').catch(() => {});
           }, 3000);
 
           const systemPrompt = getSystemPrompt(lang);
-          const aiResponse = await groqService.chat([
+          const aiResponse = await geminiService.chat([
             { role: 'system', content: systemPrompt },
             { role: 'user', content: text }
           ], {
-            model: 'llama-3.3-70b-versatile',
-            max_tokens: 500,
+            model: 'gemini-1.5-flash',
+            maxOutputTokens: 500,
             temperature: 0.7
           });
 
           clearInterval(typingInterval);
 
-          const reply = aiResponse.choices[0].message.content;
+          const reply = aiResponse.content;
           await safeSendMessage(bot, chatId, reply, { parse_mode: 'HTML' });
         } else {
           await safeSendMessage(bot, chatId, t(lang, 'message_sent'), { parse_mode: 'HTML' });

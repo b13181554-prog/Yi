@@ -1,5 +1,5 @@
 const TechnicalAnalysis = require('./analysis');
-const groqService = require('./groq-service');
+const geminiService = require('./gemini-service');
 const axios = require('axios');
 
 class OBENTCHIV1ProAnalysis {
@@ -9,7 +9,7 @@ class OBENTCHIV1ProAnalysis {
     this.symbol = symbol;
     this.analysis = new TechnicalAnalysis(candles);
     
-    this.groqService = groqService;
+    this.geminiService = geminiService;
     
     this.indicatorWeights = {
       rsi: 1.2,
@@ -213,7 +213,7 @@ class OBENTCHIV1ProAnalysis {
         };
       }
       
-      const sentimentAnalysis = await this.analyzeSentimentWithGroq(news);
+      const sentimentAnalysis = await this.analyzeSentimentWithGemini(news);
       sentimentAnalysis.available = true;
       
       return sentimentAnalysis;
@@ -304,13 +304,13 @@ class OBENTCHIV1ProAnalysis {
     return symbolMap[symbol] || 'bitcoin';
   }
 
-  async analyzeSentimentWithGroq(news) {
+  async analyzeSentimentWithGemini(news) {
     try {
       const newsText = news.map((item, index) => 
         `${index + 1}. ${item.title} (${item.source})`
       ).join('\n');
       
-      const completion = await this.groqService.chat([
+      const completion = await this.geminiService.chat([
         {
           role: 'system',
           content: `أنت محلل خبير للمشاعر في أسواق العملات الرقمية. قم بتحليل الأخبار التالية وأعطني:
@@ -332,13 +332,18 @@ class OBENTCHIV1ProAnalysis {
           content: `حلل المشاعر للأخبار التالية عن ${this.symbol}:\n\n${newsText}`
         }
       ], {
-        model: 'llama-3.3-70b-versatile',
+        model: 'gemini-1.5-flash',
         temperature: 0.3,
-        max_tokens: 500,
-        response_format: { type: 'json_object' }
+        maxOutputTokens: 500
       });
       
-      const result = JSON.parse(completion.content);
+      let result;
+      try {
+        result = JSON.parse(completion.content);
+      } catch (parseError) {
+        const cleanContent = completion.content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        result = JSON.parse(cleanContent);
+      }
       
       const weightedScore = this.applyNewsWeighting(result.score, news);
       
@@ -351,7 +356,7 @@ class OBENTCHIV1ProAnalysis {
         rawScore: result.score
       };
     } catch (error) {
-      console.error('❌ خطأ في Groq API:', error.message);
+      console.error('❌ خطأ في Google Gemini API:', error.message);
       return {
         score: 0,
         sentiment: 'محايد',

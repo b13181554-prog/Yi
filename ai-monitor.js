@@ -1,4 +1,4 @@
-const groqService = require('./groq-service');
+const geminiService = require('./gemini-service');
 const db = require('./database');
 const config = require('./config');
 const { safeSendMessage } = require('./safe-message');
@@ -13,8 +13,8 @@ const { performFullHealthCheck } = require('./improved-health-checks');
 
 class AIMonitor {
   constructor() {
-    this.groqService = groqService;
-    this.enabled = groqService.enabled;
+    this.geminiService = geminiService;
+    this.enabled = geminiService.enabled;
     this.lastCheck = new Date();
     this.issuesLog = [];
     this.maxIssuesLog = 100;
@@ -47,7 +47,7 @@ class AIMonitor {
 
   async start() {
     if (!this.enabled) {
-      console.warn('⚠️ AI Monitor is disabled (no GROQ_API_KEY)');
+      console.warn('⚠️ AI Monitor is disabled (no GOOGLE_API_KEY)');
       return;
     }
 
@@ -239,7 +239,7 @@ ${logs}
   "summary": "النظام يعمل بشكل طبيعي ✅"
 }`;
 
-      const completion = await this.groqService.chat([
+      const completion = await this.geminiService.chat([
         {
           role: 'system',
           content: 'أنت نظام مراقبة ذكي متخصص في تحليل أنظمة التداول والبوتات. ترجع فقط JSON صالح بدون أي نص إضافي.'
@@ -249,9 +249,9 @@ ${logs}
           content: prompt
         }
       ], {
-        model: 'llama-3.3-70b-versatile',
+        model: 'gemini-1.5-flash',
         temperature: 0.3,
-        max_tokens: 2000
+        maxOutputTokens: 2000
       });
 
       const response = completion.content || '{}';

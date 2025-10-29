@@ -1,8 +1,6 @@
-const Groq = require('groq-sdk');
+const geminiService = require('./gemini-service');
 const db = require('./database');
 const config = require('./config');
-
-const groq = new Groq({ apiKey: config.GROQ_API_KEY });
 
 class AnalystAIAdvisor {
   async analyzePerformanceAndAdvise(analystId) {
@@ -24,23 +22,22 @@ class AnalystAIAdvisor {
 
       const analysisPrompt = this.buildAnalysisPrompt(analyst, performance, closedSignals, successfulSignals, failedSignals);
 
-      const completion = await groq.chat.completions.create({
-        messages: [
-          {
-            role: 'system',
-            content: 'أنت محلل مالي خبير متخصص في تحليل أداء محللي التداول وتقديم نصائح احترافية لتحسين الأداء. قدم تحليلاً دقيقاً ونصائح عملية قابلة للتطبيق.'
-          },
-          {
-            role: 'user',
-            content: analysisPrompt
-          }
-        ],
-        model: 'llama-3.3-70b-versatile',
+      const completion = await geminiService.chat([
+        {
+          role: 'system',
+          content: 'أنت محلل مالي خبير متخصص في تحليل أداء محللي التداول وتقديم نصائح احترافية لتحسين الأداء. قدم تحليلاً دقيقاً ونصائح عملية قابلة للتطبيق.'
+        },
+        {
+          role: 'user',
+          content: analysisPrompt
+        }
+      ], {
+        model: 'gemini-1.5-flash',
         temperature: 0.7,
-        max_tokens: 2000
+        maxOutputTokens: 2000
       });
 
-      const aiAdvice = completion.choices[0]?.message?.content;
+      const aiAdvice = completion.content;
 
       const patterns = this.detectPatterns(closedSignals);
       const strengths = this.identifyStrengths(performance, patterns);

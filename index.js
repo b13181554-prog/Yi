@@ -19,7 +19,7 @@ const { initAnalystMonitor } = require('./analyst-monitor');
 const { getTelegramProfilePhoto } = require('./telegram-helpers');
 const { initTradeSignalsMonitor } = require('./trade-signals-monitor');
 const monitor = require('./monitoring');
-const Groq = require('groq-sdk');
+const geminiService = require('./gemini-service');
 const { addPaymentCallback, getQueueStats, startPaymentProcessor } = require('./payment-callback-queue');
 const { startWithdrawalProcessor } = require('./withdrawal-queue');
 const monitoringService = require('./monitoring-service');
@@ -50,13 +50,11 @@ async function getOwnerLang() {
   }
 }
 
-// Groq AI - Free and fast alternative to OpenAI
-let groq = null;
-if (process.env.GROQ_API_KEY) {
-  groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-  console.log('✅ Groq client initialized successfully');
+// Google Gemini AI - Free and powerful AI service
+if (geminiService.enabled) {
+  console.log('✅ Google Gemini AI initialized successfully');
 } else {
-  console.warn('⚠️  GROQ_API_KEY not found. Customer support feature will not work until API key is added.');
+  console.warn('⚠️  GOOGLE_API_KEY not found. Customer support feature will not work until API key is added.');
 }
 
 const app = express();
@@ -3993,11 +3991,11 @@ app.post('/api/admin/search', async (req, res) => {
   }
 });
 
-// Customer Support API - Groq Integration (Free AI)
+// Customer Support API - Google Gemini AI Integration (Free AI)
 app.post('/api/customer-support', async (req, res) => {
   const { message, language = 'ar' } = req.body;
   
-  if (!groq) {
+  if (!geminiService.enabled) {
     return res.status(503).json({ 
       error: t(language, 'customer_support_unavailable')
     });
@@ -4011,17 +4009,16 @@ app.post('/api/customer-support', async (req, res) => {
     // استخدام نظام الترجمة الجديد للحصول على systemPrompt المناسب
     const systemPrompt = getSystemPrompt(language);
 
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: message }
-      ],
-      max_tokens: 500,
+    const response = await geminiService.chat([
+      { role: "system", content: systemPrompt },
+      { role: "user", content: message }
+    ], {
+      model: "gemini-1.5-flash",
+      maxOutputTokens: 500,
       temperature: 0.7
     });
 
-    const reply = response.choices[0].message.content;
+    const reply = response.content;
     res.json({ reply });
 
   } catch (error) {
