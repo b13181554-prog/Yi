@@ -44,6 +44,16 @@ The Telegram Web App features a dark theme, providing a professional, modern, an
   - Smart chunking for long responses to prevent Telegram API errors
   - Chat history management and contextual assistance
   - Read-only operations for project safety
+- **Advanced AI Service for All Users** (October 2025): Enhanced intelligent assistant system powered by Groq AI, available to all users with the following capabilities:
+  - **Smart Chat (`/ask`)**: Intelligent conversation with full context, market analysis, and comprehensive answers to user questions
+  - **Internet Search (`/search`)**: Real-time web search using DuckDuckGo API (free, no API key required) with AI-powered analysis of results and cited sources
+  - **Code Analysis (`/analyze`)**: Comprehensive file and code analysis, bug detection, improvement suggestions, and quality ratings
+  - **Image Generation (`/imagine`)**: AI-powered image creation support (ready for Replicate API integration with Stable Diffusion)
+  - **Conversation History Management**: Maintains context across multiple messages for intelligent follow-up responses
+  - **Multi-language Support**: Full Arabic and English support across all AI features
+  - **Intent Detection**: Smart detection of user intentions (search, chat, analyze, generate) for appropriate handling
+  - **File Processing**: Ability to read, analyze, and provide insights on project files safely with security restrictions
+  - **No Additional API Keys Required**: Uses existing Groq AI infrastructure (except for image generation which optionally uses Replicate)
 
 **Feature Specifications**:
 The platform offers a Web App for technical analysis, top movers, a wallet for USDT TRC20, and account management. Trading features include technical analysis for diverse asset classes and trending cryptocurrency tracking. Financial features include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management includes analyst subscriptions and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, and withdrawal processing. Automated trade signal monitoring and a blockchain-based pump detection system are integrated.

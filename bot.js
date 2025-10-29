@@ -1554,6 +1554,342 @@ ${result.fallback || result.error}
   }
 });
 
+// ==================== Advanced AI Commands for All Users ====================
+
+// نظام المحادثة الذكية المتقدمة
+const advancedAIService = require('./advanced-ai-service');
+
+// /ask - المحادثة الذكية
+bot.onText(/\/ask(.*)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const userMessage = match[1].trim();
+
+  try {
+    if (!(await requireChannelMembership(userId, chatId, msg))) return;
+
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+
+    if (!userMessage) {
+      const helpMessage = lang === 'ar' ? `
+🤖 <b>المحادثة الذكية - Smart Chat</b>
+
+مرحباً! أنا مساعد ذكي متقدم يمكنني:
+
+✨ <b>القدرات:</b>
+• 💬 المحادثة الذكية مع سياق كامل
+• 🔍 البحث في الإنترنت للحصول على معلومات محدثة
+• 📊 تحليل السوق والعملات
+• 💡 الإجابة على جميع أسئلتك
+• 🌐 معلومات محدثة من الإنترنت
+
+<b>📝 كيفية الاستخدام:</b>
+
+/ask ما هو البيتكوين؟
+/ask ابحث عن أحدث أخبار Ethereum
+/ask ما هي أفضل استراتيجيات التداول؟
+
+<b>💡 نصيحة:</b>
+يمكنك طرح أي سؤال وسأجيبك بدقة واحترافية! 🚀
+      ` : `
+🤖 <b>Smart Chat</b>
+
+Hello! I'm an advanced AI assistant that can:
+
+✨ <b>Capabilities:</b>
+• 💬 Smart conversation with full context
+• 🔍 Internet search for updated information
+• 📊 Market and crypto analysis
+• 💡 Answer all your questions
+• 🌐 Updated information from the internet
+
+<b>📝 How to use:</b>
+
+/ask what is Bitcoin?
+/ask search for latest Ethereum news
+/ask what are the best trading strategies?
+
+<b>💡 Tip:</b>
+You can ask any question and I'll answer accurately and professionally! 🚀
+      `;
+      
+      return safeSendMessage(bot, chatId, helpMessage, { parse_mode: 'HTML' });
+    }
+
+    await safeSendMessage(bot, chatId, lang === 'ar' ? '⏳ جاري التفكير...' : '⏳ Thinking...', { parse_mode: 'HTML' });
+
+    const result = await advancedAIService.processRequest(userId, userMessage, { lang });
+
+    if (result.success) {
+      const responseMessage = `🤖 ${result.content}`;
+      
+      if (responseMessage.length > 4096) {
+        const chunks = responseMessage.match(/[\s\S]{1,4096}/g) || [];
+        for (const chunk of chunks) {
+          await safeSendMessage(bot, chatId, chunk, { parse_mode: 'HTML' });
+        }
+      } else {
+        await safeSendMessage(bot, chatId, responseMessage, { parse_mode: 'HTML' });
+      }
+    } else {
+      await safeSendMessage(bot, chatId, `❌ ${result.content}`, { parse_mode: 'HTML' });
+    }
+
+  } catch (error) {
+    console.error('Error in /ask command:', error);
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+    await safeSendMessage(bot, chatId, `❌ ${t(lang, 'error_occurred')}`);
+  }
+});
+
+// /search - البحث في الإنترنت
+bot.onText(/\/search(.*)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const searchQuery = match[1].trim();
+
+  try {
+    if (!(await requireChannelMembership(userId, chatId, msg))) return;
+
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+
+    if (!searchQuery) {
+      const helpMessage = lang === 'ar' ? `
+🔍 <b>البحث في الإنترنت - Internet Search</b>
+
+ابحث عن أي معلومة على الإنترنت واحصل على إجابات محدثة ودقيقة!
+
+<b>📝 كيفية الاستخدام:</b>
+
+/search Bitcoin price today
+/search أخبار العملات الرقمية
+/search latest crypto news
+/search تحليل سوق الفوركس
+
+<b>✨ المميزات:</b>
+• 🌐 معلومات محدثة من الإنترنت
+• 📊 تحليل ذكي للنتائج
+• 📚 مصادر موثوقة
+• ⚡ نتائج سريعة
+
+<b>💡 نصيحة:</b>
+كن محدداً في سؤالك للحصول على أفضل النتائج!
+      ` : `
+🔍 <b>Internet Search</b>
+
+Search for any information on the internet and get updated, accurate answers!
+
+<b>📝 How to use:</b>
+
+/search Bitcoin price today
+/search crypto news
+/search latest market analysis
+/search forex trading strategies
+
+<b>✨ Features:</b>
+• 🌐 Updated information from the internet
+• 📊 Smart analysis of results
+• 📚 Reliable sources
+• ⚡ Fast results
+
+<b>💡 Tip:</b>
+Be specific in your question for best results!
+      `;
+      
+      return safeSendMessage(bot, chatId, helpMessage, { parse_mode: 'HTML' });
+    }
+
+    await safeSendMessage(bot, chatId, lang === 'ar' ? '🔍 جاري البحث...' : '🔍 Searching...', { parse_mode: 'HTML' });
+
+    const result = await advancedAIService.searchAndAnalyze(searchQuery, lang);
+
+    if (result.content) {
+      const responseMessage = `🔍 <b>${lang === 'ar' ? 'نتائج البحث' : 'Search Results'}</b>\n\n${result.content}`;
+      
+      if (responseMessage.length > 4096) {
+        const chunks = responseMessage.match(/[\s\S]{1,4096}/g) || [];
+        for (const chunk of chunks) {
+          await safeSendMessage(bot, chatId, chunk, { parse_mode: 'HTML' });
+        }
+      } else {
+        await safeSendMessage(bot, chatId, responseMessage, { parse_mode: 'HTML' });
+      }
+    } else {
+      await safeSendMessage(bot, chatId, lang === 'ar' ? '❌ لم أجد نتائج' : '❌ No results found');
+    }
+
+  } catch (error) {
+    console.error('Error in /search command:', error);
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+    await safeSendMessage(bot, chatId, `❌ ${t(lang, 'error_occurred')}`);
+  }
+});
+
+// /imagine - إنشاء الصور
+bot.onText(/\/imagine(.*)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const imageDescription = match[1].trim();
+
+  try {
+    if (!(await requireChannelMembership(userId, chatId, msg))) return;
+
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+
+    if (!imageDescription) {
+      const helpMessage = lang === 'ar' ? `
+🎨 <b>إنشاء الصور - Image Generation</b>
+
+اصنع صوراً احترافية بالذكاء الاصطناعي!
+
+<b>📝 كيفية الاستخدام:</b>
+
+/imagine قط لطيف يلعب بالكرة
+/imagine beautiful sunset over ocean
+/imagine robot trading cryptocurrency
+/imagine منظر طبيعي جميل
+
+<b>✨ المميزات:</b>
+• 🎨 صور عالية الجودة
+• ⚡ توليد سريع
+• 🎯 دقة في التفاصيل
+• 🌈 ألوان واقعية
+
+<b>💡 نصيحة:</b>
+كن وصفياً ومحدداً للحصول على أفضل النتائج!
+
+<i>⚠️ ملاحظة: هذه الميزة تتطلب Replicate API key</i>
+      ` : `
+🎨 <b>Image Generation</b>
+
+Create professional images with AI!
+
+<b>📝 How to use:</b>
+
+/imagine cute cat playing with ball
+/imagine beautiful sunset over ocean
+/imagine robot trading cryptocurrency
+/imagine beautiful landscape
+
+<b>✨ Features:</b>
+• 🎨 High quality images
+• ⚡ Fast generation
+• 🎯 Precise details
+• 🌈 Realistic colors
+
+<b>💡 Tip:</b>
+Be descriptive and specific for best results!
+
+<i>⚠️ Note: This feature requires Replicate API key</i>
+      `;
+      
+      return safeSendMessage(bot, chatId, helpMessage, { parse_mode: 'HTML' });
+    }
+
+    await safeSendMessage(bot, chatId, lang === 'ar' ? '🎨 جاري إنشاء الصورة...' : '🎨 Generating image...', { parse_mode: 'HTML' });
+
+    const result = await advancedAIService.generateImage(imageDescription, lang);
+
+    await safeSendMessage(bot, chatId, result.content, { parse_mode: 'HTML' });
+
+  } catch (error) {
+    console.error('Error in /imagine command:', error);
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+    await safeSendMessage(bot, chatId, `❌ ${t(lang, 'error_occurred')}`);
+  }
+});
+
+// /analyze - تحليل ملف
+bot.onText(/\/analyze(.*)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const filePath = match[1].trim();
+
+  try {
+    if (!(await requireChannelMembership(userId, chatId, msg))) return;
+
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+
+    if (!filePath) {
+      const helpMessage = lang === 'ar' ? `
+📊 <b>تحليل الملفات - File Analysis</b>
+
+قم بتحليل أي ملف برمجي واحصل على تحسينات وملاحظات!
+
+<b>📝 كيفية الاستخدام:</b>
+
+/analyze bot.js
+/analyze package.json
+/analyze database.js
+
+<b>✨ المميزات:</b>
+• 🔍 تحليل شامل للكود
+• 🐛 إيجاد الأخطاء
+• 💡 اقتراحات للتحسين
+• 📈 تقييم الجودة
+
+<b>💡 نصيحة:</b>
+استخدم المسار الكامل أو النسبي للملف
+      ` : `
+📊 <b>File Analysis</b>
+
+Analyze any code file and get improvements and notes!
+
+<b>📝 How to use:</b>
+
+/analyze bot.js
+/analyze package.json
+/analyze database.js
+
+<b>✨ Features:</b>
+• 🔍 Comprehensive code analysis
+• 🐛 Find bugs
+• 💡 Improvement suggestions
+• 📈 Quality rating
+
+<b>💡 Tip:</b>
+Use full or relative file path
+      `;
+      
+      return safeSendMessage(bot, chatId, helpMessage, { parse_mode: 'HTML' });
+    }
+
+    await safeSendMessage(bot, chatId, lang === 'ar' ? '📊 جاري تحليل الملف...' : '📊 Analyzing file...', { parse_mode: 'HTML' });
+
+    const result = await advancedAIService.analyzeFile(filePath, lang);
+
+    if (result.content) {
+      const responseMessage = result.content;
+      
+      if (responseMessage.length > 4096) {
+        const chunks = responseMessage.match(/[\s\S]{1,4096}/g) || [];
+        for (const chunk of chunks) {
+          await safeSendMessage(bot, chatId, chunk, { parse_mode: 'HTML' });
+        }
+      } else {
+        await safeSendMessage(bot, chatId, responseMessage, { parse_mode: 'HTML' });
+      }
+    } else {
+      await safeSendMessage(bot, chatId, lang === 'ar' ? '❌ فشل التحليل' : '❌ Analysis failed');
+    }
+
+  } catch (error) {
+    console.error('Error in /analyze command:', error);
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+    await safeSendMessage(bot, chatId, `❌ ${t(lang, 'error_occurred')}`);
+  }
+});
+
+// ==================== End of Advanced AI Commands ====================
+
 function startBot() {
   try {
     bot.startPolling({ restart: true });
