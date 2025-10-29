@@ -1,37 +1,7 @@
 # OBENTCHI Trading Bot
 
 ## Overview
-OBENTCHI is a Telegram-based cryptocurrency trading bot designed to offer technical analysis, real-time market data, and automated trading across crypto and forex markets. It features a Telegram Web App for user interaction, automated withdrawal/deposit systems, and multi-language support. The project aims to be a robust, accessible trading assistant, empowering users with advanced analytical tools and a seamless trading experience to secure a significant market share in automated trading.
-
-## Islamic Compliance (Sharia Compliance)
-**Status**: FULLY HALAL COMPLIANT ✅
-
-OBENTCHI has been completely redesigned to ensure full compliance with Islamic Sharia law by removing all haram (forbidden) elements:
-
-### Removed Features (Haram Elements):
-1. **Futures Trading** - Removed completely (Violates Gharar - excessive uncertainty)
-2. **Leverage/Margin Trading** - Removed completely (Violates Riba - interest-based transactions)
-
-### Compliant Features (Halal):
-1. **Spot Trading Only** - Immediate exchange of assets (fully permissible)
-2. **Technical Analysis** - Educational market analysis tools
-3. **AI-Powered Recommendations** - Data-driven insights for informed decisions
-4. **Subscription System** - Fixed monthly fee (10 USDT) for service access
-5. **Referral System** - Commission-based rewards for user referrals (3-level: 10%, 5%, 2.5%)
-
-### Compliance Implementation (October 29, 2025):
-- Removed all futures trading capabilities from analysis modules (analysis.js, ultra-analysis.js, zero-reversal-analysis.js)
-- Eliminated leverage calculations and parameters across all systems
-- Updated frontend interface to remove futures and leverage selection options
-- Modified database schema to exclude leverage fields
-- Updated all API endpoints to default to spot trading only
-- Removed all UI elements related to futures and leverage from Web App
-- Updated notification messages to reflect spot-only trading
-
-### Trading Type:
-- **Only Spot Trading**: All trading recommendations and analysis now exclusively support spot (cash) trading
-- **No Speculation**: Focus on immediate asset exchange rather than speculative contracts
-- **Risk Management**: Conservative risk-reward ratios (1:2) suitable for spot trading
+OBENTCHI is a Telegram-based cryptocurrency trading bot offering Sharia-compliant technical analysis, real-time market data, and automated spot trading. It features a Telegram Web App for user interaction, automated withdrawal/deposit systems, and multi-language support. The project aims to be a robust, accessible trading assistant, empowering users with advanced analytical tools and a seamless trading experience to secure a significant market share in automated trading. All trading is strictly spot-based, adhering to Islamic finance principles by excluding futures and leverage trading.
 
 ## User Preferences
 - Default Language: Arabic (ar)
@@ -42,131 +12,40 @@ OBENTCHI has been completely redesigned to ensure full compliance with Islamic S
 - Data Policy: No mock or placeholder data - all data must be authentic from real APIs and Telegram
 
 ## System Architecture
-The system features a professional, modern, and responsive Telegram Web App with a dark theme. The core logic runs on an Express server managing Telegram Bot interactions, MongoDB operations, multi-language support, automated withdrawals, market data fetching, technical analysis, notifications, and TRON blockchain integration. Security includes environment variables, error handling, rate limiting, and Telegram signature verification.
-
-### Project Structure (Organized October 29, 2025)
-The project has been reorganized for better maintainability and clarity:
-
-**Core Directories:**
-- `api-routes/` - API endpoint routes (access control, feature flags, realtime dashboard)
-- `services/` - Microservices architecture (http-server.js, bot-worker.js, queue-worker.js, scheduler.js)
-- `middleware/` - Express middleware (feature flags)
-- `public/` - Frontend assets (HTML, CSS, JS, images)
-- `utils/` - Utility modules (batch loader)
-- `kubernetes/` - Kubernetes deployment configurations
-- `docker/` - Docker configurations (Dockerfiles, docker-compose, nginx.conf, prometheus.yml)
-- `scripts/` - Shell scripts (build-all-images.sh, start-production.sh, init-redis-cluster.sh, etc.)
-- `docs/` - Documentation files (README.md, architecture guides, migration guides, API docs)
-- `attached_assets/` - Generated images and screenshots
-
-**Root Files:**
-- Core JavaScript modules (bot.js, index.js, database.js, config.js, etc.)
-- Analysis modules (analysis.js, ultra-analysis.js, zero-reversal-analysis.js, v1-pro-analysis.js)
-- Service modules (cryptapi.js, market-data.js, notifications.js, etc.)
-- Security modules (api-security.js, advanced-security-system.js, user-access-control.js)
-- Configuration files (package.json, replit.md, .gitignore)
+The system features a professional, modern, and responsive Telegram Web App with a dark theme. The core logic runs on an Express server managing Telegram Bot interactions, MongoDB operations, multi-language support, automated withdrawals, market data fetching, technical analysis, notifications, and TRON blockchain integration. Security includes environment variables, error handling, rate limiting, and Telegram signature verification. The project is organized with clear directories for API routes, services, middleware, public assets, utilities, Kubernetes, Docker, scripts, and documentation.
 
 **UI/UX Decisions**:
-The Telegram Web App features a dark theme, providing a professional, modern, and responsive user experience.
+The Telegram Web App features a dark theme, providing a professional, modern, and responsive user experience. Notifications are centralized in a dedicated "More" section with modern gradient styling, dynamic status badges, and multi-language support.
 
 **Technical Implementations**:
-- **Analysis Systems**: Includes Regular Analysis, Ultra Analysis, Zero Reversal Analysis, and V1 PRO AI Analysis (AI-powered, sentiment analysis, self-learning weights). All systems include risk assessment and precise SL/TP.
-- **Advanced Analyst Performance System**: Comprehensive metrics, 5-tier ranking, 12 achievement badges, and an AI Performance Advisor.
-- **Smart Multi-Market Scanner**: Real-time scanning across markets with SSE, live results, entry/exit points, and confidence levels.
-- **Enhanced Withdrawal System**: Queue-based automated processing with Bull + Redis, retry mechanisms, failure handling, multi-channel notifications, and MongoDB transactions.
-- **Robust Subscription Payment System**: Re-engineered for reliability with MongoDB Transactions, graceful fallback, error handling, referral integrity, and Web App integration.
-- **Critical Architecture Refactoring**: Implemented atomic database operations, Redis-based distributed rate limiting, microservices architecture (HTTP Server, Bot Worker, Queue Worker, Scheduler), optimized notification system, comprehensive API timeout configuration, and centralized logging.
-- **Dynamic Feature Control System**: Real-time feature toggling with Global, Tier-based, and User-specific scopes, gradual rollout, and Redis + MongoDB caching.
-- **Smart Search Optimizer**: Multi-level caching (LRU + Redis), parallel multi-market search, fuzzy matching, intelligent ranking, and auto-complete suggestions.
-- **Enhanced Earning System**: 3-level referral program, milestone bonuses, analyst performance bonuses, and an earnings dashboard.
+- **Analysis Systems**: Includes Regular, Ultra, Zero Reversal, and V1 PRO AI Analysis (AI-powered, sentiment analysis, self-learning weights, risk assessment, SL/TP).
+- **Advanced Analyst Performance System**: Metrics, 5-tier ranking, achievement badges, and AI Performance Advisor.
+- **Smart Multi-Market Scanner**: Real-time scanning with SSE, live results, entry/exit points, and confidence levels.
+- **Enhanced Withdrawal System**: Queue-based automated processing with Bull + Redis, retry mechanisms, failure handling, and MongoDB transactions.
+- **Robust Subscription Payment System**: Re-engineered for reliability with MongoDB Transactions, referral integrity, and Web App integration.
+- **Critical Architecture Refactoring**: Atomic database operations, Redis-based distributed rate limiting, microservices architecture, optimized notifications, API timeout configuration, and centralized logging.
+- **Dynamic Feature Control System**: Real-time feature toggling (Global, Tier-based, User-specific) with gradual rollout and caching.
+- **Smart Search Optimizer**: Multi-level caching (LRU + Redis), parallel multi-market search, fuzzy matching, and auto-complete.
+- **Enhanced Earning System**: 3-level referral program, milestone bonuses, analyst performance bonuses, and earnings dashboard.
 - **Advanced Security System**: Automated fraud detection, real-time user behavior analysis, risk scoring, device fingerprinting, and IP reputation checks.
-- **Flexible Action System**: Custom action registration, chaining with conditional logic, scheduled actions, and rollback capability.
-- **Automated Safety System**: 24/7 monitoring for withdrawals, logins, balance, and system health, with daily security audits and anomaly detection.
-- **Groq AI Service with Circuit Breaker**: Enterprise-grade Groq API wrapper with circuit breaker pattern, intelligent caching, exponential backoff retry mechanism, rate limit tracking, and graceful fallback responses.
-- **Multi-Exchange Candle Data Fallback**: Automatic failover system for cryptocurrency candle data fetching with prioritized sources and exchange-specific error handling.
-- **Enhanced User Error Messaging**: Comprehensive error message catalog providing context-aware, user-friendly error explanations in Arabic with actionable solutions.
-- **Quality-Based Refund System**: Intelligent refund mechanism for per-analysis payments that automatically refunds users when signal quality falls below 60%.
-- **Enhanced Analysis Fee Management System**: Overhaul of the fee deduction and refund system with centralized module, instant deductions, intelligent quality extraction, comprehensive error handling, and detailed logging.
-- **Enterprise Scalability Optimizations**: Batch Data Loader, LRU Membership Cache, and Safe Database Query Guards to prevent memory issues and optimize performance for large datasets.
-- **Production-Scale Infrastructure Overhaul**: Architectural transformation for millions of users with Telegram Webhooks migration, Docker Containerization, Redis Cluster Configuration, Dynamic Queue Auto-Scaling, Kubernetes Orchestration, Nginx Load Balancer, Prometheus Monitoring, and Centralized Configuration.
-- **Active Webhook Deployment on Replit**: Successfully converted bot from polling mode to webhook mode on Replit.
-- **Redis Installation & Configuration**: Redis v7.2.6 installed and configured for Bull queue processing, intelligent caching, API cost tracking, and distributed rate limiting.
-- **Advanced Memory Management System**: Intelligent memory monitoring and optimization system with enhanced memory health checks, automated memory optimizer, and AI monitor improvements.
-- **Complete Multi-Language System Overhaul**: Comprehensive update ensuring full language support across all platform components, including customer service messages, bot language integration, web app language support, and a smart notification system.
-- **Enhanced Translation System** (October 2025): 
-  - Frontend: `public/js/translations.js` with 7 languages (ar, en, fr, es, de, ru, zh) 
-  - Backend: `languages.js` with t() function for bot messages
-  - Frontend applies translations via `applyTranslations()` function using data-i18n attributes
-  - Language switching implemented in bot and web app with persistent storage
-  - Added admin panel, system monitoring, and broadcast message translation keys
-  - Translation system integrated with page load and language change events
-- **AI Customer Support Multi-Language System** (October 2025):
-  - Created `ai-system-prompts.js` module with complete system prompts for all 7 supported languages
-  - Each language receives a fully translated system prompt containing all project information
-  - Centralized prompt selection via `getSystemPrompt(language)` function with fallback to Arabic
-  - Integration with Groq API customer support endpoint ensures AI responds in user's selected language
-  - All languages receive identical information (features, pricing, analysis types, system specs) in their native language
-- **Complete Translation Coverage for Withdrawal System** (October 2025):
-  - Added button translation keys (button_manual_approve, button_retry, button_reject, button_dashboard, button_view_failed_withdrawals) across all 7 languages in `languages.js`
-  - Updated `withdrawal-notifier.js` to use translation keys for all inline keyboard buttons
-  - Eliminated all hardcoded Arabic text from withdrawal notification buttons
-  - Ensures complete language consistency throughout the withdrawal notification flow
-- **Enhanced Notification System UI/UX** (October 2025):
-  - Centralized notification system exclusively in "More" section (more-section) with no duplication in profile section
-  - Redesigned notification interface with modern gradient styling and enhanced visual feedback
-  - Added dynamic status badge showing "Active/Inactive" with color-coded indicators (green/red)
-  - Implemented market counter displaying selected markets (X/5) with dynamic color coding
-  - Added success confirmation message with smooth slideIn animation
-  - Enhanced market selection with hover effects and visual feedback for selected items
-  - Improved user guidance with recommendation messages and informative hints
-  - Full multi-language support with complete translation coverage across all 7 languages (ar, en, fr, es, de, ru, zh)
-  - All UI text uses data-i18n attributes and t() function for seamless language switching
-  - CSS animations including pulse effects for status badge and smooth transitions for all interactive elements
-- **AI Code Agent System** (October 29, 2025):
-  - Comprehensive AI-powered programming assistant built with GROQ AI (Llama 3.3 70B model)
-  - Core module `ai-code-agent.js` with intelligent file operations, code analysis, and conversational capabilities
-  - Bot command `/code_agent` available exclusively for project owner with multi-language support
-  - Web App interface at `public/code-agent.html` with modern dark theme and interactive chat
-  - Advanced features:
-    * Read and analyze project files with automatic truncation for large files
-    * List project files with intelligent filtering (excludes node_modules, .git, etc.)
-    * Search within files for specific code patterns or text
-    * Analyze code quality and provide improvement suggestions
-    * Detect user intent automatically (read_file, search, list_files, analyze, chat)
-    * Contextual message enrichment - automatically loads relevant file content
-    * Conversation history management with configurable message limits (10 messages per user)
-    * Support for multiple programming tools (4 core tools: read_file, list_files, analyze_code, search_in_files)
-  - API Endpoints:
-    * `/api/code-agent/chat` - Process user messages and return AI responses
-    * `/api/code-agent/stats` - Get agent statistics (active conversations, model info)
-    * `/api/code-agent/tool` - Execute specific tool commands
-    * `/api/code-agent/clear` - Clear conversation history
-  - Security features:
-    * Owner-only access control (OWNER_ID verification)
-    * Safe file reading with path validation
-    * No direct file modification capability (read-only for safety)
-    * Rate limiting via existing API security middleware
-  - Multi-language support:
-    * Complete Arabic and English system prompts
-    * Specialized knowledge of OBENTCHI project architecture
-    * Context-aware responses based on user language preference
-    * Translation keys integrated in `public/js/translations.js`
-  - Use cases:
-    * Code review and quality assessment
-    * Project structure exploration
-    * Bug detection and troubleshooting
-    * Feature implementation suggestions
-    * Code explanation and documentation
-    * Best practices recommendations
+- **Automated Safety System**: 24/7 monitoring for withdrawals, logins, balance, and system health, with anomaly detection.
+- **Groq AI Service with Circuit Breaker**: Enterprise-grade Groq API wrapper with circuit breaker, caching, exponential backoff, and graceful fallback.
+- **Multi-Exchange Candle Data Fallback**: Automatic failover for cryptocurrency candle data fetching.
+- **Enhanced User Error Messaging**: Context-aware, user-friendly error explanations in Arabic with actionable solutions.
+- **Quality-Based Refund System**: Intelligent refund for per-analysis payments when signal quality falls below 60%.
+- **Enterprise Scalability Optimizations**: Batch Data Loader, LRU Membership Cache, and Safe Database Query Guards.
+- **Production-Scale Infrastructure Overhaul**: Telegram Webhooks migration, Docker Containerization, Redis Cluster, Dynamic Queue Auto-Scaling, Kubernetes Orchestration, Nginx Load Balancer, Prometheus Monitoring, and Centralized Configuration.
+- **Complete Multi-Language System Overhaul**: Full language support across all platform components including customer service, bot, and web app. This includes frontend (`public/js/translations.js`), backend (`languages.js` with `t()` function), and AI system prompts (`ai-system-prompts.js`).
+- **AI Code Agent System**: Comprehensive AI-powered programming assistant built with GROQ AI (Llama 3.3 70B) for owner-only use, accessible via `/code_agent` command and a Web App interface. Features include file analysis, code quality suggestions, intent detection, and contextual messaging. It supports multiple programming tools for read-only operations.
 
 **Feature Specifications**:
 The platform offers a Web App for technical analysis, top movers, a wallet for USDT TRC20, and account management. Trading features include technical analysis for diverse asset classes and trending cryptocurrency tracking. Financial features include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management includes analyst subscriptions and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, and withdrawal processing. Automated trade signal monitoring and a blockchain-based pump detection system are integrated.
 
 **System Design Choices**:
-The project uses MongoDB Atlas, designed for 24/7 operation with improved error processing and logging. It employs multiple APIs for data redundancy and fallback. The payment system is designed for enterprise scalability, utilizing queue-based processing with Bull and Redis, circuit breaker patterns, comprehensive monitoring, and enhanced security. Subscriptions are non-refundable and non-cancellable, with improved UX for error messages and balance display.
+The project uses MongoDB Atlas, designed for 24/7 operation with improved error processing and logging. It employs multiple APIs for data redundancy and fallback. The payment system is designed for enterprise scalability, utilizing queue-based processing with Bull and Redis, circuit breaker patterns, comprehensive monitoring, and enhanced security. Subscriptions are non-refundable and non-cancellable.
 
 **Deployment Architecture**:
-The system supports three deployment modes: Standalone (single-server), Docker (containerized microservices), and Kubernetes (full orchestration with auto-scaling). Infrastructure includes separate containers for HTTP Server, Bot Webhook Worker, Queue Worker, and Scheduler, all monitored via Prometheus metrics and Grafana dashboards.
+The system supports Standalone, Docker, and Kubernetes deployment modes, with separate containers for HTTP Server, Bot Webhook Worker, Queue Worker, and Scheduler, all monitored via Prometheus and Grafana.
 
 ## External Dependencies
 
