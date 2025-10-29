@@ -8,6 +8,15 @@ const { BatchLoader } = require('./utils/batch-loader');
 const groqService = require('./groq-service');
 const { getSystemPrompt } = require('./ai-system-prompts');
 
+// دالة مساعدة لتنظيف HTML من النصوص قبل إرسالها
+function escapeHtml(text) {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 // تحديد الوضع: webhook أو polling
 const USE_WEBHOOK = process.env.USE_WEBHOOK === 'true';
 
@@ -641,6 +650,142 @@ ${enabled ? `<b>${t(lang, 'selected_markets')}</b>\n${marketsText}` : ''}
       });
     }
   }
+  
+  else if (data.startsWith('ai_')) {
+    if (userId !== config.OWNER_ID) {
+      return safeAnswerCallbackQuery(bot, query.id, {
+        text: 'Unauthorized',
+        show_alert: true
+      });
+    }
+
+    try {
+      const user = await db.getUser(userId);
+      const lang = user ? (user.language || 'ar') : 'ar';
+      const aiCodeAgent = require('./ai-code-agent');
+
+      await safeAnswerCallbackQuery(bot, query.id);
+
+      if (data === 'ai_list_files') {
+        await safeSendMessage(bot, chatId, lang === 'ar' ? '⏳ جاري عرض ملفات المشروع...' : '⏳ Loading project files...', { parse_mode: 'HTML' });
+        
+        const result = await aiCodeAgent.processUserRequest(userId, lang === 'ar' ? 'اعرض لي قائمة بجميع ملفات المشروع الرئيسية مع شرح مختصر لكل ملف' : 'Show me a list of all main project files with brief explanation of each', lang);
+        
+        if (result.success) {
+          const responseMessage = `
+🤖 <b>${lang === 'ar' ? 'ملفات المشروع' : 'Project Files'}</b>
+
+${escapeHtml(result.response)}
+
+<i>📊 ${lang === 'ar' ? 'استخدام' : 'Usage'}: ${result.usage.total_tokens} ${lang === 'ar' ? 'رمز' : 'tokens'}</i>
+          `;
+
+          if (responseMessage.length > 4096) {
+            const chunks = responseMessage.match(/[\s\S]{1,4096}/g) || [];
+            for (const chunk of chunks) {
+              await safeSendMessage(bot, chatId, chunk);
+            }
+          } else {
+            await safeSendMessage(bot, chatId, responseMessage, { parse_mode: 'HTML' });
+          }
+        } else {
+          await safeSendMessage(bot, chatId, `❌ ${result.fallback || result.error}`, { parse_mode: 'HTML' });
+        }
+      }
+      
+      else if (data === 'ai_analyze_project') {
+        await safeSendMessage(bot, chatId, lang === 'ar' ? '⏳ جاري فحص المشروع بالكامل... قد يستغرق هذا بعض الوقت' : '⏳ Analyzing full project... This may take a while', { parse_mode: 'HTML' });
+        
+        const result = await aiCodeAgent.processUserRequest(userId, lang === 'ar' ? 'قم بفحص شامل للمشروع وأخبرني: 1) البنية العامة للمشروع 2) الميزات الرئيسية 3) التقنيات المستخدمة 4) أي ملاحظات أو تحسينات مقترحة' : 'Perform a full project analysis and tell me: 1) Overall project structure 2) Main features 3) Technologies used 4) Any notes or suggested improvements', lang);
+        
+        if (result.success) {
+          const responseMessage = `
+🤖 <b>${lang === 'ar' ? 'تحليل شامل للمشروع' : 'Full Project Analysis'}</b>
+
+${escapeHtml(result.response)}
+
+<i>📊 ${lang === 'ar' ? 'استخدام' : 'Usage'}: ${result.usage.total_tokens} ${lang === 'ar' ? 'رمز' : 'tokens'}</i>
+          `;
+
+          if (responseMessage.length > 4096) {
+            const chunks = responseMessage.match(/[\s\S]{1,4096}/g) || [];
+            for (const chunk of chunks) {
+              await safeSendMessage(bot, chatId, chunk);
+            }
+          } else {
+            await safeSendMessage(bot, chatId, responseMessage, { parse_mode: 'HTML' });
+          }
+        } else {
+          await safeSendMessage(bot, chatId, `❌ ${result.fallback || result.error}`, { parse_mode: 'HTML' });
+        }
+      }
+      
+      else if (data === 'ai_find_bugs') {
+        await safeSendMessage(bot, chatId, lang === 'ar' ? '⏳ جاري البحث عن الأخطاء والمشاكل...' : '⏳ Searching for bugs and issues...', { parse_mode: 'HTML' });
+        
+        const result = await aiCodeAgent.processUserRequest(userId, lang === 'ar' ? 'افحص الملفات الرئيسية في المشروع (bot.js, database.js, groq-service.js) وابحث عن: 1) أخطاء برمجية محتملة 2) مشاكل في الأداء 3) ثغرات أمنية 4) أكواد غير محسنة. اعطني تقرير مفصل' : 'Check main files in the project (bot.js, database.js, groq-service.js) and find: 1) Potential bugs 2) Performance issues 3) Security vulnerabilities 4) Non-optimized code. Give me detailed report', lang);
+        
+        if (result.success) {
+          const responseMessage = `
+🤖 <b>${lang === 'ar' ? 'تقرير الأخطاء والمشاكل' : 'Bugs & Issues Report'}</b>
+
+${escapeHtml(result.response)}
+
+<i>📊 ${lang === 'ar' ? 'استخدام' : 'Usage'}: ${result.usage.total_tokens} ${lang === 'ar' ? 'رمز' : 'tokens'}</i>
+          `;
+
+          if (responseMessage.length > 4096) {
+            const chunks = responseMessage.match(/[\s\S]{1,4096}/g) || [];
+            for (const chunk of chunks) {
+              await safeSendMessage(bot, chatId, chunk);
+            }
+          } else {
+            await safeSendMessage(bot, chatId, responseMessage, { parse_mode: 'HTML' });
+          }
+        } else {
+          await safeSendMessage(bot, chatId, `❌ ${result.fallback || result.error}`, { parse_mode: 'HTML' });
+        }
+      }
+      
+      else if (data === 'ai_chat_mode') {
+        const isEnabled = aiChatMode.get(userId);
+        
+        if (isEnabled) {
+          aiChatMode.delete(userId);
+          await safeSendMessage(bot, chatId, `
+🔴 <b>${lang === 'ar' ? 'تم إيقاف وضع المحادثة المستمرة' : 'Chat Mode Disabled'}</b>
+
+${lang === 'ar' ? 'الآن يجب عليك استخدام /ai قبل كل رسالة' : 'Now you need to use /ai before each message'}
+          `, { parse_mode: 'HTML' });
+        } else {
+          aiChatMode.set(userId, true);
+          await safeSendMessage(bot, chatId, `
+🟢 <b>${lang === 'ar' ? 'تم تفعيل وضع المحادثة المستمرة' : 'Chat Mode Enabled'}</b>
+
+${lang === 'ar' ? 'الآن يمكنك إرسال رسائلك مباشرة بدون /ai' : 'Now you can send messages directly without /ai'}
+${lang === 'ar' ? 'لإيقاف وضع المحادثة، اضغط على الزر مرة أخرى' : 'To disable chat mode, click the button again'}
+
+${lang === 'ar' ? '💡 اسألني أي شيء عن المشروع!' : '💡 Ask me anything about the project!'}
+          `, { parse_mode: 'HTML' });
+        }
+      }
+      
+      else if (data === 'ai_clear_history') {
+        aiCodeAgent.clearHistory(userId);
+        await safeSendMessage(bot, chatId, `
+🗑️ <b>${lang === 'ar' ? 'تم مسح سجل المحادثة' : 'Chat History Cleared'}</b>
+
+${lang === 'ar' ? 'تم بدء محادثة جديدة' : 'New conversation started'}
+        `, { parse_mode: 'HTML' });
+      }
+
+    } catch (error) {
+      console.error('Error handling AI callback:', error);
+      const user = await db.getUser(userId);
+      const lang = user ? (user.language || 'ar') : 'ar';
+      await safeSendMessage(bot, chatId, `❌ ${t(lang, 'request_processing_error')}`);
+    }
+  }
 });
 
 bot.on('web_app_data', async (msg) => {
@@ -1013,6 +1158,42 @@ bot.on('message', async (msg) => {
     const user = await db.getUser(userId);
     if (!user) return;
 
+    if (userId === config.OWNER_ID && aiChatMode.get(userId)) {
+      const lang = user.language || 'ar';
+      const aiCodeAgent = require('./ai-code-agent');
+      
+      await safeSendMessage(bot, chatId, lang === 'ar' ? '⏳ جاري معالجة طلبك...' : '⏳ Processing your request...', { parse_mode: 'HTML' });
+      
+      const result = await aiCodeAgent.processUserRequest(userId, text, lang);
+      
+      if (result.success) {
+        const responseMessage = `
+🤖 <b>${lang === 'ar' ? 'المساعد الذكي' : 'AI Assistant'}</b>
+
+${escapeHtml(result.response)}
+
+<i>📊 ${lang === 'ar' ? 'استخدام' : 'Usage'}: ${result.usage.total_tokens} ${lang === 'ar' ? 'رمز' : 'tokens'}</i>
+        `;
+
+        if (responseMessage.length > 4096) {
+          const chunks = responseMessage.match(/[\s\S]{1,4096}/g) || [];
+          for (const chunk of chunks) {
+            await safeSendMessage(bot, chatId, chunk);
+          }
+        } else {
+          await safeSendMessage(bot, chatId, responseMessage, { parse_mode: 'HTML' });
+        }
+      } else {
+        await safeSendMessage(bot, chatId, `
+❌ <b>${lang === 'ar' ? 'خطأ' : 'Error'}</b>
+
+${result.fallback || result.error}
+        `, { parse_mode: 'HTML' });
+      }
+      
+      return;
+    }
+
     if (user.temp_withdrawal_address === 'analyst_registration') {
       const lang = user.language || 'ar';
       const lines = text.trim().split('\n').filter(line => line.trim());
@@ -1083,6 +1264,163 @@ ${t(ownerLang, 'description_label')} ${analyst.description}
   }
 });
 
+// وضع المحادثة مع AI - للمالك فقط
+const aiChatMode = new Map();
+
+// أمر /ai للمالك - واجهة محسنة للمساعد البرمجي
+bot.onText(/\/ai(.*)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const userMessage = match[1].trim();
+
+  if (userId !== config.OWNER_ID) {
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+    return safeSendMessage(bot, chatId, `❌ ${t(lang, 'admin_unauthorized')}`);
+  }
+
+  try {
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+
+    const aiCodeAgent = require('./ai-code-agent');
+
+    if (!userMessage) {
+      const stats = aiCodeAgent.getStats();
+      
+      const keyboard = {
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: lang === 'ar' ? '📂 عرض ملفات المشروع' : '📂 List Project Files', callback_data: 'ai_list_files' },
+            ],
+            [
+              { text: lang === 'ar' ? '🔍 فحص المشروع بالكامل' : '🔍 Full Project Analysis', callback_data: 'ai_analyze_project' },
+            ],
+            [
+              { text: lang === 'ar' ? '🐛 البحث عن الأخطاء' : '🐛 Find Bugs', callback_data: 'ai_find_bugs' },
+            ],
+            [
+              { text: lang === 'ar' ? '💬 وضع المحادثة المستمرة' : '💬 Chat Mode', callback_data: 'ai_chat_mode' },
+            ],
+            [
+              { text: lang === 'ar' ? '🗑️ مسح السجل' : '🗑️ Clear History', callback_data: 'ai_clear_history' },
+            ]
+          ]
+        }
+      };
+
+      const helpMessage = lang === 'ar' ? `
+🤖 <b>المساعد الذكي للمشروع - AI Assistant</b>
+
+مرحباً ${user.first_name}! أنا مساعدك الذكي المتخصص في مشروع OBENTCHI 🚀
+
+<b>✨ ماذا أستطيع أن أفعل لك؟</b>
+
+• 📂 قراءة وتحليل جميع ملفات المشروع
+• 🐛 إيجاد الأخطاء والمشاكل البرمجية
+• 💡 اقتراح تحسينات وحلول
+• 🔍 البحث في الكود
+• 📝 توليد كود جديد
+• 💬 الإجابة على أسئلتك التقنية
+
+<b>📊 الإحصائيات الحالية:</b>
+• المحادثات النشطة: ${stats.activeConversations}
+• النموذج: ${stats.model}
+
+<b>💡 طرق الاستخدام:</b>
+
+1️⃣ <b>استخدام الأزرار:</b>
+اضغط على الأزرار أدناه للوصول السريع
+
+2️⃣ <b>كتابة أمر مباشر:</b>
+/ai ما هي ملفات المشروع الرئيسية؟
+
+3️⃣ <b>وضع المحادثة:</b>
+فعّل وضع المحادثة المستمرة للدردشة بدون تكرار /ai
+
+<b>🎯 أمثلة على الأسئلة:</b>
+• "اقرأ ملف bot.js واشرح لي كيف يعمل"
+• "هل يوجد أخطاء في نظام الاشتراكات؟"
+• "كيف أحسن أداء قاعدة البيانات؟"
+• "ابحث عن جميع استخدامات Redis في المشروع"
+      ` : `
+🤖 <b>AI Project Assistant</b>
+
+Hello ${user.first_name}! I'm your intelligent assistant for OBENTCHI project 🚀
+
+<b>✨ What can I do for you?</b>
+
+• 📂 Read and analyze all project files
+• 🐛 Find bugs and code issues
+• 💡 Suggest improvements and solutions
+• 🔍 Search through code
+• 📝 Generate new code
+• 💬 Answer your technical questions
+
+<b>📊 Current Statistics:</b>
+• Active Conversations: ${stats.activeConversations}
+• Model: ${stats.model}
+
+<b>💡 How to Use:</b>
+
+1️⃣ <b>Use Buttons:</b>
+Click buttons below for quick access
+
+2️⃣ <b>Direct Command:</b>
+/ai what are the main project files?
+
+3️⃣ <b>Chat Mode:</b>
+Enable continuous chat mode to talk without repeating /ai
+
+<b>🎯 Example Questions:</b>
+• "Read bot.js and explain how it works"
+• "Are there any bugs in subscription system?"
+• "How to improve database performance?"
+• "Search for all Redis usage in project"
+      `;
+
+      return safeSendMessage(bot, chatId, helpMessage, { parse_mode: 'HTML', ...keyboard });
+    }
+
+    await safeSendMessage(bot, chatId, lang === 'ar' ? '⏳ جاري معالجة طلبك...' : '⏳ Processing your request...', { parse_mode: 'HTML' });
+
+    const result = await aiCodeAgent.processUserRequest(userId, userMessage, lang);
+
+    if (result.success) {
+      const responseMessage = `
+🤖 <b>${lang === 'ar' ? 'المساعد الذكي' : 'AI Assistant'}</b>
+
+${escapeHtml(result.response)}
+
+<i>📊 ${lang === 'ar' ? 'استخدام' : 'Usage'}: ${result.usage.total_tokens} ${lang === 'ar' ? 'رمز' : 'tokens'}</i>
+      `;
+
+      if (responseMessage.length > 4096) {
+        const chunks = responseMessage.match(/[\s\S]{1,4096}/g) || [];
+        for (const chunk of chunks) {
+          await safeSendMessage(bot, chatId, chunk);
+        }
+      } else {
+        await safeSendMessage(bot, chatId, responseMessage, { parse_mode: 'HTML' });
+      }
+    } else {
+      await safeSendMessage(bot, chatId, `
+❌ <b>${lang === 'ar' ? 'خطأ' : 'Error'}</b>
+
+${result.fallback || result.error}
+      `, { parse_mode: 'HTML' });
+    }
+
+  } catch (error) {
+    console.error('Error in /ai command:', error);
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+    await safeSendMessage(bot, chatId, `❌ ${t(lang, 'request_processing_error')}`);
+  }
+});
+
+// الإبقاء على /code_agent للتوافق مع الإصدارات القديمة
 bot.onText(/\/code_agent(.*)/, async (msg, match) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
@@ -1112,6 +1450,8 @@ bot.onText(/\/code_agent(.*)/, async (msg, match) => {
 🤖 <b>المساعد البرمجي الذكي</b>
 
 مرحباً بك في نظام المساعد البرمجي المتقدم!
+
+<b>💡 ملاحظة:</b> استخدم الأمر الجديد /ai للحصول على تجربة أفضل!
 
 <b>📚 الأدوات المتاحة:</b>
 ${toolsList}
@@ -1143,6 +1483,8 @@ ${toolsList}
 🤖 <b>AI Code Agent</b>
 
 Welcome to the Advanced Programming Assistant!
+
+<b>💡 Note:</b> Use the new /ai command for a better experience!
 
 <b>📚 Available Tools:</b>
 ${toolsList}
@@ -1183,7 +1525,7 @@ Just type /code_agent followed by your request
       const responseMessage = `
 🤖 <b>${lang === 'ar' ? 'المساعد البرمجي' : 'AI Code Agent'}</b>
 
-${result.response}
+${escapeHtml(result.response)}
 
 <i>📊 ${lang === 'ar' ? 'استخدام' : 'Usage'}: ${result.usage.total_tokens} ${lang === 'ar' ? 'رمز' : 'tokens'}</i>
       `;
@@ -1191,7 +1533,7 @@ ${result.response}
       if (responseMessage.length > 4096) {
         const chunks = responseMessage.match(/[\s\S]{1,4096}/g) || [];
         for (const chunk of chunks) {
-          await safeSendMessage(bot, chatId, chunk, { parse_mode: 'HTML' });
+          await safeSendMessage(bot, chatId, chunk);
         }
       } else {
         await safeSendMessage(bot, chatId, responseMessage, { parse_mode: 'HTML' });
