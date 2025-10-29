@@ -1200,7 +1200,11 @@ bot.on('message', async (msg) => {
         // إرسال إشارة كتابة
         bot.sendChatAction(chatId, 'typing').catch(() => {});
         
-        const result = await advancedAIService.processRequest(userId, cleanText, { lang });
+        // ردود مباشرة بدون حفظ في المجموعات
+        const result = await advancedAIService.processRequest(userId, cleanText, { 
+          lang,
+          saveHistory: false  // لا يتم حفظ المحادثات في المجموعات
+        });
         
         if (result.success) {
           const responseMessage = `🤖 ${result.content}`;

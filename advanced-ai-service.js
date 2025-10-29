@@ -31,7 +31,7 @@ class AdvancedAIService {
    * معالجة طلب المستخدم بذكاء
    */
   async processRequest(userId, message, options = {}) {
-    const { lang = 'ar', files = [], context = {} } = options;
+    const { lang = 'ar', files = [], context = {}, saveHistory = true } = options;
     
     try {
       
@@ -44,8 +44,8 @@ class AdvancedAIService {
         filesContext = await this.processFiles(files, lang);
       }
       
-      // الحصول على السياق
-      const conversationContext = this.getConversationHistory(userId);
+      // الحصول على السياق فقط إذا كان الحفظ مفعل
+      const conversationContext = saveHistory ? this.getConversationHistory(userId) : [];
       
       // بناء الرسالة للذكاء الاصطناعي
       let enhancedMessage = message;
@@ -78,8 +78,10 @@ class AdvancedAIService {
           response = await this.chatWithAI(userId, enhancedMessage, lang, conversationContext);
       }
       
-      // حفظ في السجل
-      this.saveToHistory(userId, message, response.content);
+      // حفظ في السجل فقط إذا كان مطلوب
+      if (saveHistory) {
+        this.saveToHistory(userId, message, response.content);
+      }
       
       return {
         success: true,
