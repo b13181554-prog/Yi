@@ -76,6 +76,6 @@ The system supports Standalone, Docker, and Kubernetes deployment modes, with se
 -   **Blockchain Integration**: TRON Network (for USDT TRC20), Etherscan, BscScan
 -   **Withdrawal Integration**: OKX API (USDT TRC20)
 -   **Telegram**: Telegram Bot API, Telegram Web App
--   **AI/Customer Support**: Google Gemini AI (gemini-1.5-flash and gemini-1.5-pro models)
+-   **AI/Customer Support**: Google Gemini AI (gemini-2.0-flash-exp - updated October 2025)
 -   **Payment Gateway**: CryptAPI
 -   **Whale Tracking**: Whale Alert

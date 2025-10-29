@@ -4013,7 +4013,7 @@ app.post('/api/customer-support', async (req, res) => {
       { role: "system", content: systemPrompt },
       { role: "user", content: message }
     ], {
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash-exp",
       maxOutputTokens: 500,
       temperature: 0.7
     });

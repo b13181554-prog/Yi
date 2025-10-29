@@ -36,11 +36,12 @@ class GeminiService {
     this.genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
     this.enabled = true;
     
-    // نماذج متاحة
+    // نماذج متاحة (تم التحديث 2025)
     this.models = {
-      chat: 'gemini-1.5-flash',        // سريع ومجاني
-      pro: 'gemini-1.5-pro',           // أقوى وأذكى
-      vision: 'gemini-1.5-flash',      // لتحليل الصور والفيديو
+      chat: 'gemini-2.0-flash-exp',        // سريع ومجاني (أحدث نموذج)
+      pro: 'gemini-2.0-flash-exp',         // أقوى وأذكى
+      vision: 'gemini-2.0-flash-exp',      // لتحليل الصور والفيديو
+      latest: 'gemini-flash-latest'        // يتحدث تلقائياً للأحدث
     };
     
     // إحصائيات الاستخدام

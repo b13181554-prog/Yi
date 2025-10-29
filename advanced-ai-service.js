@@ -487,7 +487,7 @@ Provide comprehensive analysis and helpful notes.`;
         content: aiResponse.content,
         tools_used: ['gemini_chat'],
         metadata: {
-          model: 'gemini-1.5-flash',
+          model: 'gemini-2.0-flash-exp',
           tokens: aiResponse.usage
         }
       };

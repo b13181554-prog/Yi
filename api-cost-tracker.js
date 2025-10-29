@@ -605,8 +605,8 @@ class APICostTracker {
           }
         },
         endpoints: {
-          '/v1beta/models/gemini-1.5-flash:generateContent': { weight: 10, cacheable: false, ttl: 0 },
-          '/v1beta/models/gemini-1.5-pro:generateContent': { weight: 15, cacheable: false, ttl: 0 }
+          '/v1beta/models/gemini-2.0-flash-exp:generateContent': { weight: 10, cacheable: false, ttl: 0 },
+          '/v1beta/models/gemini-flash-latest:generateContent': { weight: 10, cacheable: false, ttl: 0 }
         },
         rateLimit: { requests: 60, window: 60 },
         alternatives: ['OpenAI', 'Anthropic']
