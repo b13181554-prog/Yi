@@ -1170,13 +1170,27 @@ bot.on('message', async (msg) => {
       const botUsername = botInfo.username;
       const botId = botInfo.id;
       
-      // التحقق من أن البوت تم منشنه أو الرسالة رد على رسالة البوت
+      // كلمات مفتاحية للبوت بعدة لغات
+      const botKeywords = [
+        'بوت', 'bot', 'бот', '机器人', 'robot', 'robô', 'roboto'
+      ];
+      
+      // التحقق من المنشن أو الرد أو كتابة كلمة "بوت"
       const isMentioned = text.includes(`@${botUsername}`);
       const isReplyToBot = msg.reply_to_message && msg.reply_to_message.from.id === botId;
+      const containsBotKeyword = botKeywords.some(keyword => 
+        text.toLowerCase().includes(keyword.toLowerCase())
+      );
       
-      if (isMentioned || isReplyToBot) {
-        // إزالة المنشن من النص
-        const cleanText = text.replace(new RegExp(`@${botUsername}`, 'g'), '').trim();
+      if (isMentioned || isReplyToBot || containsBotKeyword) {
+        // إزالة المنشن والكلمات المفتاحية من النص
+        let cleanText = text.replace(new RegExp(`@${botUsername}`, 'g'), '').trim();
+        
+        // إزالة كلمة "بوت" وما شابهها من بداية النص
+        botKeywords.forEach(keyword => {
+          const regex = new RegExp(`^${keyword}[,،\\s]*`, 'gi');
+          cleanText = cleanText.replace(regex, '').trim();
+        });
         
         if (!cleanText) return;
         
