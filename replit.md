@@ -36,7 +36,14 @@ The Telegram Web App features a dark theme, providing a professional, modern, an
 - **Enterprise Scalability Optimizations**: Batch Data Loader, LRU Membership Cache, and Safe Database Query Guards.
 - **Production-Scale Infrastructure Overhaul**: Telegram Webhooks migration, Docker Containerization, Redis Cluster, Dynamic Queue Auto-Scaling, Kubernetes Orchestration, Nginx Load Balancer, Prometheus Monitoring, and Centralized Configuration.
 - **Complete Multi-Language System Overhaul**: Full language support across all platform components including customer service, bot, and web app. This includes frontend (`public/js/translations.js`), backend (`languages.js` with `t()` function), and AI system prompts (`ai-system-prompts.js`).
-- **AI Code Agent System**: Comprehensive AI-powered programming assistant built with GROQ AI (Llama 3.3 70B) for owner-only use, accessible via `/code_agent` command and a Web App interface. Features include file analysis, code quality suggestions, intent detection, and contextual messaging. It supports multiple programming tools for read-only operations.
+- **AI Code Agent System**: Comprehensive AI-powered programming assistant built with GROQ AI (Llama 3.3 70B) for owner-only use, accessible via `/ai` and `/code_agent` commands. Features include:
+  - Interactive inline keyboard for quick access to common tasks (list files, analyze project, find bugs, continuous chat mode)
+  - Continuous chat mode allowing ongoing conversations with the AI assistant
+  - File analysis, code quality suggestions, and intent detection
+  - Contextual messaging with HTML sanitization for reliable delivery
+  - Smart chunking for long responses to prevent Telegram API errors
+  - Chat history management and contextual assistance
+  - Read-only operations for project safety
 
 **Feature Specifications**:
 The platform offers a Web App for technical analysis, top movers, a wallet for USDT TRC20, and account management. Trading features include technical analysis for diverse asset classes and trending cryptocurrency tracking. Financial features include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management includes analyst subscriptions and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, and withdrawal processing. Automated trade signal monitoring and a blockchain-based pump detection system are integrated.
