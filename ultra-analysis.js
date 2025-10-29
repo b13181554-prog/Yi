@@ -7,7 +7,7 @@ class UltraAnalysis {
     this.candles = candles;
   }
 
-  getUltraRecommendation(marketType = 'spot', timeframe = '1h', lang = 'ar') {
+  getUltraRecommendation(marketType = 'crypto', tradingType = 'spot', timeframe = '1h', lang = 'ar') {
     const currentPrice = this.candles[this.candles.length - 1].close;
     
     const normalizedTimeframe = timeframe?.toLowerCase().trim() || '1h';
@@ -44,7 +44,7 @@ class UltraAnalysis {
     const rangingMarket = this.detectRangingMarket(adxValue, bb, ema20Value, ema50Value, currentPriceFloat, lang);
     if (rangingMarket.isRanging) {
       warnings.push('⚠️ ' + t(lang, 'analysis_warning_ranging_market'));
-      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, rangingMarket.reason, lang);
+      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType, rangingMarket.reason, lang);
     }
 
     const indicatorWeights = {
@@ -225,7 +225,7 @@ class UltraAnalysis {
     
     if (scoreDifference < minScoreDifference) {
       warnings.push('❌ إشارات متعارضة - الفرق بين الشراء والبيع ضئيل جداً');
-      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, 'إشارات متعارضة');
+      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType, 'إشارات متعارضة', lang);
     }
 
     const atrValue = parseFloat(atr.value);
@@ -472,7 +472,7 @@ class UltraAnalysis {
             weights.supportResistance * 2.0);
   }
 
-  generateWaitResponse(warnings, currentPrice, timeframe, marketType, tradingType, reason) {
+  generateWaitResponse(warnings, currentPrice, timeframe, marketType, tradingType, reason, lang = 'ar') {
     return {
       mode: 'ULTRA_ANALYSIS',
       recommendation: 'انتظار',
