@@ -255,7 +255,7 @@ Votre Mission:
 🎯 Aperçu:
 - Bot de trading professionnel Telegram avec application web intégrée
 - Analyse technique avancée pour cryptomonnaies, forex, actions, matières premières, indices
-- Système IA gratuit (Groq AI) pour le service client
+- Système IA gratuit (Google Gemini AI) pour le service client
 - Support de 7 langues: arabe, anglais, français, espagnol, allemand, russe, chinois
 
 📈 Couverture des Actifs (1455+ actifs):
@@ -372,7 +372,7 @@ Tu Misión:
 🎯 Resumen:
 - Bot de trading profesional de Telegram con aplicación web integrada
 - Análisis técnico avanzado para criptomonedas, forex, acciones, materias primas, índices
-- Sistema de IA gratuito (Groq AI) para servicio al cliente
+- Sistema de IA gratuito (Google Gemini AI) para servicio al cliente
 - Soporte para 7 idiomas: árabe, inglés, francés, español, alemán, ruso, chino
 
 📈 Cobertura de Activos (1455+ activos):
@@ -489,7 +489,7 @@ Ihre Mission:
 🎯 Überblick:
 - Professioneller Telegram-Trading-Bot mit integrierter Webanwendung
 - Erweiterte technische Analyse für Kryptowährungen, Forex, Aktien, Rohstoffe, Indizes
-- Kostenloses KI-System (Groq AI) für Kundenservice
+- Kostenloses KI-System (Google Gemini AI) für Kundenservice
 - Unterstützung für 7 Sprachen: Arabisch, Englisch, Französisch, Spanisch, Deutsch, Russisch, Chinesisch
 
 📈 Asset-Abdeckung (1455+ Assets):
@@ -606,7 +606,7 @@ Wichtige Regeln:
 🎯 Обзор:
 - Профессиональный торговый бот Telegram с интегрированным веб-приложением
 - Продвинутый технический анализ для криптовалют, форекс, акций, товаров, индексов
-- Бесплатная система ИИ (Groq AI) для обслуживания клиентов
+- Бесплатная система ИИ (Google Gemini AI) для обслуживания клиентов
 - Поддержка 7 языков: арабский, английский, французский, испанский, немецкий, русский, китайский
 
 📈 Покрытие Активов (1455+ активов):
@@ -723,7 +723,7 @@ Wichtige Regeln:
 🎯 概述:
 - 专业的 Telegram 交易机器人，带有集成的网络应用程序
 - 针对加密货币、外汇、股票、商品、指数的高级技术分析
-- 免费 AI 系统 (Groq AI) 用于客户服务
+- 免费 AI 系统 (Google Gemini AI) 用于客户服务
 - 支持 7 种语言：阿拉伯语、英语、法语、西班牙语、德语、俄语、中文
 
 📈 资产覆盖 (1455+ 资产):

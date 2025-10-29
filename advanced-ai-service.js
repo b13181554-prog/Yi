@@ -176,7 +176,7 @@ class AdvancedAIService {
         };
       }
       
-      // تحليل النتائج بواسطة Groq AI
+      // تحليل النتائج بواسطة Google Gemini AI
       const analysisPrompt = lang === 'ar' 
         ? `قم بتحليل نتائج البحث التالية والإجابة على السؤال: "${query}"
 
