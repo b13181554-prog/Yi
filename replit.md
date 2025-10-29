@@ -68,6 +68,138 @@ The project uses MongoDB Atlas, designed for 24/7 operation with improved error 
 **Deployment Architecture**:
 The system supports Standalone, Docker, and Kubernetes deployment modes, with separate containers for HTTP Server, Bot Webhook Worker, Queue Worker, and Scheduler, all monitored via Prometheus and Grafana.
 
+## Gemini AI - Complete Owner Capabilities (October 2025)
+
+**Complete Project Access System**: The owner has exclusive access to advanced Gemini AI capabilities that provide deep insights into the entire project. This system is activated via the `/ai` command and offers comprehensive access to all project files, databases, and documentation.
+
+### Owner-Only AI Features
+
+#### 1. **Database Intelligence (Read-Only)**
+- **Get Database Statistics**: Access complete database stats including users, analysts, transactions, withdrawals, subscriptions, and growth metrics
+  - `getDatabaseStats()` - General statistics
+  - `getUsersCount()` - Total and filtered user counts
+  - `getAnalystsCount()` - Analyst statistics and performance
+  - `getSubscriptionsStats()` - Active/expired subscription data
+  - `getWithdrawalsStats()` - Withdrawal status and counts
+  - `getGrowthStats()` - Growth metrics (today, week, month)
+
+- **Safe Database Queries**: Execute read-only queries on allowed collections (users, transactions, withdrawals, signals, analysts, notifications)
+  - `queryDatabase(collection, query, options)` - With full NoSQL injection protection
+  - Allow-list based operators and fields
+  - Automatic sanitization of sensitive data (passwords, API keys, balances, private keys)
+  - Limited result sets (max 100 records)
+
+#### 2. **Project Context Intelligence**
+- **Full Project Context**: Complete overview of project structure, architecture, and recent changes
+  - `getFullProjectContext()` - Reads from replit.md with detailed sections
+  - `getTechnicalStack()` - Runtime, frameworks, dependencies, external services
+  - `getFeaturesList()` - All core, advanced, and technical features
+  - `getRecentChanges()` - Latest updates and modifications
+  - `getProjectSummary()` - Comprehensive project summary with statistics
+
+- **Documentation Search**: Intelligent search across all documentation files
+  - `searchDocumentation(keyword)` - Finds relevant docs with preview
+
+#### 3. **Code Analysis & File Access**
+- **File Reading & Analysis**: Safe access to project files with security restrictions
+  - `analyzeFile(filePath)` - Detailed file analysis with improvement suggestions
+  - `analyzeCode(code)` - Comprehensive code review with quality ratings
+  - Prevents directory traversal attacks
+  - Limited to project directory only
+
+- **Project Statistics**: Real-time metrics
+  - File count (JavaScript files)
+  - Lines of code count
+  - Project structure overview
+
+#### 4. **Advanced AI Chat & Tools**
+- **Intelligent Conversation**: Context-aware chat with full project knowledge
+  - Maintains conversation history (last 20 messages)
+  - Smart intent detection (chat, search, analyze, query, context)
+  - Multi-language support (7 languages)
+
+- **Internet Search Integration**: Real-time web search with AI analysis
+  - DuckDuckGo API integration (free, no API key required)
+  - AI-powered analysis of search results
+  - Cited sources with URLs
+
+- **Code Quality Assistant**: Professional code review and suggestions
+  - Detects potential issues and security vulnerabilities
+  - Provides best practices and optimization tips
+  - Quality ratings (Excellent/Good/Needs Improvement)
+
+#### 5. **Security & Safety Features**
+- **Read-Only Operations**: All database operations are strictly read-only
+- **Data Sanitization**: Automatic removal of sensitive fields (passwords, API keys, private keys, balances)
+- **User Privacy**: User IDs and wallet addresses are masked
+- **NoSQL Injection Protection**: Allow-list based query sanitization
+- **Command Injection Prevention**: Removed `exec(git log)` and replaced with file system operations
+- **Path Traversal Protection**: File access restricted to project directory
+
+### How to Use as Owner
+
+**Basic AI Chat**: Just type `/ai` to start chatting with Gemini about the project.
+
+**Database Queries Examples**:
+- "Show me database statistics"
+- "How many users are there?"
+- "Get recent analyst performance"
+- "Show growth stats for this month"
+
+**Project Context Examples**:
+- "What are the main features of this project?"
+- "Show me the technical stack"
+- "What were the recent changes?"
+- "Give me a project summary"
+
+**Code Analysis Examples**:
+- "Analyze the file database.js"
+- "Review this code: [paste code]"
+- "What are the best practices for this function?"
+
+**Search Examples**:
+- "Search for information about Redis clustering"
+- "Find news about cryptocurrency regulations"
+- "What's the latest on Telegram Bot API?"
+
+### Technical Implementation Details
+
+**Security Layers**:
+1. **Query Sanitization** (`sanitizeQuery()`): Removes dangerous operators ($where, $expr, $function, $regex, etc.)
+2. **Field Allow-List**: Only permitted fields are queryable (user_id, username, status, etc.)
+3. **Result Sanitization** (`sanitizeResults()`): Strips sensitive data from all results
+4. **Projection Hardcoding**: Forces safe projection, cannot be overridden
+5. **File System Safety**: No shell command execution, only Node.js fs operations
+
+**Available Collections** (Read-Only):
+- `users` - User accounts and subscriptions
+- `transactions` - Payment and deposit transactions
+- `withdrawals` - Withdrawal requests and statuses
+- `signals` - Trading signals from analysts
+- `analysts` - Analyst profiles and performance
+- `notifications` - System notifications
+
+**Gemini AI Models Used**:
+- `gemini-2.0-flash-exp` - Latest experimental model (chat, analysis, vision)
+- `gemini-flash-latest` - Auto-updated to newest version
+- Free tier with generous limits (1500 requests/day)
+
+**Files Structure**:
+- `gemini-service.js` - Core Gemini AI service
+- `advanced-ai-service.js` - Advanced AI features for all users
+- `ai-code-agent.js` - Owner-only code agent
+- `ai-database-tools.js` - Safe database access layer
+- `ai-project-context.js` - Project context provider
+- `ai-system-prompts.js` - Multi-language system prompts
+
+**Recent Security Updates (October 2025)**:
+- ✅ Removed `exec(git log)` - Replaced with `replit.md` reading
+- ✅ Added NoSQL injection protection with allow-list approach
+- ✅ Enforced read-only database operations
+- ✅ Implemented automatic data sanitization
+- ✅ Added file path traversal protection
+- ✅ Removed balance and financial data exposure
+
 ## External Dependencies
 
 -   **Databases**: MongoDB Atlas, Redis (v7.2.6)
