@@ -52,6 +52,24 @@ const membershipCache = new LRUCache({
   allowStale: false
 });
 
+// Cache for owner language preference
+let ownerLangCache = null;
+
+async function getOwnerLang() {
+  if (ownerLangCache) {
+    return ownerLangCache;
+  }
+  try {
+    const ownerUser = await db.getUser(config.OWNER_ID);
+    ownerLangCache = ownerUser ? (ownerUser.language || 'ar') : 'ar';
+    // Reset cache after 5 minutes
+    setTimeout(() => { ownerLangCache = null; }, 5 * 60 * 1000);
+    return ownerLangCache;
+  } catch (error) {
+    return 'ar'; // Default to Arabic
+  }
+}
+
 async function checkChannelMembership(userId) {
   try {
     const cached = membershipCache.get(userId);
@@ -419,13 +437,16 @@ ${isEnabled ? `<b>${t(lang, 'selected_markets')}</b>\n${marketsText}` : ''}
         return languageNames[langCode] || langCode;
       };
 
+      // Get owner language preference
+      const ownerLang = await getOwnerLang();
+      
       await safeSendMessage(bot, config.OWNER_ID, `
-📞 <b>${t('ar', 'customer_service_new_message')}</b>
+📞 <b>${t(ownerLang, 'customer_service_new_message')}</b>
 
-👤 <b>${t('ar', 'user_label')}</b> ${msg.from.first_name} ${msg.from.last_name || ''}
-🆔 <b>${t('ar', 'id_label')}</b> <code>${userId}</code>
-🌐 <b>${t('ar', 'label_user_language')}</b> ${getLanguageName(lang)}
-📝 <b>${t('ar', 'message_label')}</b>
+👤 <b>${t(ownerLang, 'user_label')}</b> ${msg.from.first_name} ${msg.from.last_name || ''}
+🆔 <b>${t(ownerLang, 'id_label')}</b> <code>${userId}</code>
+🌐 <b>${t(ownerLang, 'label_user_language')}</b> ${getLanguageName(lang)}
+📝 <b>${t(ownerLang, 'message_label')}</b>
 
 ${text}
       `, { parse_mode: 'HTML' });
@@ -700,15 +721,16 @@ ${t(lang, 'withdrawal_will_notify')}
           parse_mode: 'HTML'
         });
 
+        const ownerLang = await getOwnerLang();
         await safeSendMessage(bot, config.OWNER_ID, `
-💸 <b>${t('ar', 'admin_new_manual_withdrawal')}</b>
+💸 <b>${t(ownerLang, 'admin_new_manual_withdrawal')}</b>
 
-${t('ar', 'user_label')} ${user.first_name} (@${user.username})
-${t('ar', 'id_label')} ${userId}
-${t('ar', 'amount_label')} ${amount} USDT
-${t('ar', 'label_address')} <code>${address}</code>
+${t(ownerLang, 'user_label')} ${user.first_name} (@${user.username})
+${t(ownerLang, 'id_label')} ${userId}
+${t(ownerLang, 'amount_label')} ${amount} USDT
+${t(ownerLang, 'label_address')} <code>${address}</code>
 
-⚠️ ${t('ar', 'admin_funds_reserved')}
+⚠️ ${t(ownerLang, 'admin_funds_reserved')}
 `, { parse_mode: 'HTML' });
 
         return;
@@ -749,14 +771,15 @@ ${t(lang, 'withdrawal_will_arrive_soon')}
             parse_mode: 'HTML'
           });
 
+          const ownerLang = await getOwnerLang();
           await safeSendMessage(bot, config.OWNER_ID, `
-✅ <b>${t('ar', 'admin_auto_withdrawal_success')}</b>
+✅ <b>${t(ownerLang, 'admin_auto_withdrawal_success')}</b>
 
-${t('ar', 'user_label')} ${user.first_name} (@${user.username})
-${t('ar', 'id_label')} ${userId}
-${t('ar', 'amount_label')} ${amount} USDT
-${t('ar', 'label_address')} <code>${address}</code>
-${t('ar', 'label_withdrawal_id')} <code>${result.data.withdrawId}</code>
+${t(ownerLang, 'user_label')} ${user.first_name} (@${user.username})
+${t(ownerLang, 'id_label')} ${userId}
+${t(ownerLang, 'amount_label')} ${amount} USDT
+${t(ownerLang, 'label_address')} <code>${address}</code>
+${t(ownerLang, 'label_withdrawal_id')} <code>${result.data.withdrawId}</code>
 `, { parse_mode: 'HTML' });
 
         } else {
@@ -786,16 +809,17 @@ ${t(lang, 'try_again_or_contact')}
             parse_mode: 'HTML'
           });
 
+          const ownerLang = await getOwnerLang();
           await safeSendMessage(bot, config.OWNER_ID, `
-❌ <b>${t('ar', 'admin_auto_withdrawal_failed')}</b>
+❌ <b>${t(ownerLang, 'admin_auto_withdrawal_failed')}</b>
 
-${t('ar', 'user_label')} ${user.first_name} (@${user.username})
-${t('ar', 'id_label')} ${userId}
-${t('ar', 'amount_label')} ${amount} USDT
-${t('ar', 'label_address')} <code>${address}</code>
-${t('ar', 'label_reason')} ${result.error}
+${t(ownerLang, 'user_label')} ${user.first_name} (@${user.username})
+${t(ownerLang, 'id_label')} ${userId}
+${t(ownerLang, 'amount_label')} ${amount} USDT
+${t(ownerLang, 'label_address')} <code>${address}</code>
+${t(ownerLang, 'label_reason')} ${result.error}
 
-${t('ar', 'notification_amount_refunded_to_user')}
+${t(ownerLang, 'notification_amount_refunded_to_user')}
 `, { parse_mode: 'HTML' });
         }
 
@@ -821,14 +845,15 @@ ${t(lang, 'label_refunded_balance')} ${totalWithFee} USDT
           parse_mode: 'HTML'
         });
 
+        const ownerLang = await getOwnerLang();
         await safeSendMessage(bot, config.OWNER_ID, `
-⚠️ <b>${t('ar', 'admin_withdrawal_system_error')}</b>
+⚠️ <b>${t(ownerLang, 'admin_withdrawal_system_error')}</b>
 
-${t('ar', 'user_label')} ${user.first_name}
-${t('ar', 'amount_label')} ${amount} USDT
-${t('ar', 'label_error')} ${error.message}
+${t(ownerLang, 'user_label')} ${user.first_name}
+${t(ownerLang, 'amount_label')} ${amount} USDT
+${t(ownerLang, 'label_error')} ${error.message}
 
-${t('ar', 'notification_amount_refunded_to_user')}
+${t(ownerLang, 'notification_amount_refunded_to_user')}
 `, { parse_mode: 'HTML' });
       }
     }
@@ -897,16 +922,17 @@ ${t('ar', 'notification_amount_refunded_to_user')}
           return languageNames[langCode] || langCode;
         };
 
-        // إرسال للمالك بالعربية (لغة المالك)
+        // إرسال للمالك بلغته المفضلة
+        const ownerLang = await getOwnerLang();
         await safeSendMessage(bot, config.OWNER_ID, `
-💰 <b>${t('ar', 'new_subscription')}</b>
+💰 <b>${t(ownerLang, 'new_subscription')}</b>
 
-👤 ${t('ar', 'user_label')} ${user.first_name} (@${user.username || t('ar', 'no_username')})
-🆔 ${t('ar', 'id_label')} ${userId}
-🌐 <b>${t('ar', 'label_language')}</b> ${getLanguageName(userLang)}
-💵 ${t('ar', 'amount_label')} ${config.SUBSCRIPTION_PRICE} USDT
-📅 ${t('ar', 'valid_until')} ${expiryDate.toLocaleDateString('ar')}
-${referrerId ? `🎁 ${t('ar', 'referral_commission_label')} ${referralCommission} USDT` : ''}
+👤 ${t(ownerLang, 'user_label')} ${user.first_name} (@${user.username || t(ownerLang, 'no_username')})
+🆔 ${t(ownerLang, 'id_label')} ${userId}
+🌐 <b>${t(ownerLang, 'label_language')}</b> ${getLanguageName(userLang)}
+💵 ${t(ownerLang, 'amount_label')} ${config.SUBSCRIPTION_PRICE} USDT
+📅 ${t(ownerLang, 'valid_until')} ${expiryDate.toLocaleDateString(ownerLang === 'ar' ? 'ar' : 'en')}
+${referrerId ? `🎁 ${t(ownerLang, 'referral_commission_label')} ${referralCommission} USDT` : ''}
 `, { parse_mode: 'HTML' });
 
       } catch (error) {
@@ -935,14 +961,15 @@ ${t(userLang, 'try_again_or_contact')}
           return languageNames[langCode] || langCode;
         };
 
-        // إرسال للمالك بالعربية (لغة المالك)
+        // إرسال للمالك بلغته المفضلة
+        const ownerLang = await getOwnerLang();
         await safeSendMessage(bot, config.OWNER_ID, `
-⚠️ <b>${t('ar', 'subscription_failed')}</b>
+⚠️ <b>${t(ownerLang, 'subscription_failed')}</b>
 
-${t('ar', 'user_label')} ${user.first_name} (@${user.username || t('ar', 'no_username')})
-${t('ar', 'id_label')} ${userId}
-🌐 <b>${t('ar', 'label_language')}</b> ${getLanguageName(userLang)}
-${t('ar', 'error_label')} ${error.message}
+${t(ownerLang, 'user_label')} ${user.first_name} (@${user.username || t(ownerLang, 'no_username')})
+${t(ownerLang, 'id_label')} ${userId}
+🌐 <b>${t(ownerLang, 'label_language')}</b> ${getLanguageName(userLang)}
+${t(ownerLang, 'error_label')} ${error.message}
 `, { parse_mode: 'HTML' });
       }
     }
@@ -1035,16 +1062,17 @@ ${t(lang, 'users_can_subscribe')}
           return languageNames[langCode] || langCode;
         };
 
-        // إرسال للمالك بالعربية (لغة المالك)
+        // إرسال للمالك بلغته المفضلة
+        const ownerLang = await getOwnerLang();
         await safeSendMessage(bot, config.OWNER_ID, `
-📝 <b>${t('ar', 'new_analyst')}</b>
+📝 <b>${t(ownerLang, 'new_analyst')}</b>
 
-${t('ar', 'name_label')} ${analyst.name}
-${t('ar', 'user_label')} @${user.username}
-${t('ar', 'id_label')} ${userId}
-🌐 <b>${t('ar', 'label_language')}</b> ${getLanguageName(lang)}
-${t('ar', 'price_label')} ${price} USDT${t('ar', 'per_month')}
-${t('ar', 'description_label')} ${analyst.description}
+${t(ownerLang, 'name_label')} ${analyst.name}
+${t(ownerLang, 'user_label')} @${user.username}
+${t(ownerLang, 'id_label')} ${userId}
+🌐 <b>${t(ownerLang, 'label_language')}</b> ${getLanguageName(lang)}
+${t(ownerLang, 'price_label')} ${price} USDT${t(ownerLang, 'per_month')}
+${t(ownerLang, 'description_label')} ${analyst.description}
 `, { parse_mode: 'HTML' });
       } catch (createError) {
         return safeSendMessage(bot, chatId, `❌ ${createError.message}`);

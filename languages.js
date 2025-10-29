@@ -163,6 +163,32 @@ const translations = {
     must_send_three_lines: 'يجب إرسال 3 أسطر فقط:',
     price_must_be_number: 'السعر يجب أن يكون رقم صحيح (1 USDT على الأقل)',
     analyst_registered: 'تم التسجيل كمحلل بنجاح!',
+    analyst_registration_error: 'حدث خطأ أثناء التسجيل',
+    analyst_registration_success_details: `✅ <b>تم تسجيلك كمحلل بنجاح!</b>
+
+<b>ملاحظات مهمة:</b>
+• ستحصل على 50% من كل اشتراك
+• 50% للمالك
+• إذا كان المشترك مُحالاً، 10% عمولة للمُحيل
+
+يمكن للمستخدمين الآن الاشتراك في خدماتك! 🎉`,
+    use_webapp_for_withdrawal: `💸 <b>لإجراء عمليات السحب</b>
+
+يرجى استخدام تطبيق الويب:
+1. اضغط على زر "🚀 فتح التطبيق"
+2. اختر "💰 المحفظة"
+3. اختر "📤 سحب"
+4. أدخل عنوان المحفظة والمبلغ
+
+📝 ملاحظة: جميع عمليات السحب تتم عبر تطبيق الويب لضمان الأمان`,
+    use_webapp_for_transactions: `⏳ <b>لإجراء المعاملات المالية</b>
+
+يرجى استخدام تطبيق الويب:
+1. اضغط على زر "🚀 فتح التطبيق"
+2. اختر "💰 المحفظة"
+3. اختر "📥 إيداع" أو "📤 سحب"
+
+📝 ملاحظة: جميع المعاملات المالية تتم عبر تطبيق الويب لضمان الأمان`,
     name_label: 'الاسم:',
     price_label: 'السعر:',
     per_month: '/شهر',
@@ -992,6 +1018,32 @@ const translations = {
     must_send_three_lines: 'You must send exactly 3 lines:',
     price_must_be_number: 'Price must be a valid number (at least 1 USDT)',
     analyst_registered: 'Successfully registered as analyst!',
+    analyst_registration_error: 'Registration error occurred',
+    analyst_registration_success_details: `✅ <b>Successfully registered as analyst!</b>
+
+<b>Important notes:</b>
+• You will receive 50% from each subscription
+• 50% to the owner
+• If the subscriber was referred, 10% commission to the referrer
+
+Users can now subscribe to your services! 🎉`,
+    use_webapp_for_withdrawal: `💸 <b>For withdrawals</b>
+
+Please use the web app:
+1. Click the "🚀 Open App" button
+2. Select "💰 Wallet"
+3. Select "📤 Withdraw"
+4. Enter wallet address and amount
+
+📝 Note: All withdrawals are processed through the web app for security`,
+    use_webapp_for_transactions: `⏳ <b>For financial transactions</b>
+
+Please use the web app:
+1. Click the "🚀 Open App" button
+2. Select "💰 Wallet"
+3. Select "📥 Deposit" or "📤 Withdraw"
+
+📝 Note: All transactions are processed through the web app for security`,
     name_label: 'Name:',
     price_label: 'Price:',
     per_month: '/month',
@@ -1768,6 +1820,32 @@ const translations = {
     must_send_three_lines: 'Vous devez envoyer exactement 3 lignes:',
     price_must_be_number: 'Le prix doit être un nombre valide (au moins 1 USDT)',
     analyst_registered: 'Inscrit avec succès en tant qu\'analyste!',
+    analyst_registration_error: 'Erreur d\'inscription',
+    analyst_registration_success_details: `✅ <b>Inscription réussie en tant qu'analyste!</b>
+
+<b>Notes importantes:</b>
+• Vous recevrez 50% de chaque abonnement
+• 50% au propriétaire
+• Si l'abonné a été parrainé, 10% de commission au parrain
+
+Les utilisateurs peuvent maintenant s'abonner à vos services! 🎉`,
+    use_webapp_for_withdrawal: `💸 <b>Pour les retraits</b>
+
+Veuillez utiliser l'application web:
+1. Cliquez sur "🚀 Ouvrir l'app"
+2. Sélectionnez "💰 Portefeuille"
+3. Sélectionnez "📤 Retirer"
+4. Entrez l'adresse et le montant
+
+📝 Note: Tous les retraits sont traités via l'app web pour la sécurité`,
+    use_webapp_for_transactions: `⏳ <b>Pour les transactions financières</b>
+
+Veuillez utiliser l'application web:
+1. Cliquez sur "🚀 Ouvrir l'app"
+2. Sélectionnez "💰 Portefeuille"
+3. Sélectionnez "📥 Dépôt" ou "📤 Retirer"
+
+📝 Note: Toutes les transactions sont traitées via l'app web pour la sécurité`,
     name_label: 'Nom:',
     price_label: 'Prix:',
     per_month: '/mois',
@@ -2323,6 +2401,32 @@ const translations = {
     must_send_three_lines: 'Debes enviar exactamente 3 líneas:',
     price_must_be_number: 'El precio debe ser un número válido (al menos 1 USDT)',
     analyst_registered: '¡Registrado como analista con éxito!',
+    analyst_registration_error: 'Error de registro',
+    analyst_registration_success_details: `✅ <b>¡Registrado como analista con éxito!</b>
+
+<b>Notas importantes:</b>
+• Recibirás el 50% de cada suscripción
+• 50% para el propietario
+• Si el suscriptor fue referido, 10% de comisión al referidor
+
+¡Los usuarios ahora pueden suscribirse a tus servicios! 🎉`,
+    use_webapp_for_withdrawal: `💸 <b>Para retiros</b>
+
+Por favor usa la aplicación web:
+1. Haz clic en "🚀 Abrir App"
+2. Selecciona "💰 Cartera"
+3. Selecciona "📤 Retirar"
+4. Ingresa la dirección y el monto
+
+📝 Nota: Todos los retiros se procesan a través de la app web por seguridad`,
+    use_webapp_for_transactions: `⏳ <b>Para transacciones financieras</b>
+
+Por favor usa la aplicación web:
+1. Haz clic en "🚀 Abrir App"
+2. Selecciona "💰 Cartera"
+3. Selecciona "📥 Depositar" o "📤 Retirar"
+
+📝 Nota: Todas las transacciones se procesan a través de la app web por seguridad`,
     name_label: 'Nombre:',
     price_label: 'Precio:',
     per_month: '/mes',
@@ -2878,6 +2982,32 @@ const translations = {
     must_send_three_lines: 'Sie müssen genau 3 Zeilen senden:',
     price_must_be_number: 'Der Preis muss eine gültige Zahl sein (mindestens 1 USDT)',
     analyst_registered: 'Erfolgreich als Analyst registriert!',
+    analyst_registration_error: 'Registrierungsfehler',
+    analyst_registration_success_details: `✅ <b>Erfolgreich als Analyst registriert!</b>
+
+<b>Wichtige Hinweise:</b>
+• Sie erhalten 50% von jedem Abonnement
+• 50% an den Eigentümer
+• Wenn der Abonnent geworben wurde, 10% Provision an den Werber
+
+Benutzer können sich jetzt für Ihre Dienste anmelden! 🎉`,
+    use_webapp_for_withdrawal: `💸 <b>Für Abhebungen</b>
+
+Bitte verwenden Sie die Web-App:
+1. Klicken Sie auf "🚀 App öffnen"
+2. Wählen Sie "💰 Geldbörse"
+3. Wählen Sie "📤 Abheben"
+4. Geben Sie Adresse und Betrag ein
+
+📝 Hinweis: Alle Abhebungen werden über die Web-App aus Sicherheitsgründen verarbeitet`,
+    use_webapp_for_transactions: `⏳ <b>Für Finanztransaktionen</b>
+
+Bitte verwenden Sie die Web-App:
+1. Klicken Sie auf "🚀 App öffnen"
+2. Wählen Sie "💰 Geldbörse"
+3. Wählen Sie "📥 Einzahlen" oder "📤 Abheben"
+
+📝 Hinweis: Alle Transaktionen werden über die Web-App aus Sicherheitsgründen verarbeitet`,
     name_label: 'Name:',
     price_label: 'Preis:',
     per_month: '/Monat',
@@ -3433,6 +3563,32 @@ const translations = {
     must_send_three_lines: 'Вы должны отправить ровно 3 строки:',
     price_must_be_number: 'Цена должна быть допустимым числом (не менее 1 USDT)',
     analyst_registered: 'Успешно зарегистрирован как аналитик!',
+    analyst_registration_error: 'Ошибка регистрации',
+    analyst_registration_success_details: `✅ <b>Успешно зарегистрирован как аналитик!</b>
+
+<b>Важные заметки:</b>
+• Вы получите 50% от каждой подписки
+• 50% владельцу
+• Если подписчик был рекомендован, 10% комиссии рефереру
+
+Пользователи теперь могут подписаться на ваши услуги! 🎉`,
+    use_webapp_for_withdrawal: `💸 <b>Для снятия средств</b>
+
+Пожалуйста, используйте веб-приложение:
+1. Нажмите "🚀 Открыть приложение"
+2. Выберите "💰 Кошелек"
+3. Выберите "📤 Снять"
+4. Введите адрес и сумму
+
+📝 Примечание: Все снятия обрабатываются через веб-приложение для безопасности`,
+    use_webapp_for_transactions: `⏳ <b>Для финансовых транзакций</b>
+
+Пожалуйста, используйте веб-приложение:
+1. Нажмите "🚀 Открыть приложение"
+2. Выберите "💰 Кошелек"
+3. Выберите "📥 Пополнить" или "📤 Снять"
+
+📝 Примечание: Все транзакции обрабатываются через веб-приложение для безопасности`,
     name_label: 'Имя:',
     price_label: 'Цена:',
     per_month: '/месяц',
@@ -3988,6 +4144,32 @@ const translations = {
     must_send_three_lines: '您必须发送恰好3行：',
     price_must_be_number: '价格必须是有效数字（至少1 USDT）',
     analyst_registered: '成功注册为分析师！',
+    analyst_registration_error: '注册错误',
+    analyst_registration_success_details: `✅ <b>成功注册为分析师！</b>
+
+<b>重要提示：</b>
+• 您将从每个订阅中获得50%
+• 50%归所有者
+• 如果订阅者被推荐，10%佣金给推荐人
+
+用户现在可以订阅您的服务！🎉`,
+    use_webapp_for_withdrawal: `💸 <b>提款</b>
+
+请使用网页应用：
+1. 点击"🚀 打开应用"
+2. 选择"💰 钱包"
+3. 选择"📤 提款"
+4. 输入地址和金额
+
+📝 注意：所有提款都通过网页应用处理以确保安全`,
+    use_webapp_for_transactions: `⏳ <b>金融交易</b>
+
+请使用网页应用：
+1. 点击"🚀 打开应用"
+2. 选择"💰 钱包"
+3. 选择"📥 存款"或"📤 提款"
+
+📝 注意：所有交易都通过网页应用处理以确保安全`,
     name_label: '名称：',
     price_label: '价格：',
     per_month: '/月',

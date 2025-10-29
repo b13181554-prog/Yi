@@ -32,6 +32,24 @@ const memoryOptimizer = require('./memory-optimizer');
 const { getSystemPrompt } = require('./ai-system-prompts');
 const { t } = require('./languages');
 
+// Cache for owner language preference
+let ownerLangCache = null;
+
+async function getOwnerLang() {
+  if (ownerLangCache) {
+    return ownerLangCache;
+  }
+  try {
+    const ownerUser = await db.getUser(config.OWNER_ID);
+    ownerLangCache = ownerUser ? (ownerUser.language || 'ar') : 'ar';
+    // Reset cache after 5 minutes
+    setTimeout(() => { ownerLangCache = null; }, 5 * 60 * 1000);
+    return ownerLangCache;
+  } catch (error) {
+    return 'ar'; // Default to Arabic
+  }
+}
+
 // Groq AI - Free and fast alternative to OpenAI
 let groq = null;
 if (process.env.GROQ_API_KEY) {
@@ -466,22 +484,24 @@ async function main() {
       const user = await db.getUser(userId);
       if (!user) return;
       
+      const userLang = user.language || 'ar';
+      
       if (user.temp_withdrawal_address === 'analyst_registration') {
         const lines = text.trim().split('\n').filter(line => line.trim());
         
         if (lines.length !== 3) {
           return safeSendMessage(bot, chatId, `
-❌ <b>خطأ في البيانات!</b>
+❌ <b>${t(userLang, 'invalid_data')}</b>
 
-يرجى إرسال البيانات بالترتيب الصحيح:
-1️⃣ الاسم
-2️⃣ الوصف
-3️⃣ السعر الشهري
+${t(userLang, 'must_send_three_lines')}
+1️⃣ ${t(userLang, 'name_field')}
+2️⃣ ${t(userLang, 'description_field')}
+3️⃣ ${t(userLang, 'monthly_price')}
 
-<b>مثال:</b>
-أحمد المحلل
-محلل فني بخبرة 5 سنوات
-20
+<b>${t(userLang, 'example_label')}</b>
+${t(userLang, 'analyst_example_name')}
+${t(userLang, 'analyst_example_description')}
+${t(userLang, 'analyst_example_price')}
 `, { parse_mode: 'HTML' });
         }
         
@@ -490,14 +510,7 @@ async function main() {
         const price = parseFloat(lines[2].trim());
         
         if (!name || !description || isNaN(price) || price < 1) {
-          return safeSendMessage(bot, chatId, `
-❌ <b>بيانات غير صحيحة!</b>
-
-تأكد من:
-• الاسم غير فارغ
-• الوصف غير فارغ
-• السعر رقم صحيح (أكثر من 1 USDT)
-`, { parse_mode: 'HTML' });
+          return safeSendMessage(bot, chatId, t(userLang, 'price_must_be_number'), { parse_mode: 'HTML' });
         }
         
         try {
@@ -507,103 +520,51 @@ async function main() {
           await db.updateUser(userId, { temp_withdrawal_address: null });
           
           if (createError.message.includes('مستخدم بالفعل') || createError.message.includes('duplicate')) {
-            return safeSendMessage(bot, chatId, `
-❌ <b>الاسم مستخدم بالفعل!</b>
-
-هذا الاسم مستخدم من قبل محلل آخر.
-
-💡 <b>الحل:</b>
-• اختر اسماً مختلفاً
-• أو قم بتعيين username في حساب تلجرام وحاول مرة أخرى
-
-يرجى المحاولة مرة أخرى بإرسال البيانات:
-`, { parse_mode: 'HTML' });
+            return safeSendMessage(bot, chatId, t(userLang, 'error_analyst_name_taken_solution'), { parse_mode: 'HTML' });
           }
           
           return safeSendMessage(bot, chatId, `
-❌ <b>حدث خطأ أثناء التسجيل</b>
+❌ <b>${t(userLang, 'analyst_registration_error')}</b>
 
 ${createError.message}
 
-يرجى المحاولة مرة أخرى أو التواصل مع الدعم.
+${t(userLang, 'try_again_or_contact')}
 `, { parse_mode: 'HTML' });
         }
         
         await safeSendMessage(bot, chatId, `
-✅ <b>تم تسجيلك كمحلل بنجاح!</b>
+${t(userLang, 'analyst_registration_success_details')}
 
-📝 الاسم: ${name}
-💰 السعر: ${price} USDT/شهر
-
-<b>ملاحظات مهمة:</b>
-• ستحصل على 50% من كل اشتراك
-• 50% للمالك
-• إذا كان المشترك مُحالاً، 10% عمولة للمُحيل
-
-يمكن للمستخدمين الآن الاشتراك في خدماتك! 🎉
+📝 ${t(userLang, 'name_label')} ${name}
+💰 ${t(userLang, 'price_label')} ${price} USDT${t(userLang, 'per_month')}
 `, { parse_mode: 'HTML' });
         
+        const ownerLang = await getOwnerLang();
         await safeSendMessage(bot, config.OWNER_ID, `
-📢 <b>محلل جديد!</b>
+📢 <b>${t(ownerLang, 'new_analyst')}</b>
 
 👤 ${user.first_name} (${userId})
-📝 ${name}
-💰 ${price} USDT/شهر
+📝 ${t(ownerLang, 'name_label')} ${name}
+💰 ${t(ownerLang, 'price_label')} ${price} USDT${t(ownerLang, 'per_month')}
 
-${description}
+${t(ownerLang, 'description_label')} ${description}
 `, { parse_mode: 'HTML' });
         
         return;
       }
       
       if (text.match(/^T[A-Za-z1-9]{33}$/)) {
-        await safeSendMessage(bot, chatId, `
-💸 <b>لإجراء عمليات السحب</b>
-
-يرجى استخدام تطبيق الويب:
-1. اضغط على زر "🚀 فتح التطبيق"
-2. اختر "💰 المحفظة"
-3. اختر "📤 سحب"
-4. أدخل عنوان المحفظة والمبلغ
-
-📝 ملاحظة: جميع عمليات السحب تتم عبر تطبيق الويب لضمان الأمان
-`, { parse_mode: 'HTML' });
+        await safeSendMessage(bot, chatId, t(userLang, 'use_webapp_for_withdrawal'), { parse_mode: 'HTML' });
         return;
       }
       
       if (!isNaN(text) && parseFloat(text) > 0) {
-        await safeSendMessage(bot, chatId, `
-⏳ <b>لإجراء المعاملات المالية</b>
-
-يرجى استخدام تطبيق الويب:
-1. اضغط على زر "🚀 فتح التطبيق"
-2. اختر "💰 المحفظة"
-3. اختر "📥 إيداع" أو "📤 سحب"
-
-📝 ملاحظة: جميع المعاملات المالية تتم عبر تطبيق الويب لضمان الأمان
-`, { parse_mode: 'HTML' });
+        await safeSendMessage(bot, chatId, t(userLang, 'use_webapp_for_transactions'), { parse_mode: 'HTML' });
         return;
       }
       
       if (text.length === 64 && /^[a-fA-F0-9]{64}$/.test(text)) {
-        await safeSendMessage(bot, chatId, `
-⏳ <b>لإجراء عمليات الإيداع</b>
-
-يرجى استخدام نظام الدفع الآلي الجديد عبر تطبيق الويب:
-1. اضغط على زر "🚀 فتح التطبيق"
-2. اختر "💰 المحفظة"
-3. اختر "📥 إيداع"
-4. سيتم إنشاء عنوان دفع خاص بك تلقائياً
-5. أرسل USDT إلى العنوان المُنشأ
-
-✨ <b>المميزات الجديدة:</b>
-• عنوان دفع فريد لكل عملية
-• تأكيد فوري وتلقائي عند استلام الدفع
-• لا حاجة لإرسال TxID يدوياً
-• رسوم منخفضة جداً (1%)
-
-📝 ملاحظة: نظام الدفع اليدوي تم استبداله بنظام CryptAPI الآلي الأكثر أماناً وسرعة
-`, { parse_mode: 'HTML' });
+        await safeSendMessage(bot, chatId, t(userLang, 'use_webapp_for_transactions'), { parse_mode: 'HTML' });
         return;
       }
     });
@@ -678,8 +639,10 @@ app.post('/api/user', authenticateAPI, async (req, res) => {
   try {
     const { user_id } = req.body;
     
+    const defaultLang = 'ar';
+    
     if (!user_id) {
-      return res.json({ success: false, error: 'معرف المستخدم مطلوب' });
+      return res.json({ success: false, error: t(defaultLang, 'invalid_data') });
     }
     
     let user = await db.getUser(user_id);
@@ -730,12 +693,13 @@ app.post('/api/analyze', async (req, res) => {
     // التحقق من حالة الاشتراك
     const subscription = await db.checkSubscription(user_id);
     if (!subscription.active) {
-      let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+      const userLang = 'ar'; // Default to Arabic for subscription checks
+      let errorMessage = t(userLang, 'subscription_required');
       
       if (subscription.reason === 'trial_expired') {
-        errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
+        errorMessage = t(userLang, 'trial_expired');
       } else if (subscription.reason === 'no_subscription') {
-        errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+        errorMessage = t(userLang, 'subscription_expired');
       }
       
       return res.json({ 
@@ -845,16 +809,20 @@ app.post('/api/subscribe', async (req, res) => {
     }
     
     const user = await db.getUser(user_id);
+    const defaultLang = 'ar'; // Default language when user not found
+    
     if (!user) {
-      return res.json({ success: false, error: t('ar', 'user_not_found') });
+      return res.json({ success: false, error: t(defaultLang, 'user_not_found') });
     }
     
+    const userLang = user.language || defaultLang;
+    
     if (user.subscription_expires && new Date(user.subscription_expires) > new Date()) {
-      return res.json({ success: false, error: 'لديك اشتراك نشط بالفعل' });
+      return res.json({ success: false, error: t(userLang, 'subscription_active') });
     }
     
     if (user.balance < config.SUBSCRIPTION_PRICE) {
-      return res.json({ success: false, error: 'رصيدك غير كافٍ للاشتراك' });
+      return res.json({ success: false, error: t(userLang, 'error_insufficient_balance_subscription') });
     }
     
     let referralCommission = 0;
@@ -876,19 +844,22 @@ app.post('/api/subscribe', async (req, res) => {
     });
     
     if (!result.success) {
-      throw new Error('فشل في معالجة الاشتراك');
+      throw new Error(t(userLang, 'error_subscription_processing_failed'));
     }
     
     const expiryDate = result.expiryDate;
     const updatedUser = await db.getUser(user_id);
     
+    // Get owner language preference
+    const ownerLang = await getOwnerLang();
+    
     safeSendMessage(bot, config.OWNER_ID, `
-🎉 <b>اشتراك جديد!</b>
+🎉 <b>${t(ownerLang, 'new_subscription')}</b>
 
-👤 المستخدم: ${user.first_name} ${user.username ? `(@${user.username})` : ''}
-💵 المبلغ: ${config.SUBSCRIPTION_PRICE} USDT
-📅 صالح حتى: ${expiryDate.toLocaleDateString('ar')}
-${referrerId ? `\n🔗 عبر إحالة: نعم (${referralCommission} USDT)` : ''}
+👤 ${t(ownerLang, 'user_label')}: ${user.first_name} ${user.username ? `(@${user.username})` : ''}
+💵 ${t(ownerLang, 'amount_label')}: ${config.SUBSCRIPTION_PRICE} USDT
+📅 ${t(ownerLang, 'valid_until')}: ${expiryDate.toLocaleDateString(ownerLang === 'ar' ? 'ar' : 'en')}
+${referrerId ? `\n🔗 ${t(ownerLang, 'referral_commission_label')}: ${referralCommission} USDT` : ''}
 `, { parse_mode: 'HTML' }).catch(err => console.error('Error notifying owner:', err));
     
     res.json({ 
@@ -1086,12 +1057,13 @@ app.post('/api/analyze-full', async (req, res) => {
     // التحقق من حالة الاشتراك
     const subscription = await db.checkSubscription(user_id);
     if (!subscription.active) {
-      let errorMessage = 'يجب الاشتراك للوصول إلى ميزات التحليل';
+      const userLang = 'ar'; // Default to Arabic for subscription checks
+      let errorMessage = t(userLang, 'subscription_required');
       
       if (subscription.reason === 'trial_expired') {
-        errorMessage = 'انتهت الفترة التجريبية! يرجى الاشتراك للاستمرار في استخدام ميزات التحليل';
+        errorMessage = t(userLang, 'trial_expired');
       } else if (subscription.reason === 'no_subscription') {
-        errorMessage = 'لا يوجد اشتراك نشط! يرجى الاشتراك للوصول إلى ميزات التحليل';
+        errorMessage = t(userLang, 'subscription_expired');
       }
       
       return res.json({ 
@@ -1631,17 +1603,27 @@ app.post('/api/register-analyst', async (req, res) => {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
     }
     
+    // Get user data first to determine language
+    const user = await db.getUser(user_id);
+    const defaultLang = 'ar'; // Default language when user not found
+    
+    if (!user) {
+      return res.json({ success: false, error: t(defaultLang, 'user_not_found') });
+    }
+    
+    const userLang = user.language || defaultLang;
+    
     // فحص حالة الحظر
     const banStatus = await db.checkUserBanStatus(user_id);
     if (banStatus.banned) {
       return res.json({ 
         success: false, 
-        error: `حسابك محظور. السبب: ${banStatus.reason}` 
+        error: `${t(userLang, 'admin_you_have_been_banned_title')}. ${t(userLang, 'admin_reason_colon')} ${banStatus.reason}` 
       });
     }
     
     if (!description || !monthly_price) {
-      return res.json({ success: false, error: 'جميع الحقول مطلوبة' });
+      return res.json({ success: false, error: t(userLang, 'invalid_data') });
     }
     
     // فلتر المحتوى للوصف
@@ -1652,18 +1634,12 @@ app.post('/api/register-analyst', async (req, res) => {
     
     const price = parseFloat(monthly_price);
     if (isNaN(price) || price < 1) {
-      return res.json({ success: false, error: 'السعر يجب أن يكون 1 USDT على الأقل' });
+      return res.json({ success: false, error: t(userLang, 'price_must_be_number') });
     }
     
     const existingAnalyst = await db.getAnalystByUserId(user_id);
     if (existingAnalyst) {
-      return res.json({ success: false, error: 'أنت مسجل كمحلل بالفعل' });
-    }
-    
-    // الحصول على بيانات المستخدم من قاعدة البيانات
-    const user = await db.getUser(user_id);
-    if (!user) {
-      return res.json({ success: false, error: t('ar', 'user_not_found') });
+      return res.json({ success: false, error: t(userLang, 'analyst_registered') });
     }
     
     // إنشاء اسم المحلل - استخدام username إن وُجد لضمان التفرد
@@ -1679,7 +1655,7 @@ app.post('/api/register-analyst', async (req, res) => {
     }
     
     if (!name || name.length < 2) {
-      return res.json({ success: false, error: 'يجب أن يكون لديك اسم في حساب تلجرام الخاص بك' });
+      return res.json({ success: false, error: t(userLang, 'invalid_data') });
     }
     
     // الحصول على صورة البروفايل من تلجرام
@@ -1695,7 +1671,7 @@ app.post('/api/register-analyst', async (req, res) => {
     }
     
     const analystMarkets = markets || [];
-    
+
     try {
       const analyst = await db.createAnalyst(user_id, name, description, price, analystMarkets, profilePicture);
     
@@ -3811,6 +3787,8 @@ app.post('/api/admin/top-referrers', async (req, res) => {
 
 // إرسال رسالة جماعية
 app.post('/api/admin/broadcast', async (req, res) => {
+  const defaultLang = 'ar'; // Default language for admin operations
+  
   try {
     const { message, init_data } = req.body;
     
@@ -3824,7 +3802,7 @@ app.post('/api/admin/broadcast', async (req, res) => {
     }
     
     if (!message || message.trim().length === 0) {
-      return res.json({ success: false, error: 'الرسالة فارغة' });
+      return res.json({ success: false, error: t(defaultLang, 'invalid_data') });
     }
     
     const users = await db.getAllUsers();
@@ -3842,9 +3820,10 @@ app.post('/api/admin/broadcast', async (req, res) => {
       }
     }
     
+    const ownerLang = await getOwnerLang();
     res.json({ 
       success: true, 
-      message: `تم إرسال الرسالة إلى ${successCount} مستخدم. فشل ${failCount} مستخدم`,
+      message: `${t(ownerLang, 'admin_broadcast_title')} - ${successCount}/${users.length}`,
       success_count: successCount,
       fail_count: failCount
     });
@@ -3856,6 +3835,8 @@ app.post('/api/admin/broadcast', async (req, res) => {
 
 // البحث عن مستخدم
 app.post('/api/admin/search', async (req, res) => {
+  const defaultLang = 'ar'; // Default language for admin operations
+  
   try {
     const { query, init_data } = req.body;
     
@@ -3869,7 +3850,7 @@ app.post('/api/admin/search', async (req, res) => {
     }
     
     if (!query || query.trim().length === 0) {
-      return res.json({ success: false, error: 'يرجى إدخال معرف المستخدم أو الاسم' });
+      return res.json({ success: false, error: t(defaultLang, 'invalid_data') });
     }
     
     let user = null;
@@ -3885,7 +3866,7 @@ app.post('/api/admin/search', async (req, res) => {
     }
     
     if (!user) {
-      return res.json({ success: false, error: t('ar', 'user_not_found') });
+      return res.json({ success: false, error: t(defaultLang, 'user_not_found') });
     }
     
     const transactions = await db.getUserTransactions(user.user_id);
@@ -3911,18 +3892,17 @@ app.post('/api/admin/search', async (req, res) => {
 
 // Customer Support API - Groq Integration (Free AI)
 app.post('/api/customer-support', async (req, res) => {
+  const { message, language = 'ar' } = req.body;
+  
   if (!groq) {
     return res.status(503).json({ 
-      error: t('ar', 'customer_support_unavailable'),
-      error_en: 'Customer support is currently unavailable. Please try again later.' 
+      error: t(language, 'customer_support_unavailable')
     });
   }
 
   try {
-    const { message, language = 'ar' } = req.body;
-
     if (!message) {
-      return res.status(400).json({ error: 'Message is required' });
+      return res.status(400).json({ error: t(language, 'invalid_data') });
     }
 
     // استخدام نظام الترجمة الجديد للحصول على systemPrompt المناسب
@@ -3943,7 +3923,7 @@ app.post('/api/customer-support', async (req, res) => {
 
   } catch (error) {
     console.error('Customer support error:', error);
-    res.status(500).json({ error: t('ar', 'failed_to_get_reply') });
+    res.status(500).json({ error: t(language, 'failed_to_get_reply') });
   }
 });
 
