@@ -44,6 +44,28 @@ OBENTCHI has been completely redesigned to ensure full compliance with Islamic S
 ## System Architecture
 The system features a professional, modern, and responsive Telegram Web App with a dark theme. The core logic runs on an Express server managing Telegram Bot interactions, MongoDB operations, multi-language support, automated withdrawals, market data fetching, technical analysis, notifications, and TRON blockchain integration. Security includes environment variables, error handling, rate limiting, and Telegram signature verification.
 
+### Project Structure (Organized October 29, 2025)
+The project has been reorganized for better maintainability and clarity:
+
+**Core Directories:**
+- `api-routes/` - API endpoint routes (access control, feature flags, realtime dashboard)
+- `services/` - Microservices architecture (http-server.js, bot-worker.js, queue-worker.js, scheduler.js)
+- `middleware/` - Express middleware (feature flags)
+- `public/` - Frontend assets (HTML, CSS, JS, images)
+- `utils/` - Utility modules (batch loader)
+- `kubernetes/` - Kubernetes deployment configurations
+- `docker/` - Docker configurations (Dockerfiles, docker-compose, nginx.conf, prometheus.yml)
+- `scripts/` - Shell scripts (build-all-images.sh, start-production.sh, init-redis-cluster.sh, etc.)
+- `docs/` - Documentation files (README.md, architecture guides, migration guides, API docs)
+- `attached_assets/` - Generated images and screenshots
+
+**Root Files:**
+- Core JavaScript modules (bot.js, index.js, database.js, config.js, etc.)
+- Analysis modules (analysis.js, ultra-analysis.js, zero-reversal-analysis.js, v1-pro-analysis.js)
+- Service modules (cryptapi.js, market-data.js, notifications.js, etc.)
+- Security modules (api-security.js, advanced-security-system.js, user-access-control.js)
+- Configuration files (package.json, replit.md, .gitignore)
+
 **UI/UX Decisions**:
 The Telegram Web App features a dark theme, providing a professional, modern, and responsive user experience.
 
