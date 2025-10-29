@@ -582,16 +582,16 @@ class APICostTracker {
         alternatives: []
       },
 
-      'Groq API': {
-        name: 'Groq API',
+      'Google Gemini API': {
+        name: 'Google Gemini API',
         category: 'AI',
-        baseURL: 'https://api.groq.com',
+        baseURL: 'https://generativelanguage.googleapis.com',
         pricing: {
           freeTier: {
             enabled: true,
-            requestsPerMinute: 30,
-            requestsPerDay: 14400,
-            tokensPerMinute: 6000,
+            requestsPerMinute: 60,
+            requestsPerDay: 1500,
+            tokensPerMinute: 32000,
             costPerRequest: 0,
             costPer1MInputTokens: 0,
             costPer1MOutputTokens: 0
@@ -599,15 +599,16 @@ class APICostTracker {
           paidTier: {
             enabled: false,
             requestsPerMinute: 1000,
-            tokensPerMinute: 1000000,
-            costPer1MInputTokens: 0.1,
-            costPer1MOutputTokens: 0.1
+            tokensPerMinute: 4000000,
+            costPer1MInputTokens: 0.075,
+            costPer1MOutputTokens: 0.30
           }
         },
         endpoints: {
-          '/openai/v1/chat/completions': { weight: 10, cacheable: false, ttl: 0 }
+          '/v1beta/models/gemini-1.5-flash:generateContent': { weight: 10, cacheable: false, ttl: 0 },
+          '/v1beta/models/gemini-1.5-pro:generateContent': { weight: 15, cacheable: false, ttl: 0 }
         },
-        rateLimit: { requests: 30, window: 60 },
+        rateLimit: { requests: 60, window: 60 },
         alternatives: ['OpenAI', 'Anthropic']
       },
 
@@ -735,7 +736,7 @@ class APICostTracker {
     
     let cost = pricing.costPerRequest || 0;
 
-    if (apiName === 'Groq API' && metadata.tokens) {
+    if (apiName === 'Google Gemini API' && metadata.tokens) {
       const inputCost = (metadata.tokens.input / 1000000) * (pricing.costPer1MInputTokens || 0);
       const outputCost = (metadata.tokens.output / 1000000) * (pricing.costPer1MOutputTokens || 0);
       cost = inputCost + outputCost;

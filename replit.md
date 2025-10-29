@@ -29,14 +29,14 @@ The Telegram Web App features a dark theme, providing a professional, modern, an
 - **Enhanced Earning System**: 3-level referral program, milestone bonuses, analyst performance bonuses, and earnings dashboard.
 - **Advanced Security System**: Automated fraud detection, real-time user behavior analysis, risk scoring, device fingerprinting, and IP reputation checks.
 - **Automated Safety System**: 24/7 monitoring for withdrawals, logins, balance, and system health, with anomaly detection.
-- **Groq AI Service with Circuit Breaker**: Enterprise-grade Groq API wrapper with circuit breaker, caching, exponential backoff, and graceful fallback.
+- **Google Gemini AI Service**: Free and powerful AI service with comprehensive features, caching, and graceful fallback.
 - **Multi-Exchange Candle Data Fallback**: Automatic failover for cryptocurrency candle data fetching.
 - **Enhanced User Error Messaging**: Context-aware, user-friendly error explanations in Arabic with actionable solutions.
 - **Quality-Based Refund System**: Intelligent refund for per-analysis payments when signal quality falls below 60%.
 - **Enterprise Scalability Optimizations**: Batch Data Loader, LRU Membership Cache, and Safe Database Query Guards.
 - **Production-Scale Infrastructure Overhaul**: Telegram Webhooks migration, Docker Containerization, Redis Cluster, Dynamic Queue Auto-Scaling, Kubernetes Orchestration, Nginx Load Balancer, Prometheus Monitoring, and Centralized Configuration.
 - **Complete Multi-Language System Overhaul**: Full language support across all platform components including customer service, bot, and web app. This includes frontend (`public/js/translations.js`), backend (`languages.js` with `t()` function), and AI system prompts (`ai-system-prompts.js`).
-- **AI Code Agent System**: Comprehensive AI-powered programming assistant built with GROQ AI (Llama 3.3 70B) for owner-only use, accessible via `/ai` command. Features include:
+- **AI Code Agent System**: Comprehensive AI-powered programming assistant built with Google Gemini AI (gemini-1.5-flash) for owner-only use, accessible via `/ai` command. Features include:
   - Simplified direct chat interface - type `/ai` to start chatting immediately
   - Automatic chat mode activation for continuous conversation
   - Quick access button in admin panel for easy activation
@@ -46,7 +46,7 @@ The Telegram Web App features a dark theme, providing a professional, modern, an
   - Chat history management and contextual assistance
   - Read-only operations for project safety
   - Clear, minimalist interface focused on direct interaction
-- **Advanced AI Service for All Users** (October 2025 - Updated November 2025): Enhanced intelligent assistant system powered by Groq AI, available to all users with the following capabilities:
+- **Advanced AI Service for All Users** (October 2025 - Updated November 2025): Enhanced intelligent assistant system powered by Google Gemini AI, available to all users with the following capabilities:
   - **Smart Chat (`/ask`)**: Intelligent conversation with full context, market analysis, and comprehensive answers to user questions
   - **Group Chat Support**: AI assistant responds in Telegram groups when mentioned (@bot) or when replying to bot's message with full 7-language support (ar, en, fr, es, de, ru, zh)
   - **Internet Search (`/search`)**: Real-time web search using DuckDuckGo API (free, no API key required) with AI-powered analysis of results and cited sources
@@ -56,7 +56,7 @@ The Telegram Web App features a dark theme, providing a professional, modern, an
   - **Multi-language Support**: Full support for 7 languages (Arabic, English, French, Spanish, German, Russian, Chinese) across all AI features and group interactions
   - **Intent Detection**: Smart detection of user intentions (search, chat, analyze, generate) for appropriate handling
   - **File Processing**: Ability to read, analyze, and provide insights on project files safely with security restrictions
-  - **No Additional API Keys Required**: Uses existing Groq AI infrastructure (except for image generation which optionally uses Replicate)
+  - **No Additional API Keys Required**: Uses existing Google Gemini AI infrastructure (except for image generation which optionally uses Replicate)
   - **Smart Reply in Groups**: Automatically detects user language and responds accordingly in group conversations
 
 **Feature Specifications**:
@@ -76,6 +76,6 @@ The system supports Standalone, Docker, and Kubernetes deployment modes, with se
 -   **Blockchain Integration**: TRON Network (for USDT TRC20), Etherscan, BscScan
 -   **Withdrawal Integration**: OKX API (USDT TRC20)
 -   **Telegram**: Telegram Bot API, Telegram Web App
--   **AI/Customer Support**: Groq API (Llama 3.3 70B Versatile model)
+-   **AI/Customer Support**: Google Gemini AI (gemini-1.5-flash and gemini-1.5-pro models)
 -   **Payment Gateway**: CryptAPI
 -   **Whale Tracking**: Whale Alert
