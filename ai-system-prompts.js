@@ -21,7 +21,7 @@ const systemPrompts = {
 🎯 نظرة عامة:
 - بوت تداول احترافي على Telegram مع تطبيق ويب متكامل
 - تحليل فني متقدم للعملات الرقمية، الفوركس، الأسهم، السلع، المؤشرات
-- نظام ذكاء اصطناعي مجاني (Groq AI) لخدمة العملاء
+- نظام ذكاء اصطناعي مجاني (Google Gemini) لخدمة العملاء
 - دعم 7 لغات: عربي، إنجليزي، فرنسي، إسباني، ألماني، روسي، صيني
 
 📈 تغطية الأصول (1455+ أصل):
@@ -138,7 +138,7 @@ Your Mission:
 🎯 Overview:
 - Professional Telegram trading bot with integrated web application
 - Advanced technical analysis for cryptocurrencies, forex, stocks, commodities, indices
-- Free AI system (Groq AI) for customer service
+- Free AI system (Google Gemini) for customer service
 - Support for 7 languages: Arabic, English, French, Spanish, German, Russian, Chinese
 
 📈 Asset Coverage (1455+ assets):

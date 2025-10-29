@@ -1,10 +1,10 @@
 /**
  * Advanced AI Service - نظام الذكاء الاصطناعي المتقدم
  * يدعم: تحليل الملفات، البحث في الإنترنت، إنشاء الصور
- * يستخدم: Groq AI (للمحادثة والتحليل)
+ * يستخدم: Google Gemini AI (مجاني، بدون حدود، يدعم الصور والفيديو)
  */
 
-const groqService = require('./groq-service');
+const geminiService = require('./gemini-service');
 const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
@@ -13,7 +13,7 @@ const { systemPrompts } = require('./ai-system-prompts');
 
 class AdvancedAIService {
   constructor() {
-    this.groqService = groqService;
+    this.aiService = geminiService;
     this.conversationHistory = new Map();
     this.maxHistoryLength = 20;
     this.tools = {
@@ -191,16 +191,15 @@ ${searchResults.map((r, i) => `${i + 1}. ${r.title}\n   ${r.snippet}\n   Source:
 
 Provide a comprehensive and accurate answer based on this information:`;
 
-      const aiResponse = await this.groqService.chat([
+      const aiResponse = await this.aiService.chat([
         { role: 'system', content: lang === 'ar' 
           ? 'أنت مساعد ذكي متخصص في تحليل المعلومات من الإنترنت وتقديم إجابات دقيقة ومفيدة.'
           : 'You are an intelligent assistant specialized in analyzing internet information and providing accurate, helpful answers.'
         },
         { role: 'user', content: analysisPrompt }
       ], {
-        model: 'llama-3.3-70b-versatile',
         temperature: 0.3,
-        max_tokens: 2000
+        maxOutputTokens: 2000
       });
       
       // إضافة المصادر
@@ -209,7 +208,7 @@ Provide a comprehensive and accurate answer based on this information:`;
       
       return {
         content: finalResponse,
-        tools_used: ['search_internet', 'groq_analysis'],
+        tools_used: ['search_internet', 'gemini_analysis'],
         metadata: {
           results_count: searchResults.length,
           sources: searchResults.slice(0, 3).map(r => r.url)
@@ -342,21 +341,20 @@ Please provide:
 4. Best practices
 5. Overall rating (Excellent/Good/Needs Improvement)`;
 
-      const aiResponse = await this.groqService.chat([
+      const aiResponse = await this.aiService.chat([
         { role: 'system', content: lang === 'ar'
           ? 'أنت خبير برمجي متخصص في مراجعة وتحسين الأكواد. قدم تحليلات دقيقة ومفيدة.'
           : 'You are an expert programmer specialized in code review and improvement. Provide accurate and helpful analysis.'
         },
         { role: 'user', content: prompt }
       ], {
-        model: 'llama-3.3-70b-versatile',
         temperature: 0.2,
-        max_tokens: 3000
+        maxOutputTokens: 3000
       });
 
       return {
         content: aiResponse.content,
-        tools_used: ['analyze_code', 'groq_analysis'],
+        tools_used: ['analyze_code', 'gemini_analysis'],
         metadata: { code_length: code.length }
       };
 
@@ -411,21 +409,20 @@ ${content.substring(0, 5000)}${content.length > 5000 ? '\n... (truncated)' : ''}
 
 Provide comprehensive analysis and helpful notes.`;
 
-      const aiResponse = await this.groqService.chat([
+      const aiResponse = await this.aiService.chat([
         { role: 'system', content: lang === 'ar'
           ? 'أنت محلل ملفات ذكي. قدم تحليلات مفصلة ومفيدة.'
           : 'You are an intelligent file analyzer. Provide detailed and helpful analysis.'
         },
         { role: 'user', content: prompt }
       ], {
-        model: 'llama-3.3-70b-versatile',
         temperature: 0.3,
-        max_tokens: 3000
+        maxOutputTokens: 3000
       });
 
       return {
         content: `📁 تحليل الملف: ${filePath}\n\n${aiResponse.content}`,
-        tools_used: ['analyze_file', 'groq_analysis'],
+        tools_used: ['analyze_file', 'gemini_analysis'],
         metadata: {
           file_path: filePath,
           file_size: content.length,
@@ -481,17 +478,16 @@ Provide comprehensive analysis and helpful notes.`;
         { role: 'user', content: message }
       ];
 
-      const aiResponse = await this.groqService.chat(messages, {
-        model: 'llama-3.3-70b-versatile',
+      const aiResponse = await this.aiService.chat(messages, {
         temperature: 0.7,
-        max_tokens: 2500
+        maxOutputTokens: 2500
       });
 
       return {
         content: aiResponse.content,
-        tools_used: ['groq_chat'],
+        tools_used: ['gemini_chat'],
         metadata: {
-          model: 'llama-3.3-70b-versatile',
+          model: 'gemini-1.5-flash',
           tokens: aiResponse.usage
         }
       };
@@ -544,7 +540,7 @@ Provide comprehensive analysis and helpful notes.`;
       activeConversations: this.conversationHistory.size,
       availableTools: Object.keys(this.tools).length,
       tools: this.tools,
-      groqEnabled: this.groqService.enabled
+      geminiEnabled: this.aiService.enabled
     };
   }
 

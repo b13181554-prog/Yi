@@ -19,6 +19,7 @@
   "license": "ISC",
   "dependencies": {
     "@cryptapi/api": "^1.1.1",
+    "@google/generative-ai": "^0.24.1",
     "@types/node": "^22.13.11",
     "axios": "^1.12.2",
     "bottleneck": "^2.19.5",

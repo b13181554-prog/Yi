@@ -1,16 +1,15 @@
-const Groq = require('groq-sdk');
+const geminiService = require('./gemini-service');
 const fs = require('fs').promises;
 const path = require('path');
 const { t } = require('./languages');
 
 class AICodeAgent {
   constructor() {
-    if (!process.env.GROQ_API_KEY) {
-      throw new Error('GROQ_API_KEY is required for AI Code Agent');
+    if (!geminiService.enabled) {
+      throw new Error('Google Gemini API is required for AI Code Agent');
     }
     
-    this.groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-    this.model = 'llama-3.3-70b-versatile';
+    this.aiService = geminiService;
     this.conversationHistory = new Map();
     this.maxHistoryLength = 10;
     
@@ -402,15 +401,12 @@ Security rules:
         ...history
       ];
       
-      const completion = await this.groq.chat.completions.create({
-        model: this.model,
-        messages: messages,
+      const completion = await this.aiService.chat(messages, {
         temperature: 0.3,
-        max_tokens: 4000,
-        top_p: 0.9
+        maxOutputTokens: 4000
       });
       
-      const assistantResponse = completion.choices[0].message.content;
+      const assistantResponse = completion.content;
       
       history.push({
         role: 'assistant',
@@ -423,11 +419,7 @@ Security rules:
         success: true,
         response: assistantResponse,
         intent: intent.intent,
-        usage: {
-          prompt_tokens: completion.usage.prompt_tokens,
-          completion_tokens: completion.usage.completion_tokens,
-          total_tokens: completion.usage.total_tokens
-        }
+        usage: completion.usage || {}
       };
     } catch (error) {
       console.error('AI Code Agent Error:', error);
