@@ -54,7 +54,7 @@ function getMarketTypeText(marketType) {
 
 // Helper function to get translated trading type text
 function getTradingTypeText(tradingType) {
-    return tradingType === 'futures' ? t('trading_type_futures') : t('trading_type_spot');
+    return t('trading_type_spot');
 }
 
 function formatPrice(price) {
@@ -1409,8 +1409,6 @@ function hidePostTradeForm() {
     document.getElementById('my-analyst-profile').style.display = 'block';
     document.getElementById('analysts-list').style.display = 'block';
     
-    document.getElementById('trade-trading-type').value = 'spot';
-    document.getElementById('leverage-field').style.display = 'none';
     document.getElementById('trade-symbol').value = '';
     document.getElementById('trade-entry-price').value = '';
     document.getElementById('trade-target-price').value = '';
@@ -1418,23 +1416,9 @@ function hidePostTradeForm() {
     document.getElementById('trade-analysis').value = '';
 }
 
-function toggleLeverage() {
-    const tradingType = document.getElementById('trade-trading-type').value;
-    const leverageField = document.getElementById('leverage-field');
-    
-    if (tradingType === 'futures') {
-        leverageField.style.display = 'block';
-    } else {
-        leverageField.style.display = 'none';
-    }
-}
-
 async function submitTrade() {
     const symbol = document.getElementById('trade-symbol').value.trim();
     const type = document.getElementById('trade-type').value;
-    const tradingType = document.getElementById('trade-trading-type').value;
-    const leverageValue = document.getElementById('trade-leverage').value;
-    const leverage = (tradingType === 'futures' && leverageValue) ? leverageValue : null;
     const entryPrice = parseFloat(document.getElementById('trade-entry-price').value);
     const targetPrice = parseFloat(document.getElementById('trade-target-price').value);
     const stopLoss = parseFloat(document.getElementById('trade-stop-loss').value);
@@ -1457,8 +1441,7 @@ async function submitTrade() {
                 post_data: {
                     symbol: symbol,
                     type: type,
-                    trading_type: tradingType,
-                    leverage: leverage,
+                    trading_type: 'spot',
                     entry_price: entryPrice,
                     target_price: targetPrice || null,
                     stop_loss: stopLoss || null,
@@ -2157,7 +2140,7 @@ async function analyzeMarketAdvanced() {
             symbol: symbol,
             timeframe: timeframe,
             market_type: marketType,
-            trading_type: tradingType,
+            trading_type: 'spot',
             analysis_type: analysisType,
             indicators,
             payment_mode: selectedPaymentMode,
@@ -2435,7 +2418,6 @@ function displayAdvancedAnalysisResult(analysis, symbol, timeframe, analysisType
             <p><strong>⏰ الإطار الزمني:</strong> ${timeframe}</p>
             <p><strong>💰 السعر الحالي:</strong> $${analysis.currentPrice || analysis.entryPrice || '-'}</p>
             <p><strong>🕐 وقت التحليل:</strong> ${analysis.analysisTime || new Date().toLocaleString('ar-SA')}</p>
-            ${analysis.leverage && analysis.leverage > 1 ? `<p><strong>⚡ الرافعة المالية:</strong> ${analysis.leverage}x</p>` : ''}
         </div>
 
         <div class="trade-setup" style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
