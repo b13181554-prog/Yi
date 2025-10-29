@@ -36,24 +36,28 @@ The Telegram Web App features a dark theme, providing a professional, modern, an
 - **Enterprise Scalability Optimizations**: Batch Data Loader, LRU Membership Cache, and Safe Database Query Guards.
 - **Production-Scale Infrastructure Overhaul**: Telegram Webhooks migration, Docker Containerization, Redis Cluster, Dynamic Queue Auto-Scaling, Kubernetes Orchestration, Nginx Load Balancer, Prometheus Monitoring, and Centralized Configuration.
 - **Complete Multi-Language System Overhaul**: Full language support across all platform components including customer service, bot, and web app. This includes frontend (`public/js/translations.js`), backend (`languages.js` with `t()` function), and AI system prompts (`ai-system-prompts.js`).
-- **AI Code Agent System**: Comprehensive AI-powered programming assistant built with GROQ AI (Llama 3.3 70B) for owner-only use, accessible via `/ai` and `/code_agent` commands. Features include:
-  - Interactive inline keyboard for quick access to common tasks (list files, analyze project, find bugs, continuous chat mode)
-  - Continuous chat mode allowing ongoing conversations with the AI assistant
+- **AI Code Agent System**: Comprehensive AI-powered programming assistant built with GROQ AI (Llama 3.3 70B) for owner-only use, accessible via `/ai` command. Features include:
+  - Simplified direct chat interface - type `/ai` to start chatting immediately
+  - Automatic chat mode activation for continuous conversation
+  - Quick access button in admin panel for easy activation
   - File analysis, code quality suggestions, and intent detection
   - Contextual messaging with HTML sanitization for reliable delivery
   - Smart chunking for long responses to prevent Telegram API errors
   - Chat history management and contextual assistance
   - Read-only operations for project safety
-- **Advanced AI Service for All Users** (October 2025): Enhanced intelligent assistant system powered by Groq AI, available to all users with the following capabilities:
+  - Clear, minimalist interface focused on direct interaction
+- **Advanced AI Service for All Users** (October 2025 - Updated November 2025): Enhanced intelligent assistant system powered by Groq AI, available to all users with the following capabilities:
   - **Smart Chat (`/ask`)**: Intelligent conversation with full context, market analysis, and comprehensive answers to user questions
+  - **Group Chat Support**: AI assistant responds in Telegram groups when mentioned (@bot) or when replying to bot's message with full 7-language support (ar, en, fr, es, de, ru, zh)
   - **Internet Search (`/search`)**: Real-time web search using DuckDuckGo API (free, no API key required) with AI-powered analysis of results and cited sources
   - **Code Analysis (`/analyze`)**: Comprehensive file and code analysis, bug detection, improvement suggestions, and quality ratings
   - **Image Generation (`/imagine`)**: AI-powered image creation support (ready for Replicate API integration with Stable Diffusion)
   - **Conversation History Management**: Maintains context across multiple messages for intelligent follow-up responses
-  - **Multi-language Support**: Full Arabic and English support across all AI features
+  - **Multi-language Support**: Full support for 7 languages (Arabic, English, French, Spanish, German, Russian, Chinese) across all AI features and group interactions
   - **Intent Detection**: Smart detection of user intentions (search, chat, analyze, generate) for appropriate handling
   - **File Processing**: Ability to read, analyze, and provide insights on project files safely with security restrictions
   - **No Additional API Keys Required**: Uses existing Groq AI infrastructure (except for image generation which optionally uses Replicate)
+  - **Smart Reply in Groups**: Automatically detects user language and responds accordingly in group conversations
 
 **Feature Specifications**:
 The platform offers a Web App for technical analysis, top movers, a wallet for USDT TRC20, and account management. Trading features include technical analysis for diverse asset classes and trending cryptocurrency tracking. Financial features include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management includes analyst subscriptions and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, and withdrawal processing. Automated trade signal monitoring and a blockchain-based pump detection system are integrated.

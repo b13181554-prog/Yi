@@ -42,6 +42,9 @@ async function initAdminCommands(bot) {
             { text: `📢 ${t(lang, 'admin_broadcast')}`, callback_data: 'admin_broadcast' }
           ],
           [
+            { text: `🤖 ${lang === 'ar' ? 'مساعدي الذكي' : 'My AI Assistant'}`, callback_data: 'admin_open_ai' }
+          ],
+          [
             { text: `🔄 ${t(lang, 'admin_refresh')}`, callback_data: 'admin_refresh' }
           ]
         ]
@@ -66,7 +69,7 @@ ${t(lang, 'admin_choose_operation')}
     const adminCallbacks = [
       'admin_stats', 'admin_users', 'admin_withdrawals', 'admin_transactions',
       'admin_analysts', 'admin_referrals', 'admin_broadcast', 'admin_refresh',
-      'admin_back', 'admin_search_user'
+      'admin_back', 'admin_search_user', 'admin_open_ai'
     ];
     
     const isAdminCallback = adminCallbacks.some(cb => data.startsWith(cb)) || 
@@ -391,6 +394,37 @@ ${t(lang, 'admin_choose_operation')}
         await safeEditMessageText(bot, message, {
           chat_id: chatId,
           message_id: query.message.message_id,
+          parse_mode: 'HTML',
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: `🔙 ${t(lang, 'admin_back')}`, callback_data: 'admin_back' }]
+            ]
+          }
+        });
+      }
+      
+      // فتح المساعد الذكي
+      else if (data === 'admin_open_ai') {
+        await safeAnswerCallbackQuery(bot, query.id);
+        await safeSendMessage(bot, chatId, `
+🤖 <b>${lang === 'ar' ? 'مساعدك الذكي الخاص' : 'Your Personal AI Assistant'}</b>
+
+${lang === 'ar' ? '✨ للبدء، استخدم الأمر:' : '✨ To start, use the command:'}
+
+/ai
+
+${lang === 'ar' ? '📝 أو اكتب أي سؤال مباشرة بعد /ai' : '📝 Or type any question directly after /ai'}
+
+<b>${lang === 'ar' ? 'مثال:' : 'Example:'}</b>
+/ai ${lang === 'ar' ? 'اقرأ ملف bot.js واشرحه' : 'read bot.js and explain it'}
+
+${lang === 'ar' ? '💡 المساعد الذكي يستطيع:' : '💡 The AI assistant can:'}
+• ${lang === 'ar' ? 'قراءة وتحليل ملفات المشروع' : 'Read and analyze project files'}
+• ${lang === 'ar' ? 'إيجاد الأخطاء والمشاكل' : 'Find bugs and issues'}
+• ${lang === 'ar' ? 'اقتراح حلول وتحسينات' : 'Suggest solutions and improvements'}
+• ${lang === 'ar' ? 'البحث في الكود' : 'Search through code'}
+• ${lang === 'ar' ? 'الإجابة على أسئلتك التقنية' : 'Answer your technical questions'}
+        `, { 
           parse_mode: 'HTML',
           reply_markup: {
             inline_keyboard: [
@@ -891,6 +925,9 @@ ${t(lang, 'admin_will_be_deleted')}
             ],
             [
               { text: `📢 ${t(lang, 'admin_broadcast')}`, callback_data: 'admin_broadcast' }
+            ],
+            [
+              { text: `🤖 ${lang === 'ar' ? 'مساعدي الذكي' : 'My AI Assistant'}`, callback_data: 'admin_open_ai' }
             ],
             [
               { text: `🔄 ${t(lang, 'admin_refresh')}`, callback_data: 'admin_refresh' }

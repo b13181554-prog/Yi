@@ -1158,22 +1158,74 @@ bot.on('message', async (msg) => {
     const user = await db.getUser(userId);
     if (!user) return;
 
+    // تحديد لغة المستخدم
+    const lang = user.language || 'ar';
+
+    // دعم الرد في المجموعات - للجميع
+    const chatType = msg.chat.type;
+    const isGroup = chatType === 'group' || chatType === 'supergroup';
+    
+    if (isGroup) {
+      const botInfo = await bot.getMe();
+      const botUsername = botInfo.username;
+      const botId = botInfo.id;
+      
+      // التحقق من أن البوت تم منشنه أو الرسالة رد على رسالة البوت
+      const isMentioned = text.includes(`@${botUsername}`);
+      const isReplyToBot = msg.reply_to_message && msg.reply_to_message.from.id === botId;
+      
+      if (isMentioned || isReplyToBot) {
+        // إزالة المنشن من النص
+        const cleanText = text.replace(new RegExp(`@${botUsername}`, 'g'), '').trim();
+        
+        if (!cleanText) return;
+        
+        // استخدام المساعد الذكي المتقدم للرد
+        const advancedAIService = require('./advanced-ai-service');
+        
+        // إرسال إشارة كتابة
+        bot.sendChatAction(chatId, 'typing').catch(() => {});
+        
+        const result = await advancedAIService.processRequest(userId, cleanText, { lang });
+        
+        if (result.success) {
+          const responseMessage = `🤖 ${result.content}`;
+          
+          if (responseMessage.length > 4096) {
+            const chunks = responseMessage.match(/[\s\S]{1,4096}/g) || [];
+            for (const chunk of chunks) {
+              await safeSendMessage(bot, chatId, chunk, { 
+                parse_mode: 'HTML',
+                reply_to_message_id: msg.message_id 
+              });
+            }
+          } else {
+            await safeSendMessage(bot, chatId, responseMessage, { 
+              parse_mode: 'HTML',
+              reply_to_message_id: msg.message_id 
+            });
+          }
+        } else {
+          await safeSendMessage(bot, chatId, `❌ ${result.content}`, { 
+            parse_mode: 'HTML',
+            reply_to_message_id: msg.message_id 
+          });
+        }
+        
+        return;
+      }
+    }
+
+    // دردشة المالك الخاصة مع AI Code Agent
     if (userId === config.OWNER_ID && aiChatMode.get(userId)) {
-      const lang = user.language || 'ar';
       const aiCodeAgent = require('./ai-code-agent');
       
-      await safeSendMessage(bot, chatId, lang === 'ar' ? '⏳ جاري معالجة طلبك...' : '⏳ Processing your request...', { parse_mode: 'HTML' });
+      await safeSendMessage(bot, chatId, '⏳', { parse_mode: 'HTML' });
       
       const result = await aiCodeAgent.processUserRequest(userId, text, lang);
       
       if (result.success) {
-        const responseMessage = `
-🤖 <b>${lang === 'ar' ? 'المساعد الذكي' : 'AI Assistant'}</b>
-
-${escapeHtml(result.response)}
-
-<i>📊 ${lang === 'ar' ? 'استخدام' : 'Usage'}: ${result.usage.total_tokens} ${lang === 'ar' ? 'رمز' : 'tokens'}</i>
-        `;
+        const responseMessage = `🤖 ${escapeHtml(result.response)}`;
 
         if (responseMessage.length > 4096) {
           const chunks = responseMessage.match(/[\s\S]{1,4096}/g) || [];
@@ -1184,11 +1236,7 @@ ${escapeHtml(result.response)}
           await safeSendMessage(bot, chatId, responseMessage, { parse_mode: 'HTML' });
         }
       } else {
-        await safeSendMessage(bot, chatId, `
-❌ <b>${lang === 'ar' ? 'خطأ' : 'Error'}</b>
-
-${result.fallback || result.error}
-        `, { parse_mode: 'HTML' });
+        await safeSendMessage(bot, chatId, `❌ ${result.fallback || result.error}`, { parse_mode: 'HTML' });
       }
       
       return;
@@ -1264,10 +1312,10 @@ ${t(ownerLang, 'description_label')} ${analyst.description}
   }
 });
 
-// وضع المحادثة مع AI - للمالك فقط
+// وضع المحادثة مع AI - للمالك فقط (يتم تفعيله تلقائياً)
 const aiChatMode = new Map();
 
-// أمر /ai للمالك - واجهة محسنة للمساعد البرمجي
+// أمر /ai للمالك - دردشة مباشرة مبسطة
 bot.onText(/\/ai(.*)/, async (msg, match) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
@@ -1285,116 +1333,97 @@ bot.onText(/\/ai(.*)/, async (msg, match) => {
 
     const aiCodeAgent = require('./ai-code-agent');
 
+    // إذا لم يكن هناك رسالة، عرض رسالة الترحيب وتفعيل الدردشة
     if (!userMessage) {
       const stats = aiCodeAgent.getStats();
+      
+      // تفعيل وضع المحادثة تلقائياً
+      aiChatMode.set(userId, true);
       
       const keyboard = {
         reply_markup: {
           inline_keyboard: [
             [
-              { text: lang === 'ar' ? '📂 عرض ملفات المشروع' : '📂 List Project Files', callback_data: 'ai_list_files' },
-            ],
-            [
-              { text: lang === 'ar' ? '🔍 فحص المشروع بالكامل' : '🔍 Full Project Analysis', callback_data: 'ai_analyze_project' },
-            ],
-            [
-              { text: lang === 'ar' ? '🐛 البحث عن الأخطاء' : '🐛 Find Bugs', callback_data: 'ai_find_bugs' },
-            ],
-            [
-              { text: lang === 'ar' ? '💬 وضع المحادثة المستمرة' : '💬 Chat Mode', callback_data: 'ai_chat_mode' },
+              { text: lang === 'ar' ? '💬 بدء الدردشة مع المساعد' : '💬 Start Chat with Assistant', callback_data: 'ai_start_chat' },
             ],
             [
               { text: lang === 'ar' ? '🗑️ مسح السجل' : '🗑️ Clear History', callback_data: 'ai_clear_history' },
+              { text: lang === 'ar' ? '🔴 إيقاف الدردشة' : '🔴 Stop Chat', callback_data: 'ai_stop_chat' },
             ]
           ]
         }
       };
 
       const helpMessage = lang === 'ar' ? `
-🤖 <b>المساعد الذكي للمشروع - AI Assistant</b>
+🤖 <b>مساعدك الذكي الخاص</b>
 
-مرحباً ${user.first_name}! أنا مساعدك الذكي المتخصص في مشروع OBENTCHI 🚀
+مرحباً ${user.first_name}! أنا مساعدك البرمجي الشخصي 🚀
 
-<b>✨ ماذا أستطيع أن أفعل لك؟</b>
+<b>✨ ماذا أستطيع أن أفعل؟</b>
 
-• 📂 قراءة وتحليل جميع ملفات المشروع
-• 🐛 إيجاد الأخطاء والمشاكل البرمجية
-• 💡 اقتراح تحسينات وحلول
+• 📂 قراءة وتحليل ملفات المشروع
+• 🐛 إيجاد الأخطاء والمشاكل
+• 💡 اقتراح حلول وتحسينات
 • 🔍 البحث في الكود
-• 📝 توليد كود جديد
-• 💬 الإجابة على أسئلتك التقنية
+• 💬 الإجابة على أسئلتك
 
-<b>📊 الإحصائيات الحالية:</b>
+<b>📊 الحالة:</b>
 • المحادثات النشطة: ${stats.activeConversations}
 • النموذج: ${stats.model}
 
-<b>💡 طرق الاستخدام:</b>
+<b>💡 كيف تستخدمني؟</b>
 
-1️⃣ <b>استخدام الأزرار:</b>
-اضغط على الأزرار أدناه للوصول السريع
+فقط ابدأ بالكتابة! أي رسالة ترسلها الآن ستصلني مباشرة 💬
 
-2️⃣ <b>كتابة أمر مباشر:</b>
-/ai ما هي ملفات المشروع الرئيسية؟
+<b>🎯 أمثلة:</b>
+• اقرأ ملف bot.js واشرحه
+• هل يوجد أخطاء في الكود؟
+• كيف أحسن الأداء؟
+• ابحث عن استخدامات Redis
 
-3️⃣ <b>وضع المحادثة:</b>
-فعّل وضع المحادثة المستمرة للدردشة بدون تكرار /ai
-
-<b>🎯 أمثلة على الأسئلة:</b>
-• "اقرأ ملف bot.js واشرح لي كيف يعمل"
-• "هل يوجد أخطاء في نظام الاشتراكات؟"
-• "كيف أحسن أداء قاعدة البيانات؟"
-• "ابحث عن جميع استخدامات Redis في المشروع"
+<b>✅ وضع الدردشة: مُفعّل الآن</b>
+اكتب أي شيء وسأرد عليك مباشرة!
       ` : `
-🤖 <b>AI Project Assistant</b>
+🤖 <b>Your Personal AI Assistant</b>
 
-Hello ${user.first_name}! I'm your intelligent assistant for OBENTCHI project 🚀
+Hello ${user.first_name}! I'm your personal programming assistant 🚀
 
-<b>✨ What can I do for you?</b>
+<b>✨ What can I do?</b>
 
-• 📂 Read and analyze all project files
-• 🐛 Find bugs and code issues
-• 💡 Suggest improvements and solutions
+• 📂 Read and analyze project files
+• 🐛 Find bugs and issues
+• 💡 Suggest solutions and improvements
 • 🔍 Search through code
-• 📝 Generate new code
-• 💬 Answer your technical questions
+• 💬 Answer your questions
 
-<b>📊 Current Statistics:</b>
+<b>📊 Status:</b>
 • Active Conversations: ${stats.activeConversations}
 • Model: ${stats.model}
 
-<b>💡 How to Use:</b>
+<b>💡 How to use me?</b>
 
-1️⃣ <b>Use Buttons:</b>
-Click buttons below for quick access
+Just start typing! Any message you send now will reach me directly 💬
 
-2️⃣ <b>Direct Command:</b>
-/ai what are the main project files?
+<b>🎯 Examples:</b>
+• Read bot.js and explain it
+• Are there any bugs in the code?
+• How to improve performance?
+• Search for Redis usage
 
-3️⃣ <b>Chat Mode:</b>
-Enable continuous chat mode to talk without repeating /ai
-
-<b>🎯 Example Questions:</b>
-• "Read bot.js and explain how it works"
-• "Are there any bugs in subscription system?"
-• "How to improve database performance?"
-• "Search for all Redis usage in project"
+<b>✅ Chat Mode: Active Now</b>
+Type anything and I'll respond directly!
       `;
 
       return safeSendMessage(bot, chatId, helpMessage, { parse_mode: 'HTML', ...keyboard });
     }
 
-    await safeSendMessage(bot, chatId, lang === 'ar' ? '⏳ جاري معالجة طلبك...' : '⏳ Processing your request...', { parse_mode: 'HTML' });
+    // معالجة الرسالة مباشرة
+    await safeSendMessage(bot, chatId, '⏳', { parse_mode: 'HTML' });
 
     const result = await aiCodeAgent.processUserRequest(userId, userMessage, lang);
 
     if (result.success) {
-      const responseMessage = `
-🤖 <b>${lang === 'ar' ? 'المساعد الذكي' : 'AI Assistant'}</b>
-
-${escapeHtml(result.response)}
-
-<i>📊 ${lang === 'ar' ? 'استخدام' : 'Usage'}: ${result.usage.total_tokens} ${lang === 'ar' ? 'رمز' : 'tokens'}</i>
-      `;
+      const responseMessage = `🤖 ${escapeHtml(result.response)}`;
 
       if (responseMessage.length > 4096) {
         const chunks = responseMessage.match(/[\s\S]{1,4096}/g) || [];
@@ -1405,11 +1434,7 @@ ${escapeHtml(result.response)}
         await safeSendMessage(bot, chatId, responseMessage, { parse_mode: 'HTML' });
       }
     } else {
-      await safeSendMessage(bot, chatId, `
-❌ <b>${lang === 'ar' ? 'خطأ' : 'Error'}</b>
-
-${result.fallback || result.error}
-      `, { parse_mode: 'HTML' });
+      await safeSendMessage(bot, chatId, `❌ ${result.fallback || result.error}`, { parse_mode: 'HTML' });
     }
 
   } catch (error) {
