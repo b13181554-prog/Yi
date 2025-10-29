@@ -3,6 +3,36 @@
 ## Overview
 OBENTCHI is a Telegram-based cryptocurrency trading bot designed to offer technical analysis, real-time market data, and automated trading across crypto and forex markets. It features a Telegram Web App for user interaction, automated withdrawal/deposit systems, and multi-language support. The project aims to be a robust, accessible trading assistant, empowering users with advanced analytical tools and a seamless trading experience to secure a significant market share in automated trading.
 
+## Islamic Compliance (Sharia Compliance)
+**Status**: FULLY HALAL COMPLIANT ✅
+
+OBENTCHI has been completely redesigned to ensure full compliance with Islamic Sharia law by removing all haram (forbidden) elements:
+
+### Removed Features (Haram Elements):
+1. **Futures Trading** - Removed completely (Violates Gharar - excessive uncertainty)
+2. **Leverage/Margin Trading** - Removed completely (Violates Riba - interest-based transactions)
+
+### Compliant Features (Halal):
+1. **Spot Trading Only** - Immediate exchange of assets (fully permissible)
+2. **Technical Analysis** - Educational market analysis tools
+3. **AI-Powered Recommendations** - Data-driven insights for informed decisions
+4. **Subscription System** - Fixed monthly fee (10 USDT) for service access
+5. **Referral System** - Commission-based rewards for user referrals (3-level: 10%, 5%, 2.5%)
+
+### Compliance Implementation (October 29, 2025):
+- Removed all futures trading capabilities from analysis modules (analysis.js, ultra-analysis.js, zero-reversal-analysis.js)
+- Eliminated leverage calculations and parameters across all systems
+- Updated frontend interface to remove futures and leverage selection options
+- Modified database schema to exclude leverage fields
+- Updated all API endpoints to default to spot trading only
+- Removed all UI elements related to futures and leverage from Web App
+- Updated notification messages to reflect spot-only trading
+
+### Trading Type:
+- **Only Spot Trading**: All trading recommendations and analysis now exclusively support spot (cash) trading
+- **No Speculation**: Focus on immediate asset exchange rather than speculative contracts
+- **Risk Management**: Conservative risk-reward ratios (1:2) suitable for spot trading
+
 ## User Preferences
 - Default Language: Arabic (ar)
 - Multi-Language Support: Full support for 7 languages (Arabic, English, French, Spanish, German, Russian, Chinese)

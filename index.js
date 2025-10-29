@@ -2201,7 +2201,8 @@ app.post('/api/analyze-advanced', async (req, res) => {
   let transactionId = null;
   
   try {
-    const { user_id, symbol, timeframe, market_type, trading_type, analysis_type, payment_mode, init_data } = req.body;
+    const { user_id, symbol, timeframe, market_type, analysis_type, payment_mode, init_data } = req.body;
+    const trading_type = 'spot';
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
@@ -2290,7 +2291,7 @@ app.post('/api/analyze-advanced', async (req, res) => {
         ];
     }
     
-    const recommendation = analysis.getTradeRecommendationWithMarketType(market_type, trading_type || 'spot');
+    const recommendation = analysis.getTradeRecommendationWithMarketType(market_type);
     const allIndicators = analysis.getAnalysis(indicators);
     
     // فحص الجودة واسترجاع تلقائي إذا كانت منخفضة
@@ -2328,7 +2329,8 @@ app.post('/api/analyze-ultra', async (req, res) => {
   let transactionId = null;
   
   try {
-    const { user_id, symbol, timeframe, market_type, trading_type, payment_mode, init_data } = req.body;
+    const { user_id, symbol, timeframe, market_type, payment_mode, init_data } = req.body;
+    const trading_type = 'spot';
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
@@ -2384,7 +2386,7 @@ app.post('/api/analyze-ultra', async (req, res) => {
     const UltraAnalysis = require('./ultra-analysis');
     const ultraAnalysis = new UltraAnalysis(candles);
     
-    const ultraRecommendation = ultraAnalysis.getUltraRecommendation(market_type, trading_type || 'spot', timeframe);
+    const ultraRecommendation = ultraAnalysis.getUltraRecommendation(market_type, timeframe);
     
     // فحص الجودة واسترجاع تلقائي إذا كانت منخفضة
     if (payment_mode === 'per_analysis' && transactionId) {
@@ -2409,7 +2411,8 @@ app.post('/api/analyze-ultra', async (req, res) => {
 
 app.post('/api/analyze-zero-reversal', async (req, res) => {
   try {
-    const { user_id, symbol, timeframe, market_type, trading_type, payment_mode, init_data } = req.body;
+    const { user_id, symbol, timeframe, market_type, payment_mode, init_data } = req.body;
+    const trading_type = 'spot';
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
@@ -2478,7 +2481,7 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
     const ZeroReversalAnalysis = require('./zero-reversal-analysis');
     const zeroReversalAnalysis = new ZeroReversalAnalysis(candles);
     
-    const zeroReversalRecommendation = zeroReversalAnalysis.getZeroReversalRecommendation(market_type, trading_type || 'spot', timeframe);
+    const zeroReversalRecommendation = zeroReversalAnalysis.getZeroReversalRecommendation(market_type, timeframe);
     
     // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
     if (payment_mode === 'per_analysis' && transactionId) {
@@ -2503,7 +2506,8 @@ app.post('/api/analyze-zero-reversal', async (req, res) => {
 
 app.post('/api/analyze-v1-pro', async (req, res) => {
   try {
-    const { user_id, symbol, timeframe, market_type, trading_type, balance, payment_mode, init_data } = req.body;
+    const { user_id, symbol, timeframe, market_type, balance, payment_mode, init_data } = req.body;
+    const trading_type = 'spot';
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
@@ -2589,7 +2593,7 @@ app.post('/api/analyze-v1-pro', async (req, res) => {
     const v1ProResult = await v1ProAnalysis.getCompleteAnalysis();
     
     // إضافة معلومات إضافية
-    v1ProResult.tradingType = trading_type || 'spot';
+    v1ProResult.tradingType = 'spot';
     v1ProResult.marketType = market_type;
     v1ProResult.timeframe = timeframe;
     
@@ -2616,7 +2620,8 @@ app.post('/api/analyze-v1-pro', async (req, res) => {
 
 app.post('/api/analyze-pump', async (req, res) => {
   try {
-    const { symbol, market_type, timeframe, trading_type, payment_mode, init_data, user_id } = req.body;
+    const { symbol, market_type, timeframe, payment_mode, init_data, user_id } = req.body;
+    const trading_type = 'spot';
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
@@ -2677,7 +2682,7 @@ app.post('/api/analyze-pump', async (req, res) => {
     
     // استخدام await لأن getPumpPotential أصبح async
     const pumpPotential = await pumpAnalysis.getPumpPotential();
-    pumpPotential.tradingType = trading_type || 'spot';
+    pumpPotential.tradingType = 'spot';
     pumpPotential.marketType = market_type;
     
     // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
@@ -2703,7 +2708,8 @@ app.post('/api/analyze-pump', async (req, res) => {
 
 app.post('/api/analyze-master', async (req, res) => {
   try {
-    const { user_id, symbol, timeframe, market_type, trading_type, payment_mode, init_data } = req.body;
+    const { user_id, symbol, timeframe, market_type, payment_mode, init_data } = req.body;
+    const trading_type = 'spot';
     
     if (!verifyTelegramWebAppData(init_data)) {
       return res.json({ success: false, error: 'Unauthorized: Invalid Telegram data' });
@@ -2771,7 +2777,7 @@ app.post('/api/analyze-master', async (req, res) => {
     const MasterAnalysis = require('./master-analysis');
     const masterAnalysis = new MasterAnalysis(candles, symbol, timeframe, market_type);
     
-    const masterResult = await masterAnalysis.getMasterAnalysis(trading_type || 'spot');
+    const masterResult = await masterAnalysis.getMasterAnalysis('spot');
     
     // فحص جودة الإشارة واسترجاع المبلغ إذا كانت أقل من 60%
     if (payment_mode === 'per_analysis' && transactionId) {
