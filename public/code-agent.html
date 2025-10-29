@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المساعد البرمجي الذكي - OBENTCHI</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .code-agent-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+        }
+
+        .code-agent-header {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .code-agent-header h1 {
+            color: #fff;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .code-agent-header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .messages-area {
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            padding: 15px 20px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .message.assistant {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: #e2e8f0;
+            align-self: flex-start;
+            border-left: 4px solid #00b4d8;
+        }
+
+        .message.system {
+            background: linear-gradient(135deg, #553c9a 0%, #6b21a8 100%);
+            color: white;
+            align-self: center;
+            text-align: center;
+            font-size: 0.9rem;
+            padding: 10px 15px;
+        }
+
+        .message code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .message pre {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-area input:focus {
+            outline: none;
+            border-color: #00b4d8;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .input-area button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .input-area button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 180, 216, 0.4);
+        }
+
+        .input-area button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .tools-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tool-card {
+            background: linear-gradient(135deg, rgba(0, 180, 216, 0.1) 0%, rgba(0, 119, 182, 0.1) 100%);
+            border: 2px solid rgba(0, 180, 216, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 180, 216, 0.3);
+            border-color: rgba(0, 180, 216, 0.5);
+        }
+
+        .tool-card h3 {
+            color: #00b4d8;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tool-card p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #00b4d8;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-item .value {
+            color: #00b4d8;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .stat-item .label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .unauthorized-message {
+            text-align: center;
+            padding: 50px 20px;
+            color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .code-agent-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .messages-area {
+                height: 400px;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="code-agent-container" id="appContainer">
+        <div class="code-agent-header">
+            <h1>
+                <span>🤖</span>
+                <span data-i18n="code_agent_title">المساعد البرمجي الذكي</span>
+            </h1>
+            <p data-i18n="code_agent_subtitle">مساعدك الشخصي لتطوير وتحسين مشروع OBENTCHI</p>
+        </div>
+
+        <div id="statsBar" class="stats-bar" style="display: none;">
+            <div class="stat-item">
+                <div class="value" id="conversationsCount">0</div>
+                <div class="label" data-i18n="active_conversations">محادثات نشطة</div>
+            </div>
+            <div class="stat-item">
+                <div class="value" id="modelName">llama-3.3-70b</div>
+                <div class="label" data-i18n="ai_model">نموذج الذكاء الاصطناعي</div>
+            </div>
+        </div>
+
+        <div id="toolsSection" class="tools-section">
+            <div class="tool-card" onclick="sendQuickCommand('اعرض قائمة الملفات الرئيسية')">
+                <h3>📂 <span data-i18n="tool_list_files">عرض الملفات</span></h3>
+                <p data-i18n="tool_list_files_desc">عرض جميع ملفات المشروع</p>
+            </div>
+            <div class="tool-card" onclick="sendQuickCommand('اقرأ ملف bot.js واشرحه')">
+                <h3>📖 <span data-i18n="tool_read_file">قراءة ملف</span></h3>
+                <p data-i18n="tool_read_file_desc">قراءة وشرح ملف معين</p>
+            </div>
+            <div class="tool-card" onclick="sendQuickCommand('راجع الكود وابحث عن مشاكل محتملة')">
+                <h3>🔍 <span data-i18n="tool_analyze_code">تحليل الكود</span></h3>
+                <p data-i18n="tool_analyze_code_desc">مراجعة وتحليل الكود</p>
+            </div>
+            <div class="tool-card" onclick="sendQuickCommand('اقترح تحسينات لأداء المشروع')">
+                <h3>💡 <span data-i18n="tool_suggestions">اقتراحات</span></h3>
+                <p data-i18n="tool_suggestions_desc">اقتراح تحسينات ممكنة</p>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="messages-area" id="messagesArea"></div>
+            <div class="loading" id="loadingIndicator">
+                <span>⏳</span> <span data-i18n="processing">جاري المعالجة...</span>
+            </div>
+            <div class="input-area">
+                <input 
+                    type="text" 
+                    id="userInput" 
+                    placeholder="اكتب سؤالك أو طلبك هنا..." 
+                    data-i18n-placeholder="input_placeholder"
+                    onkeypress="handleKeyPress(event)"
+                >
+                <button onclick="sendMessage()" id="sendButton">
+                    <span data-i18n="send">إرسال</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="js/translations.js"></script>
+    <script>
+        let currentLanguage = 'ar';
+        let userId = null;
+        let isAuthorized = false;
+
+        function initApp() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                tg.ready();
+                tg.expand();
+
+                const initData = tg.initDataUnsafe;
+                if (initData && initData.user) {
+                    userId = initData.user.id;
+                    checkAuthorization();
+                }
+
+                currentLanguage = initData?.user?.language_code || 'ar';
+                applyTranslations(currentLanguage);
+            }
+        }
+
+        async function checkAuthorization() {
+            try {
+                const response = await fetch('/api/user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        user_id: userId,
+                        initData: window.Telegram.WebApp.initData 
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success && data.user) {
+                    isAuthorized = data.user.user_id === parseInt('{{OWNER_ID}}');
+                    
+                    if (isAuthorized) {
+                        loadStats();
+                        addSystemMessage(currentLanguage === 'ar' 
+                            ? 'مرحباً! أنا المساعد البرمجي الذكي. كيف يمكنني مساعدتك اليوم؟'
+                            : 'Hello! I am your AI Code Agent. How can I help you today?'
+                        );
+                    } else {
+                        showUnauthorized();
+                    }
+                }
+            } catch (error) {
+                console.error('Authorization check failed:', error);
+            }
+        }
+
+        function showUnauthorized() {
+            document.getElementById('appContainer').innerHTML = `
+                <div class="unauthorized-message">
+                    <h2>⛔️ ${currentLanguage === 'ar' ? 'غير مصرح' : 'Unauthorized'}</h2>
+                    <p>${currentLanguage === 'ar' 
+                        ? 'هذه الميزة متاحة للمالك فقط'
+                        : 'This feature is only available for the owner'
+                    }</p>
+                </div>
+            `;
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/code-agent/stats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        user_id: userId,
+                        initData: window.Telegram.WebApp.initData 
+                    })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('conversationsCount').textContent = data.stats.activeConversations;
+                    document.getElementById('modelName').textContent = data.stats.model;
+                    document.getElementById('statsBar').style.display = 'flex';
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        function addMessage(content, type = 'user') {
+            const messagesArea = document.getElementById('messagesArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = formatMessage(content);
+            messagesArea.appendChild(messageDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function addSystemMessage(content) {
+            const messagesArea = document.getElementById('messagesArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system';
+            messageDiv.textContent = content;
+            messagesArea.appendChild(messageDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function formatMessage(content) {
+            content = content.replace(/```(.*?)```/gs, '<pre><code>$1</code></pre>');
+            content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
+            content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            content = content.replace(/\n/g, '<br>');
+            return content;
+        }
+
+        async function sendMessage() {
+            if (!isAuthorized) return;
+
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            addMessage(message, 'user');
+            input.value = '';
+
+            document.getElementById('sendButton').disabled = true;
+            document.getElementById('loadingIndicator').classList.add('active');
+
+            try {
+                const response = await fetch('/api/code-agent/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        user_id: userId,
+                        message: message,
+                        language: currentLanguage,
+                        initData: window.Telegram.WebApp.initData 
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    addMessage(data.response, 'assistant');
+                    loadStats();
+                } else {
+                    addMessage(data.fallback || data.error, 'system');
+                }
+            } catch (error) {
+                addMessage(currentLanguage === 'ar' 
+                    ? 'عذراً، حدث خطأ في الاتصال'
+                    : 'Sorry, a connection error occurred', 
+                    'system'
+                );
+            } finally {
+                document.getElementById('sendButton').disabled = false;
+                document.getElementById('loadingIndicator').classList.remove('active');
+            }
+        }
+
+        function sendQuickCommand(command) {
+            if (!isAuthorized) return;
+            document.getElementById('userInput').value = command;
+            sendMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        window.addEventListener('load', initApp);
+    </script>
+</body>
+</html>

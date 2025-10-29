@@ -323,6 +323,108 @@ app.post('/api/admin/costs/alerts', async (req, res) => {
   }
 });
 
+app.post('/api/code-agent/chat', authenticateAPI, async (req, res) => {
+  try {
+    const { user_id, message, language } = req.body;
+    
+    if (user_id !== config.OWNER_ID) {
+      return res.status(403).json({
+        success: false,
+        error: 'Unauthorized'
+      });
+    }
+    
+    const aiCodeAgent = require('./ai-code-agent');
+    const result = await aiCodeAgent.processUserRequest(user_id, message, language || 'ar');
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Code Agent Chat Error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      fallback: language === 'ar' 
+        ? 'عذراً، حدث خطأ في معالجة طلبك.'
+        : 'Sorry, an error occurred processing your request.'
+    });
+  }
+});
+
+app.post('/api/code-agent/stats', authenticateAPI, async (req, res) => {
+  try {
+    const { user_id } = req.body;
+    
+    if (user_id !== config.OWNER_ID) {
+      return res.status(403).json({
+        success: false,
+        error: 'Unauthorized'
+      });
+    }
+    
+    const aiCodeAgent = require('./ai-code-agent');
+    const stats = aiCodeAgent.getStats();
+    
+    res.json({
+      success: true,
+      stats
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.post('/api/code-agent/tool', authenticateAPI, async (req, res) => {
+  try {
+    const { user_id, tool_name, parameters, language } = req.body;
+    
+    if (user_id !== config.OWNER_ID) {
+      return res.status(403).json({
+        success: false,
+        error: 'Unauthorized'
+      });
+    }
+    
+    const aiCodeAgent = require('./ai-code-agent');
+    const result = await aiCodeAgent.executeToolCommand(user_id, tool_name, parameters, language || 'ar');
+    
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+app.post('/api/code-agent/clear', authenticateAPI, async (req, res) => {
+  try {
+    const { user_id } = req.body;
+    
+    if (user_id !== config.OWNER_ID) {
+      return res.status(403).json({
+        success: false,
+        error: 'Unauthorized'
+      });
+    }
+    
+    const aiCodeAgent = require('./ai-code-agent');
+    const result = aiCodeAgent.clearHistory(user_id);
+    
+    res.json({
+      success: true,
+      message: 'History cleared successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // تطبيق Rate Limiting على جميع API endpoints
 app.use('/api', apiRateLimit);
 

@@ -1083,6 +1083,135 @@ ${t(ownerLang, 'description_label')} ${analyst.description}
   }
 });
 
+bot.onText(/\/code_agent(.*)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const userId = msg.from.id;
+  const userMessage = match[1].trim();
+
+  if (userId !== config.OWNER_ID) {
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+    return safeSendMessage(bot, chatId, `❌ ${t(lang, 'admin_unauthorized')}`);
+  }
+
+  try {
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+
+    const aiCodeAgent = require('./ai-code-agent');
+
+    if (!userMessage) {
+      const tools = aiCodeAgent.getAvailableTools();
+      const stats = aiCodeAgent.getStats();
+      
+      const toolsList = tools.map(tool => 
+        `🔧 <b>${tool.name}</b>\n   ${tool.description}\n`
+      ).join('\n');
+
+      const helpMessage = lang === 'ar' ? `
+🤖 <b>المساعد البرمجي الذكي</b>
+
+مرحباً بك في نظام المساعد البرمجي المتقدم!
+
+<b>📚 الأدوات المتاحة:</b>
+${toolsList}
+
+<b>💡 أمثلة على الاستخدام:</b>
+
+1️⃣ <b>مراجعة كود:</b>
+/code_agent راجع ملف bot.js وأخبرني بالمشاكل
+
+2️⃣ <b>قراءة ملف:</b>
+/code_agent اقرأ ملف database.js واشرحه لي
+
+3️⃣ <b>اقتراح تحسين:</b>
+/code_agent كيف أحسن أداء نظام الاشتراكات؟
+
+4️⃣ <b>البحث في الملفات:</b>
+/code_agent ابحث عن جميع استخدامات groq في المشروع
+
+5️⃣ <b>توليد كود جديد:</b>
+/code_agent اكتب لي دالة لحساب الرسوم
+
+<b>📊 الإحصائيات:</b>
+• المحادثات النشطة: ${stats.activeConversations}
+• النموذج: ${stats.model}
+
+<b>🎯 لبدء محادثة:</b>
+فقط اكتب /code_agent متبوعاً بطلبك
+      ` : `
+🤖 <b>AI Code Agent</b>
+
+Welcome to the Advanced Programming Assistant!
+
+<b>📚 Available Tools:</b>
+${toolsList}
+
+<b>💡 Usage Examples:</b>
+
+1️⃣ <b>Code Review:</b>
+/code_agent review bot.js and tell me issues
+
+2️⃣ <b>Read File:</b>
+/code_agent read database.js and explain it
+
+3️⃣ <b>Suggest Improvement:</b>
+/code_agent how to improve subscription system?
+
+4️⃣ <b>Search in Files:</b>
+/code_agent search for all groq usage in project
+
+5️⃣ <b>Generate Code:</b>
+/code_agent write me a function to calculate fees
+
+<b>📊 Statistics:</b>
+• Active Conversations: ${stats.activeConversations}
+• Model: ${stats.model}
+
+<b>🎯 To Start:</b>
+Just type /code_agent followed by your request
+      `;
+
+      return safeSendMessage(bot, chatId, helpMessage, { parse_mode: 'HTML' });
+    }
+
+    await safeSendMessage(bot, chatId, lang === 'ar' ? '⏳ جاري معالجة طلبك...' : '⏳ Processing your request...', { parse_mode: 'HTML' });
+
+    const result = await aiCodeAgent.processUserRequest(userId, userMessage, lang);
+
+    if (result.success) {
+      const responseMessage = `
+🤖 <b>${lang === 'ar' ? 'المساعد البرمجي' : 'AI Code Agent'}</b>
+
+${result.response}
+
+<i>📊 ${lang === 'ar' ? 'استخدام' : 'Usage'}: ${result.usage.total_tokens} ${lang === 'ar' ? 'رمز' : 'tokens'}</i>
+      `;
+
+      if (responseMessage.length > 4096) {
+        const chunks = responseMessage.match(/[\s\S]{1,4096}/g) || [];
+        for (const chunk of chunks) {
+          await safeSendMessage(bot, chatId, chunk, { parse_mode: 'HTML' });
+        }
+      } else {
+        await safeSendMessage(bot, chatId, responseMessage, { parse_mode: 'HTML' });
+      }
+    } else {
+      await safeSendMessage(bot, chatId, `
+❌ <b>${lang === 'ar' ? 'خطأ' : 'Error'}</b>
+
+${result.fallback || result.error}
+      `, { parse_mode: 'HTML' });
+    }
+
+  } catch (error) {
+    console.error('Error in /code_agent command:', error);
+    const user = await db.getUser(userId);
+    const lang = user ? (user.language || 'ar') : 'ar';
+    await safeSendMessage(bot, chatId, `❌ ${t(lang, 'request_processing_error')}`);
+  }
+});
+
 function startBot() {
   try {
     bot.startPolling({ restart: true });

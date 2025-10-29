@@ -122,6 +122,42 @@ The Telegram Web App features a dark theme, providing a professional, modern, an
   - Full multi-language support with complete translation coverage across all 7 languages (ar, en, fr, es, de, ru, zh)
   - All UI text uses data-i18n attributes and t() function for seamless language switching
   - CSS animations including pulse effects for status badge and smooth transitions for all interactive elements
+- **AI Code Agent System** (October 29, 2025):
+  - Comprehensive AI-powered programming assistant built with GROQ AI (Llama 3.3 70B model)
+  - Core module `ai-code-agent.js` with intelligent file operations, code analysis, and conversational capabilities
+  - Bot command `/code_agent` available exclusively for project owner with multi-language support
+  - Web App interface at `public/code-agent.html` with modern dark theme and interactive chat
+  - Advanced features:
+    * Read and analyze project files with automatic truncation for large files
+    * List project files with intelligent filtering (excludes node_modules, .git, etc.)
+    * Search within files for specific code patterns or text
+    * Analyze code quality and provide improvement suggestions
+    * Detect user intent automatically (read_file, search, list_files, analyze, chat)
+    * Contextual message enrichment - automatically loads relevant file content
+    * Conversation history management with configurable message limits (10 messages per user)
+    * Support for multiple programming tools (4 core tools: read_file, list_files, analyze_code, search_in_files)
+  - API Endpoints:
+    * `/api/code-agent/chat` - Process user messages and return AI responses
+    * `/api/code-agent/stats` - Get agent statistics (active conversations, model info)
+    * `/api/code-agent/tool` - Execute specific tool commands
+    * `/api/code-agent/clear` - Clear conversation history
+  - Security features:
+    * Owner-only access control (OWNER_ID verification)
+    * Safe file reading with path validation
+    * No direct file modification capability (read-only for safety)
+    * Rate limiting via existing API security middleware
+  - Multi-language support:
+    * Complete Arabic and English system prompts
+    * Specialized knowledge of OBENTCHI project architecture
+    * Context-aware responses based on user language preference
+    * Translation keys integrated in `public/js/translations.js`
+  - Use cases:
+    * Code review and quality assessment
+    * Project structure exploration
+    * Bug detection and troubleshooting
+    * Feature implementation suggestions
+    * Code explanation and documentation
+    * Best practices recommendations
 
 **Feature Specifications**:
 The platform offers a Web App for technical analysis, top movers, a wallet for USDT TRC20, and account management. Trading features include technical analysis for diverse asset classes and trending cryptocurrency tracking. Financial features include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management includes analyst subscriptions and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, and withdrawal processing. Automated trade signal monitoring and a blockchain-based pump detection system are integrated.

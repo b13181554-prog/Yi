@@ -597,7 +597,24 @@ const translations = {
     
     // Trade Display
     symbol: 'الرمز',
-    trade_info: 'معلومات الصفقة'
+    trade_info: 'معلومات الصفقة',
+    
+    // Code Agent (AI Programming Assistant)
+    code_agent_title: 'المساعد البرمجي الذكي',
+    code_agent_subtitle: 'مساعدك الشخصي لتطوير وتحسين مشروع OBENTCHI',
+    active_conversations: 'محادثات نشطة',
+    ai_model: 'نموذج الذكاء الاصطناعي',
+    tool_list_files: 'عرض الملفات',
+    tool_list_files_desc: 'عرض جميع ملفات المشروع',
+    tool_read_file: 'قراءة ملف',
+    tool_read_file_desc: 'قراءة وشرح ملف معين',
+    tool_analyze_code: 'تحليل الكود',
+    tool_analyze_code_desc: 'مراجعة وتحليل الكود',
+    tool_suggestions: 'اقتراحات',
+    tool_suggestions_desc: 'اقتراح تحسينات ممكنة',
+    processing: 'جاري المعالجة...',
+    input_placeholder: 'اكتب سؤالك أو طلبك هنا...',
+    send: 'إرسال'
   },
   
   en: {
@@ -1149,6 +1166,23 @@ const translations = {
     // Trade Display
     symbol: 'Symbol',
     trade_info: 'Trade Information',
+    
+    // Code Agent (AI Programming Assistant)
+    code_agent_title: 'AI Code Agent',
+    code_agent_subtitle: 'Your personal assistant for developing and improving OBENTCHI project',
+    active_conversations: 'Active Conversations',
+    ai_model: 'AI Model',
+    tool_list_files: 'List Files',
+    tool_list_files_desc: 'View all project files',
+    tool_read_file: 'Read File',
+    tool_read_file_desc: 'Read and explain a specific file',
+    tool_analyze_code: 'Analyze Code',
+    tool_analyze_code_desc: 'Review and analyze code',
+    tool_suggestions: 'Suggestions',
+    tool_suggestions_desc: 'Suggest possible improvements',
+    processing: 'Processing...',
+    input_placeholder: 'Type your question or request here...',
+    send: 'Send',
     
     // Additional App.js Messages
     loading_forex_pairs: 'Generated {count} forex pairs',
