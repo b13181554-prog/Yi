@@ -472,7 +472,7 @@ ${text}
             { role: 'system', content: systemPrompt },
             { role: 'user', content: text }
           ], {
-            model: 'gemini-2.0-flash-exp',
+            model: 'gemini-2.0-flash',
             maxOutputTokens: 500,
             temperature: 0.7
           });

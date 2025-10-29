@@ -332,7 +332,7 @@ class OBENTCHIV1ProAnalysis {
           content: `حلل المشاعر للأخبار التالية عن ${this.symbol}:\n\n${newsText}`
         }
       ], {
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.0-flash',
         temperature: 0.3,
         maxOutputTokens: 500
       });

@@ -4,10 +4,10 @@
  * 
  * Features:
  * - مجاني تماماً
- * - بدون حدود يومية (1500 طلب/يوم)
+ * - 1500 طلب/يوم (Gemini 1.5 Flash)
  * - يدعم إنشاء وتحليل الصور
  * - يدعم تحليل الفيديوهات
- * - سريع جداً
+ * - سريع جداً وموثوق
  */
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -36,12 +36,12 @@ class GeminiService {
     this.genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
     this.enabled = true;
     
-    // نماذج متاحة (تم التحديث 2025)
+    // نماذج متاحة (تم التحديث أكتوبر 2025)
     this.models = {
-      chat: 'gemini-2.0-flash-exp',        // سريع ومجاني (أحدث نموذج)
-      pro: 'gemini-2.0-flash-exp',         // أقوى وأذكى
-      vision: 'gemini-2.0-flash-exp',      // لتحليل الصور والفيديو
-      latest: 'gemini-flash-latest'        // يتحدث تلقائياً للأحدث
+      chat: 'gemini-2.0-flash',            // سريع ومجاني (1500 طلب/يوم)
+      pro: 'gemini-2.0-pro-exp',           // أقوى وأذكى
+      vision: 'gemini-2.0-flash',          // لتحليل الصور والفيديو
+      latest: 'gemini-2.0-flash'           // الأفضل للاستخدام المستمر
     };
     
     // إحصائيات الاستخدام
