@@ -2025,17 +2025,12 @@ app.post('/api/create-room-post', async (req, res) => {
     
     const subscribers = await db.getAnalystSubscribers(analyst._id);
     for (const subscriber of subscribers) {
-      const tradingTypeText = post_data.trading_type === 'futures' ? 'Futures ⚡' : 'Spot 📊';
-      const leverageText = post_data.trading_type === 'futures' && post_data.leverage 
-        ? `\n🔥 الرافعة: ${post_data.leverage}x` 
-        : '';
-      
       const message = `
 📊 <b>صفقة جديدة من ${analyst.name}</b>
 
 💱 الرمز: ${post_data.symbol}
 📍 السوق: ${post_data.market_type || 'لم يحدد'}
-📌 نوع التداول: ${tradingTypeText}${leverageText}
+📌 نوع التداول: Spot 📊
 📈 النوع: ${post_data.type === 'buy' ? 'شراء 🟢 (Long)' : 'بيع 🔴 (Short)'}
 💵 سعر الدخول: ${post_data.entry_price}
 🎯 الهدف: ${post_data.target_price || 'لم يحدد'}
