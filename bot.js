@@ -1166,6 +1166,8 @@ bot.on('message', async (msg) => {
     const isGroup = chatType === 'group' || chatType === 'supergroup';
     
     if (isGroup) {
+      console.log(`📱 [GROUP] Message received in group: ${msg.chat.title || chatId}`);
+      
       const botInfo = await bot.getMe();
       const botUsername = botInfo.username;
       const botId = botInfo.id;
@@ -1182,7 +1184,16 @@ bot.on('message', async (msg) => {
         text.toLowerCase().includes(keyword.toLowerCase())
       );
       
+      console.log(`🔍 [GROUP] Bot triggered check:`, {
+        isMentioned,
+        isReplyToBot,
+        containsBotKeyword,
+        textPreview: text.substring(0, 50)
+      });
+      
       if (isMentioned || isReplyToBot || containsBotKeyword) {
+        console.log(`✅ [GROUP] Bot triggered! Processing message...`);
+        
         // إزالة المنشن والكلمات المفتاحية من النص
         let cleanText = text.replace(new RegExp(`@${botUsername}`, 'g'), '').trim();
         
@@ -1192,7 +1203,12 @@ bot.on('message', async (msg) => {
           cleanText = cleanText.replace(regex, '').trim();
         });
         
-        if (!cleanText) return;
+        if (!cleanText) {
+          console.log(`⚠️ [GROUP] Empty message after cleaning, ignoring...`);
+          return;
+        }
+        
+        console.log(`📝 [GROUP] Clean text: "${cleanText}"`);
         
         // استخدام المساعد الذكي المتقدم للرد
         const advancedAIService = require('./advanced-ai-service');
@@ -1200,10 +1216,18 @@ bot.on('message', async (msg) => {
         // إرسال إشارة كتابة
         bot.sendChatAction(chatId, 'typing').catch(() => {});
         
+        console.log(`🤖 [GROUP] Calling Gemini AI via advanced-ai-service...`);
+        
         // ردود مباشرة بدون حفظ في المجموعات
         const result = await advancedAIService.processRequest(userId, cleanText, { 
           lang,
           saveHistory: false  // لا يتم حفظ المحادثات في المجموعات
+        });
+        
+        console.log(`📤 [GROUP] AI Response received:`, {
+          success: result.success,
+          contentLength: result.content?.length || 0,
+          type: result.type
         });
         
         if (result.success) {
@@ -1223,14 +1247,18 @@ bot.on('message', async (msg) => {
               reply_to_message_id: msg.message_id 
             });
           }
+          console.log(`✅ [GROUP] Response sent successfully!`);
         } else {
           await safeSendMessage(bot, chatId, `❌ ${result.content}`, { 
             parse_mode: 'HTML',
             reply_to_message_id: msg.message_id 
           });
+          console.log(`❌ [GROUP] Error response sent to user`);
         }
         
         return;
+      } else {
+        console.log(`ℹ️ [GROUP] Bot not triggered, ignoring message`);
       }
     }
 
