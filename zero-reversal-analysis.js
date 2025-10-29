@@ -6,7 +6,7 @@ class ZeroReversalAnalysis {
     this.candles = candles;
   }
 
-  getZeroReversalRecommendation(marketType = 'spot', tradingType = 'spot', timeframe = '1h') {
+  getZeroReversalRecommendation(marketType = 'spot', timeframe = '1h') {
     const currentPrice = this.candles[this.candles.length - 1].close;
     const normalizedTimeframe = timeframe?.toLowerCase().trim() || '1h';
     const candlesCount = this.candles.length;
@@ -85,7 +85,7 @@ class ZeroReversalAnalysis {
       reasons.push('🔴 اتجاه هبوطي متوسط - السعر تحت المتوسطات القصيرة');
     } else {
       warnings.push('❌ لا يوجد اتجاه واضح - السعر متداخل مع المتوسطات');
-      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType, strengthScore, maxScore);
+      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, strengthScore, maxScore);
     }
 
     if (adxValue >= 35) {
@@ -282,13 +282,8 @@ class ZeroReversalAnalysis {
     };
     
     const multiplier = timeframeMultipliers[normalizedTimeframe] || timeframeMultipliers['1h'];
-    let stopLossPercent = Math.max(atrPercent * multiplier.sl, 0.5);
-    let takeProfitPercent = stopLossPercent * (multiplier.tp / multiplier.sl);
-    
-    if (tradingType === 'futures') {
-      stopLossPercent = stopLossPercent * 0.85;
-      takeProfitPercent = takeProfitPercent * 1.3;
-    }
+    const stopLossPercent = Math.max(atrPercent * multiplier.sl, 0.5);
+    const takeProfitPercent = stopLossPercent * (multiplier.tp / multiplier.sl);
     
     const stopLossDistance = (currentPriceFloat * stopLossPercent) / 100;
     const takeProfitDistance = (currentPriceFloat * takeProfitPercent) / 100;

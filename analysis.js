@@ -527,7 +527,7 @@ class TechnicalAnalysis {
     return results;
   }
 
-  getTradeRecommendationWithMarketType(marketType = 'spot', tradingType = 'spot') {
+  getTradeRecommendationWithMarketType(marketType = 'spot') {
     const currentPrice = this.closes[this.closes.length - 1];
     const analysisTime = new Date().toLocaleString('ar-SA', { 
       timeZone: 'Asia/Riyadh',
@@ -590,7 +590,6 @@ class TechnicalAnalysis {
     }
     
     const atrValue = parseFloat(atr.value);
-    const leverage = tradingType === 'futures' ? 10 : 1;
     
     const signalDifference = Math.abs(buySignals - sellSignals);
     
@@ -617,11 +616,11 @@ class TechnicalAnalysis {
       // حساب المسافات فقط إذا كانت الإشارة قوية
       const atrPercent = (atrValue / currentPrice) * 100;
       const stopLossPercent = Math.max(atrPercent * 1.5, 0.5);
-      const takeProfitPercent = stopLossPercent * (tradingType === 'futures' ? 3 : 2);
+      const takeProfitPercent = stopLossPercent * 2;
       const stopLossDistance = (currentPrice * stopLossPercent) / 100;
       const takeProfitDistance = (currentPrice * takeProfitPercent) / 100;
       const calculatedRR = Math.abs(takeProfitDistance) / stopLossDistance;
-      const hasGoodRiskReward = calculatedRR >= 3;
+      const hasGoodRiskReward = calculatedRR >= 2;
       
       // شروط صارمة جداً للتداول - يجب تحقيق جميع الشروط
       if (signalDifference >= 4 && strength >= 7 && hasStrongVolume && hasStrongADX && 
@@ -650,11 +649,11 @@ class TechnicalAnalysis {
       // حساب المسافات فقط إذا كانت الإشارة قوية
       const atrPercent = (atrValue / currentPrice) * 100;
       const stopLossPercent = Math.max(atrPercent * 1.5, 0.5);
-      const takeProfitPercent = stopLossPercent * (tradingType === 'futures' ? 3 : 2);
+      const takeProfitPercent = stopLossPercent * 2;
       const stopLossDistance = (currentPrice * stopLossPercent) / 100;
       const takeProfitDistance = (currentPrice * takeProfitPercent) / 100;
       const calculatedRR = Math.abs(takeProfitDistance) / stopLossDistance;
-      const hasGoodRiskReward = calculatedRR >= 3;
+      const hasGoodRiskReward = calculatedRR >= 2;
       
       // شروط صارمة جداً للتداول - يجب تحقيق جميع الشروط
       if (signalDifference >= 4 && strength >= 7 && hasStrongVolume && hasStrongADX && 
@@ -689,9 +688,7 @@ class TechnicalAnalysis {
       emoji,
       confidence,
       shouldTrade,
-      tradingType,
       marketType,
-      leverage,
       analysisTime,
       entryPrice: entryPrice !== null ? this.formatPrice(entryPrice) : null,
       stopLoss: stopLoss !== null ? this.formatPrice(stopLoss) : null,

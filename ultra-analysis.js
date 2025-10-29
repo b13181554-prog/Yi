@@ -7,7 +7,7 @@ class UltraAnalysis {
     this.candles = candles;
   }
 
-  getUltraRecommendation(marketType = 'spot', tradingType = 'spot', timeframe = '1h', lang = 'ar') {
+  getUltraRecommendation(marketType = 'spot', timeframe = '1h', lang = 'ar') {
     const currentPrice = this.candles[this.candles.length - 1].close;
     
     const normalizedTimeframe = timeframe?.toLowerCase().trim() || '1h';
@@ -44,7 +44,7 @@ class UltraAnalysis {
     const rangingMarket = this.detectRangingMarket(adxValue, bb, ema20Value, ema50Value, currentPriceFloat, lang);
     if (rangingMarket.isRanging) {
       warnings.push('⚠️ ' + t(lang, 'analysis_warning_ranging_market'));
-      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType, rangingMarket.reason, lang);
+      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, rangingMarket.reason, lang);
     }
 
     const indicatorWeights = {
@@ -225,7 +225,7 @@ class UltraAnalysis {
     
     if (scoreDifference < minScoreDifference) {
       warnings.push('❌ إشارات متعارضة - الفرق بين الشراء والبيع ضئيل جداً');
-      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, tradingType, 'إشارات متعارضة');
+      return this.generateWaitResponse(warnings, currentPriceFloat, timeframe, marketType, 'إشارات متعارضة');
     }
 
     const atrValue = parseFloat(atr.value);
@@ -245,13 +245,8 @@ class UltraAnalysis {
     
     const multiplier = timeframeMultipliers[normalizedTimeframe] || timeframeMultipliers['1h'];
     
-    let stopLossPercent = Math.max(atrPercent * multiplier.sl, 0.5);
-    let takeProfitPercent = stopLossPercent * (multiplier.tp / multiplier.sl);
-    
-    if (tradingType === 'futures') {
-      stopLossPercent = stopLossPercent * 0.9;
-      takeProfitPercent = takeProfitPercent * 1.2;
-    }
+    const stopLossPercent = Math.max(atrPercent * multiplier.sl, 0.5);
+    const takeProfitPercent = stopLossPercent * (multiplier.tp / multiplier.sl);
     
     const stopLossDistance = (currentPriceFloat * stopLossPercent) / 100;
     const takeProfitDistance = (currentPriceFloat * takeProfitPercent) / 100;
