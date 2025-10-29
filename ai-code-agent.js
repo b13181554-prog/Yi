@@ -2,6 +2,8 @@ const geminiService = require('./gemini-service');
 const fs = require('fs').promises;
 const path = require('path');
 const { t } = require('./languages');
+const dbTools = require('./ai-database-tools');
+const projectContext = require('./ai-project-context');
 
 class AICodeAgent {
   constructor() {
@@ -16,7 +18,7 @@ class AICodeAgent {
     this.tools = [
       {
         name: 'read_file',
-        description: 'قراءة محتوى ملف من المشروع',
+        description: 'قراءة محتوى ملف من المشروع (حد أقصى 20MB)',
         parameters: {
           filePath: 'string - المسار الكامل للملف'
         }
@@ -41,6 +43,29 @@ class AICodeAgent {
         parameters: {
           query: 'string - النص المراد البحث عنه'
         }
+      },
+      {
+        name: 'get_database_stats',
+        description: 'الحصول على إحصائيات قاعدة البيانات (read-only)',
+        parameters: {
+          type: 'string - نوع الإحصائيات: general, users, subscriptions, withdrawals, growth'
+        }
+      },
+      {
+        name: 'query_database',
+        description: 'استعلام قاعدة البيانات (read-only فقط)',
+        parameters: {
+          collection: 'string - اسم المجموعة (users, transactions, etc.)',
+          query: 'object - الاستعلام (اختياري)',
+          limit: 'number - عدد النتائج (حد أقصى 100)'
+        }
+      },
+      {
+        name: 'get_project_context',
+        description: 'الحصول على سياق شامل عن المشروع',
+        parameters: {
+          type: 'string - نوع السياق: full, stack, features, changes, summary'
+        }
       }
     ];
   }
@@ -64,10 +89,13 @@ class AICodeAgent {
 6. الإجابة على الأسئلة التقنية
 
 الأدوات المتاحة لك:
-- read_file: قراءة محتوى الملفات
+- read_file: قراءة محتوى الملفات (حد أقصى 20MB)
 - list_files: عرض قائمة الملفات
 - analyze_code: تحليل الكود
 - search_in_files: البحث في الملفات
+- get_database_stats: إحصائيات قاعدة البيانات (read-only)
+- query_database: استعلام قاعدة البيانات (read-only فقط)
+- get_project_context: سياق شامل عن المشروع
 
 إرشادات:
 - أجب بوضوح ودقة
@@ -80,7 +108,15 @@ class AICodeAgent {
 القواعد الأمنية:
 - لا يمكنك تعديل الملفات مباشرة (فقط اقتراح التعديلات)
 - لا يمكنك تنفيذ أوامر نظام التشغيل
-- لا يمكنك الوصول للمتغيرات البيئية الحساسة`,
+- لا يمكنك الوصول للمتغيرات البيئية الحساسة
+- جميع عمليات قاعدة البيانات read-only فقط (لا يمكن التعديل أو الحذف)
+- البيانات الحساسة (كلمات المرور، API keys) محمية ومخفية تلقائياً
+
+صلاحيات قاعدة البيانات:
+- يمكنك قراءة الإحصائيات العامة
+- يمكنك الاستعلام عن البيانات (read-only)
+- لا يمكنك تعديل أو حذف البيانات
+- البيانات الحساسة مخفية تلقائياً`,
 
       en: `You are an intelligent programming assistant specialized in the OBENTCHI Trading Bot project.
 
@@ -99,10 +135,13 @@ Your tasks:
 6. Answer technical questions
 
 Available tools:
-- read_file: Read file contents
+- read_file: Read file contents (max 20MB)
 - list_files: List files
 - analyze_code: Analyze code
 - search_in_files: Search in files
+- get_database_stats: Database statistics (read-only)
+- query_database: Query database (read-only only)
+- get_project_context: Comprehensive project context
 
 Guidelines:
 - Answer clearly and accurately
@@ -115,7 +154,15 @@ Guidelines:
 Security rules:
 - You cannot modify files directly (only suggest modifications)
 - You cannot execute OS commands
-- You cannot access sensitive environment variables`
+- You cannot access sensitive environment variables
+- All database operations are read-only (no modifications or deletions)
+- Sensitive data (passwords, API keys) is automatically protected and hidden
+
+Database permissions:
+- You can read general statistics
+- You can query data (read-only)
+- You cannot modify or delete data
+- Sensitive data is automatically hidden`
     };
 
     return prompts[lang] || prompts.ar;
@@ -135,12 +182,12 @@ Security rules:
       }
       
       const stats = await fs.stat(fullPath);
-      const MAX_FILE_SIZE = 5 * 1024 * 1024;
+      const MAX_FILE_SIZE = 20 * 1024 * 1024;
       
       if (stats.size > MAX_FILE_SIZE) {
         return {
           success: false,
-          error: `File too large (${(stats.size / 1024 / 1024).toFixed(2)} MB). Maximum allowed: 5 MB`
+          error: `File too large (${(stats.size / 1024 / 1024).toFixed(2)} MB). Maximum allowed: 20 MB`
         };
       }
       
@@ -319,6 +366,56 @@ Security rules:
     };
   }
 
+  async getDatabaseStats(type = 'general') {
+    try {
+      switch (type) {
+        case 'general':
+          return await dbTools.getDatabaseStats();
+        case 'users':
+          return await dbTools.getUsersCount();
+        case 'analysts':
+          return await dbTools.getAnalystsCount();
+        case 'subscriptions':
+          return await dbTools.getSubscriptionsStats();
+        case 'withdrawals':
+          return await dbTools.getWithdrawalsStats();
+        case 'growth':
+          return await dbTools.getGrowthStats();
+        default:
+          return await dbTools.getDatabaseStats();
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async getProjectContext(type = 'summary') {
+    try {
+      switch (type) {
+        case 'full':
+          return await projectContext.getFullProjectContext();
+        case 'stack':
+          return await projectContext.getTechnicalStack();
+        case 'features':
+          return await projectContext.getFeaturesList();
+        case 'changes':
+          return await projectContext.getRecentChanges();
+        case 'summary':
+          return await projectContext.getProjectSummary();
+        default:
+          return await projectContext.getProjectSummary();
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
   async detectIntent(userMessage, lang = 'ar') {
     const lowerMessage = userMessage.toLowerCase();
     
@@ -452,6 +549,22 @@ Security rules:
           
         case 'search_in_files':
           result = await this.searchInFiles(parameters.query);
+          break;
+        
+        case 'get_database_stats':
+          result = await this.getDatabaseStats(parameters.type);
+          break;
+        
+        case 'query_database':
+          result = await dbTools.queryDatabase(
+            parameters.collection,
+            parameters.query || {},
+            { limit: parameters.limit || 10 }
+          );
+          break;
+        
+        case 'get_project_context':
+          result = await this.getProjectContext(parameters.type);
           break;
           
         default:

@@ -221,6 +221,15 @@ async function initDatabase() {
     
     logger.info('✅ Database connected with optimized connection pool (10-100 connections)');
     logger.info('✅ All indexes created successfully for 1M users scalability');
+    
+    // Initialize AI Database Tools
+    try {
+      const aiDatabaseTools = require('./ai-database-tools');
+      aiDatabaseTools.initDatabase(db);
+      logger.info('✅ AI Database Tools initialized successfully');
+    } catch (error) {
+      logger.warn({ err: error }, '⚠️ Could not initialize AI Database Tools (optional)');
+    }
   } catch (error) {
     logger.error({ err: error }, '❌ Database initialization error');
     throw error;

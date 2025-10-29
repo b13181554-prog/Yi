@@ -10,6 +10,8 @@ const fs = require('fs').promises;
 const path = require('path');
 const { t } = require('./languages');
 const { systemPrompts } = require('./ai-system-prompts');
+const dbTools = require('./ai-database-tools');
+const projectContext = require('./ai-project-context');
 
 class AdvancedAIService {
   constructor() {
@@ -22,7 +24,10 @@ class AdvancedAIService {
       generate_image: 'إنشاء صور',
       analyze_code: 'تحليل وتحسين الكود',
       analyze_market: 'تحليل السوق',
-      get_latest_news: 'الحصول على أحدث الأخبار'
+      get_latest_news: 'الحصول على أحدث الأخبار',
+      get_database_stats: 'إحصائيات قاعدة البيانات (read-only)',
+      query_database: 'استعلام قاعدة البيانات (read-only)',
+      get_project_context: 'سياق شامل عن المشروع'
     };
     
     console.log('🚀 Advanced AI Service initialized');
@@ -73,6 +78,18 @@ class AdvancedAIService {
           
         case 'analyze_file':
           response = await this.analyzeFile(intent.filePath, lang);
+          break;
+        
+        case 'get_database_stats':
+          response = await this.getDatabaseStats(intent.statsType, lang);
+          break;
+        
+        case 'query_database':
+          response = await this.queryDatabase(intent.collection, intent.query, intent.limit, lang);
+          break;
+        
+        case 'get_project_context':
+          response = await this.getProjectContextInfo(intent.contextType, lang);
           break;
           
         default:
@@ -146,6 +163,52 @@ class AdvancedAIService {
       return {
         type: 'analyze_file',
         filePath: fileMatch[0]
+      };
+    }
+    
+    // إحصائيات قاعدة البيانات
+    if (lowerMessage.includes('إحصائيات') || lowerMessage.includes('stats') || 
+        lowerMessage.includes('database') || lowerMessage.includes('قاعدة البيانات') ||
+        lowerMessage.includes('users count') || lowerMessage.includes('عدد المستخدمين')) {
+      return {
+        type: 'get_database_stats',
+        statsType: 'general'
+      };
+    }
+    
+    // ✅ SECURITY FIX: إضافة detection لـ query_database
+    // استعلام قاعدة البيانات (read-only)
+    if (lowerMessage.includes('استعلام') || lowerMessage.includes('query') ||
+        lowerMessage.includes('ابحث في قاعدة البيانات') || lowerMessage.includes('search database') ||
+        lowerMessage.includes('find in database') || lowerMessage.includes('get data from')) {
+      
+      // محاولة استخراج اسم المجموعة
+      let collection = 'users';
+      if (lowerMessage.includes('users') || lowerMessage.includes('المستخدمين')) {
+        collection = 'users';
+      } else if (lowerMessage.includes('transactions') || lowerMessage.includes('المعاملات')) {
+        collection = 'transactions';
+      } else if (lowerMessage.includes('analysts') || lowerMessage.includes('المحللين')) {
+        collection = 'analysts';
+      } else if (lowerMessage.includes('signals') || lowerMessage.includes('الإشارات')) {
+        collection = 'signals';
+      }
+      
+      return {
+        type: 'query_database',
+        collection: collection,
+        query: {},
+        limit: 10
+      };
+    }
+    
+    // سياق المشروع
+    if (lowerMessage.includes('المشروع') || lowerMessage.includes('project') || 
+        lowerMessage.includes('features') || lowerMessage.includes('الميزات') ||
+        lowerMessage.includes('technical stack') || lowerMessage.includes('المكونات التقنية')) {
+      return {
+        type: 'get_project_context',
+        contextType: 'summary'
       };
     }
     
@@ -549,6 +612,183 @@ Provide comprehensive analysis and helpful notes.`;
    */
   async getLatestNews(topic, lang = 'ar') {
     return await this.searchAndAnalyze(`latest news about ${topic}`, lang);
+  }
+
+  /**
+   * الحصول على إحصائيات قاعدة البيانات
+   */
+  async getDatabaseStats(statsType = 'general', lang = 'ar') {
+    try {
+      console.log(`📊 Getting database stats: ${statsType}`);
+      
+      let stats;
+      switch (statsType) {
+        case 'general':
+          stats = await dbTools.getDatabaseStats();
+          break;
+        case 'users':
+          stats = await dbTools.getUsersCount();
+          break;
+        case 'analysts':
+          stats = await dbTools.getAnalystsCount();
+          break;
+        case 'subscriptions':
+          stats = await dbTools.getSubscriptionsStats();
+          break;
+        case 'withdrawals':
+          stats = await dbTools.getWithdrawalsStats();
+          break;
+        case 'growth':
+          stats = await dbTools.getGrowthStats();
+          break;
+        default:
+          stats = await dbTools.getDatabaseStats();
+      }
+      
+      if (!stats.success) {
+        throw new Error(stats.error || 'Failed to get database stats');
+      }
+      
+      // تنسيق النتيجة
+      const formattedStats = JSON.stringify(stats.data, null, 2);
+      const content = lang === 'ar'
+        ? `📊 إحصائيات قاعدة البيانات (${statsType}):\n\n\`\`\`json\n${formattedStats}\n\`\`\``
+        : `📊 Database Statistics (${statsType}):\n\n\`\`\`json\n${formattedStats}\n\`\`\``;
+      
+      return {
+        content: content,
+        tools_used: ['get_database_stats'],
+        metadata: {
+          stats_type: statsType,
+          data: stats.data
+        }
+      };
+      
+    } catch (error) {
+      console.error('Database stats error:', error);
+      return {
+        content: lang === 'ar'
+          ? `❌ حدث خطأ في الحصول على الإحصائيات: ${error.message}`
+          : `❌ Error getting statistics: ${error.message}`,
+        tools_used: ['get_database_stats'],
+        metadata: { error: error.message }
+      };
+    }
+  }
+
+  /**
+   * استعلام قاعدة البيانات (read-only)
+   */
+  async queryDatabase(collection, query = {}, limit = 10, lang = 'ar') {
+    try {
+      console.log(`🔍 Querying database: ${collection}`);
+      
+      const result = await dbTools.queryDatabase(collection, query, { limit });
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Database query failed');
+      }
+      
+      const formattedData = JSON.stringify(result.data, null, 2);
+      const content = lang === 'ar'
+        ? `🔍 نتائج الاستعلام من ${collection}:\n\n` +
+          `📝 عدد النتائج: ${result.count}\n` +
+          `📄 الحد الأقصى: ${result.limit}\n\n` +
+          `\`\`\`json\n${formattedData}\n\`\`\``
+        : `🔍 Query Results from ${collection}:\n\n` +
+          `📝 Results Count: ${result.count}\n` +
+          `📄 Limit: ${result.limit}\n\n` +
+          `\`\`\`json\n${formattedData}\n\`\`\``;
+      
+      return {
+        content: content,
+        tools_used: ['query_database'],
+        metadata: {
+          collection: result.collection,
+          count: result.count,
+          limit: result.limit
+        }
+      };
+      
+    } catch (error) {
+      console.error('Database query error:', error);
+      return {
+        content: lang === 'ar'
+          ? `❌ حدث خطأ في الاستعلام: ${error.message}`
+          : `❌ Query error: ${error.message}`,
+        tools_used: ['query_database'],
+        metadata: { error: error.message }
+      };
+    }
+  }
+
+  /**
+   * الحصول على سياق المشروع
+   */
+  async getProjectContextInfo(contextType = 'summary', lang = 'ar') {
+    try {
+      console.log(`📖 Getting project context: ${contextType}`);
+      
+      let contextData;
+      switch (contextType) {
+        case 'full':
+          contextData = await projectContext.getFullProjectContext();
+          break;
+        case 'stack':
+          contextData = await projectContext.getTechnicalStack();
+          break;
+        case 'features':
+          contextData = await projectContext.getFeaturesList();
+          break;
+        case 'changes':
+          contextData = await projectContext.getRecentChanges();
+          break;
+        case 'summary':
+        default:
+          contextData = await projectContext.getProjectSummary();
+      }
+      
+      if (!contextData.success) {
+        throw new Error(contextData.error || 'Failed to get project context');
+      }
+      
+      // تنسيق البيانات بشكل قابل للقراءة
+      let formattedContent;
+      if (contextType === 'summary' && contextData.summary) {
+        formattedContent = lang === 'ar'
+          ? `📋 ملخص المشروع OBENTCHI Trading Bot:\n\n` +
+            `📊 عدد الميزات: ${contextData.summary.features_count}\n` +
+            `🔄 التحديثات الأخيرة: ${contextData.summary.recent_changes_count}\n` +
+            `📅 آخر تحديث: ${new Date(contextData.summary.last_updated).toLocaleString('ar')}\n\n` +
+            `${JSON.stringify(contextData.full_data, null, 2)}`
+          : `📋 OBENTCHI Trading Bot Summary:\n\n` +
+            `📊 Features Count: ${contextData.summary.features_count}\n` +
+            `🔄 Recent Changes: ${contextData.summary.recent_changes_count}\n` +
+            `📅 Last Updated: ${new Date(contextData.summary.last_updated).toLocaleString()}\n\n` +
+            `${JSON.stringify(contextData.full_data, null, 2)}`;
+      } else {
+        formattedContent = `\`\`\`json\n${JSON.stringify(contextData, null, 2)}\n\`\`\``;
+      }
+      
+      return {
+        content: formattedContent,
+        tools_used: ['get_project_context'],
+        metadata: {
+          context_type: contextType,
+          data: contextData
+        }
+      };
+      
+    } catch (error) {
+      console.error('Project context error:', error);
+      return {
+        content: lang === 'ar'
+          ? `❌ حدث خطأ في الحصول على سياق المشروع: ${error.message}`
+          : `❌ Error getting project context: ${error.message}`,
+        tools_used: ['get_project_context'],
+        metadata: { error: error.message }
+      };
+    }
   }
 
   /**
