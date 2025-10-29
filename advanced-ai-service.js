@@ -9,6 +9,7 @@ const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
 const { t } = require('./languages');
+const { systemPrompts } = require('./ai-system-prompts');
 
 class AdvancedAIService {
   constructor() {
@@ -472,21 +473,7 @@ Provide comprehensive analysis and helpful notes.`;
    */
   async chatWithAI(userId, message, lang = 'ar', history = []) {
     try {
-      const systemPrompt = lang === 'ar'
-        ? `أنت مساعد ذكي متقدم لبوت OBENTCHI للتداول. أنت قادر على:
-• تحليل الملفات والأكواد البرمجية
-• البحث في الإنترنت للحصول على معلومات محدثة
-• تقديم تحسينات واقتراحات ذكية
-• الإجابة على جميع الأسئلة بدقة واحترافية
-
-كن مفيداً، دقيقاً، واحترافياً في إجاباتك.`
-        : `You are an advanced AI assistant for OBENTCHI Trading Bot. You can:
-• Analyze files and code
-• Search the internet for updated information
-• Provide smart improvements and suggestions
-• Answer all questions accurately and professionally
-
-Be helpful, accurate, and professional in your responses.`;
+      const systemPrompt = systemPrompts[lang] || systemPrompts['ar'];
 
       const messages = [
         { role: 'system', content: systemPrompt },
@@ -496,7 +483,7 @@ Be helpful, accurate, and professional in your responses.`;
 
       const aiResponse = await this.groqService.chat(messages, {
         model: 'llama-3.3-70b-versatile',
-        temperature: 0.5,
+        temperature: 0.7,
         max_tokens: 2500
       });
 
