@@ -201,39 +201,35 @@ function startServices(servicesToStart = null, mode = null) {
   // التحقق من التعارضات
   validateServices(services);
   
-  // بدء Redis أولاً
-  logger.info('📡 Ensuring Redis is running...');
-  const redis = spawn('./start-redis.sh', [], { stdio: 'inherit' });
+  // ملاحظة: Redis يعمل في workflow منفصل في Replit
+  logger.info('📡 Assuming Redis is running (managed by separate workflow)');
+  logger.info('');
+  logger.info('Starting services...');
+  logger.info('');
   
-  setTimeout(() => {
-    logger.info('');
-    logger.info('Starting services...');
-    logger.info('');
-    
-    // بدء الخدمات بالترتيب
-    services.forEach(key => {
-      if (SERVICES[key]) {
-        startService(key, SERVICES[key]);
-      } else {
-        logger.warn(`⚠️ Unknown service: ${key}`);
-      }
-    });
-    
-    logger.info('');
-    logger.info('✅ All services started successfully!');
-    logger.info('');
-    logger.info('📊 Status:');
-    services.forEach(key => {
-      const service = SERVICES[key];
-      if (service) {
-        const status = processes.has(key) ? '✅ Running' : '⏸️ Not started';
-        logger.info(`  ${service.name}: ${status}`);
-      }
-    });
-    logger.info('');
-    logger.info('Press Ctrl+C to stop all services');
-    logger.info('');
-  }, 2000);
+  // بدء الخدمات بالترتيب
+  services.forEach(key => {
+    if (SERVICES[key]) {
+      startService(key, SERVICES[key]);
+    } else {
+      logger.warn(`⚠️ Unknown service: ${key}`);
+    }
+  });
+  
+  logger.info('');
+  logger.info('✅ All services started successfully!');
+  logger.info('');
+  logger.info('📊 Status:');
+  services.forEach(key => {
+    const service = SERVICES[key];
+    if (service) {
+      const status = processes.has(key) ? '✅ Running' : '⏸️ Not started';
+      logger.info(`  ${service.name}: ${status}`);
+    }
+  });
+  logger.info('');
+  logger.info('Press Ctrl+C to stop all services');
+  logger.info('');
 }
 
 /**

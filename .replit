@@ -92,23 +92,11 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "OBENTCHI Bot"
+args = "Redis Server"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Redis Server"
-
-[[workflows.workflow]]
-name = "OBENTCHI Bot"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "USE_WEBHOOK=true node index.js"
-waitForPort = 5000
+args = "OBENTCHI Bot"
 
 [[workflows.workflow]]
 name = "Redis Server"
@@ -120,3 +108,20 @@ args = "redis-server --port 6379 --bind 127.0.0.1"
 
 [workflows.workflow.metadata]
 outputType = "console"
+
+[[workflows.workflow]]
+name = "OBENTCHI Bot"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node process-manager.js"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[userenv]
+
+[userenv.shared]
+PUBLIC_URL = "https://480b5f37-5e3c-4670-854b-5ece9944acef-00-1j9ezuymmnxhs.janeway.replit.dev"
