@@ -3,6 +3,16 @@
 ## Overview
 OBENTCHI is a Telegram-based cryptocurrency trading bot designed for Sharia-compliant automated spot trading. It provides real-time market data, advanced technical analysis, and a seamless user experience through a Telegram Web App. The project aims to offer accessible, robust trading assistance, focusing on Islamic finance principles by excluding futures and leverage trading, and to secure a significant market share in automated trading.
 
+## Recent Changes (October 31, 2025)
+- **✅ Migrated to Microservices Architecture**: Updated from legacy monolithic `index.js` to modern microservices using `process-manager.js`
+  - 4 separate processes: HTTP Server, Bot Webhook Worker, Queue Worker, Scheduler
+  - Better scalability, resilience, and independent service management
+  - Automatic process restart and monitoring
+  - Redis managed in separate workflow for better resource management
+- **✅ Workflow Configuration**: Updated to use `node process-manager.js` in webhook mode
+- **✅ Environment Variables**: Added `PUBLIC_URL` for webhook configuration
+- **📝 Note**: OpenAI integration defined in `.replit` but not used in code (project uses Google Gemini AI successfully)
+
 ## User Preferences
 - Default Language: Arabic (ar)
 - Multi-Language Support: Full support for 7 languages (Arabic, English, French, Spanish, German, Russian, Chinese)
@@ -70,3 +80,39 @@ The system supports Standalone, Docker, and Kubernetes deployment modes, with se
 -   **AI/Customer Support**: Google Gemini AI (gemini-2.0-flash - 1500 requests/day free tier)
 -   **Payment Gateway**: CryptAPI
 -   **Whale Tracking**: Whale Alert
+
+## Known Issues & Solutions
+
+### Redis Memory Overcommit Warning
+**Issue**: Redis logs show "WARNING Memory overcommit must be enabled!"
+**Impact**: Minor - may cause background save failures under low memory conditions (rare in Replit environment)
+**Status**: Can be safely ignored in development/Replit environment
+**Production Solution**: For production deployments, run `sysctl vm.overcommit_memory=1` on the host system
+
+### Telegram Web App Access
+**Issue**: Web App shows "No user ID from Telegram" when opened directly in browser
+**Explanation**: This is expected behavior - Telegram Web Apps MUST be opened from within Telegram
+**Solution**: Users should access the app through Telegram bot (@OBENTCHI_Bot) only, not via direct URL
+
+## Deployment Modes
+
+The system supports multiple deployment modes via `process-manager.js`:
+
+1. **Webhook Mode** (Current - Replit): 
+   - Triggered by `PUBLIC_URL` or `WEBHOOK_URL` environment variable
+   - Services: HTTP Server, Bot Webhook Worker, Queue Worker, Scheduler
+   - Best for cloud deployments with public URLs
+
+2. **Polling Mode**:
+   - Default when no PUBLIC_URL is set
+   - Services: HTTP Server, Bot Worker (Polling), Queue Worker, Scheduler
+   - Best for local development
+
+3. **Production Mode**:
+   - Triggered by `NODE_ENV=production`
+   - Uses improved queue worker for better performance
+
+4. **Docker Mode**:
+   - Triggered by `DEPLOYMENT_MODE=docker`
+   - Each service runs in separate container
+   - Supports Kubernetes orchestration
