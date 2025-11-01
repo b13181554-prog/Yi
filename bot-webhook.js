@@ -4,14 +4,9 @@
  * يمكن تشغيل عدة نسخ متوازية بدون 409 conflict
  */
 
-const TelegramBot = require('node-telegram-bot-api');
-const { LRUCache } = require('lru-cache');
-const config = require('./config');
-const db = require('./database');
-const { t, getLanguageKeyboard } = require('./languages');
-const { safeSendMessage, safeSendPhoto, safeEditMessageText, safeAnswerCallbackQuery } = require('./safe-message');
-const { BatchLoader } = require('./utils/batch-loader');
 const pino = require('pino');
+const db = require('./database');
+const { BatchLoader } = require('./utils/batch-loader');
 
 const logger = pino({
   level: 'info',
@@ -25,21 +20,9 @@ const logger = pino({
   }
 });
 
-// إنشاء البوت بدون polling (webhook mode فقط)
-const bot = new TelegramBot(config.BOT_TOKEN, { 
-  polling: false,
-  webHook: false // سيتم تفعيله يدوياً
-});
+const bot = require('./bot');
 
 let batchLoader;
-
-// ✅ استخدام LRU Cache مع حد أقصى لمنع memory leak
-const membershipCache = new LRUCache({
-  max: 50000,           // زيادة الحد للـ webhooks (أكثر كفاءة)
-  ttl: 60 * 1000,       
-  updateAgeOnGet: true,
-  allowStale: false
-});
 
 /**
  * تهيئة الـ webhook مع Secret Token للأمان
@@ -96,69 +79,12 @@ async function setupWebhook(webhookUrl, secretToken = null) {
  */
 async function processUpdate(update) {
   try {
-    // معالجة الرسائل
-    if (update.message) {
-      await bot.processUpdate(update);
-    }
-    // معالجة الـ callback queries
-    else if (update.callback_query) {
-      await bot.processUpdate(update);
-    }
-    // معالجة الـ inline queries
-    else if (update.inline_query) {
-      await bot.processUpdate(update);
-    }
+    await bot.processUpdate(update);
   } catch (error) {
     logger.error(`Error processing update ${update.update_id}:`, error);
   }
 }
 
-/**
- * التحقق من عضوية القناة
- */
-async function checkChannelMembership(userId) {
-  try {
-    const cached = membershipCache.get(userId);
-    if (cached !== undefined) {
-      return cached;
-    }
-    
-    const member = await bot.getChatMember(config.CHANNEL_ID, userId);
-    const isMember = ['member', 'administrator', 'creator'].includes(member.status);
-    
-    membershipCache.set(userId, isMember);
-    
-    return isMember;
-  } catch (error) {
-    logger.error('Error checking channel membership:', error.message);
-    return false;
-  }
-}
-
-async function requireChannelMembership(userId, chatId, msg) {
-  const isMember = await checkChannelMembership(userId);
-  if (!isMember) {
-    const detectedLang = msg.from.language_code || 'ar';
-    const supportedLangs = ['ar', 'en', 'fr', 'es', 'de', 'ru', 'zh'];
-    const lang = supportedLangs.includes(detectedLang) ? detectedLang : 'ar';
-    
-    await safeSendMessage(bot, chatId, `
-❌ <b>${t(lang, 'subscription_required')}</b>
-
-${t(lang, 'subscribe_channel')}
-👉 ${config.CHANNEL_USERNAME}
-
-${t(lang, 'after_subscribe')} /start
-`, {
-      parse_mode: 'HTML'
-    });
-    return false;
-  }
-  return true;
-}
-
-// تحميل جميع الـ handlers من bot.js الأصلي
-// سيتم استيراد الـ handlers مركزياً
 async function initializeBot() {
   try {
     logger.info('🤖 Initializing Telegram Bot (Webhook Mode)...');
@@ -182,7 +108,5 @@ module.exports = {
   bot,
   setupWebhook,
   processUpdate,
-  initializeBot,
-  checkChannelMembership,
-  requireChannelMembership
+  initializeBot
 };
