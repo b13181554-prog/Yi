@@ -3,7 +3,26 @@
 ## Overview
 OBENTCHI is a Telegram-based cryptocurrency trading bot designed for Sharia-compliant automated spot trading. It provides real-time market data, advanced technical analysis, and a seamless user experience through a Telegram Web App. The project aims to offer accessible, robust trading assistance, focusing on Islamic finance principles by excluding futures and leverage trading, and to secure a significant market share in automated trading.
 
-## Recent Changes (October 31, 2025)
+## Recent Changes (November 01, 2025)
+- **✅ AWS Deployment Ready**: Created comprehensive AWS deployment files and documentation
+  - `.env.example`: Complete environment variables template with all required settings
+  - `ecosystem.config.js`: PM2 process manager configuration for AWS EC2
+  - `install.sh`: Automated installation script for AWS EC2 (Ubuntu/Amazon Linux)
+  - `AWS_DEPLOYMENT.md`: Complete deployment guide with step-by-step instructions
+  - `deployment/nginx.conf`: Nginx reverse proxy configuration for webhook
+  - Updated `README.md` with AWS deployment information
+- **✅ Fixed Automated Safety System**: Resolved crash caused by undefined `getAllHealthStatus` function call
+  - Removed dependency on non-existent `improved-health-checks` module
+  - All monitors and safety tasks now running without errors
+- **✅ Fixed Webhook Duplication**: Eliminated 429 Too Many Requests error from Telegram
+  - Bot Webhook Worker now delegates webhook setup to HTTP Server only
+  - Prevents redundant webhook registration calls
+- **✅ Production-Ready**: All 4 services (HTTP Server, Bot Webhook Worker, Queue Worker, Scheduler) running without errors
+  - Health endpoints verified: `/api/health` and `/metrics` working correctly
+  - Database and Redis connections stable
+  - Ready for deployment to AWS Free Tier (t2.micro/t3.micro instances)
+
+## Previous Changes (October 31, 2025)
 - **✅ Migrated to Microservices Architecture**: Updated from legacy monolithic `index.js` to modern microservices using `process-manager.js`
   - 4 separate processes: HTTP Server, Bot Webhook Worker, Queue Worker, Scheduler
   - Better scalability, resilience, and independent service management
