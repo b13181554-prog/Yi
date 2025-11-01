@@ -10,8 +10,8 @@ channel = "stable-24_11"
 packages = ["redis"]
 
 [deployment]
-run = ["bash", "./start.sh"]
-deploymentTarget = "autoscale"
+run = ["node", "process-manager.js"]
+deploymentTarget = "vm"
 ignorePorts = false
 
 [agent]

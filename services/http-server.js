@@ -62,6 +62,41 @@ app.get('/api/health', async (req, res) => {
 // Prometheus metrics endpoint
 createMetricsEndpoint(app);
 
+// Telegram Webhook endpoint (يجب أن يكون على port 5000 حتى يكون متاح للعامة)
+const crypto = require('crypto');
+const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || crypto.randomBytes(32).toString('hex');
+
+app.post('/webhook', async (req, res) => {
+  try {
+    const secretToken = req.headers['x-telegram-bot-api-secret-token'];
+    if (process.env.WEBHOOK_SECRET && secretToken !== WEBHOOK_SECRET) {
+      logger.warn('⚠️ Unauthorized webhook request - invalid secret token');
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    
+    const update = req.body;
+    
+    if (!update || !update.update_id) {
+      return res.status(400).json({ error: 'Invalid update' });
+    }
+    
+    res.status(200).json({ ok: true });
+    
+    setImmediate(async () => {
+      try {
+        const bot = require('../bot');
+        await bot.processUpdate(update);
+      } catch (error) {
+        logger.error(`Error processing update ${update.update_id}:`, error);
+      }
+    });
+    
+  } catch (error) {
+    logger.error('Webhook error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Advanced Tiered Rate Limiters - per resource type
 const analysisRateLimit = rateLimitMiddleware.analysis();
 const marketDataRateLimit = rateLimitMiddleware.marketData();
@@ -197,10 +232,37 @@ const startServer = async () => {
     // Setup routes
     await setupAPIRoutes();
     
+    // Setup Telegram Webhook
+    const bot = require('../bot');
+    const webhookUrl = `${process.env.PUBLIC_URL}/webhook`;
+    if (webhookUrl && !webhookUrl.includes('undefined')) {
+      try {
+        await bot.deleteWebHook();
+        logger.info('🗑️ Deleted old webhook');
+        
+        const webhookOptions = {
+          drop_pending_updates: false,
+          max_connections: 100,
+          allowed_updates: ['message', 'callback_query', 'inline_query']
+        };
+        
+        if (process.env.WEBHOOK_SECRET) {
+          webhookOptions.secret_token = WEBHOOK_SECRET;
+        }
+        
+        await bot.setWebHook(webhookUrl, webhookOptions);
+        logger.info(`✅ Webhook set: ${webhookUrl}`);
+        logger.info(`🔒 Webhook secret: ${process.env.WEBHOOK_SECRET ? 'ENABLED' : 'DISABLED'}`);
+      } catch (error) {
+        logger.error(`⚠️ Failed to setup webhook: ${error.message}`);
+      }
+    }
+    
     // Start listening
     app.listen(PORT, '0.0.0.0', () => {
       logger.info(`🌐 HTTP Server running on port ${PORT}`);
       logger.info(`📡 Health endpoint: http://localhost:${PORT}/api/health`);
+      logger.info(`📡 Webhook endpoint: ${webhookUrl}`);
       logger.info(`🔒 Rate limiting: Advanced Tiered System (Free/Basic/VIP/Analyst/Admin)`);
       logger.info(`🎯 Access Control: /api/access/* endpoints available`);
     });
