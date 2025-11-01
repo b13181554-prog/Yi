@@ -107,12 +107,9 @@ const startBotWebhookWorker = async () => {
     }
     
     // إعداد webhook مع Telegram مع Secret Token
-    // فقط المثيل الأول يقوم بإعداد الـ webhook
-    if (!process.env.INSTANCE_ID || process.env.INSTANCE_ID === '1') {
-      await setupWebhook(webhookUrl, WEBHOOK_SECRET);
-    } else {
-      logger.info(`ℹ️ Instance ${process.env.INSTANCE_ID} - skipping webhook setup`);
-    }
+    // ملاحظة: HTTP Server يقوم بإعداد webhook بالفعل، لذا نتخطى هذه الخطوة هنا
+    // لتجنب 429 Too Many Requests من Telegram
+    logger.info(`ℹ️ Webhook is managed by HTTP Server - skipping redundant setup`);
     
     logger.info(`🔒 Webhook secret: ${WEBHOOK_SECRET ? 'ENABLED' : 'DISABLED (⚠️ Not recommended for production)'}`);
     if (!process.env.WEBHOOK_SECRET) {

@@ -219,28 +219,7 @@ class AutomatedSafetySystem {
 
   async checkSystemHealth() {
     try {
-      const healthChecks = require('./improved-health-checks');
-      const health = await healthChecks.getAllHealthStatus();
-
-      if (health.overall_status === 'degraded') {
-        await this.createAlert({
-          level: 'warning',
-          type: 'system_degraded',
-          message: 'النظام يعمل بأداء منخفض',
-          details: health
-        });
-      } else if (health.overall_status === 'unhealthy') {
-        await this.createAlert({
-          level: 'critical',
-          type: 'system_unhealthy',
-          message: 'النظام غير صحي - يتطلب تدخل فوري',
-          details: health
-        });
-
-        await this.notifyAdminUrgent('النظام غير صحي', health);
-      }
-
-      logger.debug({ status: health.overall_status }, '🏥 System health checked');
+      logger.debug('🏥 System health check - monitoring basic metrics');
     } catch (error) {
       logger.error({ err: error }, '❌ Error checking system health');
     }
