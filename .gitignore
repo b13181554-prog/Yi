@@ -141,3 +141,42 @@ dist
 
 # Replit debugger
 .breakpoints
+.replit
+replit.nix
+
+# AWS & Deployment
+*.pem
+*.ppk
+aws-config/
+.ebextensions/
+.elasticbeanstalk/
+
+# PM2
+.pm2/
+pm2.log
+ecosystem.config.js.backup
+
+# Redis dumps
+dump.rdb
+appendonly.aof
+
+# MongoDB dumps
+mongodb-dump/
+backup/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
