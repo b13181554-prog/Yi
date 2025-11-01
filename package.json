@@ -1,8 +1,12 @@
 {
-  "name": "nodejs",
+  "name": "obentchi-trading-bot",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Advanced Telegram Trading Bot with Technical Analysis, Market Data, and AI-powered Signals",
+  "main": "process-manager.js",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "start": "node process-manager.js",
     "start:all": "node process-manager.js",
@@ -12,10 +16,28 @@
     "start:scheduler": "node services/scheduler.js",
     "dev": "node process-manager.js",
     "legacy": "node index.js",
+    "pm2:start": "pm2 start ecosystem.config.js --env production",
+    "pm2:restart": "pm2 restart ecosystem.config.js --env production",
+    "pm2:stop": "pm2 stop obentchi-bot",
+    "pm2:logs": "pm2 logs obentchi-bot",
+    "pm2:monit": "pm2 monit",
+    "deploy": "git pull && npm install --production && pm2 restart obentchi-bot",
+    "setup": "chmod +x install.sh && ./install.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/obentchi-bot.git"
+  },
+  "keywords": [
+    "telegram-bot",
+    "trading-bot",
+    "technical-analysis",
+    "cryptocurrency",
+    "market-data",
+    "ai-signals"
+  ],
+  "author": "Your Name",
   "license": "ISC",
   "dependencies": {
     "@cryptapi/api": "^1.1.1",
