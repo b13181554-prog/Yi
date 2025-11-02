@@ -76,6 +76,11 @@ const SERVICES = {
 
 // تحديد الوضع التلقائي
 function determineMode() {
+  // إذا كنا على Replit، استخدم polling mode دائماً
+  if (process.env.REPLIT || process.env.REPL_ID) {
+    return 'standalone';
+  }
+  
   // webhook mode إذا كان PUBLIC_URL موجود
   if (process.env.PUBLIC_URL || process.env.WEBHOOK_URL) {
     return 'webhook';
