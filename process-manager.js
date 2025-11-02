@@ -6,6 +6,9 @@
  * يمكن تشغيل خدمة واحدة أو الكل معاً
  */
 
+// تحميل المتغيرات البيئية من Replit Secrets
+require('dotenv').config();
+
 const { spawn } = require('child_process');
 const pino = require('pino');
 const path = require('path');
