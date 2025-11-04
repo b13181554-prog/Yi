@@ -18,7 +18,8 @@ function escapeHtml(text) {
 }
 
 // تحديد الوضع: webhook أو polling
-const USE_WEBHOOK = process.env.USE_WEBHOOK === 'true';
+// الكشف التلقائي: إذا كان PUBLIC_URL موجود، استخدم webhook
+const USE_WEBHOOK = !!(process.env.PUBLIC_URL || process.env.WEBHOOK_URL || process.env.USE_WEBHOOK === 'true');
 
 const bot = new TelegramBot(config.BOT_TOKEN, { 
   polling: USE_WEBHOOK ? false : {
@@ -28,7 +29,7 @@ const bot = new TelegramBot(config.BOT_TOKEN, {
       timeout: 10
     }
   },
-  webHook: false // سنفعله يدوياً في index.js
+  webHook: false // سنفعله يدوياً في index.js أو services
 });
 
 let batchLoader;
