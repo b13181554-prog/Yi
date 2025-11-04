@@ -98,7 +98,7 @@ const startBotWebhookWorker = async () => {
     // تهيئة البوت
     await initializeBot();
     
-    // تحديد URL الخاص بالـ webhook (بدون token في المسار للأمان)
+    // تحديد URL الخاص بالـ webhook
     const webhookUrl = process.env.WEBHOOK_URL 
       || `${process.env.PUBLIC_URL}/webhook`;
     
@@ -106,14 +106,29 @@ const startBotWebhookWorker = async () => {
       throw new Error('WEBHOOK_URL or PUBLIC_URL environment variable is required');
     }
     
-    // إعداد webhook مع Telegram مع Secret Token
-    // ملاحظة: HTTP Server يقوم بإعداد webhook بالفعل، لذا نتخطى هذه الخطوة هنا
-    // لتجنب 429 Too Many Requests من Telegram
-    logger.info(`ℹ️ Webhook is managed by HTTP Server - skipping redundant setup`);
+    // إعداد webhook مع Telegram
+    // في AWS: bot-webhook-worker يعالج webhook (ALB يوجه /webhook إلى port 8443)
+    // في Replit: http-server يعالج webhook (port 5000 فقط معروض)
+    const IS_REPLIT = !!process.env.REPLIT_DB_URL;
     
-    logger.info(`🔒 Webhook secret: ${WEBHOOK_SECRET ? 'ENABLED' : 'DISABLED (⚠️ Not recommended for production)'}`);
+    if (!IS_REPLIT) {
+      // AWS mode: bot-webhook-worker يقوم بـ setWebHook
+      try {
+        await setupWebhook(webhookUrl, WEBHOOK_SECRET);
+        logger.info(`✅ Webhook configured successfully (AWS mode)`);
+        logger.info(`🔒 Webhook secret: ${WEBHOOK_SECRET ? 'ENABLED' : 'DISABLED'}`);
+      } catch (error) {
+        logger.error(`⚠️ Failed to setup webhook: ${error.message}`);
+      }
+    } else {
+      // Replit mode: http-server يقوم بـ setWebHook
+      logger.info(`ℹ️ Replit mode: webhook managed by http-server on port 5000`);
+      logger.info(`ℹ️ This worker listens on port ${PORT} but won't receive direct traffic`);
+    }
+    
     if (!process.env.WEBHOOK_SECRET) {
-      logger.warn('⚠️ WEBHOOK_SECRET not set! Using random secret. Set it in .env for production.');
+      logger.error('❌ CRITICAL: WEBHOOK_SECRET not set! This will cause 403 errors!');
+      throw new Error('WEBHOOK_SECRET environment variable is required for production');
     }
     
     // بدء الخادم
