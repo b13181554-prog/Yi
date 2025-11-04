@@ -29,7 +29,7 @@ const bot = new TelegramBot(config.BOT_TOKEN, {
       timeout: 10
     }
   },
-  webHook: false // سنفعله يدوياً في index.js أو services
+  webHook: false
 });
 
 let batchLoader;
