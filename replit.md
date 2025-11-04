@@ -3,7 +3,19 @@
 ## Overview
 OBENTCHI is a Telegram-based cryptocurrency trading bot designed for Sharia-compliant automated spot trading. It provides real-time market data, advanced technical analysis, and a seamless user experience through a Telegram Web App. The project aims to offer accessible, robust trading assistance, focusing on Islamic finance principles by excluding futures and leverage trading, and to secure a significant market share in automated trading.
 
-## Recent Changes (November 01, 2025)
+## Recent Changes (November 04, 2025)
+- **✅ AWS Deployment Optimization**: Fixed deployment mode detection logic
+  - Updated `process-manager.js` to prioritize webhook mode when `PUBLIC_URL` is set
+  - Removed Replit-specific detection that was forcing polling mode
+  - Now correctly switches to webhook mode for production AWS deployments
+  - All services verified working: HTTP Server, Bot Webhook Worker, Queue Worker, Scheduler
+- **✅ Environment Secrets Configured**: Added all required API keys to Replit Secrets
+  - `TELEGRAM_BOT_TOKEN`: Bot authentication with Telegram
+  - `MONGODB_URI`: Database connection string (MongoDB Atlas)
+  - `GOOGLE_GEMINI_API_KEY`: AI service (free tier)
+  - All services now connect successfully to external services
+
+## Previous Changes (November 01, 2025)
 - **✅ AWS Deployment Ready**: Created comprehensive AWS deployment files and documentation
   - `.env.example`: Complete environment variables template with all required settings
   - `ecosystem.config.js`: PM2 process manager configuration for AWS EC2
