@@ -76,12 +76,7 @@ const SERVICES = {
 
 // تحديد الوضع التلقائي
 function determineMode() {
-  // إذا كنا على Replit، استخدم polling mode دائماً
-  if (process.env.REPLIT || process.env.REPL_ID) {
-    return 'standalone';
-  }
-  
-  // webhook mode إذا كان PUBLIC_URL موجود
+  // webhook mode إذا كان PUBLIC_URL موجود (أولوية قصوى - للإنتاج)
   if (process.env.PUBLIC_URL || process.env.WEBHOOK_URL) {
     return 'webhook';
   }
@@ -96,7 +91,8 @@ function determineMode() {
     return 'docker';
   }
   
-  // الوضع الافتراضي
+  // الوضع الافتراضي للتطوير المحلي (polling)
+  // يستخدم للتطوير فقط - ليس للإنتاج
   return 'standalone';
 }
 
