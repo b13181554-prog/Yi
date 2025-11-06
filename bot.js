@@ -26,13 +26,7 @@ const USE_WEBHOOK = process.env.FORCE_POLLING === 'true'
 // ملاحظة: PUBLIC_URL موجود دائماً في Replit لكن لا يعني بالضرورة webhook mode
 
 const bot = new TelegramBot(config.BOT_TOKEN, { 
-  polling: USE_WEBHOOK ? false : {
-    interval: 1000,
-    autoStart: false,
-    params: {
-      timeout: 10
-    }
-  },
+  polling: false,  // دائماً نبدأ بدون polling ونفعله يدوياً
   webHook: false
 });
 
