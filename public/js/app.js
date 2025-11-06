@@ -11,15 +11,8 @@ try {
 
 console.log('tg =', tg);
 
-if (!tg) {
-    console.error('Telegram WebApp not loaded');
-    document.getElementById('loading').innerHTML = `
-        <div style="text-align: center; padding: 40px 20px;">
-            <h2 style="color: #ee0979;">${t('error_title')}</h2>
-            <p>${t('error_must_open_from_telegram')}</p>
-        </div>
-    `;
-} else {
+// لا نتحقق هنا - سننتظر حتى init() للتحقق الكامل
+if (tg) {
     try {
         tg.expand();
 
@@ -364,9 +357,29 @@ async function loadUserData() {
 async function init() {
     console.log('🎯 init() called');
 
+    // التحقق من توفر Telegram WebApp أولاً
     if (!tg) {
         console.error('❌ Telegram WebApp not available');
-        showError(t('error_must_open_from_telegram'));
+        document.getElementById('loading').innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; max-width: 600px; margin: 0 auto;">
+                <div style="font-size: 80px; margin-bottom: 20px;">⚠️</div>
+                <h2 style="color: #ee0979; margin-bottom: 15px; font-size: 24px;">خطأ في التحميل</h2>
+                <p style="color: #666; margin-bottom: 30px; font-size: 16px;">لم يتم تحميل Telegram WebApp بشكل صحيح</p>
+                
+                <div style="background: #fff3cd; border-right: 4px solid #ffc107; padding: 20px; border-radius: 10px; text-align: right; margin-bottom: 20px;">
+                    <h3 style="color: #856404; margin: 0 0 15px 0; font-size: 16px;">⚠️ يرجى التأكد من:</h3>
+                    <ol style="color: #856404; margin: 0; padding-right: 20px; text-align: right; line-height: 2; font-size: 14px;">
+                        <li>فتح التطبيق من داخل <strong>Telegram</strong> فقط</li>
+                        <li>عدم فتح الرابط مباشرة في المتصفح</li>
+                        <li>تحديث تطبيق Telegram لآخر إصدار</li>
+                    </ol>
+                </div>
+                
+                <button onclick="location.reload()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 40px; border-radius: 25px; font-size: 16px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                    🔄 إعادة المحاولة
+                </button>
+            </div>
+        `;
         return;
     }
 
@@ -381,39 +394,57 @@ async function init() {
         console.log('🔍 Telegram WebApp Info:', {
             version: tg.version,
             platform: tg.platform,
-            initData: tg.initData ? t('initdata_present') : t('initdata_empty'),
-            initDataUnsafe: tg.initDataUnsafe,
-            user: tg.initDataUnsafe?.user
+            initData: tg.initData ? 'موجود' : 'فارغ',
+            initDataUnsafe: tg.initDataUnsafe
         });
         
+        // التحقق من وجود بيانات المستخدم
         if (!tg.initDataUnsafe?.user?.id) {
             console.error('❌ No user ID from Telegram');
-            console.error('📋 Diagnostic details:', {
+            console.log('📋 Diagnostic details:', {
                 'tg present': !!tg,
-                'initData': tg.initData || t('initdata_empty'),
+                'initData': tg.initData || 'فارغ',
                 'initDataUnsafe': JSON.stringify(tg.initDataUnsafe),
                 'platform': tg.platform,
                 'version': tg.version
             });
             
             document.getElementById('loading').innerHTML = `
-                <div style="text-align: center; padding: 40px 20px; max-width: 500px; margin: 0 auto;">
+                <div style="text-align: center; padding: 30px 20px; max-width: 600px; margin: 0 auto;">
                     <div style="font-size: 80px; margin-bottom: 20px;">🔒</div>
-                    <h2 style="color: #ee0979; margin-bottom: 10px;">${t('app_works_only_from_telegram')}</h2>
-                    <p style="color: #666; margin-bottom: 30px;">${t('cannot_open_directly')}</p>
+                    <h2 style="color: #ee0979; margin-bottom: 10px; font-size: 24px;">التطبيق يعمل فقط من خلال Telegram</h2>
+                    <p style="color: #666; margin-bottom: 30px; font-size: 16px; line-height: 1.6;">
+                        لا يمكن فتح هذا التطبيق مباشرة من المتصفح. يجب فتحه من داخل تطبيق Telegram للحفاظ على أمان حسابك.
+                    </p>
                     
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; text-align: right;">
-                        <h3 style="margin: 0 0 15px 0; font-size: 18px;">✅ ${t('correct_way_title')}</h3>
-                        <ol style="margin: 0; padding-right: 20px; text-align: right; line-height: 2;">
-                            <li>${t('open_telegram_app')} <strong>Telegram</strong></li>
-                            <li>${t('search_bot')} <strong>@OBENTCHI_Bot</strong></li>
-                            <li>${t('send_start')}</li>
-                            <li>${t('click_open_app')}</li>
-                        </ol>
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; text-align: right; box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);">
+                        <h3 style="margin: 0 0 20px 0; font-size: 20px; font-weight: bold;">✅ الطريقة الصحيحة:</h3>
+                        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; text-align: right;">
+                            <ol style="margin: 0; padding-right: 20px; text-align: right; line-height: 2.5; font-size: 16px;">
+                                <li>افتح تطبيق <strong>Telegram</strong> على هاتفك أو حاسوبك</li>
+                                <li>ابحث عن البوت <strong style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 5px;">@OBENTCHI_Bot</strong></li>
+                                <li>أرسل <strong style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 5px;">/start</strong> للبوت</li>
+                                <li>اضغط على زر <strong>🚀 فتح التطبيق</strong> (Open App)</li>
+                            </ol>
+                        </div>
                     </div>
                     
-                    <div style="background: #f5f5f5; padding: 15px; border-radius: 10px; font-size: 14px; color: #666;">
-                        💡 <strong>${t('security_tip').split(':')[0]}:</strong> ${t('security_tip')}
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; border-right: 4px solid #667eea; text-align: right; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: start; justify-content: flex-end; gap: 10px;">
+                            <div style="flex: 1; text-align: right;">
+                                <p style="margin: 0; color: #495057; font-size: 14px; line-height: 1.8;">
+                                    💡 <strong style="color: #667eea;">ملاحظة أمنية:</strong><br>
+                                    هذا التطبيق يستخدم تشفير Telegram لحماية بياناتك. فتحه من خارج Telegram يعني عدم وجود معلومات المستخدم، لذلك لن يعمل التطبيق.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                        <p style="margin: 0; color: #2e7d32; font-size: 14px;">
+                            ✨ <strong>هل أنت مستخدم جديد؟</strong><br>
+                            ابحث عن <strong>@OBENTCHI_Bot</strong> في Telegram وابدأ التداول الذكي الآن!
+                        </p>
                     </div>
                 </div>
             `;
