@@ -18,8 +18,12 @@ function escapeHtml(text) {
 }
 
 // تحديد الوضع: webhook أو polling
-// الكشف التلقائي: إذا كان PUBLIC_URL موجود، استخدم webhook
-const USE_WEBHOOK = !!(process.env.PUBLIC_URL || process.env.WEBHOOK_URL || process.env.USE_WEBHOOK === 'true');
+// أولوية للإعدادات الصريحة، ثم الكشف التلقائي
+const USE_WEBHOOK = process.env.FORCE_POLLING === 'true' 
+  ? false 
+  : !!(process.env.FORCE_WEBHOOK === 'true' || process.env.WEBHOOK_URL || process.env.USE_WEBHOOK === 'true');
+  
+// ملاحظة: PUBLIC_URL موجود دائماً في Replit لكن لا يعني بالضرورة webhook mode
 
 const bot = new TelegramBot(config.BOT_TOKEN, { 
   polling: USE_WEBHOOK ? false : {
