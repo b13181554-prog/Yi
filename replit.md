@@ -59,6 +59,15 @@ The project uses MongoDB Atlas, designed for 24/7 operation with improved error 
 **Deployment Architecture**:
 The system supports Standalone, Docker, and Kubernetes deployment modes, with separate containers for HTTP Server, Bot Webhook Worker, Queue Worker, and Scheduler, all monitored via Prometheus and Grafana.
 
+**Multi-Environment Support (November 2025)**:
+- **Automatic Environment Detection**: The system automatically detects whether it's running on Replit (development) or AWS (production) without manual configuration
+- **Unified Webhook Handler**: Single webhook processing logic shared between both environments, eliminating code duplication
+- **Environment-Specific Behavior**:
+  - Replit: Webhook on port 5000, handled by HTTP server, WEBHOOK_SECRET optional
+  - AWS: Webhook on port 8443, handled by bot-webhook-worker, WEBHOOK_SECRET required
+- **Smart Configuration**: URLs, ports, and secrets are automatically configured based on detected environment
+- **Zero Configuration**: No need to manually switch between polling/webhook modes - the system adapts automatically
+
 ## External Dependencies
 
 -   **Databases**: MongoDB Atlas, Redis (v7.2.6)
