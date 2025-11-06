@@ -76,7 +76,22 @@ const SERVICES = {
 
 // تحديد الوضع التلقائي
 function determineMode() {
-  // webhook mode إذا كان PUBLIC_URL موجود (أولوية قصوى - للإنتاج)
+  // أولوية قصوى: إذا كان BOT_MODE محدد صراحة
+  if (process.env.BOT_MODE) {
+    return process.env.BOT_MODE;
+  }
+  
+  // إذا كان FORCE_POLLING مفعل، استخدم polling mode
+  if (process.env.FORCE_POLLING === 'true') {
+    return 'polling';
+  }
+  
+  // في Replit: استخدم polling mode للتطوير (لأن PUBLIC_URL موجود دائماً)
+  if (process.env.REPL_ID) {
+    return 'polling';
+  }
+  
+  // webhook mode إذا كان PUBLIC_URL موجود (للإنتاج في AWS)
   if (process.env.PUBLIC_URL || process.env.WEBHOOK_URL) {
     return 'webhook';
   }
