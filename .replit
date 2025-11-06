@@ -23,14 +23,6 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 36153
-externalPort = 3002
-
-[[ports]]
-localPort = 37225
-externalPort = 5173
-
-[[ports]]
 localPort = 38363
 externalPort = 3001
 
@@ -109,13 +101,13 @@ outputType = "console"
 name = "OBENTCHI Bot"
 author = "agent"
 
-[workflows.workflow.metadata]
-outputType = "webview"
-
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node index.js"
 waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [userenv]
 
