@@ -197,52 +197,22 @@ const startApp = async () => {
         // بدء البوت في polling mode
         console.log('📡 Starting bot polling...');
         
-        // تنظيف شامل لجميع الـ instances القديمة
+        // تنظيف بسيط وسريع
         try {
-          console.log('🧹 Performing complete cleanup...');
-          
-          // 1. Log out من جميع instances القديمة (يفصل جميع الـ sessions)
-          try {
-            await bot.logOut();
-            console.log('🔓 Logged out from all old sessions');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-          } catch (error) {
-            // خطأ طبيعي إذا لم يكن هناك session نشط
-            console.log('ℹ️  No active session to log out:', error.message);
-          }
-          
-          // 2. حذف webhook مع drop_pending_updates
+          console.log('🧹 Cleanup: Deleting webhook...');
           await bot.deleteWebHook({ drop_pending_updates: true });
-          console.log('🗑️ Deleted webhook and pending updates');
+          console.log('✅ Webhook deleted');
           
-          // 3. التأكد من عدم وجود تحديثات معلقة
-          await bot.getUpdates({ offset: -1 });
-          console.log('✅ Cleared remaining updates');
-          
-          // 4. انتظار 3 ثواني للتأكد من تنفيذ كل شيء
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          
+          // انتظار قصير
+          await new Promise(resolve => setTimeout(resolve, 1500));
         } catch (error) {
-          console.log('ℹ️  Cleanup error:', error.message);
+          console.log('ℹ️  Cleanup note:', error.message);
         }
         
-        // بدء polling بشكل نظيف
-        try {
-          console.log('🚀 Starting polling...');
-          await bot.startPolling({
-            restart: false,  // لا نحتاج restart لأننا نظفنا كل شيء
-            polling: {
-              interval: 1000,
-              params: {
-                timeout: 10
-              }
-            }
-          });
-          console.log('✅ Bot polling started successfully');
-        } catch (error) {
-          console.error('❌ Failed to start polling:', error.message);
-          throw error;
-        }
+        // بدء polling
+        console.log('🚀 Starting bot polling...');
+        bot.startPolling({ restart: true });
+        console.log('✅ Polling initiated');
         
         // بدء Queue processors
         console.log('✅ Queue processors started (Withdrawals: 5 workers, Payments: 3 workers)');

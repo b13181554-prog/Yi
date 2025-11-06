@@ -39,12 +39,23 @@ db.initDatabase().then(() => {
 
 // معالجة أخطاء Polling فقط في وضع Polling
 if (!USE_WEBHOOK) {
+  let conflict409Count = 0;
+  const MAX_409_RETRIES = 3;
+  
   bot.on('polling_error', (error) => {
     if (error.message.includes('409') || error.message.includes('ETELEGRAM: 409')) {
-      console.log('⚠️ هناك نسخة أخرى من البوت تعمل. يرجى إيقاف النسخ الأخرى.');
-      process.exit(1); // إيقاف هذه النسخة
+      conflict409Count++;
+      console.log(`⚠️ Conflict 409 detected (attempt ${conflict409Count}/${MAX_409_RETRIES})`);
+      
+      if (conflict409Count >= MAX_409_RETRIES) {
+        console.log('❌ Too many 409 conflicts. Stopping to avoid issues.');
+        process.exit(1);
+      } else {
+        console.log('🔄 Will retry automatically...');
+        // البوت سيعيد المحاولة تلقائياً
+      }
     } else if (error.message.includes('query is too old')) {
-      console.log('⚠️ تجاهل التحديثات القديمة...');
+      console.log('⚠️ Ignoring old updates...');
       // استمر في العمل - هذا خطأ عادي بعد إعادة التشغيل
     } else {
       console.error('Polling error:', error.message);
