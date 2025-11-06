@@ -283,6 +283,12 @@ const INDICES = [
 ];
 
 async function loadUserData() {
+    // حماية: التأكد من وجود tg و userId قبل المتابعة
+    if (!tg || !userId) {
+        console.error('❌ Cannot load user data: tg or userId missing');
+        return false;
+    }
+    
     try {
         const response = await fetch('/api/user', {
             method: 'POST',
@@ -502,7 +508,8 @@ async function init() {
 }
 
 function updateUI() {
-    if (!tg.initDataUnsafe?.user) {
+    // حماية: التأكد من وجود tg و userId قبل المتابعة
+    if (!tg || !tg.initDataUnsafe?.user) {
         console.error('❌ No user data from Telegram');
         return;
     }
