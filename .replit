@@ -23,10 +23,6 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 8443
-externalPort = 5000
-
-[[ports]]
 localPort = 36153
 externalPort = 3002
 
@@ -118,7 +114,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node process-manager.js"
+args = "node index.js"
 waitForPort = 5000
 
 [userenv]
