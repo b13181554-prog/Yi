@@ -14,7 +14,9 @@ const db = require('../database');
 const { rateLimitMiddleware } = require('../advanced-rate-limiter');
 const accessControl = require('../user-access-control');
 const { authenticateAPI, validateRequestSize } = require('../api-security');
-const { createMetricsEndpoint, httpMetricsMiddleware } = require('../metrics-exporter');
+const { createMetricsEndpoint, httpMetricsMiddleware, trackBotUpdate } = require('../metrics-exporter');
+const { envDetector } = require('../environment-detector');
+const { webhookHandler } = require('../webhook-handler');
 
 const logger = pino({
   level: 'info',
@@ -65,44 +67,15 @@ createMetricsEndpoint(app);
 // Telegram Webhook endpoint
 // في Replit: يتم معالجته هنا (port 5000 الوحيد المعروض)
 // في AWS: يوجه ALB الطلبات إلى bot-webhook-worker (port 8443)
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
-const IS_REPLIT = !!process.env.REPLIT_DB_URL;
-
-if (IS_REPLIT) {
-  // في Replit: http-server يعالج webhook
-  app.post('/webhook', async (req, res) => {
-    try {
-      const secretToken = req.headers['x-telegram-bot-api-secret-token'];
-      if (WEBHOOK_SECRET && secretToken !== WEBHOOK_SECRET) {
-        logger.warn('⚠️ Unauthorized webhook request - invalid secret token');
-        return res.status(403).json({ error: 'Forbidden' });
-      }
-      
-      const update = req.body;
-      
-      if (!update || !update.update_id) {
-        return res.status(400).json({ error: 'Invalid update' });
-      }
-      
-      // الرد فوراً
-      res.status(200).json({ ok: true });
-      
-      // معالجة بشكل async
-      setImmediate(async () => {
-        try {
-          const bot = require('../bot');
-          await bot.processUpdate(update);
-        } catch (error) {
-          logger.error(`Error processing update ${update.update_id}:`, error);
-        }
-      });
-      
-    } catch (error) {
-      logger.error('Webhook error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-  logger.info('📡 Webhook endpoint configured for Replit (port 5000)');
+if (envDetector.isReplit) {
+  const bot = require('../bot');
+  webhookHandler.setProcessUpdateFunction(bot.processUpdate);
+  webhookHandler.setTrackBotUpdateFunction(trackBotUpdate);
+  
+  app.post('/webhook', webhookHandler.getExpressMiddleware());
+  
+  const webhookUrl = config.WEBHOOK_CONFIG.publicUrl + config.WEBHOOK_CONFIG.webhookPath;
+  webhookHandler.logWebhookInfo('Replit', PORT, webhookUrl);
 }
 
 // Advanced Tiered Rate Limiters - per resource type
@@ -241,9 +214,12 @@ const startServer = async () => {
     await setupAPIRoutes();
     
     // Setup Telegram Webhook (في Replit فقط)
-    if (IS_REPLIT) {
+    if (envDetector.isReplit) {
       const bot = require('../bot');
-      const webhookUrl = `${process.env.PUBLIC_URL}/webhook`;
+      const webhookUrl = config.WEBHOOK_CONFIG.publicUrl 
+        ? `${config.WEBHOOK_CONFIG.publicUrl}${config.WEBHOOK_CONFIG.webhookPath}`
+        : `${process.env.PUBLIC_URL}/webhook`;
+      
       if (webhookUrl && !webhookUrl.includes('undefined')) {
         try {
           await bot.deleteWebHook();
@@ -255,20 +231,21 @@ const startServer = async () => {
             allowed_updates: ['message', 'callback_query', 'inline_query']
           };
           
-          if (WEBHOOK_SECRET) {
-            webhookOptions.secret_token = WEBHOOK_SECRET;
+          const webhookSecret = webhookHandler.getWebhookSecret();
+          if (webhookSecret) {
+            webhookOptions.secret_token = webhookSecret;
           }
           
           await bot.setWebHook(webhookUrl, webhookOptions);
           logger.info(`✅ Webhook set: ${webhookUrl}`);
-          logger.info(`🔒 Webhook secret: ${WEBHOOK_SECRET ? 'ENABLED' : 'DISABLED'}`);
+          logger.info(`🔒 Webhook secret: ${webhookSecret ? 'ENABLED' : 'DISABLED'}`);
           logger.info(`📍 Running in Replit mode - webhook on port ${PORT}`);
         } catch (error) {
           logger.error(`⚠️ Failed to setup webhook: ${error.message}`);
         }
       }
     } else {
-      logger.info(`📍 Running in AWS mode - webhook handled by bot-webhook-worker`);
+      logger.info(`📍 Running in ${config.ENVIRONMENT.platform} mode - webhook handled by bot-webhook-worker`);
     }
     
     // Start listening

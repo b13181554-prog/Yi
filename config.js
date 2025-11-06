@@ -1,3 +1,5 @@
+const { envDetector, getWebhookConfig } = require('./environment-detector');
+
 const requiredEnvVars = ['BOT_TOKEN', 'MONGODB_PASSWORD', 'OWNER_ID', 'MONGODB_USER', 'MONGODB_CLUSTER', 'CHANNEL_ID'];
 
 for (const envVar of requiredEnvVars) {
@@ -7,7 +9,9 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
-module.exports = { 
+const webhookConfig = getWebhookConfig();
+
+const baseConfig = { 
   BOT_TOKEN: process.env.BOT_TOKEN,
   OWNER_ID: parseInt(process.env.OWNER_ID),
   CHANNEL_USERNAME: process.env.CHANNEL_USERNAME || '@ME_MAGDY_TRADING',
@@ -15,7 +19,8 @@ module.exports = {
   
   BOT_WALLET_ADDRESS: process.env.BOT_WALLET_ADDRESS || 'TCZwoWnmi8uBssqjtKGmUwAjToAxcJkjLP',
   
-  CRYPTAPI_CALLBACK_URL: process.env.CRYPTAPI_CALLBACK_URL || null,
+  CRYPTAPI_CALLBACK_URL: process.env.CRYPTAPI_CALLBACK_URL || 
+    (webhookConfig.publicUrl ? `${webhookConfig.publicUrl}/api/payment/callback` : null),
   
   SUBSCRIPTION_PRICE: parseInt(process.env.SUBSCRIPTION_PRICE) || 10,
   PUMP_SUBSCRIPTION_PRICE: parseInt(process.env.PUMP_SUBSCRIPTION_PRICE) || 5,
@@ -44,7 +49,12 @@ module.exports = {
   OKX_SECRET_KEY: process.env.OKX_SECRET_KEY || null,
   OKX_PASSPHRASE: process.env.OKX_PASSPHRASE || null,
   
-  WEBAPP_URL: process.env.WEBAPP_URL 
-    || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS}` : null)
-    || 'https://obentchi-bot.replit.app',
+  WEBAPP_URL: webhookConfig.publicUrl || 
+              process.env.WEBAPP_URL ||
+              'https://obentchi-bot.replit.app',
+  
+  WEBHOOK_CONFIG: webhookConfig,
+  ENVIRONMENT: envDetector.getEnvironmentInfo()
 };
+
+module.exports = baseConfig;
