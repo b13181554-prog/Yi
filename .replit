@@ -90,12 +90,12 @@ args = "OBENTCHI Bot"
 name = "Redis Server"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "redis-server --port 6379 --bind 127.0.0.1"
-
 [workflows.workflow.metadata]
 outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "redis-server ./redis.conf"
 
 [[workflows.workflow]]
 name = "OBENTCHI Bot"

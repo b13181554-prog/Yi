@@ -197,17 +197,30 @@ const startApp = async () => {
         // بدء البوت في polling mode
         console.log('📡 Starting bot polling...');
         
-        // تنظيف بسيط وسريع
-        try {
-          console.log('🧹 Cleanup: Deleting webhook...');
-          await bot.deleteWebHook({ drop_pending_updates: true });
-          console.log('✅ Webhook deleted');
-          
-          // انتظار قصير
-          await new Promise(resolve => setTimeout(resolve, 1500));
-        } catch (error) {
-          console.log('ℹ️  Cleanup note:', error.message);
+        // تنظيف شامل قبل بدء Polling
+        let webhookDeleted = false;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            console.log(`🧹 Cleanup attempt ${attempt}/3: Deleting webhook...`);
+            await bot.deleteWebHook({ drop_pending_updates: true });
+            console.log('✅ Webhook deleted successfully');
+            webhookDeleted = true;
+            break;
+          } catch (error) {
+            console.log(`⚠️ Attempt ${attempt} failed:`, error.message);
+            if (attempt < 3) {
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+          }
         }
+        
+        if (!webhookDeleted) {
+          console.log('⚠️ Warning: Could not delete webhook, but will try polling anyway');
+        }
+        
+        // انتظار إضافي للتأكد من إزالة الـ webhook من Telegram
+        console.log('⏳ Waiting for Telegram to process webhook deletion...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
         
         // بدء polling
         console.log('🚀 Starting bot polling...');
