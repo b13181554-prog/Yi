@@ -1,6 +1,6 @@
-const { envDetector, getWebhookConfig } = require('./environment-detector');
+const { getWebhookConfig, getEnvironmentInfo } = require('./environment-detector');
 
-const requiredEnvVars = ['BOT_TOKEN', 'MONGODB_PASSWORD', 'OWNER_ID', 'MONGODB_USER', 'MONGODB_CLUSTER', 'CHANNEL_ID'];
+const requiredEnvVars = ['BOT_TOKEN', 'MONGODB_PASSWORD', 'OWNER_ID', 'MONGODB_USER', 'MONGODB_CLUSTER', 'CHANNEL_ID', 'PUBLIC_URL'];
 
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
@@ -49,12 +49,10 @@ const baseConfig = {
   OKX_SECRET_KEY: process.env.OKX_SECRET_KEY || null,
   OKX_PASSPHRASE: process.env.OKX_PASSPHRASE || null,
   
-  WEBAPP_URL: webhookConfig.publicUrl || 
-              process.env.WEBAPP_URL ||
-              'https://obentchi-bot.replit.app',
+  WEBAPP_URL: webhookConfig.publicUrl,
   
   WEBHOOK_CONFIG: webhookConfig,
-  ENVIRONMENT: envDetector.getEnvironmentInfo()
+  ENVIRONMENT: getEnvironmentInfo()
 };
 
 module.exports = baseConfig;
