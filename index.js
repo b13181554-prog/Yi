@@ -202,6 +202,17 @@ const startApp = async () => {
         console.log('📡 Starting bot polling...');
         
         // تنظيف شامل قبل بدء Polling
+        // 1. إيقاف أي polling نشط
+        try {
+          console.log('🛑 Stopping any active polling...');
+          const { safeStopPolling } = require('./bot');
+          await safeStopPolling();
+          console.log('✅ Active polling stopped');
+        } catch (error) {
+          console.log('ℹ️ No active polling to stop');
+        }
+        
+        // 2. حذف webhook
         let webhookDeleted = false;
         for (let attempt = 1; attempt <= 3; attempt++) {
           try {
@@ -222,10 +233,10 @@ const startApp = async () => {
           console.log('⚠️ Warning: Could not delete webhook, but will try polling anyway');
         }
         
-        // انتظار إضافي للتأكد من إزالة الـ webhook من Telegram
-        // زيادة الوقت إلى 5 ثوانٍ لتقليل فرصة 409 conflict
-        console.log('⏳ Waiting for Telegram to process webhook deletion...');
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        // 3. انتظار طويل للتأكد من تنظيف الجلسة السابقة
+        // زيادة الوقت إلى 10 ثوانٍ لضمان إغلاق الاتصال السابق
+        console.log('⏳ Waiting for Telegram to fully cleanup previous session (10 seconds)...');
+        await new Promise(resolve => setTimeout(resolve, 10000));
         
         // بدء polling باستخدام الدالة الآمنة
         console.log('🚀 Starting bot polling...');
