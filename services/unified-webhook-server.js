@@ -48,12 +48,8 @@ const logger = pino({
 
 const app = express();
 
-// تحديد البورت حسب البيئة
-// Replit: port 5000 (الوحيد المكشوف)
-// AWS: port 8443 (standard webhook port) أو متغير PORT
-const PORT = envDetector.isReplit 
-  ? 5000 
-  : (process.env.PORT || process.env.BOT_WEBHOOK_PORT || 8443);
+// تحديد البورت
+const PORT = parseInt(process.env.PORT) || parseInt(process.env.BOT_WEBHOOK_PORT) || 8443;
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
@@ -76,7 +72,7 @@ app.get('/health', async (req, res) => {
       service: 'unified-webhook-server',
       mode: 'webhook',
       instance: process.env.INSTANCE_ID || 'default',
-      environment: config.ENVIRONMENT.platform
+      environment: config.ENVIRONMENT.environment
     });
   } catch (error) {
     res.status(500).json({
