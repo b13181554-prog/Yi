@@ -97,20 +97,26 @@
   - ✅ Feature flags system
 - **Cache Redis:** ✅ متصل
 
-### 6. المتغيرات البيئية (Environment Variables)
+### 6. المتغيرات البيئية (Environment Variables) - ✅ موحدة بدون تكرار
 - **الحالة:** ✅ جميع المتغيرات المطلوبة موجودة
+- **آخر تحديث:** نوفمبر 2025 - تم توحيد المتغيرات وإزالة التكرار
 
-**المتغيرات المُعدّة:**
-1. ✅ `TELEGRAM_BOT_TOKEN` - معرف البوت
-2. ✅ `MONGODB_URI` - اتصال قاعدة البيانات
-3. ✅ `MONGODB_USER` - مستخدم MongoDB
-4. ✅ `MONGODB_PASSWORD` - كلمة مرور MongoDB
-5. ✅ `MONGODB_CLUSTER` - عنوان Cluster
-6. ✅ `GOOGLE_GEMINI_API_KEY` - مفتاح AI
-7. ✅ `PUBLIC_URL` - عنوان الاستضافة
-8. ✅ `WEBHOOK_SECRET` - سر الـ webhook
-9. ✅ `OWNER_ID` - معرف المالك
-10. ✅ `CHANNEL_ID` - معرف القناة
+**المتغيرات الموحدة:**
+1. ✅ `BOT_TOKEN` - معرف البوت (موحد - لا تكرار)
+2. ✅ `MONGODB_USER` - مستخدم MongoDB
+3. ✅ `MONGODB_PASSWORD` - كلمة مرور MongoDB
+4. ✅ `MONGODB_CLUSTER` - عنوان Cluster (يُبنى MONGODB_URI تلقائياً)
+5. ✅ `GOOGLE_API_KEY` - مفتاح Google Gemini AI (موحد - لا تكرار)
+6. ✅ `PUBLIC_URL` - عنوان الاستضافة
+7. ✅ `WEBHOOK_SECRET` - سر الـ webhook
+8. ✅ `OWNER_ID` - معرف المالك
+9. ✅ `CHANNEL_ID` - معرف القناة
+10. ✅ `OKX_API_KEY`, `OKX_SECRET_KEY`, `OKX_PASSPHRASE` - مفاتيح OKX للسحوبات
+
+**تم إزالة المتغيرات المكررة:**
+- ❌ `TELEGRAM_BOT_TOKEN` → استخدم `BOT_TOKEN`
+- ❌ `GOOGLE_GEMINI_API_KEY` → استخدم `GOOGLE_API_KEY`
+- ❌ `MONGODB_URI` → يُبنى تلقائياً من المكونات الثلاثة
 
 ### 7. الأمان (Security)
 - **✅ Webhook Secret Token:** مُفعّل ويعمل بشكل صحيح
