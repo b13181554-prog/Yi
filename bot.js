@@ -27,7 +27,7 @@ const USE_WEBHOOK = process.env.FORCE_POLLING === 'true'
 
 const bot = new TelegramBot(config.BOT_TOKEN, { 
   polling: false,  // دائماً نبدأ بدون polling ونفعله يدوياً
-  webHook: false
+  webHook: USE_WEBHOOK  // تفعيل webhook إذا كان USE_WEBHOOK = true
 });
 
 // Singleton guard لمنع polling من البدء مرتين
