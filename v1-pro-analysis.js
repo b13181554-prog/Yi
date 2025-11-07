@@ -1,6 +1,7 @@
 const TechnicalAnalysis = require('./analysis');
 const geminiService = require('./gemini-service');
 const axios = require('axios');
+const config = require('./config');
 
 class OBENTCHIV1ProAnalysis {
   constructor(candles, balance = 10000, symbol = 'BTCUSDT') {
@@ -10,6 +11,7 @@ class OBENTCHIV1ProAnalysis {
     this.analysis = new TechnicalAnalysis(candles);
     
     this.geminiService = geminiService;
+    this.aiEnabled = config.AI_FEATURES_ENABLED;
     
     this.indicatorWeights = {
       rsi: 1.2,
@@ -199,6 +201,17 @@ class OBENTCHIV1ProAnalysis {
   }
 
   async analyzeSentiment() {
+    if (!this.aiEnabled) {
+      return {
+        score: 0,
+        sentiment: 'محايد',
+        confidence: 0.3,
+        summary: 'تحليل المشاعر معطل - يتم الاعتماد على التحليل الفني فقط',
+        newsCount: 0,
+        available: false
+      };
+    }
+    
     try {
       const news = await this.fetchLatestNews();
       
