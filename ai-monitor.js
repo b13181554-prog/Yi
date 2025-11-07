@@ -377,6 +377,14 @@ ${action.reason}
     console.log(`  🔄 Retry payment for user: ${action.target}`);
   }
 
+  escapeHtml(text) {
+    if (!text) return '';
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
   async notifyOwner(analysis) {
     const criticalCount = analysis.issues?.filter(i => i.severity === 'critical').length || 0;
     const highCount = analysis.issues?.filter(i => i.severity === 'high').length || 0;
@@ -387,12 +395,12 @@ ${action.reason}
     
     const issuesSummary = analysis.issues?.length > 0 
       ? analysis.issues.map((issue, i) => 
-          `${i + 1}. [${issue.severity}] ${issue.category}: ${issue.description}`
+          `${i + 1}. [${issue.severity}] ${issue.category}: ${this.escapeHtml(issue.description)}`
         ).join('\n')
       : 'لا توجد مشاكل';
     
     const recommendationsSummary = analysis.recommendations?.length > 0
-      ? analysis.recommendations.map((rec, i) => `${i + 1}. ${rec}`).join('\n')
+      ? analysis.recommendations.map((rec, i) => `${i + 1}. ${this.escapeHtml(rec)}`).join('\n')
       : 'لا توجد توصيات';
     
     const servicesStatus = analysis.systemStatus?.services;
