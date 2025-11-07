@@ -49,6 +49,8 @@ const baseConfig = {
   OKX_SECRET_KEY: process.env.OKX_SECRET_KEY || null,
   OKX_PASSPHRASE: process.env.OKX_PASSPHRASE || null,
   
+  AI_FEATURES_ENABLED: process.env.AI_FEATURES_ENABLED === 'true',
+  
   WEBAPP_URL: webhookConfig.publicUrl,
   
   WEBHOOK_CONFIG: webhookConfig,

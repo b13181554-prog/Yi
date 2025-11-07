@@ -12,6 +12,7 @@
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const pino = require('pino');
+const config = require('./config');
 
 const logger = pino({
   level: 'info',
@@ -27,6 +28,12 @@ const logger = pino({
 
 class GeminiService {
   constructor() {
+    if (!config.AI_FEATURES_ENABLED) {
+      logger.info('ℹ️ AI Features are disabled (AI_FEATURES_ENABLED=false)');
+      this.enabled = false;
+      return;
+    }
+    
     if (!process.env.GOOGLE_API_KEY) {
       logger.warn('⚠️ GOOGLE_API_KEY not found. Gemini Service will not work.');
       this.enabled = false;
