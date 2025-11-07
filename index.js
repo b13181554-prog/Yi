@@ -222,10 +222,15 @@ const startApp = async () => {
         console.log('⏳ Waiting for Telegram to process webhook deletion...');
         await new Promise(resolve => setTimeout(resolve, 3000));
         
-        // بدء polling
+        // بدء polling باستخدام الدالة الآمنة
         console.log('🚀 Starting bot polling...');
-        bot.startPolling({ restart: true });
-        console.log('✅ Polling initiated');
+        const { safeStartPolling } = require('./bot');
+        const pollingStarted = safeStartPolling();
+        if (pollingStarted) {
+          console.log('✅ Polling initiated');
+        } else {
+          console.log('⚠️ Polling could not start (may already be active)');
+        }
         
         // بدء Queue processors
         console.log('✅ Queue processors started (Withdrawals: 5 workers, Payments: 3 workers)');
@@ -234,16 +239,10 @@ const startApp = async () => {
         
         // بدء الخدمات الأخرى
         console.log('✅ Notification system initialized');
-        initAnalystMonitor();
-        console.log('✅ Analyst monitoring system initialized');
         
-        initTradeSignalsMonitor();
-        console.log('🔍 Trade Signals Monitor initialized');
-        console.log('✅ البحث المباشر مُفعّل - الأصول تُجلب عند الطلب');
-        console.log('✅ Trade Signals Monitor scheduled to run every 15 minutes');
-        
-        rankingScheduler.start();
-        console.log('✅ Analyst ranking scheduler started (runs daily at midnight)');
+        // ملاحظة: تم نقل Monitors و Schedulers إلى services/scheduler.js لتجنب التكرار
+        // initAnalystMonitor, initTradeSignalsMonitor, rankingScheduler يتم تشغيلهم من scheduler فقط
+        console.log('ℹ️ Monitors and schedulers managed by scheduler service');
         
         startWithdrawalScheduler();
         
@@ -278,7 +277,8 @@ const shutdown = async () => {
   console.log('\n⚠️ Shutdown signal received...');
   
   try {
-    await bot.stopPolling();
+    const { safeStopPolling } = require('./bot');
+    await safeStopPolling();
     console.log('✅ Bot stopped');
   } catch (error) {
     console.error('Error stopping bot:', error);

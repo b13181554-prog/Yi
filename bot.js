@@ -30,6 +30,45 @@ const bot = new TelegramBot(config.BOT_TOKEN, {
   webHook: false
 });
 
+// Singleton guard لمنع polling من البدء مرتين
+let isPollingActive = false;
+
+// دالة آمنة لبدء polling
+function safeStartPolling(options = {}) {
+  if (isPollingActive) {
+    console.log('⚠️ Polling already active, skipping duplicate start');
+    return false;
+  }
+  
+  try {
+    bot.startPolling({ restart: true, ...options });
+    isPollingActive = true;
+    console.log('✅ Polling started successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Failed to start polling:', error.message);
+    return false;
+  }
+}
+
+// دالة آمنة لإيقاف polling
+async function safeStopPolling() {
+  if (!isPollingActive) {
+    console.log('ℹ️ Polling not active, nothing to stop');
+    return;
+  }
+  
+  try {
+    await bot.stopPolling();
+    isPollingActive = false;
+    console.log('✅ Polling stopped successfully');
+  } catch (error) {
+    console.error('❌ Failed to stop polling:', error.message);
+  }
+}
+
+// سيتم تصدير الدوال الآمنة في نهاية الملف
+
 let batchLoader;
 db.initDatabase().then(() => {
   batchLoader = new BatchLoader(db.getDB());
@@ -40,40 +79,35 @@ db.initDatabase().then(() => {
 // معالجة أخطاء Polling فقط في وضع Polling
 if (!USE_WEBHOOK) {
   let conflict409Count = 0;
-  const MAX_409_RETRIES = 3;
+  const MAX_409_RETRIES = 5;
   let isFixing409 = false;
+  let lastConflictTime = 0;
   
   bot.on('polling_error', async (error) => {
     if (error.message.includes('409') || error.message.includes('ETELEGRAM: 409')) {
+      const now = Date.now();
+      
+      // إعادة تعيين العداد إذا مر أكثر من دقيقة منذ آخر conflict
+      if (now - lastConflictTime > 60000) {
+        conflict409Count = 0;
+      }
+      
       conflict409Count++;
+      lastConflictTime = now;
+      
       console.log(`⚠️ Conflict 409 detected (attempt ${conflict409Count}/${MAX_409_RETRIES})`);
       
-      if (conflict409Count >= MAX_409_RETRIES && !isFixing409) {
-        isFixing409 = true;
-        console.log('🔧 Attempting to fix 409 conflict by deleting webhook...');
+      // لا نحاول الإصلاح التلقائي بعد الآن لمنع الـloop
+      // فقط نسجل المشكلة ونترك الأمر للمستخدم
+      if (conflict409Count >= MAX_409_RETRIES) {
+        console.error('❌ Too many 409 conflicts detected!');
+        console.log('💡 حل المشكلة:');
+        console.log('   1. تأكد من عدم وجود نسخة أخرى من البوت تعمل');
+        console.log('   2. احذف الـwebhook يدوياً باستخدام: curl https://api.telegram.org/bot<TOKEN>/deleteWebhook');
+        console.log('   3. أعد تشغيل البوت');
         
-        try {
-          await bot.stopPolling();
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          
-          await bot.deleteWebHook({ drop_pending_updates: true });
-          console.log('✅ Webhook deleted successfully');
-          
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          
-          console.log('🔄 Restarting polling...');
-          bot.startPolling({ restart: true });
-          
-          conflict409Count = 0;
-          isFixing409 = false;
-          console.log('✅ Polling restarted successfully');
-        } catch (fixError) {
-          console.error('❌ Failed to fix 409 conflict:', fixError.message);
-          console.log('⚠️ Please manually delete webhook using Telegram BotFather');
-          isFixing409 = false;
-        }
-      } else if (!isFixing409) {
-        console.log('🔄 Will retry automatically...');
+        // إيقاف المحاولات المتكررة
+        isFixing409 = true;
       }
     } else if (error.message.includes('query is too old')) {
       console.log('⚠️ Ignoring old updates...');
@@ -2010,3 +2044,5 @@ function startBot() {
 module.exports = bot;
 module.exports.startBot = startBot;
 module.exports.bot = bot;
+module.exports.safeStartPolling = safeStartPolling;
+module.exports.safeStopPolling = safeStopPolling;
