@@ -66,20 +66,18 @@ The project uses MongoDB Atlas, designed for 24/7 operation with improved error 
 **Deployment Architecture**:
 The system supports Standalone, Docker, and Kubernetes deployment modes, with separate containers for HTTP Server, Bot Webhook Worker, Queue Worker, and Scheduler, all monitored via Prometheus and Grafana.
 
-**Multi-Environment Support (November 2025)**:
-- **Automatic Environment Detection**: The system automatically detects whether it's running on Replit (development) or AWS (production) without manual configuration
-- **Unified Webhook Handler**: Single webhook processing logic shared between both environments, eliminating code duplication
-- **Environment-Specific Behavior**:
-  - Replit: Webhook on port 5000, handled by HTTP server, WEBHOOK_SECRET optional
-  - AWS: Webhook on port 8443, handled by bot-webhook-worker, WEBHOOK_SECRET required
-- **Smart Configuration**: URLs, ports, and secrets are automatically configured based on detected environment
-- **Zero Configuration**: No need to manually switch between polling/webhook modes - the system adapts automatically
-- **Unified Environment Variables (November 2025)**: 
-  - Eliminated duplicate environment variables (TELEGRAM_BOT_TOKEN, GOOGLE_GEMINI_API_KEY, MONGODB_URI)
-  - Single unified variable for each configuration across all environments
-  - Uses BOT_TOKEN, GOOGLE_API_KEY, and auto-built MONGODB_URI from components
-  - Simplified deployment and reduced configuration errors
-  - See UNIFIED_ENV_VARS.md for complete documentation
+**Simplified Webhook-Only Architecture (November 2025)**:
+- **Webhook Mode Only**: System operates exclusively in webhook mode - polling mode has been completely removed
+- **Single Unified Server**: All services consolidated into `unified-webhook-server.js` (Bot Webhook + HTTP API + Queue Workers + Schedulers)
+- **Simplified Configuration**: Removed complex environment detection - single configuration for production deployment
+- **Required Environment Variables**:
+  - `PUBLIC_URL`: Your server's public URL (required)
+  - `WEBHOOK_SECRET`: Security token for webhook verification (required)
+  - `PORT`: Server port (default: 8443)
+  - `BOT_TOKEN`, `MONGODB_USER`, `MONGODB_PASSWORD`, `MONGODB_CLUSTER`, `OWNER_ID`, `CHANNEL_ID`
+- **Deployment Target**: Optimized for AWS/Production deployment only
+- **Simplified Entry Point**: `index.js` → `services/unified-webhook-server.js`
+- **No Auto-Detection**: Removed automatic environment detection complexity that caused deployment issues
 
 ## External Dependencies
 
