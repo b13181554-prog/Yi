@@ -48,8 +48,8 @@ const logger = pino({
 
 const app = express();
 
-// تحديد البورت
-const PORT = parseInt(process.env.PORT) || parseInt(process.env.BOT_WEBHOOK_PORT) || 8443;
+// تحديد البورت - استخدام 5000 للتوافق مع Replit
+const PORT = 5000;
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
