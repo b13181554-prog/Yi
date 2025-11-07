@@ -56,6 +56,12 @@ The Telegram Web App features a dark theme, providing a professional, modern, an
     - **Memory Usage Optimization**: Reduced memory consumption from 94.2% to 68.9% (25.3% improvement) by eliminating duplicate database connections and service initialization.
     - **Batch Loader Initialization**: Moved BatchLoader initialization to proper lifecycle position after database initialization, preventing race conditions.
     - **System Health Status**: Improved from "degraded" to "healthy" status through optimized resource management and proper initialization order.
+- **AI Feature Control System (November 2025)**:
+    - **Global AI Toggle**: Environment variable `AI_FEATURES_ENABLED` (default: false) controls all AI features system-wide.
+    - **Disabled AI Features**: All AI bot commands (`/ask`, `/search`, `/analyze`, `/imagine`, `/ai`), AI sentiment analysis in V1 PRO Analysis, AI Code Agent, and Advanced AI Service.
+    - **Core Trading Features Preserved**: All technical analysis, market data, payments, withdrawals, and trading systems remain fully functional without AI.
+    - **Resource Optimization**: Minimizes AI API usage and costs while maintaining complete trading bot functionality.
+    - **Easy Re-enabling**: Set `AI_FEATURES_ENABLED=true` to restore all AI features instantly.
 
 **Feature Specifications**:
 The platform offers a Web App for technical analysis, top movers, a USDT TRC20 wallet, and account management. Trading features include technical analysis for diverse asset classes and trending cryptocurrency tracking. Financial features include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management includes analyst subscriptions and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, and withdrawal processing. Automated trade signal monitoring and a blockchain-based pump detection system are integrated.
@@ -73,9 +79,10 @@ The system supports Standalone, Docker, and Kubernetes deployment modes, with se
 - **Required Environment Variables**:
   - `PUBLIC_URL`: Your server's public URL (required)
   - `WEBHOOK_SECRET`: Security token for webhook verification (required)
-  - `PORT`: Server port (default: 8443)
+  - `PORT`: Server port (hardcoded to 5000 for Replit compatibility)
+  - `AI_FEATURES_ENABLED`: Enable/disable all AI features (default: false)
   - `BOT_TOKEN`, `MONGODB_USER`, `MONGODB_PASSWORD`, `MONGODB_CLUSTER`, `OWNER_ID`, `CHANNEL_ID`
-- **Deployment Target**: Optimized for AWS/Production deployment only
+- **Deployment Target**: Optimized for Replit and AWS/Production deployment
 - **Simplified Entry Point**: `index.js` → `services/unified-webhook-server.js`
 - **No Auto-Detection**: Removed automatic environment detection complexity that caused deployment issues
 
