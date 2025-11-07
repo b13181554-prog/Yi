@@ -6,6 +6,8 @@ const logger = createLogger('database');
 
 let db = null;
 let client = null;
+let isInitialized = false;
+let initPromise = null;
 
 function createPaginationHelper(page = 1, limit = 20) {
   const pageNum = Math.max(1, parseInt(page) || 1);
@@ -125,22 +127,33 @@ async function processAllDocuments(collection, query = {}, processFn, options = 
 }
 
 async function initDatabase() {
-  try {
-    client = new MongoClient(config.MONGODB_URI, {
-      serverSelectionTimeoutMS: 30000,
-      socketTimeoutMS: 45000,
-      maxPoolSize: 100,
-      minPoolSize: 10,
-      maxIdleTimeMS: 60000,
-      waitQueueTimeoutMS: 5000,
-      retryWrites: true,
-      retryReads: true,
-      tls: true,
-      tlsAllowInvalidCertificates: false,
-    });
-    
-    await client.connect();
-    db = client.db(config.MONGODB_DB_NAME);
+  if (isInitialized) {
+    logger.info('ℹ️ Database already initialized, skipping...');
+    return db;
+  }
+  
+  if (initPromise) {
+    logger.info('⏳ Database initialization in progress, waiting...');
+    return initPromise;
+  }
+  
+  initPromise = (async () => {
+    try {
+      client = new MongoClient(config.MONGODB_URI, {
+        serverSelectionTimeoutMS: 30000,
+        socketTimeoutMS: 45000,
+        maxPoolSize: 100,
+        minPoolSize: 10,
+        maxIdleTimeMS: 60000,
+        waitQueueTimeoutMS: 5000,
+        retryWrites: true,
+        retryReads: true,
+        tls: true,
+        tlsAllowInvalidCertificates: false,
+      });
+      
+      await client.connect();
+      db = client.db(config.MONGODB_DB_NAME);
     
     logger.info('📊 Creating optimized database indexes...');
     
@@ -222,18 +235,25 @@ async function initDatabase() {
     logger.info('✅ Database connected with optimized connection pool (10-100 connections)');
     logger.info('✅ All indexes created successfully for 1M users scalability');
     
-    // Initialize AI Database Tools
-    try {
-      const aiDatabaseTools = require('./ai-database-tools');
-      aiDatabaseTools.initDatabase(db);
-      logger.info('✅ AI Database Tools initialized successfully');
+      // Initialize AI Database Tools
+      try {
+        const aiDatabaseTools = require('./ai-database-tools');
+        aiDatabaseTools.initDatabase(db);
+        logger.info('✅ AI Database Tools initialized successfully');
+      } catch (error) {
+        logger.warn({ err: error }, '⚠️ Could not initialize AI Database Tools (optional)');
+      }
+      
+      isInitialized = true;
+      return db;
     } catch (error) {
-      logger.warn({ err: error }, '⚠️ Could not initialize AI Database Tools (optional)');
+      logger.error({ err: error }, '❌ Database initialization error');
+      initPromise = null;
+      throw error;
     }
-  } catch (error) {
-    logger.error({ err: error }, '❌ Database initialization error');
-    throw error;
-  }
+  })();
+  
+  return initPromise;
 }
 
 async function getUser(userId) {

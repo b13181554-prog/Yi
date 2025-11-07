@@ -70,11 +70,14 @@ async function safeStopPolling() {
 // سيتم تصدير الدوال الآمنة في نهاية الملف
 
 let batchLoader;
-db.initDatabase().then(() => {
-  batchLoader = new BatchLoader(db.getDB());
-}).catch(err => {
-  console.error('Error initializing batch loader:', err);
-});
+
+function initBatchLoader() {
+  if (!batchLoader) {
+    batchLoader = new BatchLoader(db.getDB());
+    console.log('✅ Batch loader initialized');
+  }
+  return batchLoader;
+}
 
 // معالجة أخطاء Polling فقط في وضع Polling
 if (!USE_WEBHOOK) {
@@ -2046,3 +2049,4 @@ module.exports.startBot = startBot;
 module.exports.bot = bot;
 module.exports.safeStartPolling = safeStartPolling;
 module.exports.safeStopPolling = safeStopPolling;
+module.exports.initBatchLoader = initBatchLoader;

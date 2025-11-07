@@ -187,6 +187,10 @@ const startApp = async () => {
         console.log('📊 Initializing database...');
         await db.initDatabase();
         
+        // Initialize batch loader (after database)
+        const { initBatchLoader } = require('./bot');
+        initBatchLoader();
+        
         // Initialize Feature Flags Service
         const featureFlagService = require('./services/feature-flags');
         await featureFlagService.initialize(db.getDB());
@@ -219,8 +223,9 @@ const startApp = async () => {
         }
         
         // انتظار إضافي للتأكد من إزالة الـ webhook من Telegram
+        // زيادة الوقت إلى 5 ثوانٍ لتقليل فرصة 409 conflict
         console.log('⏳ Waiting for Telegram to process webhook deletion...');
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        await new Promise(resolve => setTimeout(resolve, 5000));
         
         // بدء polling باستخدام الدالة الآمنة
         console.log('🚀 Starting bot polling...');
