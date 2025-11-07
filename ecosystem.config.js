@@ -1,8 +1,8 @@
 module.exports = {
   apps: [
     {
-      name: 'obentchi-bot',
-      script: 'process-manager.js',
+      name: 'obentchi-webhook-server',
+      script: 'services/unified-webhook-server.js',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,

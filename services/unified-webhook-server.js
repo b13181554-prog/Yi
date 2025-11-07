@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * HTTP Server Process
- * يدير فقط Express API endpoints
- * منفصل عن Bot والـ Workers
+ * Unified Webhook Server
+ * خادم موحد يعمل بنظام webhook فقط (AWS)
+ * يدمج جميع الخدمات: Bot Webhook + HTTP Server + Queue Worker + Scheduler
  */
 
 const express = require('express');
@@ -11,12 +11,25 @@ const path = require('path');
 const pino = require('pino');
 const config = require('../config');
 const db = require('../database');
+const { bot, processUpdate, initializeBot, setupWebhook } = require('../bot-webhook');
 const { rateLimitMiddleware } = require('../advanced-rate-limiter');
 const accessControl = require('../user-access-control');
 const { authenticateAPI, validateRequestSize } = require('../api-security');
 const { createMetricsEndpoint, httpMetricsMiddleware, trackBotUpdate } = require('../metrics-exporter');
 const { envDetector } = require('../environment-detector');
 const { webhookHandler } = require('../webhook-handler');
+
+// Queue Workers
+const { withdrawalQueue, startWithdrawalProcessor } = require('../withdrawal-queue');
+const { paymentCallbackQueue, startPaymentProcessor } = require('../payment-callback-queue');
+
+// Schedulers
+const { startWithdrawalScheduler, stopWithdrawalScheduler } = require('../withdrawal-scheduler');
+const rankingScheduler = require('../ranking-scheduler');
+const { initAnalystMonitor } = require('../analyst-monitor');
+const { initTradeSignalsMonitor } = require('../trade-signals-monitor');
+const featureFlagService = require('./feature-flags');
+const automatedSafety = require('../automated-safety-system');
 
 const logger = pino({
   level: 'info',
@@ -30,8 +43,17 @@ const logger = pino({
   }
 });
 
+// زيادة حد المستمعين لتجنب التحذيرات
+process.setMaxListeners(20);
+
 const app = express();
-const PORT = process.env.PORT || 5000;
+
+// تحديد البورت حسب البيئة
+// Replit: port 5000 (الوحيد المكشوف)
+// AWS: port 8443 (standard webhook port) أو متغير PORT
+const PORT = envDetector.isReplit 
+  ? 5000 
+  : (process.env.PORT || process.env.BOT_WEBHOOK_PORT || 8443);
 
 // Middleware
 app.use(express.json({ limit: '10mb' }));
@@ -42,7 +64,29 @@ app.use(httpMetricsMiddleware);
 // Static files
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Health check (بدون rate limiting)
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    const dbHealthy = !!db.getDB();
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      database: dbHealthy ? 'connected' : 'disconnected',
+      service: 'unified-webhook-server',
+      mode: 'webhook',
+      instance: process.env.INSTANCE_ID || 'default',
+      environment: config.ENVIRONMENT.platform
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
+// API Health check
 app.get('/api/health', async (req, res) => {
   try {
     const dbHealthy = !!db.getDB();
@@ -51,7 +95,7 @@ app.get('/api/health', async (req, res) => {
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       database: dbHealthy ? 'connected' : 'disconnected',
-      service: 'http-server'
+      service: 'unified-webhook-server'
     });
   } catch (error) {
     res.status(500).json({
@@ -65,27 +109,18 @@ app.get('/api/health', async (req, res) => {
 createMetricsEndpoint(app);
 
 // Telegram Webhook endpoint
-// في Replit: يتم معالجته هنا (port 5000 الوحيد المعروض)
-// في AWS: يوجه ALB الطلبات إلى bot-webhook-worker (port 8443)
-if (envDetector.isReplit) {
-  const bot = require('../bot');
-  webhookHandler.setProcessUpdateFunction(bot.processUpdate);
-  webhookHandler.setTrackBotUpdateFunction(trackBotUpdate);
-  
-  app.post('/webhook', webhookHandler.getExpressMiddleware());
-  
-  const webhookUrl = config.WEBHOOK_CONFIG.publicUrl + config.WEBHOOK_CONFIG.webhookPath;
-  webhookHandler.logWebhookInfo('Replit', PORT, webhookUrl);
-}
+webhookHandler.setProcessUpdateFunction(processUpdate);
+webhookHandler.setTrackBotUpdateFunction(trackBotUpdate);
+app.post('/webhook', webhookHandler.getExpressMiddleware());
 
-// Advanced Tiered Rate Limiters - per resource type
+// Rate Limiters
 const analysisRateLimit = rateLimitMiddleware.analysis();
 const marketDataRateLimit = rateLimitMiddleware.marketData();
 const searchRateLimit = rateLimitMiddleware.search();
 const aiRateLimit = rateLimitMiddleware.ai();
 const scannerRateLimit = rateLimitMiddleware.scanner();
 
-// تحميل API routes
+// Setup API routes
 const setupAPIRoutes = async () => {
   const marketData = require('../market-data');
   const forexService = require('../forex-service');
@@ -106,7 +141,7 @@ const setupAPIRoutes = async () => {
   const featureFlagRoutes = require('../api-routes/feature-flag-routes');
   app.use('/api/feature-flags', featureFlagRoutes);
   
-  // Main Routes (user endpoints)
+  // Main Routes
   const mainRoutes = require('../api-routes/main-routes');
   app.use('/api', mainRoutes);
   
@@ -124,7 +159,6 @@ const setupAPIRoutes = async () => {
         return res.json({ success: false, error: 'User not found' });
       }
       
-      const bot = require('../bot');
       const botInfo = await bot.getMe();
       const botUsername = botInfo.username;
       
@@ -158,7 +192,7 @@ const setupAPIRoutes = async () => {
     }
   });
 
-  // Analysis endpoint - tier-based rate limit
+  // Analysis endpoint
   app.post('/api/analyze', authenticateAPI, analysisRateLimit, async (req, res) => {
     try {
       const { symbol, marketType, user_id } = req.body;
@@ -186,7 +220,7 @@ const setupAPIRoutes = async () => {
     }
   });
 
-  // Withdrawal endpoints - tier-based analysis rate limit
+  // Withdrawal endpoint
   app.post('/api/withdraw', authenticateAPI, analysisRateLimit, async (req, res) => {
     try {
       const { user_id, amount, wallet_address } = req.body;
@@ -195,7 +229,6 @@ const setupAPIRoutes = async () => {
         return res.json({ success: false, error: 'Missing required fields' });
       }
       
-      // سيتم نقل منطق السحب هنا
       res.json({ success: false, error: 'Not implemented in HTTP server' });
     } catch (error) {
       logger.error(`Error processing withdrawal: ${error.message}`);
@@ -271,85 +304,183 @@ const setupAPIRoutes = async () => {
   logger.info('✅ API routes loaded');
 };
 
-// Startup
-const startServer = async () => {
+// Initialize Queue Workers
+const initializeQueueWorkers = async () => {
+  logger.info('⚙️ Initializing Queue Workers...');
+  
+  startWithdrawalProcessor(5);
+  logger.info('  ✅ Withdrawal queue: 5 concurrent workers');
+  
+  startPaymentProcessor(3);
+  logger.info('  ✅ Payment callback queue: 3 concurrent workers');
+  
+  logger.info('✅ Queue Workers initialized');
+};
+
+// Initialize Schedulers
+const initializeSchedulers = async () => {
+  logger.info('📅 Initializing Schedulers...');
+  
+  await featureFlagService.initialize(db.getDB());
+  logger.info('  ✅ Feature flags initialized');
+  
+  automatedSafety.initialize();
+  logger.info('  ✅ Automated safety system initialized');
+  
+  startWithdrawalScheduler();
+  logger.info('  ✅ Withdrawal scheduler started');
+  
+  rankingScheduler.start();
+  logger.info('  ✅ Ranking scheduler started');
+  
+  initAnalystMonitor();
+  logger.info('  ✅ Analyst monitor started');
+  
+  initTradeSignalsMonitor();
+  logger.info('  ✅ Trade signals monitor started');
+  
+  logger.info('✅ All schedulers initialized');
+};
+
+// Main startup function
+const startUnifiedServer = async () => {
   try {
-    // Initialize database FIRST - critical!
+    logger.info('🚀 Starting Unified Webhook Server...');
+    logger.info('==========================================');
+    logger.info(`🌍 Environment: ${config.ENVIRONMENT.platform}`);
+    logger.info(`🔧 Mode: WEBHOOK ONLY (AWS Deployment)`);
+    logger.info('');
+    
+    // Initialize database
     logger.info('📊 Initializing database...');
     await db.initDatabase();
-    logger.info('✅ Database initialized successfully');
+    logger.info('✅ Database initialized');
     
-    // Initialize Feature Flags Service
-    const featureFlagService = require('../services/feature-flags');
-    await featureFlagService.initialize(db.getDB());
+    // Initialize bot
+    logger.info('🤖 Initializing Telegram Bot...');
+    await initializeBot();
+    logger.info('✅ Bot initialized');
     
-    // Setup routes
-    await setupAPIRoutes();
+    // Setup webhook
+    const webhookUrl = config.WEBHOOK_CONFIG.publicUrl 
+      ? `${config.WEBHOOK_CONFIG.publicUrl}${config.WEBHOOK_CONFIG.webhookPath}`
+      : process.env.WEBHOOK_URL || `${process.env.PUBLIC_URL}/webhook`;
     
-    // Setup Telegram Webhook (في Replit فقط)
-    if (envDetector.isReplit) {
-      const bot = require('../bot');
-      const webhookUrl = config.WEBHOOK_CONFIG.publicUrl 
-        ? `${config.WEBHOOK_CONFIG.publicUrl}${config.WEBHOOK_CONFIG.webhookPath}`
-        : `${process.env.PUBLIC_URL}/webhook`;
-      
-      if (webhookUrl && !webhookUrl.includes('undefined')) {
-        try {
-          await bot.deleteWebHook();
-          logger.info('🗑️ Deleted old webhook');
-          
-          const webhookOptions = {
-            drop_pending_updates: false,
-            max_connections: 100,
-            allowed_updates: ['message', 'callback_query', 'inline_query']
-          };
-          
-          const webhookSecret = webhookHandler.getWebhookSecret();
-          if (webhookSecret) {
-            webhookOptions.secret_token = webhookSecret;
-          }
-          
-          await bot.setWebHook(webhookUrl, webhookOptions);
-          logger.info(`✅ Webhook set: ${webhookUrl}`);
-          logger.info(`🔒 Webhook secret: ${webhookSecret ? 'ENABLED' : 'DISABLED'}`);
-          logger.info(`📍 Running in Replit mode - webhook on port ${PORT}`);
-        } catch (error) {
-          logger.error(`⚠️ Failed to setup webhook: ${error.message}`);
-        }
-      }
-    } else {
-      logger.info(`📍 Running in ${config.ENVIRONMENT.platform} mode - webhook handled by bot-webhook-worker`);
+    if (!webhookUrl || webhookUrl.includes('undefined')) {
+      throw new Error('WEBHOOK_URL or PUBLIC_URL environment variable is required');
     }
     
-    // Start listening
+    try {
+      await setupWebhook(webhookUrl, webhookHandler.getWebhookSecret());
+      logger.info(`✅ Webhook configured successfully`);
+      webhookHandler.logWebhookInfo(config.ENVIRONMENT.platform, PORT, webhookUrl);
+    } catch (error) {
+      logger.error(`⚠️ Failed to setup webhook: ${error.message}`);
+    }
+    
+    if (!process.env.WEBHOOK_SECRET) {
+      logger.warn('⚠️ WARNING: WEBHOOK_SECRET not set! Using auto-generated secret.');
+    }
+    
+    // Setup API routes
+    logger.info('🔧 Setting up API routes...');
+    await setupAPIRoutes();
+    
+    // Initialize Queue Workers
+    await initializeQueueWorkers();
+    
+    // Initialize Schedulers
+    await initializeSchedulers();
+    
+    // Start Express server
     app.listen(PORT, '0.0.0.0', () => {
-      logger.info(`🌐 HTTP Server running on port ${PORT}`);
-      logger.info(`📡 Health endpoint: http://localhost:${PORT}/api/health`);
-      logger.info(`📡 API endpoints: /api/*`);
-      logger.info(`🔒 Rate limiting: Advanced Tiered System (Free/Basic/VIP/Analyst/Admin)`);
-      logger.info(`🎯 Access Control: /api/access/* endpoints available`);
-      logger.info(`ℹ️ Webhook handled by bot-webhook-worker on port 8443`);
+      logger.info('');
+      logger.info('✅ Unified Webhook Server is running!');
+      logger.info('==========================================');
+      logger.info(`🌐 Server listening on port ${PORT}`);
+      logger.info(`📡 Webhook URL: ${webhookUrl}`);
+      logger.info(`🔒 Webhook secret: ${process.env.WEBHOOK_SECRET ? 'ENABLED' : 'AUTO-GENERATED'}`);
+      logger.info(`📊 Health endpoint: http://localhost:${PORT}/health`);
+      logger.info(`📈 Metrics endpoint: http://localhost:${PORT}/metrics`);
+      logger.info(`🔢 Instance ID: ${process.env.INSTANCE_ID || 'default'}`);
+      logger.info('');
+      logger.info('Services Status:');
+      logger.info('  ✅ Telegram Webhook - Active');
+      logger.info('  ✅ HTTP API - Active');
+      logger.info('  ✅ Queue Workers - Running');
+      logger.info('  ✅ Schedulers - Running');
+      logger.info('');
+      logger.info('👂 Ready to receive webhook updates...');
+      logger.info('==========================================');
     });
+    
   } catch (error) {
-    logger.error(`❌ Failed to start HTTP server: ${error.message}`);
+    logger.error(`❌ Failed to start Unified Webhook Server: ${error.message}`);
+    logger.error(error.stack);
     process.exit(1);
   }
 };
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('⚠️ SIGTERM received, shutting down gracefully...');
-  process.exit(0);
+const shutdown = async () => {
+  logger.info('');
+  logger.info('⚠️ Shutdown signal received...');
+  logger.info('==========================================');
+  
+  try {
+    // Pause queues
+    logger.info('⏸️ Pausing queues...');
+    await withdrawalQueue.pause();
+    await paymentCallbackQueue.pause();
+    
+    // Wait for active jobs
+    logger.info('⏳ Waiting for active jobs to complete (max 30s)...');
+    await Promise.race([
+      Promise.all([
+        withdrawalQueue.whenCurrentJobsFinished(),
+        paymentCallbackQueue.whenCurrentJobsFinished()
+      ]),
+      new Promise(resolve => setTimeout(resolve, 30000))
+    ]);
+    
+    // Close queues
+    logger.info('🔴 Closing queues...');
+    await withdrawalQueue.close();
+    await paymentCallbackQueue.close();
+    
+    // Stop schedulers
+    logger.info('⏹️ Stopping schedulers...');
+    stopWithdrawalScheduler();
+    rankingScheduler.stop();
+    automatedSafety.stop();
+    
+    logger.info('');
+    logger.info('✅ Unified Webhook Server shut down successfully');
+    logger.info('==========================================');
+    process.exit(0);
+  } catch (error) {
+    logger.error(`❌ Error during shutdown: ${error.message}`);
+    process.exit(1);
+  }
+};
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
+
+// Handle uncaught errors
+process.on('uncaughtException', (error) => {
+  logger.error(`💥 Uncaught Exception: ${error.message}`);
+  logger.error(error.stack);
 });
 
-process.on('SIGINT', async () => {
-  logger.info('⚠️ SIGINT received, shutting down gracefully...');
-  process.exit(0);
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error(`💥 Unhandled Rejection at: ${promise}`);
+  logger.error(`Reason: ${reason}`);
 });
 
 // Start the server
 if (require.main === module) {
-  startServer();
+  startUnifiedServer();
 }
 
-module.exports = { app };
+module.exports = { startUnifiedServer };
