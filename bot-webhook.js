@@ -35,17 +35,19 @@ async function setupWebhook(webhookUrl, secretToken = null) {
     await bot.deleteWebHook();
     logger.info('🗑️ Deleted old webhook');
     
-    // تعيين webhook جديد مع Secret Token
+    // تعيين webhook جديد
     const webhookOptions = {
       drop_pending_updates: false,
       max_connections: 100, // زيادة عدد الاتصالات المتزامنة
       allowed_updates: ['message', 'callback_query', 'inline_query']
     };
     
-    // إضافة Secret Token إذا كان متاحاً
+    // إضافة Secret Token فقط في AWS/Production
     if (secretToken) {
       webhookOptions.secret_token = secretToken;
       logger.info('🔒 Using secret token for webhook security');
+    } else {
+      logger.info('ℹ️ No secret token (running in development/Replit)');
     }
     
     const result = await bot.setWebHook(webhookUrl, webhookOptions);

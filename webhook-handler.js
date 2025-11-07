@@ -20,7 +20,18 @@ const logger = pino({
 
 class WebhookHandler {
   constructor() {
-    this.webhookSecret = process.env.WEBHOOK_SECRET || crypto.randomBytes(32).toString('hex');
+    // في Replit، لا نستخدم WEBHOOK_SECRET لأن HTTPS كافي للأمان
+    // في AWS/Production، WEBHOOK_SECRET مطلوب
+    const isReplit = !!(process.env.REPLIT_DB_URL || process.env.REPL_ID);
+    
+    if (isReplit) {
+      // في Replit: لا نستخدم secret token
+      this.webhookSecret = null;
+    } else {
+      // في AWS/Production: نستخدم secret token
+      this.webhookSecret = process.env.WEBHOOK_SECRET || crypto.randomBytes(32).toString('hex');
+    }
+    
     this.processUpdate = null;
     this.trackBotUpdate = null;
   }
@@ -39,19 +50,28 @@ class WebhookHandler {
 
   async handleWebhookRequest(req, res) {
     try {
+      logger.info(`📬 Webhook request received from ${req.ip}`);
       const secretToken = req.headers['x-telegram-bot-api-secret-token'];
       
-      if (process.env.WEBHOOK_SECRET && secretToken !== this.webhookSecret) {
-        logger.warn('⚠️ Unauthorized webhook request - invalid secret token');
-        return res.status(403).json({ error: 'Forbidden' });
+      // التحقق من Secret Token (فقط في AWS/Production)
+      if (this.webhookSecret) {
+        if (secretToken !== this.webhookSecret) {
+          logger.warn(`⚠️ Unauthorized webhook request - invalid secret token. Expected: ${this.webhookSecret.substring(0, 10)}..., Got: ${secretToken ? secretToken.substring(0, 10) : 'none'}...`);
+          return res.status(403).json({ error: 'Forbidden' });
+        }
+        logger.info('✅ Secret token verified');
+      } else {
+        logger.info('ℹ️ Running in Replit - secret token verification disabled');
       }
       
       const update = req.body;
       
       if (!update || !update.update_id) {
+        logger.warn('⚠️ Invalid update received - no update_id');
         return res.status(400).json({ error: 'Invalid update' });
       }
       
+      logger.info(`✅ Processing update ${update.update_id}`);
       res.status(200).json({ ok: true });
       
       setImmediate(async () => {
