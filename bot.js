@@ -1443,6 +1443,14 @@ bot.onText(/\/ai(.*)/, async (msg, match) => {
   }
 
   try {
+    if (!config.AI_FEATURES_ENABLED) {
+      const user = await db.getUser(userId);
+      const lang = user ? (user.language || 'ar') : 'ar';
+      return safeSendMessage(bot, chatId, lang === 'ar' 
+        ? '❌ ميزات الذكاء الاصطناعي معطلة حالياً' 
+        : '❌ AI features are currently disabled');
+    }
+    
     const user = await db.getUser(userId);
     const lang = user ? (user.language || 'ar') : 'ar';
 
@@ -1573,6 +1581,14 @@ bot.onText(/\/code_agent(.*)/, async (msg, match) => {
   }
 
   try {
+    if (!config.AI_FEATURES_ENABLED) {
+      const user = await db.getUser(userId);
+      const lang = user ? (user.language || 'ar') : 'ar';
+      return safeSendMessage(bot, chatId, lang === 'ar' 
+        ? '❌ ميزات الذكاء الاصطناعي معطلة حالياً' 
+        : '❌ AI features are currently disabled');
+    }
+    
     const user = await db.getUser(userId);
     const lang = user ? (user.language || 'ar') : 'ar';
 
@@ -1706,6 +1722,14 @@ bot.onText(/\/ask(.*)/, async (msg, match) => {
   const userMessage = match[1].trim();
 
   try {
+    if (!config.AI_FEATURES_ENABLED) {
+      const user = await db.getUser(userId);
+      const lang = user ? (user.language || 'ar') : 'ar';
+      return safeSendMessage(bot, chatId, lang === 'ar' 
+        ? '❌ ميزات الذكاء الاصطناعي معطلة حالياً' 
+        : '❌ AI features are currently disabled');
+    }
+    
     if (!(await requireChannelMembership(userId, chatId, msg))) return;
 
     const user = await db.getUser(userId);
@@ -1791,6 +1815,14 @@ bot.onText(/\/search(.*)/, async (msg, match) => {
   const searchQuery = match[1].trim();
 
   try {
+    if (!config.AI_FEATURES_ENABLED) {
+      const user = await db.getUser(userId);
+      const lang = user ? (user.language || 'ar') : 'ar';
+      return safeSendMessage(bot, chatId, lang === 'ar' 
+        ? '❌ ميزات الذكاء الاصطناعي معطلة حالياً' 
+        : '❌ AI features are currently disabled');
+    }
+    
     if (!(await requireChannelMembership(userId, chatId, msg))) return;
 
     const user = await db.getUser(userId);
@@ -1876,6 +1908,14 @@ bot.onText(/\/imagine(.*)/, async (msg, match) => {
   const imageDescription = match[1].trim();
 
   try {
+    if (!config.AI_FEATURES_ENABLED) {
+      const user = await db.getUser(userId);
+      const lang = user ? (user.language || 'ar') : 'ar';
+      return safeSendMessage(bot, chatId, lang === 'ar' 
+        ? '❌ ميزات الذكاء الاصطناعي معطلة حالياً' 
+        : '❌ AI features are currently disabled');
+    }
+    
     if (!(await requireChannelMembership(userId, chatId, msg))) return;
 
     const user = await db.getUser(userId);
@@ -1952,6 +1992,14 @@ bot.onText(/\/analyze(.*)/, async (msg, match) => {
   const filePath = match[1].trim();
 
   try {
+    if (!config.AI_FEATURES_ENABLED) {
+      const user = await db.getUser(userId);
+      const lang = user ? (user.language || 'ar') : 'ar';
+      return safeSendMessage(bot, chatId, lang === 'ar' 
+        ? '❌ ميزات الذكاء الاصطناعي معطلة حالياً' 
+        : '❌ AI features are currently disabled');
+    }
+    
     if (!(await requireChannelMembership(userId, chatId, msg))) return;
 
     const user = await db.getUser(userId);
