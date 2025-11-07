@@ -6,7 +6,7 @@
 
 const axios = require('axios');
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const BOT_TOKEN = process.env.BOT_TOKEN;
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'obentchi_webhook_secret_2025';
 
 async function testBotResponse() {

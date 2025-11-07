@@ -7,7 +7,7 @@
 const readline = require('readline');
 const axios = require('axios');
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const BOT_TOKEN = process.env.BOT_TOKEN;
 const CHANNEL_ID = process.env.CHANNEL_ID || '-1002776929451';
 
 async function checkUserMembership(userId) {

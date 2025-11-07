@@ -67,6 +67,12 @@ The system supports Standalone, Docker, and Kubernetes deployment modes, with se
   - AWS: Webhook on port 8443, handled by bot-webhook-worker, WEBHOOK_SECRET required
 - **Smart Configuration**: URLs, ports, and secrets are automatically configured based on detected environment
 - **Zero Configuration**: No need to manually switch between polling/webhook modes - the system adapts automatically
+- **Unified Environment Variables (November 2025)**: 
+  - Eliminated duplicate environment variables (TELEGRAM_BOT_TOKEN, GOOGLE_GEMINI_API_KEY, MONGODB_URI)
+  - Single unified variable for each configuration across all environments
+  - Uses BOT_TOKEN, GOOGLE_API_KEY, and auto-built MONGODB_URI from components
+  - Simplified deployment and reduced configuration errors
+  - See UNIFIED_ENV_VARS.md for complete documentation
 
 ## External Dependencies
 
