@@ -56,7 +56,7 @@ class WebhookHandler {
       // التحقق من Secret Token (فقط في AWS/Production)
       if (this.webhookSecret) {
         if (secretToken !== this.webhookSecret) {
-          logger.warn(`⚠️ Unauthorized webhook request - invalid secret token. Expected: ${this.webhookSecret.substring(0, 10)}..., Got: ${secretToken ? secretToken.substring(0, 10) : 'none'}...`);
+          logger.warn('⚠️ Unauthorized webhook request - invalid secret token');
           return res.status(403).json({ error: 'Forbidden' });
         }
         logger.info('✅ Secret token verified');
