@@ -106,6 +106,14 @@ const setupAPIRoutes = async () => {
   const featureFlagRoutes = require('../api-routes/feature-flag-routes');
   app.use('/api/feature-flags', featureFlagRoutes);
   
+  // Main Routes (user endpoints)
+  const mainRoutes = require('../api-routes/main-routes');
+  app.use('/api', mainRoutes);
+  
+  // Admin Routes
+  const adminRoutes = require('../api-routes/admin-routes');
+  app.use('/api/admin', adminRoutes);
+  
   // User data
   app.post('/api/user', authenticateAPI, marketDataRateLimit, async (req, res) => {
     try {
@@ -191,6 +199,71 @@ const setupAPIRoutes = async () => {
       res.json({ success: false, error: 'Not implemented in HTTP server' });
     } catch (error) {
       logger.error(`Error processing withdrawal: ${error.message}`);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Top Movers endpoint
+  app.post('/api/top-movers', authenticateAPI, marketDataRateLimit, async (req, res) => {
+    try {
+      const { type, market_type } = req.body;
+      const marketDataService = require('../market-data');
+      
+      const movers = await marketDataService.getTopMovers(type || 'gainers', market_type || 'crypto');
+      
+      res.json({ success: true, movers });
+    } catch (error) {
+      logger.error(`Error fetching top movers: ${error.message}`);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Analysts endpoint
+  app.post('/api/analysts', authenticateAPI, marketDataRateLimit, async (req, res) => {
+    try {
+      const { user_id } = req.body;
+      
+      const analysts = await db.getAllAnalysts();
+      const activeSubscriptions = await db.getAllUserAnalystSubscriptions(user_id);
+      
+      const analystsWithStatus = analysts.map(analyst => {
+        const subscription = activeSubscriptions.find(sub => 
+          sub.analyst_id.toString() === analyst._id.toString()
+        );
+        
+        return {
+          id: analyst._id,
+          name: analyst.name,
+          description: analyst.description,
+          monthly_price: analyst.monthly_price,
+          total_subscribers: analyst.total_subscribers || 0,
+          likes: analyst.likes || 0,
+          dislikes: analyst.dislikes || 0,
+          profile_picture: analyst.profile_picture,
+          is_subscribed: !!subscription,
+          subscription_end_date: subscription?.end_date
+        };
+      });
+      
+      res.json({
+        success: true,
+        analysts: analystsWithStatus,
+        active_subscriptions: activeSubscriptions
+      });
+    } catch (error) {
+      logger.error(`Error fetching analysts: ${error.message}`);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Top Analysts endpoint
+  app.post('/api/top-analysts', authenticateAPI, marketDataRateLimit, async (req, res) => {
+    try {
+      const topAnalysts = await db.getTop100Analysts(10);
+      
+      res.json({ success: true, analysts: topAnalysts });
+    } catch (error) {
+      logger.error(`Error fetching top analysts: ${error.message}`);
       res.status(500).json({ success: false, error: error.message });
     }
   });
