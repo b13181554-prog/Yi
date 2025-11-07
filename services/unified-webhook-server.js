@@ -6,6 +6,9 @@
  * يدمج جميع الخدمات: Bot Webhook + HTTP Server + Queue Worker + Scheduler
  */
 
+// زيادة حد المستمعين قبل تحميل أي مكتبات
+process.setMaxListeners(20);
+
 const express = require('express');
 const path = require('path');
 const pino = require('pino');
@@ -42,9 +45,6 @@ const logger = pino({
     }
   }
 });
-
-// زيادة حد المستمعين لتجنب التحذيرات
-process.setMaxListeners(20);
 
 const app = express();
 
