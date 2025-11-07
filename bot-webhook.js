@@ -81,9 +81,14 @@ async function setupWebhook(webhookUrl, secretToken = null) {
  */
 async function processUpdate(update) {
   try {
+    logger.info(`🔄 Calling bot.processUpdate for update ${update.update_id}`);
+    if (update.message && update.message.text) {
+      logger.info(`📝 Message text: "${update.message.text}"`);
+    }
     await bot.processUpdate(update);
+    logger.info(`✅ bot.processUpdate completed for update ${update.update_id}`);
   } catch (error) {
-    logger.error(`Error processing update ${update.update_id}:`, error);
+    logger.error(`❌ Error processing update ${update.update_id}:`, error);
   }
 }
 

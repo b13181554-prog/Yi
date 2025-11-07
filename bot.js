@@ -25,9 +25,9 @@ const USE_WEBHOOK = process.env.FORCE_POLLING === 'true'
   
 // ملاحظة: PUBLIC_URL موجود دائماً في Replit لكن لا يعني بالضرورة webhook mode
 
+// ✅ إنشاء البوت بدون خيار webHook (ضروري لعمل processUpdate بشكل صحيح)
 const bot = new TelegramBot(config.BOT_TOKEN, { 
-  polling: false,  // دائماً نبدأ بدون polling ونفعله يدوياً
-  webHook: USE_WEBHOOK  // تفعيل webhook إذا كان USE_WEBHOOK = true
+  polling: false  // نبدأ بدون polling، سيتم تفعيله يدوياً أو استخدام webhook
 });
 
 // Singleton guard لمنع polling من البدء مرتين
@@ -194,6 +194,8 @@ bot.onText(/\/start(.*)/, async (msg, match) => {
   const firstName = msg.from.first_name;
   const lastName = msg.from.last_name;
   const params = match[1].trim();
+
+  console.log(`✅ [WEBHOOK] /start command received from user ${userId}`);
 
   try {
     if (!(await requireChannelMembership(userId, chatId, msg))) return;
