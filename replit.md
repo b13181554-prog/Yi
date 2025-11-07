@@ -35,6 +35,7 @@ The Telegram Web App features a dark theme, providing a professional, modern, an
 - **Quality-Based Refund System**: Intelligent refund for per-analysis payments when signal quality falls below 60%.
 - **Enterprise Scalability Optimizations**: Batch Data Loader, LRU Membership Cache, and Safe Database Query Guards.
 - **Production-Scale Infrastructure Overhaul**: Telegram Webhooks migration, Docker Containerization, Redis Cluster, Dynamic Queue Auto-Scaling, Kubernetes Orchestration, Nginx Load Balancer, Prometheus Monitoring, and Centralized Configuration.
+- **Unified Webhook Server Architecture (November 2025)**: Consolidated all services (Bot Webhook, HTTP API, Queue Workers, Schedulers) into a single `unified-webhook-server.js` for simplified deployment. Eliminated polling mode entirely - system operates exclusively via webhooks. Smart secret token handling: disabled in Replit (HTTPS sufficient), required in AWS/Production for defense-in-depth security.
 - **Complete Multi-Language System Overhaul**: Full language support across all platform components including customer service, bot, and web app.
 - **AI Code Agent System (Owner-only)**: AI-powered programming assistant (Google Gemini AI) for code analysis, quality suggestions, intent detection, and contextual messaging. Features include: direct chat via `/ai`, automatic chat mode, file analysis, read-only operations for safety, and smart chunking for responses.
 - **Advanced AI Service for All Users**: Enhanced intelligent assistant (Google Gemini AI) with:
