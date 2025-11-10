@@ -171,6 +171,17 @@ tmp/
 temp/
 *.tmp
 
+# Screenshots and generated images (keep only necessary ones)
+attached_assets/Screenshot*.jpg
+attached_assets/Screenshot*.png
+
+# Old reports and audits
+*_REPORT.md
+*_AUDIT.md
+*_SUMMARY.md
+FIXES_*.md
+ENV_VARS_*.md
+
 # OS files
 .DS_Store
 Thumbs.db

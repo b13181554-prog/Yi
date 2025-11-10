@@ -12,7 +12,7 @@ OBENTCHI is a Telegram-based cryptocurrency trading bot designed for Sharia-comp
 - Data Policy: No mock or placeholder data - all data must be authentic from real APIs and Telegram
 
 ## System Architecture
-The system utilizes a professional, modern, and responsive Telegram Web App with a dark theme. An Express server forms the core, managing Telegram Bot interactions, MongoDB operations, multi-language support, automated withdrawals, market data fetching, technical analysis, notifications, and TRON blockchain integration. Security measures include environment variables, error handling, rate limiting, and Telegram signature verification. The project is organized with clear directories for API routes, services, middleware, public assets, utilities, Kubernetes, Docker, scripts, and documentation.
+The system utilizes a professional, modern, and responsive Telegram Web App with a dark theme. An Express server forms the core, managing Telegram Bot interactions, MongoDB operations, multi-language support, automated withdrawals, market data fetching, technical analysis, notifications, and TRON blockchain integration. Security measures include environment variables, error handling, rate limiting, and Telegram signature verification. The project is organized with clear directories for API routes, services, middleware, public assets, utilities, locales, and documentation. Deployment infrastructure (Docker, Kubernetes) has been removed as the project is optimized exclusively for Replit deployment.
 
 **UI/UX Decisions**:
 The Telegram Web App features a dark theme, providing a professional, modern, and responsive user experience. Notifications are centralized in a dedicated "More" section with modern gradient styling, dynamic status badges, and multi-language support.
@@ -62,6 +62,19 @@ The Telegram Web App features a dark theme, providing a professional, modern, an
     - **Core Trading Features Preserved**: All technical analysis, market data, payments, withdrawals, and trading systems remain fully functional without AI.
     - **Resource Optimization**: Minimizes AI API usage and costs while maintaining complete trading bot functionality.
     - **Easy Re-enabling**: Set `AI_FEATURES_ENABLED=true` to restore all AI features instantly.
+- **Project Cleanup & Database Optimization (November 10, 2025)**:
+    - **Infrastructure Cleanup**: Removed unused Docker, Kubernetes, deployment configurations, and scripts (optimized for Replit-only deployment)
+    - **Asset Cleanup**: Removed 61 screenshot files and temporary test files (complete-audit.js, test-bot-response.js)
+    - **Documentation Cleanup**: Removed outdated deployment guides and old audit/report files
+    - **Database Index Optimization**: Added 8 new compound indexes for better query performance:
+      - `users`: `{is_analyst: 1, is_active: 1}` for efficient analyst queries
+      - `transactions`: `{user_id: 1, status: 1}` for user transaction filtering
+      - `withdrawal_requests`: `{user_id: 1, status: 1}` for withdrawal status queries
+      - `cryptapi_payments`: `{user_id: 1, status: 1}` for payment status checks
+      - `security_events`: `{user_id: 1, created_at: -1}` and `{event_type: 1, created_at: -1}` for security monitoring
+      - `feature_flags`: `{flag_name: 1}` (unique) and `{enabled: 1}` for feature flag lookups
+    - **Active MongoDB Collections Documented**: 16 core collections confirmed and optimized
+    - **Git Ignore Updated**: Added patterns for screenshots, old reports, and temporary files
 
 **Feature Specifications**:
 The platform offers a Web App for technical analysis, top movers, a USDT TRC20 wallet, and account management. Trading features include technical analysis for diverse asset classes and trending cryptocurrency tracking. Financial features include an internal USDT TRC20 wallet and instant automated withdrawals via OKX API. User management includes analyst subscriptions and referral programs. An extensive admin dashboard provides system statistics, user/analyst management, and withdrawal processing. Automated trade signal monitoring and a blockchain-based pump detection system are integrated.
@@ -70,7 +83,7 @@ The platform offers a Web App for technical analysis, top movers, a USDT TRC20 w
 The project uses MongoDB Atlas, designed for 24/7 operation with improved error processing and logging. It employs multiple APIs for data redundancy and fallback. The payment system is designed for enterprise scalability, utilizing queue-based processing with Bull and Redis, circuit breaker patterns, comprehensive monitoring, and enhanced security. Subscriptions are non-refundable and non-cancellable.
 
 **Deployment Architecture**:
-The system supports Standalone, Docker, and Kubernetes deployment modes, with separate containers for HTTP Server, Bot Webhook Worker, Queue Worker, and Scheduler, all monitored via Prometheus and Grafana.
+The system is optimized for Replit deployment with a unified webhook server architecture. All services (HTTP Server, Bot Webhook, Queue Workers, Schedulers) run in a single unified process for simplified deployment and resource efficiency. Docker and Kubernetes configurations have been removed as they are not applicable to the Replit environment.
 
 **Simplified Webhook-Only Architecture (November 2025)**:
 - **Webhook Mode Only**: System operates exclusively in webhook mode - polling mode has been completely removed

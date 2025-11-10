@@ -175,14 +175,17 @@ async function initDatabase() {
       createIndexSafely('users', { subscription_expires: 1 }),
       createIndexSafely('users', { created_at: -1 }),
       createIndexSafely('users', { is_active: 1, subscription_expires: 1 }),
+      createIndexSafely('users', { is_analyst: 1, is_active: 1 }),
       
       createIndexSafely('transactions', { user_id: 1, created_at: -1 }),
       createIndexSafely('transactions', { tx_id: 1 }, { unique: true, sparse: true }),
       createIndexSafely('transactions', { status: 1, created_at: -1 }),
       createIndexSafely('transactions', { type: 1, status: 1 }),
+      createIndexSafely('transactions', { user_id: 1, status: 1 }),
       
       createIndexSafely('withdrawal_requests', { user_id: 1, created_at: -1 }),
       createIndexSafely('withdrawal_requests', { status: 1, created_at: 1 }),
+      createIndexSafely('withdrawal_requests', { user_id: 1, status: 1 }),
       
       createIndexSafely('subscriptions', { user_id: 1, end_date: -1 }),
       createIndexSafely('subscriptions', { end_date: 1 }),
@@ -203,7 +206,14 @@ async function initDatabase() {
       createIndexSafely('cryptapi_payments', { payment_address: 1 }, { unique: true }),
       createIndexSafely('cryptapi_payments', { user_id: 1, created_at: -1 }),
       createIndexSafely('cryptapi_payments', { status: 1, created_at: -1 }),
-      createIndexSafely('cryptapi_payments', { idempotency_key: 1 }, { sparse: true })
+      createIndexSafely('cryptapi_payments', { user_id: 1, status: 1 }),
+      createIndexSafely('cryptapi_payments', { idempotency_key: 1 }, { sparse: true }),
+      
+      createIndexSafely('security_events', { user_id: 1, created_at: -1 }),
+      createIndexSafely('security_events', { event_type: 1, created_at: -1 }),
+      
+      createIndexSafely('feature_flags', { flag_name: 1 }, { unique: true }),
+      createIndexSafely('feature_flags', { enabled: 1 })
     ]);
     
     await db.collection('analysts').deleteMany({ 
