@@ -1,6 +1,6 @@
 const { getWebhookConfig, getEnvironmentInfo } = require('./environment-detector');
 
-const requiredEnvVars = ['BOT_TOKEN', 'MONGODB_PASSWORD', 'OWNER_ID', 'MONGODB_USER', 'MONGODB_CLUSTER', 'CHANNEL_ID', 'PUBLIC_URL'];
+const requiredEnvVars = ['BOT_TOKEN', 'MONGODB_PASSWORD', 'OWNER_ID', 'MONGODB_USER', 'MONGODB_CLUSTER', 'CHANNEL_ID'];
 
 for (const envVar of requiredEnvVars) {
   if (!process.env[envVar]) {
@@ -10,6 +10,17 @@ for (const envVar of requiredEnvVars) {
 }
 
 const webhookConfig = getWebhookConfig();
+
+const isReplit = !!(process.env.REPLIT_DB_URL || process.env.REPL_ID || process.env.REPL_OWNER);
+if (!isReplit && !process.env.PUBLIC_URL) {
+  console.error(`❌ PUBLIC_URL environment variable is required for AWS/Production deployment`);
+  throw new Error(`PUBLIC_URL is required in AWS/Production environment`);
+}
+
+if (!webhookConfig.publicUrl) {
+  console.error(`❌ Cannot determine public URL. Set PUBLIC_URL or ensure REPLIT_DOMAINS is available`);
+  throw new Error(`PUBLIC_URL detection failed`);
+}
 
 const baseConfig = { 
   BOT_TOKEN: process.env.BOT_TOKEN,
