@@ -50,14 +50,34 @@ async function checkAnalystActivity() {
           console.error(`Error sending day 2 warning to analyst ${analyst.user_id}:`, error.message);
         }
       } else if (daysDiff >= 3) {
-        await db.suspendAnalyst(analyst._id, "عدم نشر صفقات لمدة 3 أيام");
+        if (analyst.suspension_processed) {
+          console.log(`ℹ️ المحلل ${analyst.name} تم معالجة إيقافه مسبقاً - تخطي`);
+          continue;
+        }
+        
+        console.log(`🔄 بدء معالجة إيقاف المحلل ${analyst.name} (عدم النشر لـ ${daysDiff} أيام)...`);
+        
+        try {
+          await db.suspendAnalyst(analyst._id, "عدم نشر صفقات لمدة 3 أيام");
 
         const subscriptions = await db.getUsersSubscribedToAnalyst(analyst._id);
 
         let totalRefunded = 0;
         let subscriberCount = 0;
+        const refundAudit = {
+          analyst_id: analyst._id,
+          analyst_name: analyst.name,
+          reason: 'Analyst suspended for inactivity',
+          processed_at: new Date(),
+          refunds: []
+        };
 
         for (const subscription of subscriptions) {
+          if (subscription.refund_processed) {
+            console.log(`ℹ️ اشتراك ${subscription._id} تم معالجة إرجاع أمواله مسبقاً - تخطي`);
+            continue;
+          }
+          
           const now = new Date();
           const startDate = new Date(subscription.start_date);
           const endDate = new Date(subscription.end_date);
@@ -97,7 +117,27 @@ async function checkAnalystActivity() {
             if (referralRefund > 0 && distribution.referrer_id) {
               await db.updateUserBalance(distribution.referrer_id, -referralRefund);
             }
+            
+            refundAudit.refunds.push({
+              subscription_id: subscription._id,
+              user_id: subscription.user_id,
+              amount: refundAmount,
+              analyst_share: analystRefund,
+              owner_share: ownerRefund,
+              referral_share: referralRefund
+            });
           }
+          
+          await db.getDB().collection('analyst_subscriptions').updateOne(
+            { _id: subscription._id },
+            { 
+              $set: { 
+                refund_processed: true,
+                refund_amount: refundAmount,
+                refunded_at: new Date()
+              }
+            }
+          );
           
           await db.cancelSubscription(subscription._id);
 
@@ -121,6 +161,20 @@ async function checkAnalystActivity() {
             console.error(`Error sending refund notification to user ${subscription.user_id}:`, error.message);
           }
         }
+        
+        refundAudit.total_refunded = totalRefunded;
+        refundAudit.subscriber_count = subscriberCount;
+        await db.getDB().collection('refund_audit').insertOne(refundAudit);
+
+        await db.getDB().collection('analysts').updateOne(
+          { _id: analyst._id },
+          { 
+            $set: { 
+              suspension_processed: true,
+              suspension_completed_at: new Date()
+            }
+          }
+        );
 
         try {
           await botInstance.sendMessage(analyst.user_id, `
@@ -140,6 +194,21 @@ async function checkAnalystActivity() {
         }
 
         console.log(`✅ تم إيقاف المحلل ${analyst.name} وإرجاع ${totalRefunded.toFixed(2)} USDT لـ ${subscriberCount} مشتركين`);
+        
+        } catch (suspensionError) {
+          console.error(`❌ خطأ في معالجة إيقاف المحلل ${analyst.name}:`, suspensionError.message);
+          
+          await db.getDB().collection('analysts').updateOne(
+            { _id: analyst._id },
+            { 
+              $set: { 
+                suspension_error: suspensionError.message,
+                suspension_error_at: new Date()
+              },
+              $unset: { suspension_processed: "" }
+            }
+          );
+        }
       }
     }
   } catch (error) {

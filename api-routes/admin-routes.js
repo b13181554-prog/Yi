@@ -111,9 +111,13 @@ router.post('/delete-user', authenticateAPI, requireAdmin, async (req, res) => {
       return res.json({ success: false, error: 'User ID is required' });
     }
     
-    await db.deleteUserAccount(target_user_id);
+    const result = await db.deleteUserAccount(target_user_id);
     
-    res.json({ success: true });
+    if (!result.success) {
+      return res.json({ success: false, error: result.error, details: result });
+    }
+    
+    res.json({ success: true, data: result });
   } catch (error) {
     logger.error(`Error deleting user: ${error.message}`);
     res.status(500).json({ success: false, error: error.message });

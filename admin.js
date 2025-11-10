@@ -856,10 +856,22 @@ ${t(targetLang, 'admin_duration_colon')} 7 ${t(targetLang, 'admin_days')}
         const targetUserId = parseInt(data.replace('delete_user_confirm_', ''));
         
         try {
-          await db.deleteUserAccount(targetUserId);
+          const result = await db.deleteUserAccount(targetUserId);
+          
+          if (!result.success) {
+            await safeAnswerCallbackQuery(bot, query.id, { 
+              text: `❌ ${result.error || t(lang, 'admin_error_deleting_user')}`, 
+              show_alert: true 
+            });
+            return;
+          }
+          
+          const message = result.was_analyst 
+            ? `✅ تم حذف حساب المحلل بنجاح`
+            : `✅ ${t(lang, 'admin_delete_user_permanently')}`;
           
           await safeAnswerCallbackQuery(bot, query.id, { 
-            text: `✅ ${t(lang, 'admin_delete_user_permanently')}`, 
+            text: message, 
             show_alert: true 
           });
           

@@ -1700,10 +1700,107 @@ async function restrictUser(userId, restrictions, duration) {
 }
 
 async function deleteUserAccount(userId) {
-  await db.collection('users').deleteOne({ user_id: userId });
-  await db.collection('transactions').deleteMany({ user_id: userId });
-  await db.collection('analyst_subscriptions').deleteMany({ user_id: userId });
-  return true;
+  const startTime = Date.now();
+  
+  try {
+    logger.info({ userId }, '🗑️ Starting account deletion process...');
+    
+    const user = await db.collection('users').findOne({ user_id: userId });
+    if (!user) {
+      logger.warn({ userId }, '⚠️ User not found for deletion');
+      return { success: false, error: 'User not found' };
+    }
+    
+    const deletionAudit = {
+      user_id: userId,
+      username: user.username,
+      first_name: user.first_name,
+      balance_at_deletion: user.balance || 0,
+      deleted_at: new Date(),
+      deleted_by: 'system',
+      deletion_reason: 'User requested account deletion'
+    };
+    
+    const analyst = await db.collection('analysts').findOne({ user_id: userId });
+    if (analyst) {
+      logger.info({ userId, analystId: analyst._id }, '👨‍💼 User is an analyst - handling analyst deletion...');
+      
+      const activeSubscriptions = await db.collection('analyst_subscriptions').countDocuments({
+        analyst_id: analyst._id,
+        status: 'active',
+        end_date: { $gt: new Date() }
+      });
+      
+      if (activeSubscriptions > 0) {
+        logger.warn({ userId, activeSubscriptions }, '⚠️ Analyst has active subscriptions - cannot delete');
+        return { 
+          success: false, 
+          error: 'Cannot delete analyst with active subscriptions. Please wait for subscriptions to expire or contact admin.',
+          active_subscriptions: activeSubscriptions
+        };
+      }
+      
+      deletionAudit.was_analyst = true;
+      deletionAudit.analyst_name = analyst.name;
+      deletionAudit.analyst_balance = analyst.available_balance || 0;
+      deletionAudit.analyst_escrow = analyst.escrow_balance || 0;
+      
+      await db.collection('analysts').updateOne(
+        { _id: analyst._id },
+        { 
+          $set: { 
+            is_active: false,
+            is_deleted: true,
+            deleted_at: new Date(),
+            deletion_reason: 'Account deletion'
+          }
+        }
+      );
+      
+      await db.collection('analyst_room_posts').updateMany(
+        { user_id: userId },
+        { $set: { is_deleted: true, deleted_at: new Date() } }
+      );
+      
+      await db.collection('trade_signals').updateMany(
+        { analyst_id: analyst._id },
+        { $set: { is_deleted: true, deleted_at: new Date() } }
+      );
+      
+      logger.info({ userId }, '✅ Analyst data soft-deleted');
+    }
+    
+    await db.collection('analyst_subscriptions').deleteMany({ user_id: userId });
+    logger.info({ userId }, '✅ User subscriptions deleted');
+    
+    await db.collection('users').updateOne(
+      { user_id: userId },
+      { 
+        $set: { 
+          is_deleted: true,
+          deleted_at: new Date(),
+          deletion_audit: deletionAudit
+        }
+      }
+    );
+    
+    await db.collection('account_deletion_audit').insertOne(deletionAudit);
+    
+    const duration = Date.now() - startTime;
+    logger.info({ userId, duration }, `✅ Account deletion completed in ${duration}ms`);
+    
+    return { 
+      success: true, 
+      message: 'Account successfully deleted',
+      was_analyst: !!analyst,
+      audit: deletionAudit
+    };
+    
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    logger.error({ userId, duration, error: error.message }, `❌ Account deletion failed in ${duration}ms`);
+    throw error;
+  }
 }
 
 async function checkUserBanStatus(userId) {
