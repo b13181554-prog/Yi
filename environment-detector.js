@@ -17,7 +17,7 @@ function detectPlatform() {
 
 /**
  * الحصول على PUBLIC_URL التلقائي
- * في Replit: استخدام REPLIT_DOMAINS (JSON array)
+ * في Replit: استخدام REPLIT_DOMAINS (أولوية أولى)
  * في AWS: استخدام PUBLIC_URL
  */
 function getPublicUrl() {
@@ -25,9 +25,18 @@ function getPublicUrl() {
   
   if (isReplit && process.env.REPLIT_DOMAINS) {
     try {
-      const domains = JSON.parse(process.env.REPLIT_DOMAINS);
-      if (Array.isArray(domains) && domains.length > 0 && domains[0]) {
-        const url = `https://${domains[0]}`;
+      let domain;
+      try {
+        const domains = JSON.parse(process.env.REPLIT_DOMAINS);
+        if (Array.isArray(domains) && domains.length > 0 && domains[0]) {
+          domain = domains[0];
+        }
+      } catch (jsonError) {
+        domain = process.env.REPLIT_DOMAINS.split(',')[0].trim();
+      }
+      
+      if (domain) {
+        const url = `https://${domain}`;
         new URL(url);
         return url;
       }
