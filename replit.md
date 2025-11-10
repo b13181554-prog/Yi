@@ -75,16 +75,21 @@ The system supports Standalone, Docker, and Kubernetes deployment modes, with se
 **Simplified Webhook-Only Architecture (November 2025)**:
 - **Webhook Mode Only**: System operates exclusively in webhook mode - polling mode has been completely removed
 - **Single Unified Server**: All services consolidated into `unified-webhook-server.js` (Bot Webhook + HTTP API + Queue Workers + Schedulers)
-- **Simplified Configuration**: Removed complex environment detection - single configuration for production deployment
+- **Smart Environment Detection (November 10, 2025)**:
+  - Automatic platform detection (Replit vs AWS) using environment variables
+  - Auto-discovery of PUBLIC_URL from REPLIT_DOMAINS in Replit (no manual configuration needed)
+  - Platform-specific security: Webhook secret disabled in Replit, required in AWS
+  - Full URL validation to prevent malformed webhook endpoints
+  - Graceful fallback and error messages for deployment issues
 - **Required Environment Variables**:
-  - `PUBLIC_URL`: Your server's public URL (required)
-  - `WEBHOOK_SECRET`: Security token for webhook verification (required)
+  - `PUBLIC_URL`: Your server's public URL (required in AWS, auto-detected in Replit from REPLIT_DOMAINS)
+  - `WEBHOOK_SECRET`: Security token for webhook verification (optional in Replit, required in AWS)
   - `PORT`: Server port (hardcoded to 5000 for Replit compatibility)
   - `AI_FEATURES_ENABLED`: Enable/disable all AI features (default: false)
   - `BOT_TOKEN`, `MONGODB_USER`, `MONGODB_PASSWORD`, `MONGODB_CLUSTER`, `OWNER_ID`, `CHANNEL_ID`
-- **Deployment Target**: Optimized for Replit and AWS/Production deployment
+- **Deployment Target**: Fully optimized for both Replit (development) and AWS/Production deployment with automatic environment detection
 - **Simplified Entry Point**: `index.js` → `services/unified-webhook-server.js`
-- **No Auto-Detection**: Removed automatic environment detection complexity that caused deployment issues
+- **Enhanced Auto-Detection**: Intelligent environment detection that automatically configures the system for the deployment platform
 
 ## External Dependencies
 
