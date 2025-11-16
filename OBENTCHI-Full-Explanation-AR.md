@@ -2428,20 +2428,2098 @@ async function masterAnalysis(symbol, marketType, lang = 'ar') {
 
 ---
 
-**(ملاحظة: هذا جزء من الشرح الكامل. الملف كبير جداً ويحتوي على 20 قسماً. هل تريد أن أكمل باقي الأقسام؟)**
+## 7. نظام الاشتراكات والمستويات
 
-**الأقسام المتبقية:**
-7. نظام الاشتراكات والمستويات
-8. نظام المحللين والإشارات
-9. نظام الإحالة والأرباح
-10. نظام الأمان والحماية
-11. الذكاء الاصطناعي AI
-12. الأوامر المتاحة في البوت
-13. تطبيق الويب Telegram Web App
-14. مصادر البيانات APIs
-15. التقنيات المستخدمة
-16. نظام الطوابير Queues
-17. نظام التخزين المؤقت Caching
-18. نظام المراقبة Monitoring
-19. الأنظمة المتقدمة
-20. النشر والبيئة
+### 7.1 نظرة عامة
+
+المشروع يقدم **5 مستويات للمستخدمين**، كل مستوى له صلاحيات وحدود مختلفة:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    نظام المستويات                       │
+├─────────────────────────────────────────────────────────┤
+│  Free (مجاني)      → 7 أيام تجريبية                    │
+│  Basic (أساسي)     → 10 USDT/شهر                       │
+│  VIP (VIP)         → 25 USDT/شهر                       │
+│  Analyst (محلل)    → يحصل على عمولات من المشتركين      │
+│  Admin (مدير)      → صلاحيات كاملة                      │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 7.2 تفاصيل كل مستوى
+
+#### 7.2.1 Free (المستوى المجاني)
+
+**المدة**: 7 أيام تجريبية لكل مستخدم جديد
+
+**الميزات**:
+- ✅ تحليل عادي (Regular Analysis): 10 تحليلات/يوم
+- ✅ الوصول إلى الأسواق الأساسية (Crypto, Forex)
+- ✅ إشعارات أساسية
+- ❌ لا يمكن الوصول للتحليلات المتقدمة
+- ❌ لا يمكن الاشتراك في المحللين
+
+**الحدود (Rate Limits)**:
+```javascript
+{
+  requests_per_minute: 10,
+  requests_per_hour: 100,
+  requests_per_day: 500,
+  analysis_per_day: 10,
+  concurrent_requests: 2
+}
+```
+
+**كيف يصبح المستخدم Free؟**
+- تلقائياً عند التسجيل الأول في البوت
+- يحصل على 7 أيام تجريبية كاملة الميزات
+- بعد انتهاء التجربة، يعود إلى حدود Free
+
+**الكود المسؤول**:
+```javascript
+// في ملف database.js
+
+async registerUser(telegramUser) {
+  const now = new Date();
+  const user = {
+    user_id: telegramUser.id,
+    username: telegramUser.username || null,
+    first_name: telegramUser.first_name || '',
+    last_name: telegramUser.last_name || '',
+    
+    // الفترة التجريبية
+    free_trial_start: now,
+    free_trial_used: false,
+    subscription_expires: new Date(now.getTime() + 7*24*60*60*1000), // 7 أيام
+    subscription_tier: 'free',
+    
+    // باقي البيانات...
+    balance: 0,
+    created_at: now,
+    last_seen: now
+  };
+  
+  await this.collection('users').insertOne(user);
+  return user;
+}
+```
+
+#### 7.2.2 Basic (المستوى الأساسي)
+
+**السعر**: 10 USDT/شهر (30 يوم)
+
+**الميزات**:
+- ✅ تحليل عادي (Regular Analysis): **50 تحليل/يوم**
+- ✅ تحليل فائق (Ultra Analysis): **20 تحليل/يوم**
+- ✅ الوصول إلى **جميع الأسواق** (Crypto, Forex, Stocks, Commodities, Indices)
+- ✅ إشعارات متقدمة
+- ✅ إمكانية الاشتراك في محلل واحد
+- ❌ لا يمكن الوصول لـ Zero Reversal و V1 Pro
+
+**الحدود (Rate Limits)**:
+```javascript
+{
+  requests_per_minute: 30,
+  requests_per_hour: 500,
+  requests_per_day: 2000,
+  analysis_per_day: 50,
+  concurrent_requests: 5
+}
+```
+
+**كيف يشتري المستخدم Basic؟**
+
+**الطريقة 1: عبر Web App**
+```
+1. المستخدم يفتح Web App
+2. يذهب إلى "الاشتراكات"
+3. يختار Basic Plan
+4. يدفع 10 USDT من محفظته
+5. يتم تفعيل الاشتراك فوراً
+```
+
+**الطريقة 2: عبر البوت**
+```
+1. المستخدم يكتب /subscribe
+2. البوت يعرض الخطط المتاحة
+3. المستخدم يختار Basic
+4. البوت يطلب التأكيد
+5. المستخدم يؤكد
+6. يتم خصم 10 USDT وتفعيل الاشتراك
+```
+
+**الكود المسؤول**:
+```javascript
+// في ملف index.js - API endpoint
+
+app.post('/api/subscribe', authenticateAPI, async (req, res) => {
+  const { tier } = req.body;
+  const userId = req.auth.user_id;
+  
+  try {
+    // 1. التحقق من tier
+    const prices = {
+      basic: 10,
+      vip: 25
+    };
+    
+    if (!prices[tier]) {
+      return res.json({ success: false, error: 'خطة غير صحيحة' });
+    }
+    
+    const price = prices[tier];
+    
+    // 2. جلب بيانات المستخدم
+    const user = await db.getUser(userId);
+    
+    // 3. التحقق من الرصيد
+    if (user.balance < price) {
+      return res.json({
+        success: false,
+        error: `رصيدك غير كافٍ. تحتاج ${price} USDT`
+      });
+    }
+    
+    // 4. استخدام معاملة MongoDB
+    const session = client.startSession();
+    
+    await session.withTransaction(async () => {
+      // خصم المبلغ
+      await db.collection('users').updateOne(
+        { user_id: userId },
+        {
+          $inc: { balance: -price },
+          $set: {
+            subscription_tier: tier,
+            subscription_expires: new Date(Date.now() + 30*24*60*60*1000)
+          }
+        },
+        { session }
+      );
+      
+      // إضافة اشتراك
+      await db.collection('subscriptions').insertOne({
+        user_id: userId,
+        subscription_type: tier,
+        start_date: new Date(),
+        end_date: new Date(Date.now() + 30*24*60*60*1000),
+        amount_paid: price,
+        payment_method: 'wallet',
+        status: 'active',
+        created_at: new Date()
+      }, { session });
+      
+      // إضافة معاملة
+      await db.collection('transactions').insertOne({
+        user_id: userId,
+        type: 'subscription',
+        amount: price,
+        status: 'completed',
+        description: `اشتراك ${tier} - 30 يوم`,
+        created_at: new Date()
+      }, { session });
+    });
+    
+    await session.endSession();
+    
+    // 5. إشعار المستخدم
+    await bot.sendMessage(userId, `
+✅ <b>تم الاشتراك بنجاح!</b>
+
+📦 <b>الخطة:</b> ${tier.toUpperCase()}
+💰 <b>المبلغ:</b> ${price} USDT
+⏰ <b>صالح حتى:</b> ${new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('ar-SA')}
+
+رصيدك الحالي: ${user.balance - price} USDT
+    `, { parse_mode: 'HTML' });
+    
+    res.json({ success: true });
+    
+  } catch (error) {
+    logger.error('Subscription error:', error);
+    res.status(500).json({ success: false, error: 'حدث خطأ' });
+  }
+});
+```
+
+#### 7.2.3 VIP (المستوى المميز)
+
+**السعر**: 25 USDT/شهر (30 يوم)
+
+**الميزات**:
+- ✅ **كل ميزات Basic**
+- ✅ تحليل عادي (Regular Analysis): **غير محدود**
+- ✅ تحليل فائق (Ultra Analysis): **غير محدود**
+- ✅ تحليل صفر الانعكاس (Zero Reversal): **50 تحليل/يوم**
+- ✅ تحليل V1 Pro AI: **30 تحليل/يوم** (إذا كان مفعلاً)
+- ✅ إمكانية الاشتراك في **5 محللين**
+- ✅ أولوية في معالجة الطلبات
+- ✅ دعم فني أسرع
+
+**الحدود (Rate Limits)**:
+```javascript
+{
+  requests_per_minute: 60,
+  requests_per_hour: 2000,
+  requests_per_day: 10000,
+  analysis_per_day: 999999, // غير محدود عملياً
+  concurrent_requests: 10
+}
+```
+
+**المزايا الإضافية**:
+- 🎁 **مكافأة شهرية**: 2 USDT كل شهر
+- 🚀 **أولوية في الطوابير**: طلباته تُعالج أولاً
+- 💬 **دعم VIP**: رد خلال ساعة
+
+#### 7.2.4 Analyst (مستوى المحلل)
+
+**السعر**: مجاني! (لكن يجب التقديم والموافقة)
+
+**كيف يصبح المستخدم محلل؟**
+```
+1. المستخدم يكتب /become_analyst
+2. يملأ نموذج (اسم المحلل، السيرة الذاتية، الخبرة)
+3. يحدد سعر الاشتراك الشهري (minimum 10 USDT)
+4. يرسل الطلب
+5. المالك يراجع الطلب في لوحة التحكم
+6. إذا وافق: المستخدم يصبح محلل
+```
+
+**الميزات**:
+- ✅ **كل ميزات VIP**
+- ✅ إمكانية نشر إشارات تداول
+- ✅ الحصول على **80% من قيمة الاشتراكات** (المنصة تأخذ 20%)
+- ✅ لوحة تحكم خاصة للمحللين
+- ✅ إحصائيات أداء شاملة
+- ✅ نظام ترتيب المحللين
+
+**نظام العمولات**:
+```javascript
+// مثال:
+محلل يحدد سعر الاشتراك: 50 USDT/شهر
+مستخدم يشترك في المحلل
+
+التوزيع:
+- المحلل يحصل: 40 USDT (80%)
+- المنصة تحصل: 10 USDT (20%)
+```
+
+**الكود المسؤول** (طلب أن يصبح محلل):
+```javascript
+// في ملف bot.js
+
+bot.onText(/\/become_analyst/, async (msg) => {
+  const userId = msg.from.id;
+  
+  try {
+    const user = await db.getUser(userId);
+    
+    // 1. التحقق: هل هو محلل بالفعل؟
+    if (user.is_analyst) {
+      return bot.sendMessage(userId, '✅ أنت محلل بالفعل!');
+    }
+    
+    // 2. طلب المعلومات
+    bot.sendMessage(userId, `
+📝 <b>طلب أن تصبح محلل</b>
+
+لتصبح محللاً معتمداً، يرجى إرسال:
+1. اسم المحلل (سيظهر للمستخدمين)
+2. نبذة عنك وخبرتك في التداول
+3. سعر الاشتراك الشهري (بالـ USDT)
+
+<i>مثال:</i>
+<code>محلل الذهب العربي
+محلل فني محترف مع 10 سنوات خبرة
+30</code>
+
+⚠️ الحد الأدنى: 10 USDT
+⚠️ سيتم مراجعة طلبك من قبل الإدارة
+    `, { parse_mode: 'HTML' });
+    
+    // 3. انتظار الرد
+    bot.once('message', async (response) => {
+      if (response.from.id !== userId) return;
+      
+      const lines = response.text.split('\n');
+      if (lines.length < 3) {
+        return bot.sendMessage(userId, '❌ معلومات غير كاملة');
+      }
+      
+      const analystName = lines[0].trim();
+      const bio = lines[1].trim();
+      const price = parseFloat(lines[2].trim());
+      
+      if (!analystName || !bio || price < 10) {
+        return bot.sendMessage(userId, '❌ معلومات غير صحيحة');
+      }
+      
+      // 4. حفظ الطلب
+      await db.collection('analyst_requests').insertOne({
+        user_id: userId,
+        analyst_name: analystName,
+        bio: bio,
+        monthly_price: price,
+        status: 'pending',
+        created_at: new Date()
+      });
+      
+      // 5. إشعار المستخدم
+      bot.sendMessage(userId, `
+✅ <b>تم إرسال طلبك!</b>
+
+سيتم مراجعة طلبك خلال 24-48 ساعة.
+سنرسل لك إشعار عند الموافقة أو الرفض.
+      `, { parse_mode: 'HTML' });
+      
+      // 6. إشعار المالك
+      bot.sendMessage(OWNER_ID, `
+🔔 <b>طلب محلل جديد!</b>
+
+👤 المستخدم: ${user.first_name} (@${user.username})
+📊 الاسم: ${analystName}
+💰 السعر: ${price} USDT/شهر
+
+📝 النبذة:
+${bio}
+
+/approve_analyst_${userId} للموافقة
+/reject_analyst_${userId} للرفض
+      `, { parse_mode: 'HTML' });
+    });
+    
+  } catch (error) {
+    logger.error('Become analyst error:', error);
+  }
+});
+
+// الموافقة على محلل
+bot.onText(/\/approve_analyst_(\d+)/, async (msg, match) => {
+  const ownerId = msg.from.id;
+  const targetUserId = parseInt(match[1]);
+  
+  if (ownerId !== OWNER_ID) return;
+  
+  try {
+    // 1. جلب طلب المحلل
+    const request = await db.collection('analyst_requests').findOne({
+      user_id: targetUserId,
+      status: 'pending'
+    });
+    
+    if (!request) {
+      return bot.sendMessage(ownerId, '❌ طلب غير موجود');
+    }
+    
+    // 2. تحديث المستخدم
+    await db.collection('users').updateOne(
+      { user_id: targetUserId },
+      {
+        $set: {
+          is_analyst: true,
+          subscription_tier: 'analyst',
+          analyst_profile: {
+            analyst_name: request.analyst_name,
+            bio: request.bio,
+            monthly_price: request.monthly_price,
+            success_rate: 0,
+            total_signals: 0,
+            subscribers_count: 0,
+            commission_rate: 80,
+            created_at: new Date()
+          }
+        }
+      }
+    );
+    
+    // 3. تحديث الطلب
+    await db.collection('analyst_requests').updateOne(
+      { user_id: targetUserId },
+      {
+        $set: {
+          status: 'approved',
+          approved_at: new Date(),
+          approved_by: ownerId
+        }
+      }
+    );
+    
+    // 4. إشعار المحلل الجديد
+    bot.sendMessage(targetUserId, `
+🎉 <b>مبروك! تمت الموافقة على طلبك!</b>
+
+أصبحت الآن محللاً معتمداً في OBENTCHI.
+
+📊 <b>اسمك:</b> ${request.analyst_name}
+💰 <b>سعر الاشتراك:</b> ${request.monthly_price} USDT/شهر
+💵 <b>عمولتك:</b> 80% من كل اشتراك
+
+🚀 <b>ابدأ الآن:</b>
+/publish_signal - نشر إشارة جديدة
+/my_subscribers - عرض مشتركيك
+/my_stats - إحصائياتك
+
+حظاً موفقاً! 💪
+    `, { parse_mode: 'HTML' });
+    
+    // 5. إشعار المالك
+    bot.sendMessage(ownerId, `
+✅ تمت الموافقة على ${request.analyst_name}
+    `);
+    
+  } catch (error) {
+    logger.error('Approve analyst error:', error);
+  }
+});
+```
+
+#### 7.2.5 Admin (مستوى المدير)
+
+**من هو Admin؟** فقط **مالك البوت** (المعرف في `OWNER_ID`)
+
+**الصلاحيات الكاملة**:
+- ✅ **كل ميزات VIP**
+- ✅ **لوحة تحكم كاملة** في `/admin-dashboard.html`
+- ✅ إدارة المستخدمين (حظر، تفعيل، تعديل)
+- ✅ إدارة المحللين (موافقة، رفض، حذف)
+- ✅ إدارة الاشتراكات
+- ✅ إدارة المعاملات المالية
+- ✅ إحصائيات شاملة
+- ✅ **AI Code Agent** خاص للبرمجة
+- ✅ إمكانية تنفيذ أوامر مخصصة
+
+**الحدود**: **لا توجد حدود**
+
+### 7.3 جدول مقارنة المستويات
+
+| الميزة | Free | Basic | VIP | Analyst | Admin |
+|--------|------|-------|-----|---------|-------|
+| **السعر** | مجاني (7 أيام) | 10 USDT/شهر | 25 USDT/شهر | مجاني | - |
+| **Regular Analysis** | 10/يوم | 50/يوم | غير محدود | غير محدود | غير محدود |
+| **Ultra Analysis** | ❌ | 20/يوم | غير محدود | غير محدود | غير محدود |
+| **Zero Reversal** | ❌ | ❌ | 50/يوم | غير محدود | غير محدود |
+| **V1 Pro AI** | ❌ | ❌ | 30/يوم | غير محدود | غير محدود |
+| **جميع الأسواق** | ❌ (2 فقط) | ✅ | ✅ | ✅ | ✅ |
+| **الاشتراك في محللين** | ❌ | 1 محلل | 5 محللين | غير محدود | غير محدود |
+| **نشر إشارات** | ❌ | ❌ | ❌ | ✅ | ✅ |
+| **العمولات** | ❌ | ❌ | ❌ | 80% | - |
+| **لوحة تحكم** | ❌ | ❌ | ❌ | لوحة محلل | لوحة كاملة |
+| **AI Code Agent** | ❌ | ❌ | ❌ | ❌ | ✅ |
+
+### 7.4 نظام التحقق من الاشتراك
+
+**عند كل طلب**، النظام يتحقق من صلاحية اشتراك المستخدم:
+
+```javascript
+// في ملف user-access-control.js
+
+async function getUserTier(userId) {
+  try {
+    const user = await db.getUser(userId);
+    
+    // 1. هل هو المالك؟
+    if (userId === OWNER_ID) {
+      return 'admin';
+    }
+    
+    // 2. هل هو محلل؟
+    if (user.is_analyst) {
+      return 'analyst';
+    }
+    
+    // 3. التحقق من انتهاء الاشتراك
+    const now = new Date();
+    if (user.subscription_expires && user.subscription_expires < now) {
+      // الاشتراك منتهي - إعادته إلى free
+      await db.collection('users').updateOne(
+        { user_id: userId },
+        { $set: { subscription_tier: 'free' } }
+      );
+      return 'free';
+    }
+    
+    // 4. إرجاع المستوى الحالي
+    return user.subscription_tier || 'free';
+    
+  } catch (error) {
+    logger.error('Get user tier error:', error);
+    return 'free'; // في حالة الخطأ، نعتبره free
+  }
+}
+```
+
+### 7.5 التجديد التلقائي
+
+حالياً، لا يوجد **تجديد تلقائي**. عندما ينتهي الاشتراك:
+- المستخدم يعود إلى مستوى `free`
+- يستلم إشعار قبل انتهاء الاشتراك بـ 3 أيام
+- يمكنه تجديد الاشتراك يدوياً
+
+**الإشعار التلقائي**:
+```javascript
+// في ملف scheduler.js (يعمل يومياً)
+
+async function checkExpiringSubscriptions() {
+  const threeDaysFromNow = new Date(Date.now() + 3*24*60*60*1000);
+  
+  const expiringUsers = await db.collection('users').find({
+    subscription_expires: {
+      $gt: new Date(),
+      $lt: threeDaysFromNow
+    },
+    subscription_tier: { $in: ['basic', 'vip'] }
+  }).toArray();
+  
+  for (const user of expiringUsers) {
+    const daysLeft = Math.ceil(
+      (user.subscription_expires - new Date()) / (24*60*60*1000)
+    );
+    
+    await bot.sendMessage(user.user_id, `
+⚠️ <b>تنبيه: اشتراكك ينتهي قريباً!</b>
+
+⏰ <b>المتبقي:</b> ${daysLeft} يوم
+📦 <b>الخطة:</b> ${user.subscription_tier.toUpperCase()}
+
+💡 <b>جدد الآن:</b>
+/subscribe - اشترك مجدداً
+    `, { parse_mode: 'HTML' });
+  }
+}
+```
+
+---
+
+## 8. نظام المحللين والإشارات
+
+### 8.1 نظرة عامة
+
+نظام المحللين يسمح لـ **المتداولين الخبراء** ببيع إشاراتهم للمستخدمين. هذا يخلق:
+- **اقتصاد داخلي**: المحللون يربحون، المستخدمون يحصلون على إشارات احترافية
+- **محتوى حصري**: إشارات غير متاحة في أي مكان آخر
+- **مجتمع نشط**: تفاعل بين المحللين والمتداولين
+
+### 8.2 كيف يعمل النظام؟
+
+```
+المستخدم العادي          المحلل            المنصة
+     │                      │                 │
+     │ 1. يشترك بـ 50 USDT │                 │
+     ├──────────────────────>│                 │
+     │                      │                 │
+     │                      │ 2. يستلم 40 USDT (80%)
+     │                      ├─────────────────>│
+     │                      │                 │
+     │                      │ المنصة تحصل 10 USDT (20%)
+     │                      │                 │
+     │ 3. يحصل على الإشارات│                 │
+     │<──────────────────────│                 │
+     │                      │                 │
+```
+
+### 8.3 نشر إشارة تداول
+
+**خطوات المحلل**:
+```
+1. المحلل يكتب /publish_signal
+2. يختار نوع الإشارة (شراء/بيع/انتظار)
+3. يدخل الرمز (مثل BTCUSDT)
+4. يدخل التحليل المكتوب
+5. يحدد نقاط الدخول والخروج ووقف الخسارة
+6. يحدد مستوى الثقة (1-100%)
+7. يؤكد النشر
+```
+
+**الكود المسؤول**:
+```javascript
+// في ملف analyst-signals.js
+
+bot.onText(/\/publish_signal/, async (msg) => {
+  const userId = msg.from.id;
+  
+  try {
+    const user = await db.getUser(userId);
+    
+    // 1. التحقق: هل هو محلل؟
+    if (!user.is_analyst) {
+      return bot.sendMessage(userId, '❌ هذا الأمر للمحللين فقط');
+    }
+    
+    // 2. بدء معالج الحوار
+    const signalData = {};
+    
+    // الخطوة 1: نوع الإشارة
+    await bot.sendMessage(userId, `
+📊 <b>نشر إشارة جديدة</b>
+
+اختر نوع الإشارة:
+    `, {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '📈 شراء', callback_data: 'signal_type_buy' },
+            { text: '📉 بيع', callback_data: 'signal_type_sell' }
+          ],
+          [
+            { text: '⏸ انتظار', callback_data: 'signal_type_hold' }
+          ]
+        ]
+      }
+    });
+    
+    // انتظار الرد
+    bot.once('callback_query', async (query) => {
+      if (query.from.id !== userId) return;
+      
+      signalData.type = query.data.replace('signal_type_', '');
+      bot.answerCallbackQuery(query.id);
+      
+      // الخطوة 2: الرمز
+      bot.sendMessage(userId, '💱 أرسل الرمز (مثل BTCUSDT):');
+      
+      bot.once('message', async (msg2) => {
+        if (msg2.from.id !== userId) return;
+        
+        signalData.symbol = msg2.text.toUpperCase();
+        
+        // الخطوة 3: التحليل
+        bot.sendMessage(userId, '📝 أرسل التحليل المكتوب:');
+        
+        bot.once('message', async (msg3) => {
+          if (msg3.from.id !== userId) return;
+          
+          signalData.analysis = msg3.text;
+          
+          // الخطوة 4: نقاط الدخول
+          bot.sendMessage(userId, `
+📍 أرسل نقاط الدخول (رقم واحد أو عدة أرقام مفصولة بفاصلة):
+
+<i>مثال: 50000 أو 50000,49500,49000</i>
+          `, { parse_mode: 'HTML' });
+          
+          bot.once('message', async (msg4) => {
+            if (msg4.from.id !== userId) return;
+            
+            signalData.entryPoints = msg4.text.split(',').map(p => parseFloat(p.trim()));
+            
+            // الخطوة 5: أهداف الربح
+            bot.sendMessage(userId, `
+🎯 أرسل أهداف الربح (رقم واحد أو عدة أرقام):
+
+<i>مثال: 52000,54000,56000</i>
+            `, { parse_mode: 'HTML' });
+            
+            bot.once('message', async (msg5) => {
+              if (msg5.from.id !== userId) return;
+              
+              signalData.takeProfitLevels = msg5.text.split(',').map(p => parseFloat(p.trim()));
+              
+              // الخطوة 6: وقف الخسارة
+              bot.sendMessage(userId, '🛑 أرسل نقطة وقف الخسارة (رقم واحد):');
+              
+              bot.once('message', async (msg6) => {
+                if (msg6.from.id !== userId) return;
+                
+                signalData.stopLoss = parseFloat(msg6.text.trim());
+                
+                // الخطوة 7: مستوى الثقة
+                bot.sendMessage(userId, `
+💯 أرسل مستوى الثقة (1-100):
+
+<i>مثال: 85 (يعني 85% ثقة)</i>
+                `, { parse_mode: 'HTML' });
+                
+                bot.once('message', async (msg7) => {
+                  if (msg7.from.id !== userId) return;
+                  
+                  signalData.confidence = parseInt(msg7.text.trim());
+                  
+                  if (signalData.confidence < 1 || signalData.confidence > 100) {
+                    return bot.sendMessage(userId, '❌ مستوى الثقة يجب أن يكون بين 1-100');
+                  }
+                  
+                  // الخطوة 8: المراجعة والتأكيد
+                  const preview = `
+📊 <b>مراجعة الإشارة</b>
+
+🔔 <b>النوع:</b> ${signalData.type === 'buy' ? '📈 شراء' : signalData.type === 'sell' ? '📉 بيع' : '⏸ انتظار'}
+💱 <b>الرمز:</b> ${signalData.symbol}
+
+📝 <b>التحليل:</b>
+${signalData.analysis}
+
+📍 <b>نقاط الدخول:</b>
+${signalData.entryPoints.join(', ')}
+
+🎯 <b>أهداف الربح:</b>
+${signalData.takeProfitLevels.join(', ')}
+
+🛑 <b>وقف الخسارة:</b>
+${signalData.stopLoss}
+
+💯 <b>مستوى الثقة:</b> ${signalData.confidence}%
+
+هل تريد نشر هذه الإشارة؟
+                  `;
+                  
+                  bot.sendMessage(userId, preview, {
+                    parse_mode: 'HTML',
+                    reply_markup: {
+                      inline_keyboard: [
+                        [
+                          { text: '✅ نشر', callback_data: 'confirm_publish' },
+                          { text: '❌ إلغاء', callback_data: 'cancel_publish' }
+                        ]
+                      ]
+                    }
+                  });
+                  
+                  // الخطوة 9: التأكيد النهائي
+                  bot.once('callback_query', async (finalQuery) => {
+                    if (finalQuery.from.id !== userId) return;
+                    
+                    bot.answerCallbackQuery(finalQuery.id);
+                    
+                    if (finalQuery.data === 'cancel_publish') {
+                      return bot.sendMessage(userId, '❌ تم إلغاء النشر');
+                    }
+                    
+                    // نشر الإشارة!
+                    const signal = {
+                      analyst_id: userId,
+                      analyst_name: user.analyst_profile.analyst_name,
+                      
+                      symbol: signalData.symbol,
+                      signal_type: signalData.type,
+                      
+                      analysis: signalData.analysis,
+                      entry_price: signalData.entryPoints[0],
+                      entry_points: signalData.entryPoints,
+                      take_profit_levels: signalData.takeProfitLevels,
+                      stop_loss: signalData.stopLoss,
+                      
+                      confidence_level: signalData.confidence,
+                      risk_level: calculateRiskLevel(signalData),
+                      
+                      status: 'active',
+                      is_premium: true,
+                      
+                      views_count: 0,
+                      likes_count: 0,
+                      
+                      created_at: new Date(),
+                      expires_at: new Date(Date.now() + 24*60*60*1000) // صالحة لـ 24 ساعة
+                    };
+                    
+                    await db.collection('analyst_signals').insertOne(signal);
+                    
+                    // تحديث إحصائيات المحلل
+                    await db.collection('users').updateOne(
+                      { user_id: userId },
+                      { $inc: { 'analyst_profile.total_signals': 1 } }
+                    );
+                    
+                    // إشعار المحلل
+                    bot.sendMessage(userId, '✅ تم نشر الإشارة بنجاح!');
+                    
+                    // إشعار جميع المشتركين
+                    const subscribers = await db.collection('analyst_subscriptions').find({
+                      analyst_id: userId,
+                      status: 'active',
+                      end_date: { $gt: new Date() }
+                    }).toArray();
+                    
+                    for (const sub of subscribers) {
+                      try {
+                        await bot.sendMessage(sub.user_id, `
+🔔 <b>إشارة جديدة من ${user.analyst_profile.analyst_name}</b>
+
+${preview}
+                        `, { parse_mode: 'HTML' });
+                      } catch (err) {
+                        logger.error(`Failed to notify subscriber ${sub.user_id}:`, err);
+                      }
+                    }
+                    
+                    logger.info(`✅ Signal published by analyst ${userId}`);
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+    
+  } catch (error) {
+    logger.error('Publish signal error:', error);
+  }
+});
+
+// حساب مستوى المخاطرة
+function calculateRiskLevel(signalData) {
+  const entryPrice = signalData.entryPoints[0];
+  const stopLoss = signalData.stopLoss;
+  const takeProfit = signalData.takeProfitLevels[0];
+  
+  const potentialLoss = Math.abs(entryPrice - stopLoss) / entryPrice * 100;
+  const potentialProfit = Math.abs(takeProfit - entryPrice) / entryPrice * 100;
+  
+  const riskRewardRatio = potentialProfit / potentialLoss;
+  
+  if (potentialLoss > 5 || riskRewardRatio < 1.5) {
+    return 'high';
+  } else if (potentialLoss > 3 || riskRewardRatio < 2) {
+    return 'medium';
+  } else {
+    return 'low';
+  }
+}
+```
+
+### 8.4 الاشتراك في محلل
+
+**خطوات المستخدم**:
+```
+1. يكتب /analysts - يرى قائمة المحللين
+2. يختار محلل
+3. يرى تفاصيل المحلل (السيرة، السعر، الإحصائيات)
+4. يضغط "اشترك"
+5. يدفع من محفظته
+6. يبدأ استقبال الإشارات
+```
+
+**الكود المسؤول**:
+```javascript
+// في ملف bot.js
+
+bot.onText(/\/analysts/, async (msg) => {
+  const userId = msg.from.id;
+  
+  try {
+    // جلب جميع المحللين النشطين
+    const analysts = await db.collection('users').find({
+      is_analyst: true,
+      is_active: true
+    }).sort({ 'analyst_profile.subscribers_count': -1 }).limit(10).toArray();
+    
+    if (analysts.length === 0) {
+      return bot.sendMessage(userId, '❌ لا يوجد محللون متاحون حالياً');
+    }
+    
+    const buttons = analysts.map(analyst => [{
+      text: `${analyst.analyst_profile.analyst_name} (${analyst.analyst_profile.monthly_price} USDT)`,
+      callback_data: `view_analyst_${analyst.user_id}`
+    }]);
+    
+    bot.sendMessage(userId, `
+📊 <b>المحللون المتاحون</b>
+
+اختر محلل لعرض تفاصيله:
+    `, {
+      parse_mode: 'HTML',
+      reply_markup: { inline_keyboard: buttons }
+    });
+    
+  } catch (error) {
+    logger.error('Analysts list error:', error);
+  }
+});
+
+// عرض تفاصيل محلل
+bot.on('callback_query', async (query) => {
+  const userId = query.from.id;
+  const data = query.data;
+  
+  if (data.startsWith('view_analyst_')) {
+    const analystId = parseInt(data.replace('view_analyst_', ''));
+    
+    try {
+      const analyst = await db.getUser(analystId);
+      
+      if (!analyst || !analyst.is_analyst) {
+        return bot.answerCallbackQuery(query.id, {
+          text: '❌ محلل غير موجود',
+          show_alert: true
+        });
+      }
+      
+      const profile = analyst.analyst_profile;
+      
+      // إحصائيات إضافية
+      const totalSignals = await db.collection('analyst_signals').countDocuments({
+        analyst_id: analystId
+      });
+      
+      const winningSignals = await db.collection('analyst_signals').countDocuments({
+        analyst_id: analystId,
+        result: 'win'
+      });
+      
+      const successRate = totalSignals > 0 
+        ? Math.round((winningSignals / totalSignals) * 100) 
+        : 0;
+      
+      const message = `
+👤 <b>${profile.analyst_name}</b>
+
+📝 <b>النبذة:</b>
+${profile.bio}
+
+📊 <b>الإحصائيات:</b>
+• عدد الإشارات: ${totalSignals}
+• نسبة النجاح: ${successRate}%
+• عدد المشتركين: ${profile.subscribers_count}
+
+💰 <b>السعر:</b> ${profile.monthly_price} USDT/شهر
+
+⭐ التقييم: ${'⭐'.repeat(Math.min(5, Math.ceil(successRate / 20)))}
+      `;
+      
+      bot.editMessageText(message, {
+        chat_id: userId,
+        message_id: query.message.message_id,
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: '✅ اشترك الآن', callback_data: `subscribe_analyst_${analystId}` }
+            ],
+            [
+              { text: '🔙 رجوع', callback_data: 'back_to_analysts' }
+            ]
+          ]
+        }
+      });
+      
+      bot.answerCallbackQuery(query.id);
+      
+    } catch (error) {
+      logger.error('View analyst error:', error);
+    }
+  }
+  
+  // الاشتراك في محلل
+  if (data.startsWith('subscribe_analyst_')) {
+    const analystId = parseInt(data.replace('subscribe_analyst_', ''));
+    
+    try {
+      const user = await db.getUser(userId);
+      const analyst = await db.getUser(analystId);
+      
+      // 1. التحقق من الاشتراك السابق
+      const existingSub = await db.collection('analyst_subscriptions').findOne({
+        user_id: userId,
+        analyst_id: analystId,
+        status: 'active',
+        end_date: { $gt: new Date() }
+      });
+      
+      if (existingSub) {
+        return bot.answerCallbackQuery(query.id, {
+          text: '✅ أنت مشترك بالفعل في هذا المحلل',
+          show_alert: true
+        });
+      }
+      
+      // 2. التحقق من الرصيد
+      const price = analyst.analyst_profile.monthly_price;
+      
+      if (user.balance < price) {
+        return bot.answerCallbackQuery(query.id, {
+          text: `❌ رصيدك غير كافٍ. تحتاج ${price} USDT`,
+          show_alert: true
+        });
+      }
+      
+      // 3. استخدام معاملة MongoDB
+      const session = client.startSession();
+      
+      await session.withTransaction(async () => {
+        // خصم المبلغ
+        await db.collection('users').updateOne(
+          { user_id: userId },
+          { $inc: { balance: -price } },
+          { session }
+        );
+        
+        // إضافة عمولة للمحلل (80%)
+        const analystEarnings = price * 0.8;
+        await db.collection('users').updateOne(
+          { user_id: analystId },
+          {
+            $inc: {
+              balance: analystEarnings,
+              'analyst_profile.subscribers_count': 1
+            }
+          },
+          { session }
+        );
+        
+        // إضافة اشتراك
+        await db.collection('analyst_subscriptions').insertOne({
+          user_id: userId,
+          analyst_id: analystId,
+          analyst_name: analyst.analyst_profile.analyst_name,
+          
+          start_date: new Date(),
+          end_date: new Date(Date.now() + 30*24*60*60*1000),
+          
+          amount_paid: price,
+          analyst_earnings: analystEarnings,
+          platform_fee: price * 0.2,
+          
+          status: 'active',
+          created_at: new Date()
+        }, { session });
+        
+        // إضافة معاملات
+        await db.collection('transactions').insertMany([
+          {
+            user_id: userId,
+            type: 'analyst_subscription',
+            amount: price,
+            status: 'completed',
+            description: `اشتراك في ${analyst.analyst_profile.analyst_name}`,
+            created_at: new Date()
+          },
+          {
+            user_id: analystId,
+            type: 'commission',
+            amount: analystEarnings,
+            status: 'completed',
+            description: `عمولة من اشتراك @${user.username || user.first_name}`,
+            created_at: new Date()
+          }
+        ], { session });
+      });
+      
+      await session.endSession();
+      
+      // 4. إشعار المستخدم
+      bot.sendMessage(userId, `
+✅ <b>تم الاشتراك بنجاح!</b>
+
+👤 <b>المحلل:</b> ${analyst.analyst_profile.analyst_name}
+💰 <b>المبلغ:</b> ${price} USDT
+⏰ <b>صالح حتى:</b> ${new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('ar-SA')}
+
+ستستقبل جميع إشارات هذا المحلل خلال الـ 30 يوم القادمة.
+
+رصيدك الحالي: ${user.balance - price} USDT
+      `, { parse_mode: 'HTML' });
+      
+      // 5. إشعار المحلل
+      bot.sendMessage(analystId, `
+🎉 <b>اشتراك جديد!</b>
+
+👤 <b>المستخدم:</b> @${user.username || user.first_name}
+💰 <b>المبلغ:</b> ${price} USDT
+💵 <b>عمولتك:</b> ${analystEarnings} USDT
+
+رصيدك الحالي: ${analyst.balance + analystEarnings} USDT
+عدد مشتركيك: ${analyst.analyst_profile.subscribers_count + 1}
+      `, { parse_mode: 'HTML' });
+      
+      bot.answerCallbackQuery(query.id, {
+        text: '✅ تم الاشتراك بنجاح!',
+        show_alert: true
+      });
+      
+    } catch (error) {
+      logger.error('Subscribe to analyst error:', error);
+    }
+  }
+});
+```
+
+### 8.5 نظام ترتيب المحللين
+
+المحللون يُرتبون بناءً على:
+1. **نسبة النجاح** (50%)
+2. **عدد المشتركين** (30%)
+3. **عدد الإشارات الكلي** (20%)
+
+```javascript
+// في ملف ranking-scheduler.js (يعمل يومياً)
+
+async function updateAnalystRankings() {
+  const analysts = await db.collection('users').find({
+    is_analyst: true,
+    is_active: true
+  }).toArray();
+  
+  for (const analyst of analysts) {
+    const totalSignals = await db.collection('analyst_signals').countDocuments({
+      analyst_id: analyst.user_id
+    });
+    
+    const winningSignals = await db.collection('analyst_signals').countDocuments({
+      analyst_id: analyst.user_id,
+      result: 'win'
+    });
+    
+    const successRate = totalSignals > 0 
+      ? (winningSignals / totalSignals) * 100 
+      : 0;
+    
+    const subscribersCount = analyst.analyst_profile.subscribers_count;
+    
+    // حساب الترتيب
+    const rankScore = 
+      (successRate * 0.5) +
+      (subscribersCount * 0.3) +
+      (totalSignals * 0.001 * 0.2); // تطبيع عدد الإشارات
+    
+    await db.collection('users').updateOne(
+      { user_id: analyst.user_id },
+      {
+        $set: {
+          'analyst_profile.success_rate': successRate,
+          'analyst_profile.rank_score': rankScore,
+          'analyst_profile.total_signals': totalSignals
+        }
+      }
+    );
+  }
+  
+  logger.info('✅ Analyst rankings updated');
+}
+```
+
+---
+
+## 9. نظام الإحالة والأرباح
+
+### 9.1 نظرة عامة
+
+نظام الإحالة يسمح للمستخدمين بـ **كسب المال** من خلال دعوة أصدقائهم. كل مستخدم له **رابط إحالة فريد**.
+
+### 9.2 كيف يعمل؟
+
+```
+أحمد (المُحيل)
+  │
+  │ 1. يشارك رابط الإحالة: t.me/YourBot?start=ref_12345
+  │
+  ▼
+محمد (المُحال) ينضم عبر الرابط
+  │
+  │ 2. يُسجل في النظام كإحالة من أحمد
+  │
+  ▼
+محمد يشتري اشتراك Basic (10 USDT)
+  │
+  │ 3. أحمد يحصل على 10% = 1 USDT
+  │
+  ▼
+محمد يشتري اشتراك VIP (25 USDT)
+  │
+  │ 4. أحمد يحصل على 10% = 2.5 USDT
+  │
+  ▼
+محمد يشترك في محلل (50 USDT)
+  │
+  │ 5. أحمد يحصل على 10% = 5 USDT
+  │
+  ▼
+أحمد ربح 8.5 USDT من محمد فقط!
+```
+
+### 9.3 رابط الإحالة
+
+كل مستخدم له رابط فريد:
+```
+https://t.me/YourBotName?start=ref_USER_ID
+```
+
+**كيف يحصل المستخدم على رابطه؟**
+```
+المستخدم يكتب /referral
+↓
+البوت يرسل رابط الإحالة + إحصائيات
+```
+
+**الكود**:
+```javascript
+// في ملف bot.js
+
+bot.onText(/\/referral/, async (msg) => {
+  const userId = msg.from.id;
+  
+  try {
+    const user = await db.getUser(userId);
+    
+    // إنشاء رابط الإحالة
+    const referralLink = `https://t.me/${BOT_USERNAME}?start=ref_${userId}`;
+    
+    // جلب إحصائيات الإحالة
+    const referrals = await db.collection('users').find({
+      referred_by: userId
+    }).toArray();
+    
+    const totalReferrals = referrals.length;
+    const totalEarnings = user.referral_earnings || 0;
+    
+    // جلب الإحالات النشطة (دفعوا فعلياً)
+    const activeReferrals = referrals.filter(r => 
+      r.subscription_tier !== 'free' || 
+      r.total_deposits > 0
+    ).length;
+    
+    const message = `
+🎁 <b>نظام الإحالة</b>
+
+📎 <b>رابطك الخاص:</b>
+<code>${referralLink}</code>
+
+📊 <b>إحصائياتك:</b>
+👥 إجمالي الإحالات: ${totalReferrals}
+✅ الإحالات النشطة: ${activeReferrals}
+💰 إجمالي الأرباح: ${totalEarnings.toFixed(2)} USDT
+
+💡 <b>كيف تربح؟</b>
+• احصل على <b>10%</b> من كل عملية شراء لمن تدعوهم
+• عندما يشترون اشتراك، تحصل على عمولة
+• عندما يشتركون في محلل، تحصل على عمولة
+• <b>مدى الحياة!</b> طالما هم نشطون
+
+🚀 <b>شارك رابطك الآن واربح!</b>
+    `;
+    
+    bot.sendMessage(userId, message, {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '📤 مشاركة الرابط', 
+              url: `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${encodeURIComponent('انضم إلى أفضل بوت تداول على تيليجرام!')}` 
+            }
+          ]
+        ]
+      }
+    });
+    
+  } catch (error) {
+    logger.error('Referral command error:', error);
+  }
+});
+```
+
+### 9.4 تسجيل الإحالة
+
+عندما ينضم مستخدم جديد عبر رابط إحالة:
+
+```javascript
+// في ملف bot.js - معالج /start
+
+bot.onText(/\/start( (.+))?/, async (msg, match) => {
+  const userId = msg.from.id;
+  const param = match && match[2]; // ref_12345
+  
+  try {
+    let user = await db.getUser(userId);
+    
+    // إذا كان مستخدم جديد
+    if (!user) {
+      user = await db.registerUser(msg.from);
+      
+      // إذا كان هناك رمز إحالة
+      if (param && param.startsWith('ref_')) {
+        const referrerId = parseInt(param.replace('ref_', ''));
+        
+        // التحقق من صحة المُحيل
+        const referrer = await db.getUser(referrerId);
+        
+        if (referrer && referrerId !== userId) {
+          // تسجيل الإحالة
+          await db.collection('users').updateOne(
+            { user_id: userId },
+            { $set: { referred_by: referrerId } }
+          );
+          
+          await db.collection('referrals').insertOne({
+            referrer_id: referrerId,
+            referred_id: userId,
+            referral_type: 'user',
+            status: 'active',
+            conversion_status: 'pending',
+            total_earned: 0,
+            level: 1,
+            created_at: new Date()
+          });
+          
+          // تحديث عداد الإحالات للمُحيل
+          await db.collection('users').updateOne(
+            { user_id: referrerId },
+            { $inc: { total_referrals: 1 } }
+          );
+          
+          // إشعار المُحيل
+          bot.sendMessage(referrerId, `
+🎉 <b>إحالة جديدة!</b>
+
+👤 انضم @${user.username || user.first_name} عبر رابطك
+💰 ستحصل على <b>10%</b> من جميع مشترياته
+
+إجمالي إحالاتك: ${referrer.total_referrals + 1}
+          `, { parse_mode: 'HTML' });
+        }
+      }
+    }
+    
+    // رسالة الترحيب...
+    
+  } catch (error) {
+    logger.error('Start command error:', error);
+  }
+});
+```
+
+### 9.5 حساب العمولة
+
+عندما يشتري المُحال اشتراكاً أو يودع أموال:
+
+```javascript
+// في ملف database.js أو في API endpoint
+
+async function processReferralCommission(userId, amount, transactionType) {
+  try {
+    // 1. جلب بيانات المستخدم
+    const user = await db.getUser(userId);
+    
+    // 2. التحقق: هل لديه مُحيل؟
+    if (!user.referred_by) {
+      return; // لا يوجد مُحيل، لا عمولة
+    }
+    
+    const referrerId = user.referred_by;
+    
+    // 3. حساب العمولة (10%)
+    const commission = amount * 0.1;
+    
+    // 4. إضافة العمولة للمُحيل
+    await db.collection('users').updateOne(
+      { user_id: referrerId },
+      {
+        $inc: {
+          balance: commission,
+          referral_earnings: commission
+        }
+      }
+    );
+    
+    // 5. تحديث بيانات الإحالة
+    await db.collection('referrals').updateOne(
+      { referrer_id: referrerId, referred_id: userId },
+      {
+        $inc: { total_earned: commission },
+        $set: { conversion_status: 'converted' }
+      }
+    );
+    
+    // 6. إضافة معاملة للمُحيل
+    await db.collection('transactions').insertOne({
+      user_id: referrerId,
+      type: 'commission',
+      amount: commission,
+      status: 'completed',
+      description: `عمولة إحالة من @${user.username || user.first_name}`,
+      created_at: new Date()
+    });
+    
+    // 7. إشعار المُحيل
+    const referrer = await db.getUser(referrerId);
+    bot.sendMessage(referrerId, `
+💰 <b>عمولة جديدة!</b>
+
+👤 من: @${user.username || user.first_name}
+💵 المبلغ: ${commission.toFixed(2)} USDT
+📝 السبب: ${transactionType}
+
+رصيدك الحالي: ${(referrer.balance + commission).toFixed(2)} USDT
+إجمالي أرباحك من الإحالات: ${(referrer.referral_earnings + commission).toFixed(2)} USDT
+    `, { parse_mode: 'HTML' });
+    
+    logger.info(`✅ Referral commission paid: ${commission} USDT from ${userId} to ${referrerId}`);
+    
+  } catch (error) {
+    logger.error('Process referral commission error:', error);
+  }
+}
+
+// استخدام الدالة عند كل عملية دفع
+// مثال: عند شراء اشتراك
+await processReferralCommission(userId, 10, 'اشتراك Basic');
+
+// عند الإيداع
+await processReferralCommission(userId, 100, 'إيداع USDT');
+
+// عند الاشتراك في محلل
+await processReferralCommission(userId, 50, 'اشتراك في محلل');
+```
+
+### 9.6 نظام الإحالة متعدد المستويات (اختياري)
+
+يمكن توسيع النظام ليشمل **3 مستويات**:
+
+```
+أحمد (Level 0 - الأصل)
+  │
+  ├─> محمد (Level 1 - إحالة مباشرة) → أحمد يحصل على 10%
+  │     │
+  │     └─> علي (Level 2 - إحالة من إحالة) → أحمد يحصل على 5%
+  │           │
+  │           └─> خالد (Level 3) → أحمد يحصل على 2.5%
+  │
+  └─> سارة (Level 1) → أحمد يحصل على 10%
+```
+
+**العمولات**:
+- Level 1 (مباشر): 10%
+- Level 2 (إحالة من إحالة): 5%
+- Level 3 (إحالة من إحالة من إحالة): 2.5%
+
+**الكود** (في `enhanced-earning-system.js`):
+```javascript
+async function calculateMultiLevelCommission(userId, amount) {
+  let currentUser = await db.getUser(userId);
+  let level = 1;
+  const commissions = [];
+  
+  while (currentUser.referred_by && level <= 3) {
+    const referrerId = currentUser.referred_by;
+    let commissionRate = 0;
+    
+    switch (level) {
+      case 1: commissionRate = 0.10; break; // 10%
+      case 2: commissionRate = 0.05; break; // 5%
+      case 3: commissionRate = 0.025; break; // 2.5%
+    }
+    
+    const commission = amount * commissionRate;
+    
+    await db.collection('users').updateOne(
+      { user_id: referrerId },
+      {
+        $inc: {
+          balance: commission,
+          referral_earnings: commission
+        }
+      }
+    );
+    
+    await db.collection('transactions').insertOne({
+      user_id: referrerId,
+      type: 'commission',
+      amount: commission,
+      status: 'completed',
+      description: `عمولة Level ${level} من @${currentUser.username}`,
+      created_at: new Date()
+    });
+    
+    commissions.push({
+      referrer_id: referrerId,
+      level: level,
+      amount: commission
+    });
+    
+    // الانتقال للمستوى التالي
+    currentUser = await db.getUser(referrerId);
+    level++;
+  }
+  
+  return commissions;
+}
+```
+
+---
+
+## 10. نظام الأمان والحماية
+
+### 10.1 نظرة عامة
+
+الأمان هو **الأولوية القصوى** في المشروع. نستخدم **5 طبقات حماية**:
+
+```
+┌──────────────────────────────────────────────┐
+│          طبقات الأمان في OBENTCHI             │
+├──────────────────────────────────────────────┤
+│  1. Telegram WebApp Data Validation         │
+│  2. Advanced Rate Limiting                   │
+│  3. Advanced Security System                 │
+│  4. Automated Safety System                  │
+│  5. Safe Database Query Guards               │
+└──────────────────────────────────────────────┘
+```
+
+### 10.2 الطبقة 1: Telegram WebApp Data Validation
+
+**المشكلة**: كيف نتأكد أن الطلب قادم من Telegram وليس من مهاجم؟
+
+**الحل**: التحقق من `initData` باستخدام HMAC-SHA256
+
+**الكود** (في `api-security.js`):
+```javascript
+const crypto = require('crypto');
+
+function validateTelegramWebAppData(initData) {
+  try {
+    if (!initData || initData.trim() === '') {
+      return { valid: false, error: 'No initData provided' };
+    }
+    
+    // 1. تحويل initData إلى URLSearchParams
+    const params = new URLSearchParams(initData);
+    const hash = params.get('hash');
+    params.delete('hash');
+    
+    if (!hash) {
+      return { valid: false, error: 'No hash in initData' };
+    }
+    
+    // 2. ترتيب المعاملات أبجدياً
+    const dataCheckString = Array.from(params.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, value]) => `${key}=${value}`)
+      .join('\n');
+    
+    // 3. إنشاء Secret Key من BOT_TOKEN
+    const secretKey = crypto
+      .createHmac('sha256', 'WebAppData')
+      .update(BOT_TOKEN)
+      .digest();
+    
+    // 4. حساب الـ hash المتوقع
+    const expectedHash = crypto
+      .createHmac('sha256', secretKey)
+      .update(dataCheckString)
+      .digest('hex');
+    
+    // 5. المقارنة
+    if (hash !== expectedHash) {
+      return { valid: false, error: 'Invalid hash' };
+    }
+    
+    // 6. التحقق من auth_date (لا يتجاوز 24 ساعة)
+    const authDate = parseInt(params.get('auth_date'));
+    const now = Math.floor(Date.now() / 1000);
+    
+    if (now - authDate > 86400) { // 24 ساعة
+      return { valid: false, error: 'initData too old' };
+    }
+    
+    // 7. استخراج بيانات المستخدم
+    const userParam = params.get('user');
+    if (!userParam) {
+      return { valid: false, error: 'No user data' };
+    }
+    
+    const user = JSON.parse(decodeURIComponent(userParam));
+    
+    return {
+      valid: true,
+      user: user,
+      auth_date: authDate
+    };
+    
+  } catch (error) {
+    logger.error('Telegram WebApp validation error:', error);
+    return { valid: false, error: error.message };
+  }
+}
+
+// Middleware للـ API
+function authenticateAPI(req, res, next) {
+  const initData = req.body.init_data || req.headers['x-telegram-init-data'];
+  
+  const validation = validateTelegramWebAppData(initData);
+  
+  if (!validation.valid) {
+    logger.warn(`❌ Invalid API request: ${validation.error}`);
+    return res.status(401).json({
+      success: false,
+      error: 'Unauthorized'
+    });
+  }
+  
+  // إضافة بيانات المستخدم للـ request
+  req.auth = {
+    user_id: validation.user.id,
+    username: validation.user.username,
+    first_name: validation.user.first_name
+  };
+  
+  next();
+}
+
+module.exports = { validateTelegramWebAppData, authenticateAPI };
+```
+
+### 10.3 الطبقة 2: Advanced Rate Limiting
+
+**المشكلة**: منع الإساءة والهجمات (DDoS, Brute Force, Spam)
+
+**الحل**: حدود استخدام متدرجة حسب مستوى المستخدم
+
+**الكود** (في `advanced-rate-limiter.js`):
+```javascript
+const Redis = require('ioredis');
+const redis = new Redis(process.env.REDIS_URL);
+
+const TIER_LIMITS = {
+  free: {
+    requests_per_minute: 10,
+    requests_per_hour: 100,
+    requests_per_day: 500,
+    analysis_per_day: 10,
+    concurrent_requests: 2
+  },
+  basic: {
+    requests_per_minute: 30,
+    requests_per_hour: 500,
+    requests_per_day: 2000,
+    analysis_per_day: 50,
+    concurrent_requests: 5
+  },
+  vip: {
+    requests_per_minute: 60,
+    requests_per_hour: 2000,
+    requests_per_day: 10000,
+    analysis_per_day: 999999,
+    concurrent_requests: 10
+  },
+  analyst: {
+    requests_per_minute: 100,
+    requests_per_hour: 5000,
+    requests_per_day: 20000,
+    analysis_per_day: 999999,
+    concurrent_requests: 15
+  },
+  admin: {
+    requests_per_minute: 999999,
+    requests_per_hour: 999999,
+    requests_per_day: 999999,
+    analysis_per_day: 999999,
+    concurrent_requests: 999999
+  }
+};
+
+async function checkRateLimit(userId, tier, action = 'request') {
+  const limits = TIER_LIMITS[tier] || TIER_LIMITS.free;
+  
+  const now = Date.now();
+  const minute = Math.floor(now / 60000);
+  const hour = Math.floor(now / 3600000);
+  const day = Math.floor(now / 86400000);
+  
+  const keys = {
+    minute: `rate:${userId}:${minute}:requests`,
+    hour: `rate:${userId}:${hour}:requests`,
+    day: `rate:${userId}:${day}:requests`,
+    analysis_day: `rate:${userId}:${day}:analysis`,
+    concurrent: `rate:${userId}:concurrent`
+  };
+  
+  // 1. التحقق من الطلبات في الدقيقة
+  const minuteCount = await redis.incr(keys.minute);
+  if (minuteCount === 1) await redis.expire(keys.minute, 60);
+  
+  if (minuteCount > limits.requests_per_minute) {
+    return {
+      allowed: false,
+      reason: 'تجاوزت الحد الأقصى للطلبات في الدقيقة',
+      reset_in: 60 - (Math.floor(now / 1000) % 60)
+    };
+  }
+  
+  // 2. التحقق من الطلبات في الساعة
+  const hourCount = await redis.incr(keys.hour);
+  if (hourCount === 1) await redis.expire(keys.hour, 3600);
+  
+  if (hourCount > limits.requests_per_hour) {
+    return {
+      allowed: false,
+      reason: 'تجاوزت الحد الأقصى للطلبات في الساعة',
+      reset_in: 3600 - (Math.floor(now / 1000) % 3600)
+    };
+  }
+  
+  // 3. التحقق من الطلبات في اليوم
+  const dayCount = await redis.incr(keys.day);
+  if (dayCount === 1) await redis.expire(keys.day, 86400);
+  
+  if (dayCount > limits.requests_per_day) {
+    return {
+      allowed: false,
+      reason: 'تجاوزت الحد الأقصى للطلبات في اليوم',
+      reset_in: 86400 - (Math.floor(now / 1000) % 86400)
+    };
+  }
+  
+  // 4. إذا كان تحليل، تحقق من حد التحليلات
+  if (action === 'analysis') {
+    const analysisCount = await redis.incr(keys.analysis_day);
+    if (analysisCount === 1) await redis.expire(keys.analysis_day, 86400);
+    
+    if (analysisCount > limits.analysis_per_day) {
+      return {
+        allowed: false,
+        reason: 'تجاوزت الحد الأقصى للتحليلات في اليوم',
+        reset_in: 86400 - (Math.floor(now / 1000) % 86400)
+      };
+    }
+  }
+  
+  // 5. التحقق من الطلبات المتزامنة
+  const concurrentCount = await redis.incr(keys.concurrent);
+  
+  if (concurrentCount > limits.concurrent_requests) {
+    await redis.decr(keys.concurrent); // تراجع عن الزيادة
+    return {
+      allowed: false,
+      reason: 'تجاوزت الحد الأقصى للطلبات المتزامنة'
+    };
+  }
+  
+  // تقليل العداد بعد معالجة الطلب (يجب استدعاؤها في finally)
+  setTimeout(() => redis.decr(keys.concurrent), 100);
+  
+  return { allowed: true };
+}
+
+// Middleware
+async function rateLimitMiddleware(req, res, next) {
+  const userId = req.auth.user_id;
+  const tier = await getUserTier(userId);
+  
+  const result = await checkRateLimit(userId, tier);
+  
+  if (!result.allowed) {
+    logger.warn(`⚠️ Rate limit exceeded for user ${userId}: ${result.reason}`);
+    return res.status(429).json({
+      success: false,
+      error: result.reason,
+      reset_in: result.reset_in
+    });
+  }
+  
+  next();
+}
+
+module.exports = { checkRateLimit, rateLimitMiddleware };
+```
+
+### 10.4 الطبقة 3: Advanced Security System
+
+**المشكلة**: كشف الاحتيال والسلوك المشبوه
+
+**الحل**: نظام نقاط لتقييم المخاطر + إجراءات تلقائية
+
+**الكود** (في `advanced-security-system.js`):
+```javascript
+async function analyzeUserBehavior(userId, action, metadata = {}) {
+  let riskScore = 0;
+  const flags = [];
+  
+  // 1. التحقق من سلوك المستخدم التاريخي
+  const user = await db.getUser(userId);
+  const recentActions = await db.collection('security_events').find({
+    user_id: userId,
+    created_at: { $gt: new Date(Date.now() - 24*60*60*1000) }
+  }).toArray();
+  
+  // 2. كشف النشاط المشبوه
+  
+  // 2.1 محاولات سحب متعددة في وقت قصير
+  if (action === 'withdrawal') {
+    const recentWithdrawals = recentActions.filter(a => a.event_type === 'withdrawal_attempt');
+    
+    if (recentWithdrawals.length >= 5) {
+      riskScore += 30;
+      flags.push('سحوبات متعددة في 24 ساعة');
+    }
+  }
+  
+  // 2.2 تغييرات كبيرة في الرصيد
+  if (action === 'withdrawal' && metadata.amount) {
+    const withdrawalRatio = metadata.amount / user.balance;
+    
+    if (withdrawalRatio > 0.8) { // سحب 80%+ من الرصيد
+      riskScore += 20;
+      flags.push('سحب نسبة كبيرة من الرصيد');
+    }
+  }
+  
+  // 2.3 IP جديد أو مشبوه
+  if (metadata.ip) {
+    const recentIPs = await redis.smembers(`user:${userId}:ips`);
+    
+    if (!recentIPs.includes(metadata.ip)) {
+      riskScore += 10;
+      flags.push('IP جديد');
+      
+      // حفظ IP
+      await redis.sadd(`user:${userId}:ips`, metadata.ip);
+      await redis.expire(`user:${userId}:ips`, 30*24*60*60); // 30 يوم
+    }
+  }
+  
+  // 2.4 محاولات فاشلة متكررة
+  const failedAttempts = recentActions.filter(a => a.severity === 'high');
+  if (failedAttempts.length >= 3) {
+    riskScore += 25;
+    flags.push('محاولات فاشلة متكررة');
+  }
+  
+  // 2.5 حساب جديد يسحب فوراً
+  const accountAge = (Date.now() - user.created_at.getTime()) / (24*60*60*1000); // أيام
+  if (accountAge < 3 && action === 'withdrawal') {
+    riskScore += 40;
+    flags.push('حساب جديد - سحب سريع');
+  }
+  
+  // 3. تحديد مستوى المخاطرة
+  let riskLevel = 'low';
+  let recommendedAction = 'log';
+  
+  if (riskScore >= 90) {
+    riskLevel = 'critical';
+    recommendedAction = 'ban';
+  } else if (riskScore >= 75) {
+    riskLevel = 'high';
+    recommendedAction = 'block';
+  } else if (riskScore >= 50) {
+    riskLevel = 'medium';
+    recommendedAction = 'notify';
+  }
+  
+  // 4. تنفيذ الإجراء التلقائي
+  if (recommendedAction === 'ban') {
+    // حظر دائم
+    await db.collection('users').updateOne(
+      { user_id: userId },
+      {
+        $set: {
+          is_banned: true,
+          ban_reason: `نشاط مشبوه: ${flags.join(', ')}`,
+          banned_at: new Date()
+        }
+      }
+    );
+    
+    // إشعار المالك
+    await bot.sendMessage(OWNER_ID, `
+🚨 <b>حظر تلقائي!</b>
+
+👤 المستخدم: ${userId}
+⚠️ مستوى المخاطرة: ${riskScore}/100
+🚩 الأسباب: ${flags.join(', ')}
+    `, { parse_mode: 'HTML' });
+    
+  } else if (recommendedAction === 'block') {
+    // حظر مؤقت (24 ساعة)
+    await redis.setex(`blocked:${userId}`, 86400, 'security');
+    
+    await bot.sendMessage(OWNER_ID, `
+⚠️ <b>حظر مؤقت!</b>
+
+👤 المستخدم: ${userId}
+⚠️ مستوى المخاطرة: ${riskScore}/100
+🚩 الأسباب: ${flags.join(', ')}
+⏰ المدة: 24 ساعة
+    `, { parse_mode: 'HTML' });
+    
+  } else if (recommendedAction === 'notify') {
+    // إشعار فقط
+    await bot.sendMessage(OWNER_ID, `
+⚠️ <b>نشاط مشبوه!</b>
+
+👤 المستخدم: ${userId}
+⚠️ مستوى المخاطرة: ${riskScore}/100
+🚩 الأسباب: ${flags.join(', ')}
+    `, { parse_mode: 'HTML' });
+  }
+  
+  // 5. تسجيل الحدث
+  await db.collection('security_events').insertOne({
+    user_id: userId,
+    event_type: action,
+    risk_score: riskScore,
+    risk_level: riskLevel,
+    flags: flags,
+    action_taken: recommendedAction,
+    metadata: metadata,
+    created_at: new Date()
+  });
+  
+  return {
+    risk_score: riskScore,
+    risk_level: riskLevel,
+    flags: flags,
+    action_taken: recommendedAction
+  };
+}
+
+module.exports = { analyzeUserBehavior };
+```
+
+### 10.5 الطبقة 4: Automated Safety System
+
+**المشكلة**: مراقبة النظام 24/7 تلقائياً
+
+**الحل**: مراقبون تلقائيون + تنظيف دوري
+
+**الكود** (في `automated-safety-system.js`):
+```javascript
+class AutomatedSafetySystem {
+  constructor() {
+    this.monitors = [];
+    this.tasks = [];
+    this.alerts = [];
+  }
+  
+  initialize() {
+    logger.info('🔒 Initializing Automated Safety System...');
+    
+    // 1. بدء المراقبين
+    this.startWithdrawalMonitor();      // كل دقيقة
+    this.startLoginMonitor();           // كل 30 ثانية
+    this.startBalanceMonitor();         // كل دقيقتين
+    this.startSystemHealthMonitor();    // كل 5 دقائق
+    
+    // 2. جدولة المهام
+    this.scheduleDailyAudit();          // 2 صباحاً كل يوم
+    this.scheduleDataCleanup();         // كل 15 دقيقة
+    this.scheduleAccountReview();       // كل 6 ساعات
+    this.scheduleAnomalyDetection();    // كل 5 دقائق
+    
+    logger.info('✅ Automated Safety System initialized');
+  }
+  
+  startWithdrawalMonitor() {
+    const monitor = setInterval(async () => {
+      try {
+        // البحث عن سحوبات مشبوهة
+        const suspiciousWithdrawals = await db.collection('withdrawal_requests').find({
+          status: 'pending',
+          created_at: { $gt: new Date(Date.now() - 60*60*1000) }, // آخر ساعة
+          amount: { $gt: 500 } // أكثر من 500 USDT
+        }).toArray();
+        
+        for (const withdrawal of suspiciousWithdrawals) {
+          const user = await db.getUser(withdrawal.user_id);
+          const accountAge = (Date.now() - user.created_at.getTime()) / (24*60*60*1000);
+          
+          // حساب جديد + سحب كبير = مشبوه جداً
+          if (accountAge < 7) {
+            this.createAlert({
+              level: 'critical',
+              type: 'suspicious_withdrawal',
+              message: `سحب مشبوه: حساب عمره ${accountAge.toFixed(1)} يوم يحاول سحب ${withdrawal.amount} USDT`,
+              user_id: withdrawal.user_id,
+              metadata: withdrawal
+            });
+          }
+        }
+      } catch (error) {
+        logger.error('Withdrawal monitor error:', error);
+      }
+    }, 60000); // كل دقيقة
+    
+    this.monitors.push(monitor);
+  }
+  
+  scheduleDailyAudit() {
+    const task = cron.schedule('0 2 * * *', async () => { // 2 صباحاً
+      logger.info('🔍 Running daily security audit...');
+      
+      try {
+        // 1. مراجعة جميع المعاملات المالية
+        const suspiciousTransactions = await db.collection('transactions').find({
+          created_at: { $gt: new Date(Date.now() - 24*60*60*1000) },
+          amount: { $gt: 1000 }
+        }).toArray();
+        
+        // 2. مراجعة الحسابات الجديدة
+        const newAccounts = await db.collection('users').find({
+          created_at: { $gt: new Date(Date.now() - 24*60*60*1000) }
+        }).toArray();
+        
+        // 3. مراجعة السحوبات الفاشلة
+        const failedWithdrawals = await db.collection('withdrawal_requests').find({
+          status: 'failed',
+          created_at: { $gt: new Date(Date.now() - 24*60*60*1000) }
+        }).toArray();
+        
+        // 4. إرسال تقرير للمالك
+        const report = `
+📊 <b>تقرير الأمان اليومي</b>
+
+📅 التاريخ: ${new Date().toLocaleDateString('ar-SA')}
+
+💰 <b>المعاملات المالية:</b>
+• إجمالي المعاملات: ${suspiciousTransactions.length}
+• معاملات كبيرة (>1000 USDT): ${suspiciousTransactions.filter(t => t.amount > 1000).length}
+
+👥 <b>حسابات جديدة:</b>
+• إجمالي: ${newAccounts.length}
+• حسابات نشطة: ${newAccounts.filter(u => u.subscription_tier !== 'free').length}
+
+💸 <b>السحوبات:</b>
+• سحوبات ناجحة: ${await db.collection('withdrawal_requests').countDocuments({ status: 'completed', created_at: { $gt: new Date(Date.now() - 24*60*60*1000) } })}
+• سحوبات فاشلة: ${failedWithdrawals.length}
+
+⚠️ <b>التنبيهات:</b>
+• تنبيهات حرجة: ${this.alerts.filter(a => a.level === 'critical' && !a.acknowledged).length}
+• تنبيهات متوسطة: ${this.alerts.filter(a => a.level === 'medium' && !a.acknowledged).length}
+        `;
+        
+        await bot.sendMessage(OWNER_ID, report, { parse_mode: 'HTML' });
+        
+        logger.info('✅ Daily security audit completed');
+        
+      } catch (error) {
+        logger.error('Daily audit error:', error);
+      }
+    });
+    
+    this.tasks.push(task);
+  }
+  
+  createAlert(alert) {
+    alert.id = `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    alert.created_at = new Date();
+    alert.acknowledged = false;
+    
+    this.alerts.push(alert);
+    
+    // إشعار فوري للمالك إذا كان حرج
+    if (alert.level === 'critical') {
+      bot.sendMessage(OWNER_ID, `
+🚨 <b>تنبيه أمني حرج!</b>
+
+🔔 ${alert.message}
+
+⏰ الوقت: ${new Date().toLocaleString('ar-SA')}
+      `, { parse_mode: 'HTML' });
+    }
+    
+    logger.warn(`⚠️ Security alert created: ${alert.message}`);
+  }
+  
+  stop() {
+    this.monitors.forEach(m => clearInterval(m));
+    this.tasks.forEach(t => t.stop());
+    logger.info('🛑 Automated Safety System stopped');
+  }
+}
+
+module.exports = new AutomatedSafetySystem();
+```
+
+---
+
+**(يتبع... هل تريد أن أكمل الأقسام المتبقية 11-20؟)**
