@@ -124,40 +124,40 @@ const setupAPIRoutes = async () => {
   const { getTelegramProfilePhoto } = require('../telegram-helpers');
   const { addPaymentCallback } = require('../payment-callback-queue');
   const monitoringService = require('../monitoring-service');
-  
+
   // Access Control Routes
   const accessControlRoutes = require('../api-routes/access-control-routes');
   app.use('/api/access', accessControlRoutes);
-  
+
   // Real-time Dashboard Routes
   const realtimeDashboardRoutes = require('../api-routes/realtime-dashboard-routes');
   app.use('/api/realtime', realtimeDashboardRoutes);
-  
+
   // Feature Flags Routes
   const featureFlagRoutes = require('../api-routes/feature-flag-routes');
   app.use('/api/feature-flags', featureFlagRoutes);
-  
+
   // Main Routes
   const mainRoutes = require('../api-routes/main-routes');
   app.use('/api', mainRoutes);
-  
+
   // Admin Routes
   const adminRoutes = require('../api-routes/admin-routes');
   app.use('/api/admin', adminRoutes);
-  
+
   // User data
   app.post('/api/user', authenticateAPI, marketDataRateLimit, async (req, res) => {
     try {
       const { user_id } = req.body;
       const user = await db.getUser(user_id);
-      
+
       if (!user) {
         return res.json({ success: false, error: 'User not found' });
       }
-      
+
       const botInfo = await bot.getMe();
       const botUsername = botInfo.username;
-      
+
       res.json({ success: true, user, botUsername });
     } catch (error) {
       logger.error(`Error fetching user: ${error.message}`);
@@ -169,18 +169,18 @@ const setupAPIRoutes = async () => {
   app.post('/api/price', authenticateAPI, marketDataRateLimit, async (req, res) => {
     try {
       const { symbol, marketType } = req.body;
-      
+
       if (!symbol) {
         return res.json({ success: false, error: 'Symbol is required' });
       }
-      
+
       let price;
       if (marketType === 'forex' || marketType === 'stocks' || marketType === 'commodities' || marketType === 'indices') {
         price = await forexService.getForexPrice(symbol);
       } else {
         price = await marketData.getCryptoPrice(symbol);
       }
-      
+
       res.json({ success: true, price });
     } catch (error) {
       logger.error(`Error fetching price: ${error.message}`);
@@ -192,11 +192,11 @@ const setupAPIRoutes = async () => {
   app.post('/api/analyze', authenticateAPI, analysisRateLimit, async (req, res) => {
     try {
       const { symbol, marketType, user_id } = req.body;
-      
+
       if (!symbol || !marketType) {
         return res.json({ success: false, error: 'Symbol and marketType are required' });
       }
-      
+
       const hasSubscription = await db.isSubscriptionActive(user_id);
       if (!hasSubscription) {
         return res.json({ 
@@ -205,10 +205,10 @@ const setupAPIRoutes = async () => {
           message: 'يجب الاشتراك للحصول على التحليل الفني'
         });
       }
-      
+
       const analyzer = new TechnicalAnalysis();
       const analysis = await analyzer.analyze(symbol, marketType);
-      
+
       res.json({ success: true, analysis });
     } catch (error) {
       logger.error(`Error analyzing: ${error.message}`);
@@ -220,11 +220,11 @@ const setupAPIRoutes = async () => {
   app.post('/api/withdraw', authenticateAPI, analysisRateLimit, async (req, res) => {
     try {
       const { user_id, amount, wallet_address } = req.body;
-      
+
       if (!user_id || !amount || !wallet_address) {
         return res.json({ success: false, error: 'Missing required fields' });
       }
-      
+
       res.json({ success: false, error: 'Not implemented in HTTP server' });
     } catch (error) {
       logger.error(`Error processing withdrawal: ${error.message}`);
@@ -237,9 +237,9 @@ const setupAPIRoutes = async () => {
     try {
       const { type, market_type } = req.body;
       const marketDataService = require('../market-data');
-      
+
       const movers = await marketDataService.getTopMovers(type || 'gainers', market_type || 'crypto');
-      
+
       res.json({ success: true, movers });
     } catch (error) {
       logger.error(`Error fetching top movers: ${error.message}`);
@@ -251,15 +251,15 @@ const setupAPIRoutes = async () => {
   app.post('/api/analysts', authenticateAPI, marketDataRateLimit, async (req, res) => {
     try {
       const { user_id } = req.body;
-      
+
       const analysts = await db.getAllAnalysts();
       const activeSubscriptions = await db.getAllUserAnalystSubscriptions(user_id);
-      
+
       const analystsWithStatus = analysts.map(analyst => {
         const subscription = activeSubscriptions.find(sub => 
           sub.analyst_id.toString() === analyst._id.toString()
         );
-        
+
         return {
           id: analyst._id,
           name: analyst.name,
@@ -273,7 +273,7 @@ const setupAPIRoutes = async () => {
           subscription_end_date: subscription?.end_date
         };
       });
-      
+
       res.json({
         success: true,
         analysts: analystsWithStatus,
@@ -289,7 +289,7 @@ const setupAPIRoutes = async () => {
   app.post('/api/top-analysts', authenticateAPI, marketDataRateLimit, async (req, res) => {
     try {
       const topAnalysts = await db.getTop100Analysts(10);
-      
+
       res.json({ success: true, analysts: topAnalysts });
     } catch (error) {
       logger.error(`Error fetching top analysts: ${error.message}`);
@@ -303,38 +303,38 @@ const setupAPIRoutes = async () => {
 // Initialize Queue Workers
 const initializeQueueWorkers = async () => {
   logger.info('⚙️ Initializing Queue Workers...');
-  
+
   startWithdrawalProcessor(5);
   logger.info('  ✅ Withdrawal queue: 5 concurrent workers');
-  
+
   startPaymentProcessor(3);
   logger.info('  ✅ Payment callback queue: 3 concurrent workers');
-  
+
   logger.info('✅ Queue Workers initialized');
 };
 
 // Initialize Schedulers
 const initializeSchedulers = async () => {
   logger.info('📅 Initializing Schedulers...');
-  
+
   await featureFlagService.initialize(db.getDB());
   logger.info('  ✅ Feature flags initialized');
-  
+
   automatedSafety.initialize();
   logger.info('  ✅ Automated safety system initialized');
-  
+
   startWithdrawalScheduler();
   logger.info('  ✅ Withdrawal scheduler started');
-  
+
   rankingScheduler.start();
   logger.info('  ✅ Ranking scheduler started');
-  
+
   initAnalystMonitor();
   logger.info('  ✅ Analyst monitor started');
-  
+
   initTradeSignalsMonitor();
   logger.info('  ✅ Trade signals monitor started');
-  
+
   logger.info('✅ All schedulers initialized');
 };
 
@@ -346,26 +346,26 @@ const startUnifiedServer = async () => {
     logger.info(`🌍 Environment: ${config.ENVIRONMENT.platform}`);
     logger.info(`🔧 Mode: WEBHOOK ONLY (AWS Deployment)`);
     logger.info('');
-    
+
     // Initialize database
     logger.info('📊 Initializing database...');
     await db.initDatabase();
     logger.info('✅ Database initialized');
-    
+
     // Initialize bot
     logger.info('🤖 Initializing Telegram Bot...');
     await initializeBot();
     logger.info('✅ Bot initialized');
-    
+
     // Setup webhook
     const webhookUrl = config.WEBHOOK_CONFIG.publicUrl 
       ? `${config.WEBHOOK_CONFIG.publicUrl}${config.WEBHOOK_CONFIG.webhookPath}`
       : process.env.WEBHOOK_URL || `${process.env.PUBLIC_URL}/webhook`;
-    
+
     if (!webhookUrl || webhookUrl.includes('undefined')) {
       throw new Error('WEBHOOK_URL or PUBLIC_URL environment variable is required');
     }
-    
+
     try {
       await setupWebhook(webhookUrl, webhookHandler.getWebhookSecret());
       logger.info(`✅ Webhook configured successfully`);
@@ -373,21 +373,21 @@ const startUnifiedServer = async () => {
     } catch (error) {
       logger.error(`⚠️ Failed to setup webhook: ${error.message}`);
     }
-    
+
     if (!process.env.WEBHOOK_SECRET) {
       logger.warn('⚠️ WARNING: WEBHOOK_SECRET not set! Using auto-generated secret.');
     }
-    
+
     // Setup API routes
     logger.info('🔧 Setting up API routes...');
     await setupAPIRoutes();
-    
+
     // Initialize Queue Workers
     await initializeQueueWorkers();
-    
+
     // Initialize Schedulers
     await initializeSchedulers();
-    
+
     // Start Express server
     app.listen(PORT, '0.0.0.0', () => {
       logger.info('');
@@ -409,7 +409,7 @@ const startUnifiedServer = async () => {
       logger.info('👂 Ready to receive webhook updates...');
       logger.info('==========================================');
     });
-    
+
   } catch (error) {
     logger.error(`❌ Failed to start Unified Webhook Server: ${error.message}`);
     logger.error(error.stack);
@@ -418,38 +418,42 @@ const startUnifiedServer = async () => {
 };
 
 // Graceful shutdown
-const shutdown = async () => {
+let isShuttingDown = false;
+const gracefulShutdown = async () => {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+
   logger.info('');
   logger.info('⚠️ Shutdown signal received...');
   logger.info('==========================================');
-  
+
   try {
     // Pause queues
     logger.info('⏸️ Pausing queues...');
-    await withdrawalQueue.pause();
-    await paymentCallbackQueue.pause();
-    
+    if (withdrawalQueue) await withdrawalQueue.pause();
+    if (paymentCallbackQueue) await paymentCallbackQueue.pause();
+
     // Wait for active jobs
     logger.info('⏳ Waiting for active jobs to complete (max 30s)...');
     await Promise.race([
       Promise.all([
-        withdrawalQueue.whenCurrentJobsFinished(),
-        paymentCallbackQueue.whenCurrentJobsFinished()
+        withdrawalQueue ? withdrawalQueue.whenCurrentJobsFinished() : Promise.resolve(),
+        paymentCallbackQueue ? paymentCallbackQueue.whenCurrentJobsFinished() : Promise.resolve()
       ]),
       new Promise(resolve => setTimeout(resolve, 30000))
     ]);
-    
+
     // Close queues
     logger.info('🔴 Closing queues...');
-    await withdrawalQueue.close();
-    await paymentCallbackQueue.close();
-    
+    if (withdrawalQueue) await withdrawalQueue.close();
+    if (paymentCallbackQueue) await paymentCallbackQueue.close();
+
     // Stop schedulers
     logger.info('⏹️ Stopping schedulers...');
     stopWithdrawalScheduler();
     rankingScheduler.stop();
     automatedSafety.stop();
-    
+
     logger.info('');
     logger.info('✅ Unified Webhook Server shut down successfully');
     logger.info('==========================================');
@@ -460,19 +464,33 @@ const shutdown = async () => {
   }
 };
 
-process.on('SIGTERM', shutdown);
-process.on('SIGINT', shutdown);
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
 
-// Handle uncaught errors
 process.on('uncaughtException', (error) => {
-  logger.error(`💥 Uncaught Exception: ${error.message}`);
-  logger.error(error.stack);
+  logger.error('❌ Uncaught Exception:', error);
+  gracefulShutdown();
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  logger.error(`💥 Unhandled Rejection at: ${promise}`);
-  logger.error(`Reason: ${reason}`);
+  logger.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
 });
+
+// منع رسائل خطأ Queue أثناء الإغلاق
+const originalQueueErrorHandler = (queue) => {
+  const errors = ['Connection is closed', 'Client is closed'];
+  queue.on('error', (error) => {
+    if (isShuttingDown && errors.some(e => error.message.includes(e))) {
+      // تجاهل أخطاء الاتصال أثناء الإغلاق
+      return;
+    }
+    logger.error(`❌ ${queue.name} Queue Error:`, error.message);
+  });
+};
+
+if (paymentCallbackQueue && paymentCallbackQueue.paymentCallbackQueue) originalQueueErrorHandler(paymentCallbackQueue.paymentCallbackQueue);
+if (withdrawalQueue && withdrawalQueue.withdrawalQueue) originalQueueErrorHandler(withdrawalQueue.withdrawalQueue);
+
 
 // Start the server
 if (require.main === module) {

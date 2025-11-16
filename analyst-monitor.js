@@ -6,6 +6,8 @@ let botInstance = null;
 
 async function checkAnalystActivity() {
   try {
+    const { t } = require('./languages');
+    
     const analysts = await db.getDB().collection('analysts').find({
       is_active: true,
       is_suspended: false
@@ -18,29 +20,32 @@ async function checkAnalystActivity() {
 
       if (daysDiff === 2) {
         try {
+          const analystUser = await db.getUser(analyst.user_id);
+          const lang = analystUser ? (analystUser.language || 'ar') : 'ar';
+          
           await botInstance.sendMessage(analyst.user_id, `
-🚨🚨🚨 <b>تحذير عاجل</b> 🚨🚨🚨
+🚨🚨🚨 <b>${t(lang, 'analyst_urgent_warning')}</b> 🚨🚨🚨
 
 ━━━━━━━━━━━━━━━━━━━━━━
-⚠️ <b>إنذار نهائي للمحلل</b> ⚠️
+⚠️ <b>${t(lang, 'analyst_final_warning')}</b> ⚠️
 ━━━━━━━━━━━━━━━━━━━━━━
 
-عزيزي المحلل: <b>${analyst.name}</b>
+${t(lang, 'dear_analyst')}: <b>${analyst.name}</b>
 
-🔴 <b>لم تنشر أي صفقات منذ يومين!</b>
+🔴 <b>${t(lang, 'no_posts_2_days')}</b>
 
-⏰ <b>لديك 24 ساعة فقط</b>
+⏰ <b>${t(lang, 'you_have_24_hours')}</b>
 
-❌ <b>ما سيحدث إذا لم تنشر صفقة:</b>
-▪️ إيقاف حسابك كمحلل تلقائياً
-▪️ إلغاء جميع الاشتراكات
-▪️ إرجاع المبالغ للمشتركين
-▪️ فقدان جميع أرباحك المحجوزة
+❌ <b>${t(lang, 'what_will_happen')}:</b>
+▪️ ${t(lang, 'account_suspended_auto')}
+▪️ ${t(lang, 'all_subscriptions_cancelled')}
+▪️ ${t(lang, 'refunds_to_subscribers')}
+▪️ ${t(lang, 'loss_of_escrow')}
 
-👥 <b>المشتركون الحاليون:</b> ${analyst.total_subscribers || 0}
-💰 <b>الأرباح المعرضة للخطر:</b> ${analyst.escrow_balance || 0} USDT
+👥 <b>${t(lang, 'current_subscribers')}:</b> ${analyst.total_subscribers || 0}
+💰 <b>${t(lang, 'earnings_at_risk')}:</b> ${analyst.escrow_balance || 0} USDT
 
-✅ <b>الحل:</b> انشر صفقة الآن للحفاظ على حسابك!
+✅ <b>${t(lang, 'solution')}:</b> ${t(lang, 'post_now_to_save_account')}
 
 ━━━━━━━━━━━━━━━━━━━━━━
 `, { parse_mode: 'HTML' });

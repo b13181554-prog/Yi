@@ -415,6 +415,9 @@ async function init() {
                 'version': tg.version
             });
             
+            const botUsername = 'OBENTCHI_Bot'; // ضع اسم البوت الخاص بك هنا
+            const telegramWebUrl = `https://t.me/${botUsername}?start=webapp`;
+            
             document.getElementById('loading').innerHTML = `
                 <div style="text-align: center; padding: 30px 20px; max-width: 600px; margin: 0 auto;">
                     <div style="font-size: 80px; margin-bottom: 20px;">🔒</div>
@@ -422,6 +425,15 @@ async function init() {
                     <p style="color: #666; margin-bottom: 30px; font-size: 16px; line-height: 1.6;">
                         لا يمكن فتح هذا التطبيق مباشرة من المتصفح. يجب فتحه من داخل تطبيق Telegram للحفاظ على أمان حسابك.
                     </p>
+                    
+                    <a href="${telegramWebUrl}" 
+                       style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                              color: white; padding: 15px 40px; border-radius: 30px; text-decoration: none; 
+                              font-weight: bold; font-size: 18px; margin-bottom: 30px; 
+                              box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+                              transition: all 0.3s ease;">
+                        🚀 افتح في Telegram
+                    </a></p>
                     
                     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; text-align: right; box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);">
                         <h3 style="margin: 0 0 20px 0; font-size: 20px; font-weight: bold;">✅ الطريقة الصحيحة:</h3>
